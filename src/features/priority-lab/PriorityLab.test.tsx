@@ -107,11 +107,11 @@ describe('PriorityLab (exploratory DEMO composite query)', () => {
     expect(bodies).toHaveLength(0);
   });
 
-  it('is blocked in LIVE: no ranking, no query, and no DEMO numbers', async () => {
+  it('is blocked in LIVE: a quiet note, no ranking, no query, and no DEMO numbers', async () => {
     const { fetchImpl, bodies } = labFetch(() => fixtureResponse('regions_live', 503));
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
 
-    expect(await screen.findByText('LIVE Belum Tersedia')).toBeInTheDocument();
+    expect(await screen.findByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toBeInTheDocument();
     expect(screen.queryByText('Pratinjau peringkat')).not.toBeInTheDocument();
     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
     expect(bodies).toHaveLength(0);

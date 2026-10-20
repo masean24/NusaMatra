@@ -46,7 +46,10 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
 
     await page.locator('label', { hasText: 'LIVE' }).click();
 
-    await expect(page.getByText('LIVE Belum Tersedia').first()).toBeVisible();
+    await expect(page.getByText('LIVE Belum Tersedia', { exact: true })).toHaveCount(1);
+    // Search, boundary notice and indicators each asked and failed: three quiet notes, one message.
+    await expect(page.getByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toHaveCount(3);
+    await expect(page.locator('[data-kind="unavailable"], [data-kind="error"]')).toHaveCount(1);
     await expect(page.getByText(/Tidak ada fallback otomatis ke data DEMO/).first()).toBeVisible();
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
     await expect(page.getByText('DEMO_EXAMPLE')).toHaveCount(0);
@@ -89,7 +92,9 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
 
     await page.locator('label', { hasText: 'LIVE' }).click();
 
-    await expect(page.getByText('LIVE Belum Tersedia').first()).toBeVisible();
+    await expect(page.getByText('LIVE Belum Tersedia', { exact: true })).toHaveCount(1);
+    await expect(page.getByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toHaveCount(1);
+    await expect(page.locator('[data-kind="unavailable"], [data-kind="error"]')).toHaveCount(1);
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
   });
 });

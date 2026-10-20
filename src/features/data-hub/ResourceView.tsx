@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { DataHubErrorMessage } from './DataHubErrorMessage';
+import { isLiveBlockedError } from './liveBlocked';
+import { useDataHub } from './useDataHub';
 import type { ResourceState } from './useDataHubResource';
+import styles from './ResourceView.module.css';
 
 interface ResourceViewProps<T> {
   readonly state: ResourceState<T>;
@@ -10,8 +13,16 @@ interface ResourceViewProps<T> {
   readonly children: (data: T) => ReactNode;
 }
 
-/** Renders the distinct states of a Data Hub resource (docs/03 §6.9); only `success` shows data. */
+/**
+ * Renders the distinct states of a Data Hub resource (docs/03 §6.9); only `success` shows data.
+ *
+ * LIVE being blocked is stated once per page, by `DataHubBanner`. A panel whose own request failed
+ * for that reason therefore shows a quiet note instead of repeating the unavailable card, which
+ * would stack one card per request.
+ */
 export function ResourceView<T>({ state, onRetry, loadingTitle, children }: ResourceViewProps<T>) {
+  const { dataMode } = useDataHub();
+
   switch (state.status) {
     case 'idle':
       return null;
@@ -24,7 +35,11 @@ export function ResourceView<T>({ state, onRetry, loadingTitle, children }: Reso
         </StatusMessage>
       );
     case 'error':
-      return <DataHubErrorMessage error={state.error} onRetry={onRetry} />;
+      return isLiveBlockedError(state.error, dataMode) ? (
+        <p className={`kk-small ${styles.liveNote}`}>Tidak ada data LIVE untuk ditampilkan di sini.</p>
+      ) : (
+        <DataHubErrorMessage error={state.error} onRetry={onRetry} />
+      );
     case 'success':
       return <>{children(state.data)}</>;
   }

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createFixtureFetch,
@@ -90,36 +90,37 @@ describe('RegionExplorer in LIVE mode (HTTP 503, no fallback)', () => {
     });
   }
 
-  it('shows the blocked state, no region at all, and never asks for DEMO data by itself', async () => {
+  // The page's one primary LIVE message belongs to DataHubBanner (see dataHubPages.test.tsx); a panel
+  // whose own request failed for that reason shows a quiet note, not another unavailable card.
+  it('shows a quiet note and no region at all, and never asks for DEMO data by itself', async () => {
     const fetchMock = liveFetch();
-    renderWithDataHub(<RegionExplorer />, { fetchImpl: fetchMock, dataMode: 'LIVE' });
+    const { container } = renderWithDataHub(<RegionExplorer />, { fetchImpl: fetchMock, dataMode: 'LIVE' });
 
-    expect(await screen.findByText('LIVE Belum Tersedia')).toBeInTheDocument();
-    expect(screen.getByText(/Tidak ada fallback otomatis ke data DEMO/)).toBeInTheDocument();
+    expect(await screen.findByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toBeInTheDocument();
+    expect(container.querySelector('[data-kind="unavailable"], [data-kind="error"]')).toBeNull();
     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
     expect(screen.queryByText(/dari 514 wilayah/)).not.toBeInTheDocument();
     expect(requestedUrls(fetchMock).every((url) => url.searchParams.get('mode') === 'live')).toBe(true);
   });
 
-  it('returns to DEMO only when the user asks for it', async () => {
-    const fetchMock = liveFetch();
-    renderWithDataHub(<RegionExplorer />, { fetchImpl: fetchMock, dataMode: 'LIVE' });
-    await userEvent.click(await screen.findByRole('button', { name: 'Beralih ke data DEMO' }));
-
-    expect(await screen.findByText('Menampilkan 30 dari 514 wilayah')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(requestedUrls(fetchMock).some((url) => url.searchParams.get('mode') === 'demo')).toBe(true);
-    });
-  });
-
-  it('treats a response the browser cannot read (the real API sends its 503 without CORS headers) as blocked too', async () => {
+  it('shows the same quiet note when the browser cannot read the 503 (no CORS headers)', async () => {
     const fetchMock = createFixtureFetch({
       '/api/v1/regions': () => Promise.reject(new TypeError('Failed to fetch')),
     });
+    const { container } = renderWithDataHub(<RegionExplorer />, { fetchImpl: fetchMock, dataMode: 'LIVE' });
+
+    expect(await screen.findByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toBeInTheDocument();
+    expect(container.querySelector('[data-kind="unavailable"], [data-kind="error"]')).toBeNull();
+    expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
+  });
+
+  it('still reports an ordinary failure in LIVE as an error with a retry, not as a LIVE block', async () => {
+    const fetchMock = createFixtureFetch({
+      '/api/v1/regions': () => new Response('{"detail":"boom"}', { status: 500 }),
+    });
     renderWithDataHub(<RegionExplorer />, { fetchImpl: fetchMock, dataMode: 'LIVE' });
 
-    expect(await screen.findByText('LIVE Tidak Dapat Dimuat')).toBeInTheDocument();
-    expect(screen.getByText(/Tidak ada fallback otomatis ke data DEMO/)).toBeInTheDocument();
-    expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
+    expect(await screen.findByText('Data belum dapat dimuat')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Coba lagi' })).toBeInTheDocument();
   });
 });
