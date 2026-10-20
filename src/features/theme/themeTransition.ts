@@ -1,4 +1,5 @@
 import { animateView } from 'motion';
+import { REDUCED_DURATION_MS, REVEAL_DURATION_MS, REVEAL_EASE, revealClipPath } from '@/features/motion';
 
 export interface ThemeTransitionRequest {
   /** Synchronously paints the new theme (state + `data-display-mode`). */
@@ -9,17 +10,9 @@ export interface ThemeTransitionRequest {
   readonly reducedMotion: boolean;
 }
 
-/** 0.75s on an ease-in-out curve (Figma 30:1467 liquid curve), inside the requested 0.6–0.9s. */
-const REVEAL_SECONDS = 0.75;
-const REVEAL_EASE = [0.65, 0, 0.35, 1] as const;
-/** Reduced motion: a short crossfade, no moving shape. */
-const REDUCED_SECONDS = 0.2;
+const REVEAL_SECONDS = REVEAL_DURATION_MS / 1000;
+const REDUCED_SECONDS = REDUCED_DURATION_MS / 1000;
 const FALLBACK_ATTRIBUTE = 'data-theme-transition';
-
-/** Radius that reaches the farthest viewport corner from the origin. */
-function coverRadius(x: number, y: number): number {
-  return Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
-}
 
 /**
  * Browsers without the View Transitions API: the theme switches under a CSS crossfade of
@@ -27,7 +20,7 @@ function coverRadius(x: number, y: number): number {
  */
 function crossfade(apply: () => void, seconds: number): Promise<void> {
   const root = document.documentElement;
-  root.style.setProperty('--theme-transition-duration', `${seconds}s`);
+  root.style.setProperty('--theme-transition-duration', `${String(seconds)}s`);
   root.setAttribute(FALLBACK_ATTRIBUTE, 'crossfade');
   apply();
   return new Promise((resolve) => {
@@ -63,9 +56,8 @@ export async function runThemeTransition({
     return;
   }
 
-  const at = `at ${originX}px ${originY}px`;
   await animateView(apply, { duration: REVEAL_SECONDS, ease: REVEAL_EASE })
-    .new({ clipPath: [`circle(0px ${at})`, `circle(${coverRadius(originX, originY)}px ${at})`] })
+    .new({ clipPath: revealClipPath({ x: originX, y: originY }) })
     // The old snapshot stays fully opaque under the growing circle.
     .old({ opacity: [1, 1] });
 }

@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { surfaceClassName } from '@/components/ui/Surface/surfaceClassName';
 import { Reveal } from '@/features/motion';
+import { useRouteZoom } from '@/features/navigation';
 import { SceneZone } from '../scene3d/SceneZone';
 import styles from './HowItWorksSection.module.css';
 
@@ -24,6 +25,37 @@ const STEPS = [
 /* G3: heading rises 24px (600ms); steps follow one by one, 80ms apart, shifting 16px from the left. */
 const G3_STEP_STAGGER_MS = 80;
 
+interface StepLinkProps {
+  readonly step: (typeof STEPS)[number];
+  readonly number: number;
+}
+
+/** A step card whose feature page opens by zooming out of the card, like a macOS window. */
+function StepLink({ step, number }: StepLinkProps) {
+  const openWithZoom = useRouteZoom();
+
+  return (
+    <Link
+      to={step.to}
+      className={surfaceClassName('step', styles.step)}
+      onClick={(event) => {
+        openWithZoom(event, step.to);
+      }}
+    >
+      <span className={`kk-number ${styles.badge}`} data-first={number === 1 || undefined} aria-hidden="true">
+        {number}
+      </span>
+      <span className={styles.stepText}>
+        <span className={`kk-h3 ${styles.stepTitle}`}>
+          <span className="visually-hidden">Langkah {number}: </span>
+          {step.title}
+        </span>
+        <span className={`kk-small ${styles.stepDescription}`}>{step.description}</span>
+      </span>
+    </Link>
+  );
+}
+
 export function HowItWorksSection() {
   return (
     <section id="cara-kerja" className={styles.section} aria-labelledby="cara-kerja-title">
@@ -37,22 +69,7 @@ export function HowItWorksSection() {
           {STEPS.map((step, index) => (
             <li key={step.title}>
               <Reveal distance={0} fromX={-16} duration={600} delay={120 + index * G3_STEP_STAGGER_MS}>
-                <Link to={step.to} className={surfaceClassName('step', styles.step)}>
-                  <span
-                    className={`kk-number ${styles.badge}`}
-                    data-first={index === 0 || undefined}
-                    aria-hidden="true"
-                  >
-                    {index + 1}
-                  </span>
-                  <span className={styles.stepText}>
-                    <span className={`kk-h3 ${styles.stepTitle}`}>
-                      <span className="visually-hidden">Langkah {index + 1}: </span>
-                      {step.title}
-                    </span>
-                    <span className={`kk-small ${styles.stepDescription}`}>{step.description}</span>
-                  </span>
-                </Link>
+                <StepLink step={step} number={index + 1} />
               </Reveal>
             </li>
           ))}

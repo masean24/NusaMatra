@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { RouterProvider } from 'react-router';
+// The DOM build wires ReactDOM.flushSync, which navigations inside view transitions need.
+import { RouterProvider } from 'react-router/dom';
 import { DisplayModeProvider } from '@/features/theme';
 import { createAppRouter } from './router';
 
