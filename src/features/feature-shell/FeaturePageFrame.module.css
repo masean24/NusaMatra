@@ -1,0 +1,23 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+  max-width: 760px;
+  margin-inline: auto;
+  padding: 140px var(--nm-gutter) 120px;
+}
+
+.page[data-wide] {
+  max-width: 1120px;
+}
+
+.summary {
+  color: var(--c-text-muted);
+}
+
+@media (width < 1240px) {
+  .page {
+    padding-top: 112px;
+  }
+}

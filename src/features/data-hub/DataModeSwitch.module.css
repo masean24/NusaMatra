@@ -1,0 +1,48 @@
+.switch {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface-muted);
+}
+
+.label {
+  margin-inline: 10px 6px;
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 14px;
+  border-radius: var(--nm-radius-pill);
+  color: var(--c-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+/* Selected is shown by weight and fill, never by colour alone. */
+.option[data-selected] {
+  background: var(--c-nav-active-liquid);
+  color: var(--c-nav-active-text);
+  font-weight: 700;
+}
+
+.option:focus-within {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .option:not([data-selected]):hover {
+    background: var(--c-nav-hover-liquid);
+    color: var(--c-nav-hover-text);
+  }
+}

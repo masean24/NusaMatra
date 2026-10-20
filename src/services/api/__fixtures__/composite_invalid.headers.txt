@@ -1,0 +1,12 @@
+URL: https://api.orangkeren.me/api/v1/indicators/composite-query
+HTTP STATUS: 422
+
+Vary: Origin
+X-Data-Fallback: NONE
+X-Nusamatra-Mode: DEMO
+X-Nusamatra-Snapshot: 2026.10.0-wia-demo
+Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+Date: Tue, 20 Oct 2026 17:17:24 GMT
+Server: uvicorn
+Content-Length: 123
+Content-Type: application/json
