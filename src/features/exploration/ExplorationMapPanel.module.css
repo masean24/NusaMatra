@@ -1,0 +1,59 @@
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.selection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.selection > [role] {
+  width: 100%;
+}
+
+.regionList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.regionItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Chip-like toggles; the pressed state uses the nav "Aktif" colours, never colour alone (aria-pressed + weight). */
+.regionButton {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.regionButton[aria-pressed='true'] {
+  background: var(--c-nav-active-liquid);
+  color: var(--c-nav-active-text);
+  font-weight: 600;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .regionButton[aria-pressed='false']:hover {
+    background: var(--c-nav-hover-liquid);
+    color: var(--c-nav-hover-text);
+  }
+}

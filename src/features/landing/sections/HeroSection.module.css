@@ -1,0 +1,138 @@
+/*
+ * 27:2 hero: copy column at x=88 (600px wide, top 190); 3D zone at x=710 (720×660, top 160).
+ * Cards sit relative to the zone: A (+420, −10), B (−20, +170), C (+460, +440).
+ */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 600fr) minmax(0, 720fr);
+  column-gap: clamp(16px, 1.55vw, 22px);
+  align-items: start;
+  padding: 160px 10px 0 var(--nm-gutter);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding-top: 30px;
+}
+
+.title {
+  max-width: 600px;
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 540px;
+  color: var(--c-text-muted);
+}
+
+.search,
+.note {
+  max-width: 540px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.note {
+  color: var(--c-text-muted);
+}
+
+.visual {
+  position: relative;
+}
+
+.dioramaReveal {
+  width: 100%;
+}
+
+.cards {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cardSlot {
+  position: absolute;
+  pointer-events: auto;
+}
+
+.cardSlot[data-card='a'] {
+  top: -10px;
+  left: 58.3%;
+}
+
+.cardSlot[data-card='b'] {
+  top: 25.8%;
+  left: -20px;
+}
+
+.cardSlot[data-card='c'] {
+  top: 66.7%;
+  left: 63.9%;
+}
+
+.caption {
+  margin-top: 20px;
+  text-align: center;
+  color: var(--c-text-muted);
+}
+
+@media (width < 1180px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 48px;
+    padding: 120px var(--nm-gutter) 0;
+  }
+
+  .copy {
+    padding-top: 0;
+  }
+
+  .visual {
+    width: min(100%, 720px);
+    justify-self: center;
+  }
+
+  .cardSlot[data-card='a'] {
+    left: auto;
+    right: 0;
+  }
+
+  .cardSlot[data-card='b'] {
+    left: 0;
+  }
+
+  .cardSlot[data-card='c'] {
+    left: auto;
+    right: 0;
+  }
+}
+
+@media (width < 640px) {
+  .hero {
+    padding-top: 96px;
+  }
+
+  /* On phones the cards follow the illustration as a list instead of covering it. */
+  .cards {
+    position: static;
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .cardSlot {
+    position: static;
+  }
+
+  .caption {
+    margin-top: 12px;
+    text-align: left;
+  }
+}

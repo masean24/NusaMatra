@@ -1,0 +1,38 @@
+:global(html.js) .reveal[data-revealed='false'] {
+  opacity: 0;
+  transform: translate(var(--reveal-x), var(--reveal-y)) scale(var(--reveal-scale));
+}
+
+.reveal[data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--reveal-duration) var(--nm-ease-calm) var(--reveal-delay),
+    transform var(--reveal-duration) var(--nm-ease-calm) var(--reveal-delay);
+}
+
+/* Load-triggered entrances run as a keyframe animation from the first frame they exist. */
+.onLoad[data-revealed='true'] {
+  transition: none;
+  animation: reveal-in var(--reveal-duration) var(--nm-ease-calm) var(--reveal-delay) both;
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translate(var(--reveal-x), var(--reveal-y)) scale(var(--reveal-scale));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onLoad[data-revealed='true'] {
+    animation: none;
+  }
+
+  :global(html.js) .reveal[data-revealed='false'],
+  .reveal[data-revealed='true'] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

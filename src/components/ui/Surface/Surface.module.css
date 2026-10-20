@@ -1,0 +1,23 @@
+.surface {
+  border: 1px solid var(--c-surface-border);
+  background: var(--c-surface);
+  box-shadow: var(--c-surface-shadow);
+  backdrop-filter: var(--c-surface-blur);
+  color: var(--c-text);
+}
+
+.control {
+  border-radius: var(--nm-radius-control);
+}
+
+.step {
+  border-radius: var(--nm-radius-step);
+}
+
+.source {
+  border-radius: var(--nm-radius-source);
+}
+
+.card {
+  border-radius: var(--nm-radius-card);
+}

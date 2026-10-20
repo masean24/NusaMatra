@@ -1,0 +1,66 @@
+/* Built from the status card on 27:2 (41:290): icon tile + title + detail. */
+.status {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--c-surface);
+  box-shadow: var(--c-surface-shadow);
+  backdrop-filter: var(--c-surface-blur);
+  color: var(--c-text);
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--nm-radius-icon);
+  background: var(--c-surface-muted);
+  color: var(--c-icon);
+}
+
+.status[data-kind='error'] .icon,
+.status[data-kind='unavailable'] .icon {
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.detail {
+  color: var(--c-text-muted);
+}
+
+.action {
+  margin-top: 8px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}

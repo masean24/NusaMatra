@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="300" height="240" viewBox="0 0 300 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Placeholder 2D (diganti aset 3D)">
+<path id="Vector" d="M70 60L210 30L240 170L100 200L70 60Z" fill="#FBFAF6" stroke-width="2" stroke="#1E3FD9"/>
+<g id="Vector_2">
+<path d="M95 80L190 60ZM100 105L200 85ZM105 130L170 117Z" fill="black"/>
+<path d="M95 80L190 60M100 105L200 85M105 130L170 117" stroke-width="2" stroke-linecap="round" stroke="#1E3FD9"/>
+</g>
+<path id="Vector_3" d="M212 150C212 162.15 202.15 172 190 172C177.85 172 168 162.15 168 150C168 137.85 177.85 128 190 128C202.15 128 212 137.85 212 150Z" stroke-width="4" stroke="#FF8A3D"/>
+<path id="Vector_4" d="M180 150L187 157L200 143" stroke-width="4" stroke="#FF8A3D"/>
+</g>
+</svg>

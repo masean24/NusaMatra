@@ -1,0 +1,48 @@
+/* 27:2 y=4560: band at x=64 (1312px), padding 44px 48px, gap 32px, radius 36; cobalt (glass in Kaca). */
+.section {
+  padding-inline: var(--nm-band-gutter);
+}
+
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+  align-items: center;
+  padding: 44px clamp(24px, 3.4vw, 48px);
+  border: 1px solid var(--c-cta-band-border);
+  border-radius: var(--nm-radius-band);
+  background: var(--c-cta-band);
+  box-shadow: var(--c-cta-band-shadow);
+  backdrop-filter: var(--c-surface-blur);
+  color: var(--c-on-cta-band);
+}
+
+.copy {
+  display: flex;
+  flex: 1 1 420px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.copy p {
+  max-width: 560px;
+}
+
+/* In both modes the CTA field is the opaque surface from 41:425, so it reads against cobalt. */
+.search {
+  flex: 0 1 470px;
+  --c-input-bg: var(--nm-surface);
+  --c-input-border: var(--nm-surface);
+  --c-input-shadow: none;
+  --c-input-placeholder: var(--nm-text-muted);
+  --c-text: var(--nm-text);
+  --c-surface-blur: none;
+  --c-focus-ring: var(--nm-text-on-sea);
+  --c-form-message: var(--nm-text-on-sea);
+}
+
+@media (width < 640px) {
+  .search {
+    flex-basis: 100%;
+  }
+}

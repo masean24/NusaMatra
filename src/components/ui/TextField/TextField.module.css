@@ -1,0 +1,73 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--c-text);
+}
+
+/* Figma 27:90: padding 14px 18px, gap 12px, radius 16px, darat/3 stroke (glass stroke in Kaca). */
+.field {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--c-input-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--c-input-bg);
+  box-shadow: var(--c-input-shadow);
+  backdrop-filter: var(--c-surface-blur);
+  overflow: hidden;
+  transition: border-color var(--nm-duration-feedback) ease;
+}
+
+.field:focus-within {
+  border-color: var(--c-focus-ring);
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.field[data-invalid] {
+  border-color: var(--nm-accent);
+}
+
+.icon {
+  color: var(--c-input-placeholder);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--c-text);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--c-input-placeholder);
+  opacity: 1;
+}
+
+.input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.error {
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--c-form-message, var(--c-text));
+}
+
+.error:empty {
+  display: none;
+}

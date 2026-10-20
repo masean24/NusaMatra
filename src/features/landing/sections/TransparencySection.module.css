@@ -1,0 +1,133 @@
+/* 27:2 y=2760: copy at x=88 (600px); 3D-4 zone (592×340) at x=760, preview card 30px below it. */
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 600fr) minmax(0, 592fr);
+  column-gap: clamp(24px, 5vw, 72px);
+  align-items: start;
+  padding-inline: var(--nm-gutter);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.title {
+  max-width: 600px;
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 580px;
+  color: var(--c-text-muted);
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+.statuses {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Status card 41:290: padding 14px 16px, gap 14px; icon tile padding 8px, radius 10px. */
+.status {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 16px;
+}
+
+.statusIcon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  padding: 8px;
+  border-radius: var(--nm-radius-icon);
+  background: var(--c-surface-muted);
+  color: var(--c-icon);
+}
+
+.statusIcon[data-kind='yearMismatch'],
+.statusIcon[data-kind='blocked'] {
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}
+
+.statusText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+/* G7 icon "stamp" from 0.8 to 1 after the card arrives. */
+:global(html.js) [data-revealed='false'] > .status .statusIcon {
+  transform: scale(0.8);
+}
+
+[data-revealed='true'] > .status .statusIcon {
+  transition: transform 300ms var(--nm-ease-calm) calc(var(--reveal-delay) + 200ms);
+}
+
+.passport {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  justify-self: end;
+  width: 100%;
+  max-width: 592px;
+}
+
+/* Preview 41:324: padding 24px, gap 10px, radius 24px. */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+}
+
+.previewTitle {
+  overflow-wrap: anywhere;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rowItem {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+
+.previewFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+@media (width < 960px) {
+  .section {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 40px;
+  }
+
+  .passport {
+    justify-self: stretch;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) [data-revealed='false'] > .status .statusIcon {
+    transform: none;
+  }
+}

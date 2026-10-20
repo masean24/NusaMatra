@@ -1,0 +1,18 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 14px;
+  white-space: nowrap;
+}
+
+.detail {
+  color: var(--c-text-muted);
+}
+
+@media (width < 640px) {
+  .card {
+    white-space: normal;
+  }
+}

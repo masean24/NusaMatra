@@ -1,0 +1,100 @@
+/* 27:2 y=1000: copy at x=88 (600px), 3D-2 zone at x=760 (592×700). */
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 600fr) minmax(0, 592fr);
+  column-gap: clamp(24px, 5vw, 72px);
+  align-items: start;
+  padding-inline: var(--nm-gutter);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  max-width: 600px;
+  text-wrap: balance;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Step card 41:200: padding 16px 18px, gap 16px, radius 18px. */
+.step {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 18px;
+  text-decoration: none;
+  transition:
+    transform var(--nm-duration-feedback) var(--nm-ease-ui),
+    box-shadow var(--nm-duration-feedback) ease;
+}
+
+.step:active {
+  transform: scale(0.99);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .step:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--nm-radius-step-badge);
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+}
+
+.badge[data-first] {
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}
+
+.stepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepDescription {
+  color: var(--c-text-muted);
+}
+
+.visual {
+  justify-self: end;
+  max-width: 592px;
+}
+
+@media (width < 960px) {
+  .section {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 32px;
+  }
+
+  .visual {
+    justify-self: center;
+    max-width: 420px;
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .step:hover,
+  .step:active {
+    transform: none;
+  }
+}

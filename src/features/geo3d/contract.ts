@@ -1,0 +1,58 @@
+/**
+ * Host-side contract for the separately developed 3D geographic engine (handoff package:
+ * `integrations/nusa-matra-3d-handoff`, host copy in `src/features/map-3d/`).
+ *
+ * The host owns navigation, theme, data fetching and region selection. The engine only renders
+ * and reports what the user did; it never fetches data, changes routes or stores preferences.
+ * These types are deliberately independent of the engine's own names, so a future engine
+ * version is absorbed in `engineAdapters.tsx`, not across the app.
+ */
+import type { Ref } from 'react';
+
+export type GeoDisplayMode = 'normal' | 'glass';
+export type GeoDataMode = 'DEMO' | 'LIVE';
+
+/** What the engine reports when the user picks a region. `regionId` is the canonical key. */
+export interface GeoRegionSelection {
+  readonly regionId: string;
+  readonly displayName: string;
+  readonly boundaryEditionId: string;
+  readonly dataMode: GeoDataMode;
+}
+
+/** Imperative camera control exposed by the engine through `cameraRef`. */
+export interface GeoCameraHandle {
+  /** Fly to and highlight one region. */
+  focusRegion: (regionId: string) => void;
+  /** Return to the overview framing. */
+  resetView: () => void;
+}
+
+/** Props every engine component receives from the host. */
+export interface GeoEngineBaseProps {
+  readonly displayMode: GeoDisplayMode;
+  readonly dataMode: GeoDataMode;
+  readonly reducedMotion: boolean;
+  readonly className?: string | undefined;
+  /** Called once the WebGL renderer is up, so the host can fade out its placeholder. */
+  readonly onReady?: (() => void) | undefined;
+  /** Called on a rendering or data-validation failure; the host keeps its static fallback. */
+  readonly onError?: ((error: unknown) => void) | undefined;
+}
+
+/** Landing hero diorama (Figma 3D-1). Always illustrative, even when the app runs LIVE. */
+export type HeroDioramaProps = GeoEngineBaseProps;
+
+/** Interactive 3D map for Peta Utama / Jelajahi (Figma 61:1183, 29:34). */
+export interface Explore3DMapProps extends GeoEngineBaseProps {
+  /**
+   * Geography payload from the Data Hub, validated by the engine. `null` = no verified geography
+   * yet: allowed only in DEMO, where the engine shows its labelled illustrative islands.
+   */
+  readonly geography: unknown;
+  /** Controlled selection: the host owns it (it lives in the URL). */
+  readonly selectedRegionId: string | null;
+  readonly onRegionSelect: (selection: GeoRegionSelection) => void;
+  readonly onRegionHover?: ((selection: GeoRegionSelection | null) => void) | undefined;
+  readonly cameraRef?: Ref<GeoCameraHandle> | undefined;
+}
