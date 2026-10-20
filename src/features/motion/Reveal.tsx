@@ -1,5 +1,6 @@
 import type { CSSProperties, ElementType, ReactNode } from 'react';
 import { DEFAULT_REVEAL_THRESHOLD, useRevealOnce } from './useRevealOnce';
+import { STAGGER_ITEM_PROPS } from './staggerTransition';
 import styles from './Reveal.module.css';
 
 interface RevealProps {
@@ -55,6 +56,7 @@ export function Reveal({
         .filter(Boolean)
         .join(' ')}
       data-revealed={trigger === 'load' ? true : revealed}
+      {...STAGGER_ITEM_PROPS}
       style={style}
     >
       {children}

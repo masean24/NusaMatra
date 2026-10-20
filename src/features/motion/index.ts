@@ -12,3 +12,5 @@ export {
   revealClipPath,
 } from './circularReveal';
 export type { RevealOrigin } from './circularReveal';
+export { STAGGER_ITEM_PROPS, staggerIn, staggerOut, visibleStaggerItems } from './staggerTransition';
+export { useStaggeredEnter } from './useStaggeredEnter';
