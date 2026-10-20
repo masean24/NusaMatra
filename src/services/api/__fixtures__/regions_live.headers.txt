@@ -1,0 +1,10 @@
+URL: https://api.orangkeren.me/api/v1/regions?level=kabupaten_kota&q=bogor
+HTTP STATUS: 503
+
+Alt-Svc: h3=":443"; ma=2592000
+X-Data-Fallback: UNAVAILABLE
+X-Nusamatra-Mode: LIVE
+Date: Tue, 20 Oct 2026 17:17:24 GMT
+Server: uvicorn
+Content-Length: 189
+Content-Type: application/json

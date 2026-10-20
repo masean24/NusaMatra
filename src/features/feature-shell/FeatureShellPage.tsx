@@ -1,11 +1,7 @@
-import { useRef } from 'react';
-import { useSearchParams } from 'react-router';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
 import { ExplorationMapPanel } from '@/features/exploration';
-import { REGION_SEARCH_PARAM } from '@/features/landing';
-import { useStaggeredEnter } from '@/features/motion';
-import { BackToHubLink } from '@/features/navigation';
+import { FeaturePageFrame } from './FeaturePageFrame';
 import type { FeatureShell } from './featureShells';
 import styles from './FeatureShellPage.module.css';
 
@@ -15,29 +11,9 @@ interface FeatureShellPageProps {
 
 /** An honest placeholder for a designed feature that is not built yet; never a fake feature. */
 export function FeatureShellPage({ shell }: FeatureShellPageProps) {
-  const [searchParams] = useSearchParams();
-  const query = shell.path === '/jelajahi' ? searchParams.get(REGION_SEARCH_PARAM)?.trim() : undefined;
-  const pageRef = useRef<HTMLDivElement>(null);
-  useStaggeredEnter(pageRef, shell.path);
-
   return (
-    <div ref={pageRef} className={styles.page} data-has-map={shell.hasMap || undefined}>
-      <title>{`${shell.title} — Nusa Matra`}</title>
-      {shell.path !== '/peta' && <BackToHubLink />}
-      <h1 className="kk-h1">{shell.title}</h1>
-      <p className={`kk-lead ${styles.summary}`}>{shell.summary}</p>
-
+    <FeaturePageFrame shell={shell} wide={shell.hasMap === true}>
       {shell.hasMap && <ExplorationMapPanel />}
-
-      {query && (
-        <Surface radius="card" className={styles.panel} role="status">
-          <h2 className="kk-h3">Pencarian “{query}”</h2>
-          <p className="kk-body">
-            Katalog kabupaten/kota belum terhubung, jadi hasil pencarian belum dapat ditampilkan. Pencarian
-            akan aktif setelah data wilayah dari Data Hub tersedia.
-          </p>
-        </Surface>
-      )}
 
       <Surface radius="card" className={styles.panel}>
         <p className={styles.status}>Sedang dikembangkan</p>
@@ -63,6 +39,6 @@ export function FeatureShellPage({ shell }: FeatureShellPageProps) {
           </ButtonLink>
         )}
       </div>
-    </div>
+    </FeaturePageFrame>
   );
 }

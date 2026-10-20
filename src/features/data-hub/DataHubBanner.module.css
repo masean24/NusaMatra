@@ -1,0 +1,27 @@
+.banner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 16px 20px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.snapshot,
+.note {
+  color: var(--c-text-muted);
+}
+
+.disclaimer {
+  margin: 0;
+}
+
+.note {
+  margin: 0;
+}

@@ -1,0 +1,1 @@
+{"detail":{"status":"error","code":"WEIGHT_VALIDATION_ERROR","message":"Weights must sum to 10000 basis points, got 9000"}}

@@ -11,3 +11,4 @@ src/features/map-3d/NusaMatra3DMap.tsx
 src/features/map-3d/NusaMatra3DMap.module.css
 src/features/map-3d/index.ts
 src/features/map-3d/data
+src/services/api/__fixtures__

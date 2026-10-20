@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { mockDataHub } from './dataHubMocks';
 
 function visibleNav(page: Page) {
   // Desktop renders the floating bar, phones the bottom tab bar; only one is visible.
@@ -90,6 +91,7 @@ test.describe('landing', () => {
   });
 
   test('region search validates and hands the query to Jelajahi', async ({ page }) => {
+    await mockDataHub(page);
     await page.goto('/');
     const search = page.getByRole('searchbox', { name: 'Cari kabupaten/kota' }).first();
     await search.press('Enter');
@@ -97,7 +99,10 @@ test.describe('landing', () => {
     await search.fill('Kota Semarang');
     await search.press('Enter');
     await expect(page).toHaveURL(/\/jelajahi\?cari=Kota\+Semarang$/);
-    await expect(page.getByText('Pencarian “Kota Semarang”')).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: 'Cari kabupaten/kota' }).last()).toHaveValue(
+      'Kota Semarang',
+    );
+    await expect(page.getByText('Tidak ada wilayah yang cocok pada dataset DEMO saat ini')).toBeVisible();
   });
 
   test('display mode switches to Kaca, survives a reload and keeps the route', async ({ page }) => {
