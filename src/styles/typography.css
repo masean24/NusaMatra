@@ -1,0 +1,75 @@
+/*
+ * KK/* text styles from Figma, as reusable classes. Display and H1 scale down fluidly
+ * below the 1440px reference; every other style is used at its Figma size.
+ */
+.kk-display {
+  font-size: clamp(2.5rem, 1.6rem + 3.8vw, 4.25rem); /* 68px at 1440 */
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.03em; /* -2px at 68px */
+}
+
+.kk-h1 {
+  font-size: clamp(1.625rem, 1.3rem + 1.1vw, 2.125rem); /* 34px at 1440 */
+  font-weight: 600;
+  line-height: 1.18;
+  letter-spacing: -0.8px;
+}
+
+.kk-h2 {
+  font-size: 1.625rem; /* 26px */
+  font-weight: 500;
+  line-height: 1.24;
+  letter-spacing: -0.4px;
+}
+
+.kk-h3 {
+  font-size: 1.1875rem; /* 19px */
+  font-weight: 500;
+  line-height: 1.32;
+  letter-spacing: -0.1px;
+}
+
+.kk-lead {
+  font-size: 1.1875rem;
+  font-weight: 300;
+  line-height: 1.55;
+}
+
+.kk-body {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.kk-body-strong {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.kk-small {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.kk-caption {
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+}
+
+.kk-number {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.kk-button {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+}

@@ -1,0 +1,25 @@
+/* Figma 27:105 / 27:115: padding 4px 8px, radius 8px, KK/Keterangan. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--nm-radius-chip);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+}
+
+.neutral {
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+}
+
+.onBand {
+  background: var(--c-surface);
+  color: var(--c-text);
+}
+
+.warning {
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}

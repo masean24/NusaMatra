@@ -1,0 +1,135 @@
+/*
+ * Semantic tokens for the two display modes. Components read only these, so no component
+ * branches on the mode in JavaScript. Values map 1:1 to the Normal (27:2) and Kaca (27:118) frames.
+ */
+:root,
+[data-display-mode='normal'] {
+  color-scheme: light;
+
+  --c-page-bg: var(--nm-page-bg);
+  /* The Kaca gradient is its own layer (body::before) so it can fade instead of snapping. */
+  --c-page-gradient-opacity: 0;
+  --c-text: var(--nm-text);
+  --c-text-muted: var(--nm-text-muted);
+  --c-text-strong-accent: var(--nm-sea); /* lab percentages, rank numbers, story kicker */
+  --c-note: var(--nm-sea-deep); /* "Direncanakan · belum terhubung" */
+
+  --c-surface: var(--nm-surface);
+  --c-surface-border: transparent;
+  --c-surface-shadow: var(--nm-shadow-normal);
+  --c-surface-blur: none;
+  --c-surface-muted: var(--nm-land-2); /* chips, step badges, icon tiles, bar tracks */
+  --c-band: var(--nm-land-2); /* Lab section background */
+  --c-band-border: transparent;
+  --c-band-shadow: none;
+
+  --c-input-bg: var(--nm-surface);
+  --c-input-border: var(--nm-land-3);
+  --c-input-shadow: none;
+  --c-input-placeholder: var(--nm-text-muted);
+
+  --c-cta-band: var(--nm-sea);
+  --c-cta-band-border: transparent;
+  --c-cta-band-shadow: none;
+  --c-on-cta-band: var(--nm-text-on-sea);
+
+  --c-footer: var(--nm-text);
+  --c-on-footer: var(--nm-text-on-sea);
+  --c-on-footer-muted: var(--nm-glass-text-muted);
+
+  --c-logo-accent: var(--nm-sea);
+  --c-icon: var(--nm-text);
+  --c-zone-fill: transparent;
+
+  --c-nav-bg: var(--nm-surface);
+  --c-nav-border: var(--nm-land-3);
+  --c-nav-shadow: var(--nm-shadow-nav-normal);
+  --c-nav-divider: var(--nm-land-3);
+  --c-nav-text: var(--nm-text-muted);
+  --c-nav-hover-liquid: #e3e9ff; /* info/laut-muda */
+  /* The gooey filter thresholds alpha, so the liquid is always opaque and faded as a layer. */
+  --c-nav-hover-opacity: 1;
+  --c-nav-hover-text: var(--nm-sea-deep);
+  --c-nav-active-liquid: var(--nm-sea);
+  --c-nav-active-text: var(--nm-text-on-sea);
+
+  --c-switch-track: var(--nm-land-2);
+  --c-switch-border: var(--nm-land-3);
+  --c-switch-knob: var(--nm-surface);
+  --c-switch-text: var(--nm-text-muted);
+  --c-switch-text-selected: var(--nm-text);
+
+  --c-focus-ring: var(--nm-sea-deep);
+  --c-focus-ring-inner: var(--nm-surface);
+}
+
+[data-display-mode='glass'] {
+  color-scheme: dark;
+
+  --c-page-gradient-opacity: 1;
+  --c-text: var(--nm-text-on-sea);
+  --c-text-muted: var(--nm-glass-text-muted);
+  --c-text-strong-accent: var(--nm-text-on-sea);
+  --c-note: var(--nm-text-on-sea);
+
+  --c-surface: var(--nm-glass-surface);
+  --c-surface-border: var(--nm-glass-stroke);
+  --c-surface-shadow: var(--nm-shadow-glass);
+  --c-surface-blur: blur(var(--nm-blur-panel));
+  --c-surface-muted: var(--nm-glass-surface);
+  --c-band: var(--nm-glass-surface);
+  --c-band-border: var(--nm-glass-stroke);
+  --c-band-shadow: var(--nm-shadow-glass);
+
+  --c-input-bg: var(--nm-glass-surface);
+  --c-input-border: var(--nm-glass-stroke);
+  --c-input-shadow: var(--nm-shadow-glass);
+  --c-input-placeholder: var(--nm-glass-text-muted);
+
+  --c-cta-band: var(--nm-glass-surface);
+  --c-cta-band-border: var(--nm-glass-stroke);
+  --c-cta-band-shadow: var(--nm-shadow-glass);
+  --c-on-cta-band: var(--nm-text-on-sea);
+
+  --c-footer: var(--nm-sea-deep);
+  --c-on-footer: var(--nm-text-on-sea);
+  --c-on-footer-muted: var(--nm-glass-text-muted);
+
+  --c-logo-accent: var(--nm-peach);
+  --c-icon: var(--nm-text-on-sea);
+  --c-zone-fill: var(--nm-glass-zone);
+
+  --c-nav-bg: var(--nm-glass-surface);
+  --c-nav-border: var(--nm-glass-stroke);
+  --c-nav-shadow: var(--nm-shadow-nav-glass);
+  --c-nav-divider: var(--nm-glass-stroke);
+  --c-nav-text: var(--nm-text-on-sea);
+  --c-nav-hover-liquid: #ffffff;
+  --c-nav-hover-opacity: 0.24;
+  --c-nav-hover-text: var(--nm-text-on-sea);
+  --c-nav-active-liquid: var(--nm-surface);
+  --c-nav-active-text: var(--nm-sea-deep);
+
+  --c-switch-track: var(--nm-glass-surface);
+  --c-switch-border: var(--nm-glass-stroke);
+  --c-switch-knob: var(--nm-accent);
+  --c-switch-text: var(--nm-text-on-sea);
+  --c-switch-text-selected: var(--nm-accent-text);
+
+  --c-focus-ring: var(--nm-text-on-sea);
+  --c-focus-ring-inner: var(--nm-sea-deep);
+}
+
+/*
+ * Theme-change crossfade for browsers without the View Transitions API (see
+ * features/theme/themeTransition.ts). Only during the switch, every colour, border, shadow and
+ * the page gradient interpolate instead of changing in one frame. Positions never animate.
+ */
+:root[data-theme-transition='crossfade'] *,
+:root[data-theme-transition='crossfade'] *::before,
+:root[data-theme-transition='crossfade'] *::after {
+  transition-property: background-color, color, border-color, box-shadow, opacity, fill, stroke !important;
+  transition-duration: var(--theme-transition-duration, 0.75s) !important;
+  transition-timing-function: cubic-bezier(0.65, 0, 0.35, 1) !important;
+  transition-delay: 0s !important;
+}

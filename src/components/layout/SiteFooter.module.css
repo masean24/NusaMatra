@@ -1,0 +1,63 @@
+/* Figma 41:433: full width, padding 48px 88px, gap 48px; ui/teks (laut/dalam in Kaca). */
+.footer {
+  background: var(--c-footer);
+  color: var(--c-on-footer);
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 48px;
+  max-width: var(--nm-page-max);
+  margin-inline: auto;
+  padding: 48px var(--nm-gutter);
+}
+
+.brand {
+  display: flex;
+  flex: 1 1 360px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.statement {
+  max-width: 560px;
+  color: var(--c-on-footer-muted);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.link {
+  color: var(--c-on-footer-muted);
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    color: var(--c-on-footer);
+    text-decoration: underline;
+  }
+}
+
+.link:focus-visible {
+  outline-color: var(--nm-text-on-sea);
+}
+
+/* Leave room for the mobile tab bar so the last links are not covered. */
+@media (width < 1120px) {
+  .inner {
+    padding-bottom: calc(48px + 88px);
+  }
+}

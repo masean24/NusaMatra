@@ -1,0 +1,46 @@
+/* 27:2 y=4220: heading + three 410px cards, 16px apart, from x=88. */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-inline: var(--nm-gutter);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 410px));
+  gap: 16px;
+}
+
+.cell,
+.reveal {
+  display: flex;
+}
+
+.reveal {
+  flex: 1;
+}
+
+/* Source card 41:409: padding 22px, gap 8px, radius 20px. */
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px;
+}
+
+.description {
+  color: var(--c-text-muted);
+}
+
+.status {
+  margin-top: auto;
+  color: var(--c-note);
+}
+
+@media (width < 960px) {
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

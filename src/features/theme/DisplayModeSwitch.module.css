@@ -1,0 +1,87 @@
+/* Geometry from Figma 26:37: 212×48 track, 102×40 knob, 3px inset. */
+.switch {
+  --segment-width: 102px;
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: repeat(2, var(--segment-width));
+  align-items: center;
+  flex: none;
+  height: 48px;
+  padding: 3px;
+  border: 1px solid var(--c-switch-border);
+  border-radius: 24px;
+  background: var(--c-switch-track);
+  backdrop-filter: var(--c-surface-blur);
+  cursor: pointer;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.compact {
+  --segment-width: 44px;
+}
+
+.compact .label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: var(--segment-width);
+  height: 40px;
+  border-radius: 20px;
+  background: var(--c-switch-knob);
+  box-shadow: var(--nm-shadow-knob);
+  transition: transform var(--nm-duration-knob) var(--nm-ease-spring);
+}
+
+.switch[data-selected='glass'] .knob {
+  transform: translateX(var(--segment-width));
+}
+
+.segment {
+  position: relative; /* above the knob */
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--c-switch-text);
+  transition: color var(--nm-duration-feedback) ease;
+}
+
+.switch[data-selected='normal'] [data-segment='normal'],
+.switch[data-selected='glass'] [data-segment='glass'] {
+  color: var(--c-switch-text-selected);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .switch:not(:disabled):hover .knob {
+    box-shadow:
+      var(--nm-shadow-knob),
+      0 0 0 1px var(--c-switch-border);
+  }
+}
+
+.switch:active:not(:disabled) .knob {
+  scale: 0.97;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .knob {
+    transition-duration: 1ms;
+  }
+}

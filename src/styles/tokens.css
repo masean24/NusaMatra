@@ -1,0 +1,117 @@
+/*
+ * Kapur & Kobalt primitives. Every value here was read from the Figma variables and
+ * effect styles on nodes 26:38, 26:14, 49:447 and 27:2 / 27:118, unless a comment says otherwise.
+ * Components never use these primitives directly; they use the semantic tokens in theme.css.
+ */
+:root {
+  /* laut/* */
+  --nm-sea-deep: #1e3fd9;
+  --nm-sea: #2f5bff;
+  --nm-sea-shallow: #5c7fff;
+
+  /* darat/* */
+  --nm-land-1: #fbfaf6;
+  --nm-land-2: #ede9df;
+  --nm-land-3: #d9d3c3;
+  --nm-land-4: #b8af9a;
+
+  /* ui/* */
+  --nm-page-bg: #f2f1ec;
+  --nm-surface: #fbfaf6;
+  --nm-text: #121826;
+  --nm-text-muted: #5a6170;
+  --nm-text-on-sea: #ffffff;
+
+  /* aksen/* */
+  --nm-accent: #ff8a3d;
+  --nm-accent-hover: #ff7420;
+  --nm-accent-text: #121826;
+  --nm-peach: #ffd9bf; /* "Matra" in the logotype on dark/sea surfaces; also prioritas/2 */
+
+  /* prioritas/* */
+  --nm-priority-1: #fbfaf6;
+  --nm-priority-2: #ffd9bf;
+  --nm-priority-3: #ffb07a;
+  --nm-priority-4: #ff8a3d;
+  --nm-priority-5: #d9581a;
+
+  /* kaca/* */
+  --nm-glass-surface: #f2f1ec47;
+  --nm-glass-stroke: #ffffff99;
+  --nm-glass-text-muted: #ffffffc7;
+  --nm-glass-zone: #ffffff14; /* 3D zone fill on the Kaca landing */
+  --nm-glass-surface-hover: #f2f1ec66; /* engineering choice: Figma 26:8 shows a brighter glass hover without a variable */
+
+  /* Typography — Lexend, KK/* text styles */
+  --nm-font-sans: 'Lexend Variable', 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Effects — KK/Bayangan normal, KK/Kaca panel, navbar drop shadows */
+  --nm-shadow-normal: 0 10px 28px -6px #121e5a1f;
+  --nm-shadow-glass: 0 8px 32px 0 #121e5a40;
+  --nm-shadow-nav-normal: 0 10px 14px #121e5a1f;
+  --nm-shadow-nav-glass: 0 8px 16px #121e5a40;
+  --nm-shadow-knob: 0 3px 8px 0 #121e5a33;
+  --nm-blur-panel: 8px; /* the landing panels use 8px; KK/Kaca panel style is 16px */
+  --nm-blur-strong: 16px;
+
+  /* Radii measured on the landing frames */
+  --nm-radius-chip: 8px;
+  --nm-radius-icon: 10px;
+  --nm-radius-step-badge: 12px;
+  --nm-radius-control: 16px;
+  --nm-radius-step: 18px;
+  --nm-radius-source: 20px;
+  --nm-radius-card: 24px;
+  --nm-radius-zone: 28px;
+  --nm-radius-band: 36px;
+  --nm-radius-pill: 999px;
+
+  /* Layout — 1440 reference frame: 88px text margin, 64px band margin, 1312px band width */
+  --nm-page-max: 1440px;
+  --nm-gutter: clamp(16px, 6.1vw, 88px);
+  --nm-band-gutter: clamp(12px, 4.45vw, 64px);
+
+  /* Motion — "Tenang" curve and the liquid-transition curves from Figma 43:713 / 30:1467 */
+  --nm-ease-calm: cubic-bezier(0.16, 1, 0.3, 1);
+  --nm-ease-liquid: cubic-bezier(0.65, 0, 0.35, 1);
+  --nm-ease-ui: cubic-bezier(0.23, 1, 0.32, 1); /* engineering choice for small UI feedback */
+  /* Figma's 420ms spring, sampled from a damped spring (bounce 0.2) into linear() so no JS spring runtime is needed. */
+  --nm-ease-spring: linear(
+    0,
+    0.051,
+    0.17,
+    0.316,
+    0.463,
+    0.597,
+    0.711,
+    0.804,
+    0.874,
+    0.927,
+    0.963,
+    0.987,
+    1.002,
+    1.011,
+    1.014,
+    1.015,
+    1.014,
+    1.012,
+    1.01,
+    1.008,
+    1.006,
+    1.004,
+    1.003,
+    1.002,
+    1
+  );
+  --nm-duration-feedback: 140ms;
+  --nm-duration-reveal: 700ms;
+  --nm-duration-knob: 420ms;
+
+  /* Stacking order (docs/03 §5.4) */
+  --nm-z-content: 1;
+  --nm-z-overlay-art: 2;
+  --nm-z-nav: 50;
+  --nm-z-popover: 60;
+  --nm-z-theme-transition: 90;
+  --nm-z-skip-link: 100;
+}

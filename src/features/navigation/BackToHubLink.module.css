@@ -1,0 +1,42 @@
+/* Figma 62:1270: padding 9px 16px 9px 12px, gap 8px, cobalt pill (white in Kaca mode). */
+.link {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 9px 16px 9px 12px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--nm-sea);
+  color: var(--nm-text-on-sea);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.layersOnLight {
+  display: none;
+}
+
+:global([data-display-mode='glass']) .link {
+  background: var(--nm-surface);
+  color: var(--nm-sea-deep);
+}
+
+:global([data-display-mode='glass']) .layersOnSea {
+  display: none;
+}
+
+:global([data-display-mode='glass']) .layersOnLight {
+  display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    background: var(--nm-sea-deep);
+  }
+
+  :global([data-display-mode='glass']) .link:hover {
+    background: var(--nm-land-2);
+  }
+}

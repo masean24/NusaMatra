@@ -1,0 +1,14 @@
+.icon {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: var(--icon-size);
+  height: var(--icon-size);
+}
+
+.glyph {
+  position: absolute;
+  inset: var(--icon-inset);
+  background-color: currentColor;
+  mask: var(--icon-url) center / contain no-repeat;
+}

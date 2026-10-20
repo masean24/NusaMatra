@@ -1,0 +1,40 @@
+.form {
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.searchField {
+  flex: 1 1 260px;
+}
+
+/* G11: a single light sweep across the field once it is revealed. */
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, #ffffffb3 50%, transparent 70%);
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+
+:global([data-revealed='true']) .shimmer::after {
+  animation: shimmer 1100ms var(--nm-ease-calm) 500ms 1 forwards;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(110%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global([data-revealed='true']) .shimmer::after {
+    animation: none;
+  }
+}

@@ -1,0 +1,39 @@
+/* Map area of Peta Utama / Jelajahi (61:1183, 29:34 are 1440×900 map-first screens). */
+.frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-card);
+  background: var(--c-surface);
+  box-shadow: var(--c-surface-shadow);
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.art {
+  width: min(70%, 520px);
+  height: auto;
+  opacity: 0.55;
+}
+
+.status {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  max-width: 560px;
+}
+
+@media (width < 640px) {
+  .frame {
+    aspect-ratio: 4 / 5;
+  }
+}

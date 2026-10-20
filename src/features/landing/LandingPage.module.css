@@ -1,0 +1,14 @@
+/*
+ * Vertical rhythm measured on 27:2: ~120–170px between sections at 1440px,
+ * tightening on smaller screens. The page itself is never a fixed 5080px tall.
+ */
+.page {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(72px, 9vw, 130px);
+  max-width: var(--nm-page-max);
+  margin-inline: auto;
+  padding-bottom: 80px;
+}

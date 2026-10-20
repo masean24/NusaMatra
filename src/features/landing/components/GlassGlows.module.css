@@ -1,0 +1,21 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+:global([data-display-mode='glass']) .layer {
+  display: block;
+}
+
+.glow {
+  position: absolute;
+  top: var(--glow-top);
+  left: var(--glow-left);
+  width: var(--glow-size);
+  height: var(--glow-size);
+  max-width: none;
+}

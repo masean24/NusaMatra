@@ -1,0 +1,67 @@
+.zone {
+  position: relative;
+  width: 100%;
+  isolation: isolate;
+}
+
+.poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 500ms var(--nm-ease-calm);
+}
+
+.poster[data-hidden] {
+  opacity: 0;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 600ms var(--nm-ease-calm);
+}
+
+.canvas[data-ready] {
+  opacity: 1;
+}
+
+/* Zone boxes measured on 27:2 (they mark the size and position of each 3D canvas). */
+.layeredIsland {
+  aspect-ratio: 592 / 700;
+}
+
+.layeredIsland .poster {
+  inset: 34% 24% auto;
+  width: 51%;
+  height: auto;
+}
+
+.dataColumns {
+  aspect-ratio: 540 / 740;
+}
+
+.dataColumns .poster {
+  inset: 35% 22% auto;
+  width: 56%;
+  height: auto;
+}
+
+/* Below the two-column layout the island zones are shorter, so the art is centred and larger. */
+@media (width < 960px) {
+  .layeredIsland .poster,
+  .dataColumns .poster {
+    inset: 50% auto auto 50%;
+    width: 62%;
+    translate: -50% -50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster,
+  .canvas {
+    transition-duration: 1ms;
+  }
+}

@@ -1,0 +1,23 @@
+.skipLink {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: var(--nm-z-skip-link);
+  padding: 12px 18px;
+  border-radius: var(--nm-radius-control);
+  background: var(--nm-text);
+  color: var(--nm-text-on-sea);
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skipLink:focus-visible {
+  transform: none;
+  outline-color: var(--nm-accent);
+}
+
+.main {
+  display: block;
+  outline: none;
+}

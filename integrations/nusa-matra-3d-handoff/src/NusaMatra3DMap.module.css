@@ -1,0 +1,245 @@
+/* STREAMING_CHUNK:Defining Kapur & Kobalt CSS Module tokens and container styles... */
+.mapContainer {
+  --nm-sea-deep: #1E3FD9;
+  --nm-sea: #2F5BFF;
+  --nm-sea-shallow: #5C7FFF;
+  --nm-land-1: #FBFAF6;
+  --nm-land-2: #EDE9DF;
+  --nm-land-3: #D9D3C3;
+  --nm-land-4: #B8AF9A;
+  --nm-bg: #F2F1EC;
+  --nm-surface: #FBFAF6;
+  --nm-text: #121826;
+  --nm-text-muted: #5A6170;
+  --nm-text-on-sea: #FFFFFF;
+  --nm-accent: #FF8A3D;
+  --nm-accent-hover: #FF7420;
+  --nm-shadow: rgba(18, 30, 90, 0.22);
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: 'Lexend', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--nm-text);
+  background-color: var(--nm-sea);
+  box-sizing: border-box;
+}
+
+.mapContainer *,
+.mapContainer *::before,
+.mapContainer *::after {
+  box-sizing: border-box;
+}
+
+.modeHero {
+  touch-action: pan-y;
+  cursor: default;
+}
+
+.modeExplore {
+  touch-action: none;
+  cursor: grab;
+}
+
+.modeExplore:active {
+  cursor: grabbing;
+}
+
+.cursorPointer {
+  cursor: pointer !important;
+}
+
+.canvasMount {
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  display: block;
+}
+
+/* STREAMING_CHUNK:Styling attribution badge and viewport-bounded tooltip... */
+.attributionBadge {
+  pointer-events: none;
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 5;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.themeNormal .attributionBadge {
+  background: rgba(251, 250, 246, 0.92);
+  color: var(--nm-text);
+  border: 1px solid var(--nm-land-3);
+  box-shadow: 0 4px 14px var(--nm-shadow);
+}
+
+.themeGlass .attributionBadge {
+  background: rgba(18, 24, 38, 0.52);
+  color: var(--nm-text-on-sea);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px var(--nm-shadow);
+}
+
+.hoverTooltip {
+  pointer-events: none;
+  position: absolute;
+  z-index: 10;
+  max-width: 240px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  transition: opacity 0.1s ease;
+}
+
+.themeNormal .hoverTooltip {
+  background: var(--nm-surface);
+  color: var(--nm-text);
+  border: 1px solid var(--nm-land-3);
+  box-shadow: 0 8px 24px var(--nm-shadow);
+}
+
+.themeGlass .hoverTooltip {
+  background: rgba(242, 241, 236, 0.26);
+  color: var(--nm-text-on-sea);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  box-shadow: 0 8px 24px var(--nm-shadow);
+}
+
+.tooltipTitle {
+  font-weight: 700;
+  margin: 0;
+}
+
+.tooltipSubtitle {
+  font-size: 10px;
+  opacity: 0.82;
+  margin-top: 2px;
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* STREAMING_CHUNK:Styling static fallback and optional DEV-only inspector... */
+.fallbackContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(135deg, #1E3FD9 0%, #2F5BFF 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 16px;
+  font-family: 'Lexend', system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+}
+
+.fallbackIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  background-color: #FF8A3D;
+  color: #121826;
+  box-shadow: 0 4px 14px rgba(255, 138, 61, 0.4);
+}
+
+.fallbackTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.fallbackMessage {
+  font-size: 12px;
+  max-width: 420px;
+  opacity: 0.92;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.fallbackPill {
+  margin-top: 14px;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.devInspector {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 15;
+  width: 248px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(18, 24, 38, 0.9);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.devHeader {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #FF8A3D;
+}
+
+.devRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.devRange {
+  width: 96px;
+  accent-color: #FF8A3D;
+  cursor: pointer;
+}
+
+.devCheckboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.devCoords {
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  opacity: 0.86;
+}

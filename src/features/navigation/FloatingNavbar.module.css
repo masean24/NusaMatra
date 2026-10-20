@@ -1,0 +1,107 @@
+/* Figma 49:447: pill bar, padding 8px 8px 8px 18px, gap 6px, 1px stroke, drop shadow. */
+.header {
+  position: relative;
+  z-index: var(--nm-z-nav);
+}
+
+.filterDefs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.bar {
+  border: 1px solid var(--c-nav-border);
+  background: var(--c-nav-bg);
+  box-shadow: var(--c-nav-shadow);
+  backdrop-filter: var(--c-surface-blur);
+}
+
+.desktop {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 8px 8px 18px;
+  border-radius: var(--nm-radius-pill);
+  translate: -50% 0;
+}
+
+.home {
+  display: inline-flex;
+  padding: 4px 10px 4px 0;
+  border-radius: var(--nm-radius-pill);
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.divider {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  background: var(--c-nav-divider);
+}
+
+.items {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.compactTop,
+.tabBar {
+  display: none;
+}
+
+/* Below this width the full navbar no longer fits (it is ~1000px wide at Figma sizes). */
+@media (width < 1120px) {
+  .desktop {
+    display: none;
+  }
+
+  .compactTop {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 6px 6px 16px;
+    border-radius: var(--nm-radius-pill);
+  }
+
+  .tabBar {
+    position: fixed;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    left: 12px;
+    right: 12px;
+    display: block;
+    padding: 6px;
+    border-radius: 24px;
+  }
+
+  .tabItems {
+    display: flex;
+    gap: 2px;
+  }
+
+  .tabCell {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: max(44px, min-content);
+  }
+}
+
+@media (width >= 640px) and (width < 1120px) {
+  .tabBar {
+    left: 50%;
+    right: auto;
+    width: min(640px, calc(100% - 24px));
+    translate: -50% 0;
+  }
+}

@@ -1,0 +1,12 @@
+node_modules
+dist
+coverage
+*.local
+.env
+.env.*
+!.env.example
+!.env.production
+playwright-report
+test-results
+.taste-skill
+.DS_Store

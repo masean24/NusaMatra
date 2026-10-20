@@ -1,0 +1,87 @@
+/* Figma 26:14: padding 13px 22px, radius 16px, KK/Tombol (Lexend Medium 15/1.2). */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 13px 22px;
+  border: 1.5px solid transparent;
+  border-radius: var(--nm-radius-control);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--nm-duration-feedback) ease,
+    border-color var(--nm-duration-feedback) ease,
+    transform var(--nm-duration-feedback) var(--nm-ease-ui);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.button:disabled,
+.button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.accent {
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}
+
+.outline {
+  border-color: var(--nm-text);
+  background: transparent;
+  color: var(--nm-text);
+}
+
+.glass {
+  border-width: 1px;
+  border-color: var(--nm-glass-stroke);
+  background: var(--nm-glass-surface);
+  color: var(--nm-text-on-sea);
+  backdrop-filter: blur(var(--nm-blur-panel));
+  box-shadow: var(--nm-shadow-nav-glass);
+}
+
+.secondary {
+  composes: outline;
+}
+
+:global([data-display-mode='glass']) .secondary {
+  border-width: 1px;
+  border-color: var(--nm-glass-stroke);
+  background: var(--nm-glass-surface);
+  color: var(--nm-text-on-sea);
+  backdrop-filter: blur(var(--nm-blur-panel));
+  box-shadow: var(--nm-shadow-nav-glass);
+}
+
+/* Hover states: Aksen → #FF7420, Garis → darat/2 fill, Kaca → slightly brighter glass. */
+@media (hover: hover) and (pointer: fine) {
+  .accent:hover:not(:disabled) {
+    background: var(--nm-accent-hover);
+  }
+
+  .outline:hover:not(:disabled),
+  .secondary:hover:not(:disabled) {
+    background: var(--nm-land-2);
+  }
+
+  .glass:hover:not(:disabled),
+  :global([data-display-mode='glass']) .secondary:hover:not(:disabled) {
+    background: var(--nm-glass-surface-hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button:active:not(:disabled) {
+    transform: none;
+  }
+}

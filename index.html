@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="id" data-display-mode="normal">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nusa Matra — Memahami wilayah, menentukan arah</title>
+    <meta
+      name="description"
+      content="Nusa Matra membantu Anda menjelajahi kondisi kabupaten/kota di Indonesia, membandingkan indikator, dan memeriksa bukti di balik setiap angka."
+    />
+    <meta name="theme-color" content="#f2f1ec" />
+    <meta property="og:title" content="Nusa Matra" />
+    <meta property="og:description" content="Memahami wilayah, menentukan arah." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="id_ID" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script>
+      /*
+       * Applies the saved display mode before the first paint so the page never flashes the
+       * wrong theme. Mirrors resolveInitialDisplayMode() in src/features/theme/displayModePreference.ts.
+       */
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js');
+        try {
+          var forceNormal = window.matchMedia(
+            '(prefers-reduced-transparency: reduce), (prefers-contrast: more)',
+          ).matches;
+          var saved = window.localStorage.getItem('nusa-matra:display-mode');
+          root.setAttribute('data-display-mode', !forceNormal && saved === 'glass' ? 'glass' : 'normal');
+        } catch (error) {
+          root.setAttribute('data-display-mode', 'normal');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 24px; font-family: system-ui, sans-serif">
+        Nusa Matra memerlukan JavaScript untuk menampilkan halaman interaktif.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
