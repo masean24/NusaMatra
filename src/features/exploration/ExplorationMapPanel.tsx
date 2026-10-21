@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type RefObject } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DEMO_GEO_REGIONS } from '@/data/fixtures/demoGeoRegions';
 import { Explore3DMapSlot, type GeoCameraHandle, type GeoRegionSelection } from '@/features/geo3d';
 import { ResourceView, useDataHub, useDataHubResource } from '@/features/data-hub';
+import type { BoundaryCollectionDTO } from '@/services/api';
 import { buildLiveGeography } from './liveGeography';
 import { useRegionBrowserParams } from './regionCode';
 import { useRegionSelection } from './regionSelection';
@@ -40,27 +41,55 @@ function LiveMapWorkspace() {
         onRetry={boundaries.retry}
         loadingTitle="Memuat batas wilayah resmi…"
       >
-        {(envelope) => {
-          const geography = buildLiveGeography(envelope.data, envelope.meta.snapshotId);
-          return geography ? (
-            <Explore3DMapSlot
-              dataMode="LIVE"
-              geography={geography}
-              selectedRegionId={selectedCode}
-              onRegionSelect={(selection) => {
-                selectCode(selection.regionId);
-              }}
-              cameraRef={cameraRef}
-            />
-          ) : (
-            <StatusMessage kind="unavailable" title="Batas wilayah resmi tidak dapat dipakai">
-              Data Hub tidak mengirim poligon batas resmi untuk snapshot ini, jadi peta tidak ditampilkan.
-              Pilih wilayah dari daftar.
-            </StatusMessage>
-          );
-        }}
+        {(envelope) => (
+          <LiveMap
+            boundaries={envelope.data}
+            snapshotId={envelope.meta.snapshotId}
+            selectedCode={selectedCode}
+            onSelect={selectCode}
+            cameraRef={cameraRef}
+          />
+        )}
       </ResourceView>
     </div>
+  );
+}
+
+interface LiveMapProps {
+  readonly boundaries: BoundaryCollectionDTO;
+  readonly snapshotId: string;
+  readonly selectedCode: string | null;
+  readonly onSelect: (code: string | null) => void;
+  readonly cameraRef: RefObject<GeoCameraHandle | null>;
+}
+
+/**
+ * The geography object is what the 3D engine validates and turns into meshes, so its identity must
+ * only change when the boundaries do. Rebuilt on every selection it re-created all 514 regions'
+ * geometry per click (~2,000 buffer uploads, ~0.5 s).
+ */
+function LiveMap({ boundaries, snapshotId, selectedCode, onSelect, cameraRef }: LiveMapProps) {
+  const geography = useMemo(() => buildLiveGeography(boundaries, snapshotId), [boundaries, snapshotId]);
+  const handleSelect = useCallback(
+    (selection: GeoRegionSelection) => {
+      onSelect(selection.regionId);
+    },
+    [onSelect],
+  );
+
+  return geography ? (
+    <Explore3DMapSlot
+      dataMode="LIVE"
+      geography={geography}
+      selectedRegionId={selectedCode}
+      onRegionSelect={handleSelect}
+      cameraRef={cameraRef}
+    />
+  ) : (
+    <StatusMessage kind="unavailable" title="Batas wilayah resmi tidak dapat dipakai">
+      Data Hub tidak mengirim poligon batas resmi untuk snapshot ini, jadi peta tidak ditampilkan. Pilih
+      wilayah dari daftar.
+    </StatusMessage>
   );
 }
 

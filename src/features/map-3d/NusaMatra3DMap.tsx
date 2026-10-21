@@ -12,6 +12,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
 import styles from './NusaMatra3DMap.module.css';
+import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
 import { fbmNoise } from './terrain/noise';
 import { getIndonesiaCoastline } from './terrain/coastline';
 import { buildHeroTerrain, type HeroTerrain } from './terrain/heroTerrain';
@@ -1341,6 +1342,10 @@ export const NusaMatra3DMap = forwardRef<
     renderer.shadowMap.enabled = true;
     // Host integration fix: PCFSoftShadowMap is deprecated since three r186 (the host's version).
     renderer.shadowMap.type = THREE.PCFShadowMap;
+    // Host performance fix: the Explore scene is static between selections, so the shadow pass
+    // (a second full draw of every region) runs only when something moved, not every frame. The
+    // hero animates its whole group, so it keeps the per-frame update.
+    renderer.shadowMap.autoUpdate = mode === 'hero';
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
@@ -1658,6 +1663,7 @@ export const NusaMatra3DMap = forwardRef<
     const eng = engineRef.current;
     if (!eng || !validatedDataset) return;
 
+    eng.renderer.shadowMap.needsUpdate = true;
     disposeObjectTree(eng.regionsGroup);
     disposeObjectTree(eng.markersGroup);
     eng.featureMeshes.clear();
@@ -1690,7 +1696,7 @@ export const NusaMatra3DMap = forwardRef<
           : feature.geometry.coordinates;
 
       const shapes: THREE.Shape[] = [];
-      const coastlineLines: THREE.Line[] = [];
+      const coastlineRings: THREE.Vector3[][] = [];
 
       polygons.forEach((polygon) => {
         if (!polygon || !polygon[0] || polygon[0].length < 4) return;
@@ -1721,14 +1727,14 @@ export const NusaMatra3DMap = forwardRef<
           const pts = outerRing.map((c) =>
             lonLatToPlanar(c[0], c[1], tierDepth + 0.032)
           );
-          const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
-          coastlineLines.push(new THREE.Line(lineGeo, borderMat));
+          coastlineRings.push(pts);
         }
       });
 
       if (shapes.length === 0) return;
 
-      const geometry = new THREE.ExtrudeGeometry(shapes, extrudeSettings);
+      // Host performance fix: two material groups per region instead of two per island.
+      const geometry = consolidateExtrudeGroups(new THREE.ExtrudeGeometry(shapes, extrudeSettings));
       geometry.rotateX(-Math.PI / 2);
 
       const topMaterial = new THREE.MeshStandardMaterial({
@@ -1762,7 +1768,9 @@ export const NusaMatra3DMap = forwardRef<
       const featureGroup = new THREE.Group();
       featureGroup.userData = { regionId, topMaterial };
       featureGroup.add(mesh);
-      coastlineLines.forEach((line) => featureGroup.add(line));
+      if (coastlineRings.length > 0) {
+        featureGroup.add(new THREE.LineSegments(ringsToSegmentsGeometry(coastlineRings), borderMat));
+      }
 
       eng.regionsGroup.add(featureGroup);
       eng.featureMeshes.set(regionId, featureGroup);
@@ -1772,7 +1780,8 @@ export const NusaMatra3DMap = forwardRef<
     const activeMarkers =
       mode === 'hero'
         ? HERO_DIORAMA_MARKERS
-        : showMarkers
+        : // Host fix: the demo markers are illustrative pins, so official LIVE geography never shows them.
+        showMarkers && validatedDataset.metadata.dataMode === 'DEMO'
         ? EXPLORE_DEMO_MARKERS
         : [];
 
@@ -1836,12 +1845,14 @@ export const NusaMatra3DMap = forwardRef<
     eng.oceanMaterial.needsUpdate = true;
     eng.gridGroup.visible = mode === 'explore' && showGraticule;
     eng.regionsGroup.scale.y = devExtrusion;
+    eng.renderer.shadowMap.needsUpdate = true;
     eng.markersGroup.position.y = (devExtrusion - 1) * 0.32;
   }, [displayMode, mode, showGraticule, devExtrusion]);
 
   useEffect(() => {
     const eng = engineRef.current;
     if (!eng) return;
+    eng.renderer.shadowMap.needsUpdate = true;
     eng.featureMeshes.forEach((group, id) => {
       const mat = group.userData.topMaterial as THREE.MeshStandardMaterial;
       const isSelected = id === selectedRegionId;
@@ -1964,6 +1975,7 @@ export const NusaMatra3DMap = forwardRef<
             }
           }
           hoveredIdRef.current = rId;
+          eng.renderer.shadowMap.needsUpdate = true;
           if (rId !== selectedRegionId) {
             const currGroup = eng.featureMeshes.get(rId);
             if (currGroup) {
@@ -1996,6 +2008,7 @@ export const NusaMatra3DMap = forwardRef<
             }
           }
           hoveredIdRef.current = null;
+          eng.renderer.shadowMap.needsUpdate = true;
           onHoverRegion?.(null);
         }
       }
@@ -2080,6 +2093,7 @@ export const NusaMatra3DMap = forwardRef<
       }
     }
     hoveredIdRef.current = null;
+    if (eng) eng.renderer.shadowMap.needsUpdate = true;
     setHoveredInfo(null);
     onHoverRegion?.(null);
   }, [selectedRegionId, onHoverRegion]);
