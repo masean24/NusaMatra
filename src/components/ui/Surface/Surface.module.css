@@ -2,7 +2,7 @@
   border: 1px solid var(--c-surface-border);
   background: var(--c-surface);
   box-shadow: var(--c-surface-shadow);
-  backdrop-filter: var(--glass-refraction,) var(--c-surface-blur);
+  backdrop-filter: var(--c-surface-blur);
   color: var(--c-text);
 }
 

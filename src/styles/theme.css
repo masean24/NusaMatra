@@ -84,22 +84,22 @@
   --c-note: var(--nm-text-on-sea);
 
   --c-surface: var(--nm-glass-surface);
-  --c-surface-border: var(--nm-glass-stroke-soft);
-  --c-surface-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
-  --c-surface-blur: blur(2px) saturate(120%);
+  --c-surface-border: var(--nm-glass-stroke);
+  --c-surface-shadow: var(--nm-shadow-glass);
+  --c-surface-blur: blur(var(--nm-blur-panel));
   --c-surface-muted: var(--nm-glass-surface);
   --c-band: var(--nm-glass-surface);
-  --c-band-border: var(--nm-glass-stroke-soft);
-  --c-band-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
+  --c-band-border: var(--nm-glass-stroke);
+  --c-band-shadow: var(--nm-shadow-glass);
 
   --c-input-bg: var(--nm-glass-surface);
-  --c-input-border: var(--nm-glass-stroke-soft);
-  --c-input-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
+  --c-input-border: var(--nm-glass-stroke);
+  --c-input-shadow: var(--nm-shadow-glass);
   --c-input-placeholder: var(--nm-glass-text-muted);
 
   --c-cta-band: var(--nm-glass-surface);
-  --c-cta-band-border: var(--nm-glass-stroke-soft);
-  --c-cta-band-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
+  --c-cta-band-border: var(--nm-glass-stroke);
+  --c-cta-band-shadow: var(--nm-shadow-glass);
   --c-on-cta-band: var(--nm-text-on-sea);
 
   --c-footer: var(--nm-sea-deep);
@@ -119,7 +119,7 @@
     #ffffff33 100%
   );
 
-  --c-nav-bg: var(--nm-glass-surface);
+  --c-nav-bg: var(--nm-glass-nav-fill);
   --c-nav-border: var(--nm-glass-stroke-soft);
   --c-nav-shadow: var(--nm-shadow-nav-glass), var(--nm-glass-lighting);
   --c-nav-blur: blur(1px) saturate(125%);
@@ -138,8 +138,8 @@
   --c-nav-active-liquid: var(--nm-surface);
   --c-nav-active-text: var(--nm-sea-deep);
 
-  --c-switch-track: var(--nm-glass-surface);
-  --c-switch-border: var(--nm-glass-stroke);
+  --c-switch-track: #ffffff12;
+  --c-switch-border: var(--nm-glass-stroke-soft);
   --c-switch-knob: var(--nm-accent);
   --c-switch-text: var(--nm-text-on-sea);
   --c-switch-text-selected: var(--nm-accent-text);

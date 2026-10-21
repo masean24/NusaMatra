@@ -1,5 +1,4 @@
-import { useRef, type ElementType, type HTMLAttributes, type ReactNode } from 'react';
-import { useRefractiveGlass } from '@/lib/glass';
+import type { ElementType, HTMLAttributes, ReactNode } from 'react';
 import { surfaceClassName, type SurfaceRadius } from './surfaceClassName';
 
 interface SurfaceProps extends HTMLAttributes<HTMLElement> {
@@ -9,8 +8,8 @@ interface SurfaceProps extends HTMLAttributes<HTMLElement> {
 }
 
 /**
- * The shared panel: an opaque card with the soft Normal shadow, or a thin refractive glass lens in
- * Kaca mode. The mode is applied through tokens, so callers never branch on it.
+ * The shared panel: an opaque card with the soft Normal shadow, or translucent glass with a
+ * white stroke in Kaca mode. The mode is applied through tokens, so callers never branch on it.
  */
 export function Surface({
   as: Component = 'div',
@@ -19,10 +18,8 @@ export function Surface({
   children,
   ...rest
 }: SurfaceProps) {
-  const ref = useRef<HTMLElement>(null);
-  useRefractiveGlass(ref);
   return (
-    <Component ref={ref} className={surfaceClassName(radius, className)} {...rest}>
+    <Component className={surfaceClassName(radius, className)} {...rest}>
       {children}
     </Component>
   );
