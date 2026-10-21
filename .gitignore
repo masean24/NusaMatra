@@ -6,6 +6,7 @@ coverage
 .env.*
 !.env.example
 !.env.production
+!.env.development
 playwright-report
 test-results
 .taste-skill

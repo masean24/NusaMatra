@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { mockDataHub } from './dataHubMocks';
 
 function visibleNav(page: Page) {
   // Desktop renders the floating bar, phones the bottom tab bar; only one is visible.
@@ -32,6 +33,33 @@ test.describe('landing', () => {
     expect(errors).toEqual([]);
   });
 
+  test('keeps the Nusa Matra wordmark inside its box, clear of the navbar dividers', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(isMobile, 'the full floating bar is a desktop layout');
+    await page.goto('/');
+    const bar = page.locator('header > div').first();
+    const wordmark = bar.getByText('Nusa Matra', { exact: false }).first();
+    const home = bar.getByRole('link', { name: 'Nusa Matra — Beranda' });
+    const divider = bar.locator('span[aria-hidden="true"]').first();
+    const [wordBox, homeBox, dividerBox, barBox] = await Promise.all([
+      wordmark.boundingBox(),
+      home.boundingBox(),
+      divider.boundingBox(),
+      bar.boundingBox(),
+    ]);
+    if (!wordBox || !homeBox || !dividerBox || !barBox) throw new Error('navbar parts not laid out');
+
+    // The seam bug: the brand box was narrower than its text, so the divider cut through "Matra".
+    expect(wordBox.x + wordBox.width).toBeLessThanOrEqual(homeBox.x + homeBox.width + 0.5);
+    expect(dividerBox.x - (homeBox.x + homeBox.width)).toBeGreaterThanOrEqual(12);
+    // The whole bar stays inside the viewport with a visible margin.
+    const viewport = page.viewportSize();
+    expect(barBox.x).toBeGreaterThanOrEqual(16);
+    expect(barBox.x + barBox.width).toBeLessThanOrEqual((viewport?.width ?? 0) - 16);
+  });
+
   test('has no horizontal page overflow', async ({ page }) => {
     await page.goto('/');
     const overflow = await page.evaluate(
@@ -63,6 +91,7 @@ test.describe('landing', () => {
   });
 
   test('region search validates and hands the query to Jelajahi', async ({ page }) => {
+    await mockDataHub(page);
     await page.goto('/');
     const search = page.getByRole('searchbox', { name: 'Cari kabupaten/kota' }).first();
     await search.press('Enter');
@@ -70,7 +99,10 @@ test.describe('landing', () => {
     await search.fill('Kota Semarang');
     await search.press('Enter');
     await expect(page).toHaveURL(/\/jelajahi\?cari=Kota\+Semarang$/);
-    await expect(page.getByText('Pencarian “Kota Semarang”')).toBeVisible();
+    await expect(page.getByRole('searchbox', { name: 'Cari kabupaten/kota' }).last()).toHaveValue(
+      'Kota Semarang',
+    );
+    await expect(page.getByText('Tidak ada wilayah yang cocok pada dataset DEMO saat ini')).toBeVisible();
   });
 
   test('display mode switches to Kaca, survives a reload and keeps the route', async ({ page }) => {

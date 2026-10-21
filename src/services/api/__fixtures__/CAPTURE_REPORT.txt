@@ -1,0 +1,10 @@
+health | 200 | https://api.orangkeren.me/api/v1/health
+regions_search | 200 | https://api.orangkeren.me/api/v1/regions?level=kabupaten_kota&q=bogor
+region_detail | 200 | https://api.orangkeren.me/api/v1/regions/3201
+indicators | 200 | https://api.orangkeren.me/api/v1/indicators
+indicator_values | 200 | https://api.orangkeren.me/api/v1/indicators/soc_poverty_rate/values
+snapshots | 200 | https://api.orangkeren.me/api/v1/snapshots
+boundaries_kabupaten | 200 | https://api.orangkeren.me/api/v1/boundaries/kabupaten?format=geojson&resolution=low&province_id=32
+composite_valid | 200 | https://api.orangkeren.me/api/v1/indicators/composite-query
+composite_invalid | 422 | https://api.orangkeren.me/api/v1/indicators/composite-query
+regions_live | 503 | https://api.orangkeren.me/api/v1/regions?level=kabupaten_kota&q=bogor

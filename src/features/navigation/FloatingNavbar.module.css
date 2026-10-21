@@ -18,21 +18,31 @@
   backdrop-filter: var(--c-surface-blur);
 }
 
+/*
+ * Three groups with room between them: brand | links | mode switch. The bar is sized by its
+ * content (`max-content`), never by shrink-to-fit: a fixed box with `left: 50%` only has half the
+ * viewport to offer, and with the global `img { max-width: 100% }` reset the logo mark counted as
+ * 0px there, so the brand box came out 29px too narrow and "Matra" spilled under the divider.
+ */
 .desktop {
+  --group-gap: 16px;
   position: fixed;
   top: 16px;
   left: 50%;
   display: flex;
-  gap: 6px;
+  gap: var(--group-gap);
   align-items: center;
-  padding: 8px 8px 8px 18px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 8px 8px 8px 22px;
   border-radius: var(--nm-radius-pill);
   translate: -50% 0;
 }
 
 .home {
   display: inline-flex;
-  padding: 4px 10px 4px 0;
+  flex: none;
+  padding: 4px 0;
   border-radius: var(--nm-radius-pill);
   color: var(--c-text);
   text-decoration: none;
@@ -41,7 +51,7 @@
 .divider {
   flex: none;
   width: 1px;
-  height: 24px;
+  height: 28px;
   background: var(--c-nav-divider);
 }
 
@@ -56,8 +66,8 @@
   display: none;
 }
 
-/* Below this width the full navbar no longer fits (it is ~1000px wide at Figma sizes). */
-@media (width < 1120px) {
+/* Below this width the full navbar (~1190px with its group spacing) no longer fits with 24px margins. */
+@media (width < 1240px) {
   .desktop {
     display: none;
   }
@@ -97,7 +107,7 @@
   }
 }
 
-@media (width >= 640px) and (width < 1120px) {
+@media (width >= 640px) and (width < 1240px) {
   .tabBar {
     left: 50%;
     right: auto;

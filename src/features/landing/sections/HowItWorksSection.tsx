@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { surfaceClassName } from '@/components/ui/Surface/surfaceClassName';
 import { Reveal } from '@/features/motion';
-import { useRouteZoom } from '@/features/navigation';
+import { useStaggeredNavigate } from '@/features/navigation';
 import { SceneZone } from '../scene3d/SceneZone';
 import styles from './HowItWorksSection.module.css';
 
@@ -30,16 +30,16 @@ interface StepLinkProps {
   readonly number: number;
 }
 
-/** A step card whose feature page opens by zooming out of the card, like a macOS window. */
+/** A step card: the landing page staggers out (this card last) and the feature page staggers in. */
 function StepLink({ step, number }: StepLinkProps) {
-  const openWithZoom = useRouteZoom();
+  const leaveTo = useStaggeredNavigate();
 
   return (
     <Link
       to={step.to}
       className={surfaceClassName('step', styles.step)}
       onClick={(event) => {
-        openWithZoom(event, step.to);
+        leaveTo(event, step.to);
       }}
     >
       <span className={`kk-number ${styles.badge}`} data-first={number === 1 || undefined} aria-hidden="true">

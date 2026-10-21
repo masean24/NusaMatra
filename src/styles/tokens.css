@@ -106,8 +106,6 @@
   --nm-duration-feedback: 140ms;
   --nm-duration-reveal: 700ms;
   --nm-duration-knob: 420ms;
-  /* Page transitions under reduced motion (styles/view-transitions.css) */
-  --nm-duration-reduced-fade: 200ms;
 
   /* Stacking order (docs/03 §5.4) */
   --nm-z-content: 1;
