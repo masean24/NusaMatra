@@ -12,6 +12,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
 import styles from './NusaMatra3DMap.module.css';
+import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
 import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
 import { fbmNoise } from './terrain/noise';
 import { getIndonesiaCoastline } from './terrain/coastline';
@@ -56,6 +57,8 @@ function exploreFitDistance(camera: THREE.PerspectiveCamera, width: number, scen
   }
   return distance;
 }
+
+const NO_OVERLAY_POINTS: readonly MapOverlayPoint[] = [];
 
 const HERO_CAMERA_ELEVATION_DEG = 54;
 const HERO_FRAME_MARGIN = 0.05;
@@ -165,6 +168,10 @@ export interface NusaMatra3DMapProps {
   cameraPreset?: CameraPreset;
   /** Optional DEV-only inspector panel (off by default in production) */
   enableDevInspector?: boolean;
+  /** Host fix: clickable points drawn over the map (e.g. BMKG epicentres); never touch region geometry. */
+  overlayPoints?: readonly MapOverlayPoint[];
+  selectedOverlayId?: string | null;
+  onSelectOverlay?: (id: string) => void;
 }
 
 // ============================================================================
@@ -1193,6 +1200,8 @@ interface InternalEngineState {
   heroPose: CameraPose | null;
   /** Explore, LIVE geography only: centre and width of the drawn regions, for fitting the camera. */
   exploreFrame: { center: THREE.Vector3; width: number } | null;
+  /** Points over the map (host overlay), in their own group. */
+  overlay: PointOverlay;
 }
 
 export const NusaMatra3DMap = forwardRef<
@@ -1216,6 +1225,9 @@ export const NusaMatra3DMap = forwardRef<
     showCoastlines = true,
     cameraPreset = 'perspective',
     enableDevInspector = false,
+    overlayPoints = NO_OVERLAY_POINTS,
+    selectedOverlayId = null,
+    onSelectOverlay,
   } = props;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1455,7 +1467,8 @@ export const NusaMatra3DMap = forwardRef<
     const markersGroup = new THREE.Group();
     const gridGroup = new THREE.Group();
 
-    rootGroup.add(regionsGroup, markersGroup, gridGroup);
+    const overlay = new PointOverlay(lonLatToPlanar);
+    rootGroup.add(regionsGroup, markersGroup, gridGroup, overlay.group);
     scene.add(rootGroup);
 
     // Hero: coastline relief on a textured sea, both inside rootGroup so the intro and the
@@ -1574,6 +1587,7 @@ export const NusaMatra3DMap = forwardRef<
       heroTerrain,
       heroPose,
       exploreFrame: null,
+      overlay,
     };
 
     onReady?.();
@@ -1691,6 +1705,7 @@ export const NusaMatra3DMap = forwardRef<
       }
 
       eng.controls?.update();
+      eng.overlay.tick(now);
       eng.renderer.render(eng.scene, eng.camera);
     };
 
@@ -1701,6 +1716,7 @@ export const NusaMatra3DMap = forwardRef<
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       controls?.dispose();
+      overlay.dispose();
       disposeObjectTree(rootGroup);
       heroTerrain?.dispose(); // also frees the data textures, which the tree walk does not reach
       oceanMesh.geometry.dispose();
@@ -1952,6 +1968,16 @@ export const NusaMatra3DMap = forwardRef<
     }
   }, [cameraPreset, mode]);
 
+  useEffect(() => {
+    const eng = engineRef.current;
+    if (!eng) return;
+    eng.overlay.setPoints(overlayPoints, performance.now(), !isMotionReducedRef.current);
+  }, [overlayPoints, mode, dataValidationError]);
+
+  useEffect(() => {
+    engineRef.current?.overlay.setSelected(selectedOverlayId);
+  }, [selectedOverlayId, overlayPoints, mode, dataValidationError]);
+
   const pointerDownRef = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
@@ -2005,7 +2031,8 @@ export const NusaMatra3DMap = forwardRef<
         }
       }
 
-      const hits = eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
+      const overlayId = eng.overlay.hit(eng.raycaster);
+      const hits = overlayId ? [] : eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
       const firstHit = hits[0];
       if (firstHit) {
         const hitMesh = firstHit.object;
@@ -2066,7 +2093,17 @@ export const NusaMatra3DMap = forwardRef<
           });
         }
       } else {
-        setHoveredInfo(null);
+        const overlayLabel = overlayId ? eng.overlay.labelOf(overlayId) : null;
+        setHoveredInfo(
+          overlayLabel
+            ? {
+                name: overlayLabel,
+                x: Math.min(Math.max(coords.localX + 14, 12), Math.max(12, coords.rect.width - 220)),
+                y: Math.min(Math.max(coords.localY - 12, 12), Math.max(12, coords.rect.height - 64)),
+                subtitle: 'Klik untuk detail gempa',
+              }
+            : null,
+        );
         if (hoveredIdRef.current) {
           if (hoveredIdRef.current !== selectedRegionId) {
             const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
@@ -2129,6 +2166,11 @@ export const NusaMatra3DMap = forwardRef<
       if (!eng || !coords) return;
 
       eng.raycaster.setFromCamera(coords.ndc, eng.camera);
+      const overlayId = eng.overlay.hit(eng.raycaster);
+      if (overlayId) {
+        onSelectOverlay?.(overlayId);
+        return;
+      }
       const hits = eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
 
       const firstHit = hits[0];
@@ -2144,7 +2186,7 @@ export const NusaMatra3DMap = forwardRef<
         });
       }
     },
-    [mode, validatedDataset, getBoundedNDC, onSelectRegion]
+    [mode, validatedDataset, getBoundedNDC, onSelectRegion, onSelectOverlay]
   );
 
   const handlePointerLeave = useCallback(() => {

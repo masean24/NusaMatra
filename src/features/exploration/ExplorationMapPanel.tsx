@@ -3,7 +3,12 @@ import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DEMO_GEO_REGIONS } from '@/data/fixtures/demoGeoRegions';
-import { Explore3DMapSlot, type GeoCameraHandle, type GeoRegionSelection } from '@/features/geo3d';
+import {
+  Explore3DMapSlot,
+  type GeoCameraHandle,
+  type GeoOverlayPoint,
+  type GeoRegionSelection,
+} from '@/features/geo3d';
 import { ResourceView, useDataHub, useDataHubResource } from '@/features/data-hub';
 import type { BoundaryCollectionDTO } from '@/services/api';
 import { loadBoundaries } from './boundaryCache';
@@ -22,10 +27,10 @@ const NO_VERIFIED_GEOGRAPHY = null;
  * Map workspace for Peta Utama and Jelajahi: the host owns selection, data and navigation.
  * DEMO shows the labelled illustration; LIVE draws only the official boundaries the Data Hub sent.
  */
-export function ExplorationMapPanel({ cameraRef, onLiveSelect }: ExplorationMapPanelProps = {}) {
+export function ExplorationMapPanel({ cameraRef, onLiveSelect, overlay }: ExplorationMapPanelProps = {}) {
   const { dataMode } = useDataHub();
   return dataMode === 'LIVE' ? (
-    <LiveMapWorkspace cameraRef={cameraRef} onSelect={onLiveSelect} />
+    <LiveMapWorkspace cameraRef={cameraRef} onSelect={onLiveSelect} overlay={overlay} />
   ) : (
     <DemoMapWorkspace />
   );
@@ -36,15 +41,26 @@ interface ExplorationMapPanelProps {
   readonly cameraRef?: RefObject<GeoCameraHandle | null> | undefined;
   /** Called with the code and name of a region picked on the LIVE map, so the page can show its name at once. */
   readonly onLiveSelect?: ((code: string, name: string) => void) | undefined;
+  /** Points over the LIVE map (the BMKG earthquake layer); updating them never rebuilds the regions. */
+  readonly overlay?: MapOverlay | undefined;
+}
+
+/** Clickable points over the map and their selection, owned by the page. */
+export interface MapOverlay {
+  readonly points: readonly GeoOverlayPoint[];
+  readonly selectedId: string | null;
+  readonly onSelect: (id: string) => void;
 }
 
 /** LIVE: the 3D map is fed BIG polygons, and its selection is the same `?kode=` the region list uses. */
 function LiveMapWorkspace({
   cameraRef: sharedCameraRef,
   onSelect,
+  overlay,
 }: {
   readonly cameraRef: RefObject<GeoCameraHandle | null> | undefined;
   readonly onSelect: ((code: string, name: string) => void) | undefined;
+  readonly overlay: MapOverlay | undefined;
 }) {
   const { selectedCode, selectCode } = useRegionBrowserParams();
   const boundaries = useDataHubResource('boundaries-kabupaten', (repository, dataMode) =>
@@ -82,6 +98,7 @@ function LiveMapWorkspace({
               selectedCode={selectedCode}
               onSelect={handleSelect}
               cameraRef={cameraRef}
+              overlay={overlay}
             />
           )}
         </ResourceView>
@@ -96,6 +113,7 @@ interface LiveMapProps {
   readonly selectedCode: string | null;
   readonly onSelect: (code: string, name: string) => void;
   readonly cameraRef: RefObject<GeoCameraHandle | null>;
+  readonly overlay: MapOverlay | undefined;
 }
 
 /**
@@ -103,7 +121,7 @@ interface LiveMapProps {
  * only change when the boundaries do. Rebuilt on every selection it re-created all 514 regions'
  * geometry per click (~2,000 buffer uploads, ~0.5 s).
  */
-function LiveMap({ boundaries, snapshotId, selectedCode, onSelect, cameraRef }: LiveMapProps) {
+function LiveMap({ boundaries, snapshotId, selectedCode, onSelect, cameraRef, overlay }: LiveMapProps) {
   const geography = useMemo(() => buildLiveGeography(boundaries, snapshotId), [boundaries, snapshotId]);
   const handleSelect = useCallback(
     (selection: GeoRegionSelection) => {
@@ -119,6 +137,9 @@ function LiveMap({ boundaries, snapshotId, selectedCode, onSelect, cameraRef }: 
       selectedRegionId={selectedCode}
       onRegionSelect={handleSelect}
       cameraRef={cameraRef}
+      overlayPoints={overlay?.points}
+      selectedOverlayId={overlay?.selectedId ?? null}
+      onOverlaySelect={overlay?.onSelect}
       className={styles.map}
     />
   ) : (

@@ -40,6 +40,9 @@ interface Explore3DMapSlotProps {
   readonly onRegionSelect: Explore3DMapProps['onRegionSelect'];
   readonly onRegionHover?: Explore3DMapProps['onRegionHover'];
   readonly cameraRef?: Ref<GeoCameraHandle> | undefined;
+  readonly overlayPoints?: Explore3DMapProps['overlayPoints'];
+  readonly selectedOverlayId?: Explore3DMapProps['selectedOverlayId'];
+  readonly onOverlaySelect?: Explore3DMapProps['onOverlaySelect'];
   readonly className?: string | undefined;
   /** The mode the page is in right now; defaults to the build-time mode. */
   readonly dataMode?: GeoDataMode | undefined;
@@ -56,6 +59,9 @@ export function Explore3DMapSlot({
   onRegionSelect,
   onRegionHover,
   cameraRef,
+  overlayPoints,
+  selectedOverlayId,
+  onOverlaySelect,
   className,
   dataMode = publicConfig.dataMode,
 }: Explore3DMapSlotProps) {
@@ -75,6 +81,9 @@ export function Explore3DMapSlot({
           onRegionSelect,
           onRegionHover,
           cameraRef,
+          overlayPoints,
+          selectedOverlayId,
+          onOverlaySelect,
         }}
         placeholder={(state) =>
           dataMode === 'LIVE' ? (

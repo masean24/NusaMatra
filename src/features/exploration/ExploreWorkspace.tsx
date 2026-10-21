@@ -1,11 +1,18 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { Icon } from '@/components/ui/Icon/Icon';
 import { Surface } from '@/components/ui/Surface/Surface';
+import { epicentreSymbolSize } from '@/domain/hazards';
 import { useDataHub } from '@/features/data-hub';
+import {
+  EarthquakeDetail,
+  EarthquakeLayerControl,
+  markerLabel,
+  useEarthquakeFeed,
+} from '@/features/earthquakes';
 import { useMediaQuery, useReducedMotion } from '@/features/motion';
 import type { GeoCameraHandle } from '@/features/geo3d';
 import { BoundaryNotice } from './BoundaryNotice';
-import { ExplorationMapPanel } from './ExplorationMapPanel';
+import { ExplorationMapPanel, type MapOverlay } from './ExplorationMapPanel';
 import { RegionDetailPanel } from './RegionDetailPanel';
 import { RegionExplorer } from './RegionExplorer';
 import { useRegionBrowserParams } from './regionCode';
@@ -100,6 +107,49 @@ export function ExploreWorkspace() {
     [remember, selectCode, dataMode, isPhone, keepMapAboveSheet],
   );
 
+  // BMKG earthquake layer: off by default, LIVE only, its selection separate from the region's.
+  const [quakeLayerOn, setQuakeLayerOn] = useState(false);
+  const [selectedQuakeId, setSelectedQuakeId] = useState<string | null>(null);
+  const quakes = useEarthquakeFeed(quakeLayerOn);
+  const quakeEvents = useMemo(
+    () =>
+      quakes.feed && quakes.assessment && quakes.assessment.display !== 'WITHHELD' ? quakes.feed.events : [],
+    [quakes.feed, quakes.assessment],
+  );
+  const selectedQuake = quakeEvents.find((event) => event.id === selectedQuakeId) ?? null;
+
+  const toggleQuakeLayer = useCallback((next: boolean) => {
+    setQuakeLayerOn(next);
+    if (!next) setSelectedQuakeId(null);
+  }, []);
+
+  const handleQuakeSelect = useCallback(
+    (id: string) => {
+      setSelectedQuakeId(id);
+      setPanelState(isPhone ? 'peek' : 'open');
+    },
+    [isPhone],
+  );
+
+  const overlay = useMemo<MapOverlay | undefined>(
+    () =>
+      quakeEvents.length === 0
+        ? undefined
+        : {
+            points: quakeEvents.map((event) => ({
+              id: event.id,
+              lon: event.longitude,
+              lat: event.latitude,
+              size: epicentreSymbolSize(event.magnitude),
+              label: markerLabel(event),
+              isNew: quakes.newIds.has(event.id),
+            })),
+            selectedId: selectedQuakeId,
+            onSelect: handleQuakeSelect,
+          },
+    [quakeEvents, quakes.newIds, selectedQuakeId, handleQuakeSelect],
+  );
+
   const step = (direction: 1 | -1) => {
     setPanelState((current) => {
       const index = LEVELS.indexOf(current);
@@ -132,11 +182,13 @@ export function ExploreWorkspace() {
 
   const collapsed = shown === 'collapsed';
   // The name sits in the bar only while the panel is folded; unfolded, the profile heading already shows it.
-  const label = !selectedCode
-    ? 'Cari wilayah'
-    : collapsed
-      ? (knownNames[selectedCode] ?? `Wilayah kode ${selectedCode}`)
-      : 'Profil wilayah';
+  const label = selectedQuake
+    ? 'Detail gempa'
+    : !selectedCode
+      ? 'Cari wilayah'
+      : collapsed
+        ? (knownNames[selectedCode] ?? `Wilayah kode ${selectedCode}`)
+        : 'Profil wilayah';
 
   return (
     <div
@@ -145,7 +197,15 @@ export function ExploreWorkspace() {
       data-selected={selectedCode ? true : undefined}
     >
       <div ref={mapColumnRef} className={styles.mapColumn}>
-        <ExplorationMapPanel cameraRef={cameraRef} onLiveSelect={handleMapSelect} />
+        <EarthquakeLayerControl
+          enabled={quakeLayerOn}
+          available={dataMode === 'LIVE'}
+          onToggle={toggleQuakeLayer}
+          state={quakes}
+          selectedId={selectedQuake?.id ?? null}
+          onSelect={handleQuakeSelect}
+        />
+        <ExplorationMapPanel cameraRef={cameraRef} onLiveSelect={handleMapSelect} overlay={overlay} />
         <BoundaryNotice />
       </div>
 
@@ -178,7 +238,16 @@ export function ExploreWorkspace() {
         </button>
 
         <div id="panel-wilayah" className={styles.body} hidden={collapsed}>
-          {selectedCode ? (
+          {selectedQuake && quakes.assessment ? (
+            // An earthquake is shown over the region profile; closing it brings the profile back.
+            <EarthquakeDetail
+              event={selectedQuake}
+              assessment={quakes.assessment}
+              onClose={() => {
+                setSelectedQuakeId(null);
+              }}
+            />
+          ) : selectedCode ? (
             <RegionDetailPanel
               regionId={selectedCode}
               fallbackName={knownNames[selectedCode] ?? null}

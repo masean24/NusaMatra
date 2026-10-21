@@ -20,6 +20,11 @@ export interface RequestOptions {
   readonly query?: Readonly<Record<string, string | number | boolean | null | undefined>> | undefined;
   readonly signal?: AbortSignal | undefined;
   readonly headers?: Readonly<Record<string, string>> | undefined;
+  /**
+   * Browser cache policy. Time-critical feeds pass `no-cache`: the API sends
+   * `Cache-Control: max-age=3600` even for data refreshed every minute.
+   */
+  readonly cache?: RequestCache | undefined;
 }
 
 export interface DataHubHttpClientConfig {
@@ -107,6 +112,7 @@ export class DataHubHttpClient {
     try {
       response = await this.fetchImpl(url, {
         ...init,
+        ...(options.cache ? { cache: options.cache } : {}),
         signal: options.signal ?? null,
         headers: mergedHeaders,
       });
