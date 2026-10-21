@@ -1,5 +1,7 @@
 /* 27:2 y=1000: copy at x=88 (600px), 3D-2 zone at x=760 (592×700). */
 .section {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 600fr) minmax(0, 592fr);
   column-gap: clamp(24px, 5vw, 72px);
@@ -18,32 +20,34 @@
   text-wrap: balance;
 }
 
+/*
+ * No gap: the spacing is padding on each item, so the pointer is always over some card while it
+ * moves down the list and a card opening or closing never leaves a dead strip under the cursor.
+ */
 .steps {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+}
+
+.item {
+  padding-block: 10px;
 }
 
 /* Step card 41:200: padding 16px 18px, gap 16px, radius 18px. */
 .step {
   display: flex;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
   padding: 16px 18px;
   text-decoration: none;
   transition:
     transform var(--nm-duration-feedback) var(--nm-ease-ui),
-    box-shadow var(--nm-duration-feedback) ease;
+    opacity 260ms var(--nm-ease-calm),
+    box-shadow 260ms ease;
 }
 
 .step:active {
   transform: scale(0.99);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .step:hover {
-    transform: translateY(-2px);
-  }
 }
 
 .badge {
@@ -55,6 +59,9 @@
   border-radius: var(--nm-radius-step-badge);
   background: var(--c-surface-muted);
   color: var(--c-text);
+  transition:
+    background-color 260ms ease,
+    color 260ms ease;
 }
 
 .badge[data-first] {
@@ -65,17 +72,202 @@
 .stepText {
   display: flex;
   flex-direction: column;
-  gap: 2px;
   min-width: 0;
 }
 
+/* The title row is as tall as the badge, so a closed card stays one calm line. */
+.stepTitle {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+/*
+ * The explanation. Its height animates from 0 to its natural size (a grid row going 0fr → 1fr),
+ * so nothing is measured in JavaScript. It stays in the document when closed.
+ */
+.reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 280ms var(--nm-ease-calm),
+    opacity 200ms ease;
+}
+
 .stepDescription {
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 0;
+  color: var(--c-text-muted);
+  transform: translateY(-6px);
+  transition:
+    transform 280ms var(--nm-ease-calm),
+    padding-top 280ms var(--nm-ease-calm);
+}
+
+/* Open: hover (mouse), keyboard focus, or the first tap (data-open). */
+.step:focus-visible .reveal,
+.step[data-open] .reveal {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.step:focus-visible .stepDescription,
+.step[data-open] .stepDescription {
+  padding-top: 2px;
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .step:hover {
+    transform: translateY(-2px);
+  }
+
+  .step:hover .reveal {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .step:hover .stepDescription {
+    padding-top: 2px;
+    transform: none;
+  }
+
+  .step:hover .badge {
+    background: var(--nm-accent);
+    color: var(--nm-accent-text);
+  }
+
+  /* While one card is the focus, the others recede (never below readable). */
+  .steps:has(.step:hover) .step:not(:hover) {
+    opacity: 0.62;
+  }
+}
+
+.steps:has(.step[data-open]) .step:not([data-open]) {
+  opacity: 0.7;
+}
+
+.visualColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  justify-self: end;
+  width: 100%;
+  max-width: 592px;
+}
+
+.scene {
+  width: 100%;
+}
+
+/* Data → analysis → decision, named once, quietly, under the object (bottom layer first). */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   color: var(--c-text-muted);
 }
 
-.visual {
-  justify-self: end;
-  max-width: 592px;
+.legend li {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.legend li::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--nm-land-4);
+  content: '';
+}
+
+.legend li[data-layer='analisis']::before {
+  background: var(--nm-sea-shallow);
+}
+
+.legend li[data-layer='keputusan']::before {
+  background: var(--nm-accent);
+}
+
+/*
+ * Kaca only. Soft warm lights, cropped by the section edges, sit between the page's blue and the
+ * glass: one glow behind the object, a slanted slice on its right, a faint slice on the left.
+ * They are accents, never a wash: each fades to nothing well inside its box.
+ */
+.accents {
+  position: absolute;
+  inset: -80px 0;
+  z-index: -1;
+  display: none;
+  /* Never a box edge: the shapes may spill past the 1440px page column (html clips the viewport). */
+  overflow-x: visible;
+  overflow-y: clip;
+  pointer-events: none;
+}
+
+:global([data-display-mode='glass']) .accents {
+  display: block;
+}
+
+.accents span {
+  position: absolute;
+  display: block;
+}
+
+.glowObject {
+  top: 6%;
+  right: calc(var(--nm-gutter) - 60px);
+  width: min(620px, 62%);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    closest-side,
+    rgb(255 138 61 / 58%),
+    rgb(255 138 61 / 18%) 55%,
+    transparent 78%
+  );
+  filter: blur(18px);
+}
+
+/* Slanted warm slices. Their edges fade out in both directions, so there is no visible box. */
+.sliceRight {
+  top: 38%;
+  right: -140px;
+  width: min(620px, 56%);
+  height: 34%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgb(255 176 122 / 34%) 38%,
+    rgb(255 138 61 / 22%) 72%,
+    transparent 100%
+  );
+  filter: blur(16px);
+  mask-image:
+    linear-gradient(to right, transparent, #000 32%, #000 68%, transparent),
+    linear-gradient(to bottom, transparent, #000 28%, #000 72%, transparent);
+  mask-composite: intersect;
+  transform: skewX(-16deg);
+}
+
+.sliceLeft {
+  bottom: 4%;
+  left: -160px;
+  width: min(560px, 46%);
+  height: 28%;
+  background: linear-gradient(80deg, rgb(255 138 61 / 26%), rgb(255 138 61 / 8%) 60%, transparent 100%);
+  filter: blur(18px);
+  mask-image:
+    linear-gradient(to right, transparent, #000 34%, #000 66%, transparent),
+    linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
+  mask-composite: intersect;
+  transform: skewX(-16deg);
 }
 
 @media (width < 960px) {
@@ -84,10 +276,24 @@
     row-gap: 32px;
   }
 
-  .visual {
+  .visualColumn {
     justify-self: center;
     max-width: 420px;
+  }
+
+  .scene {
     aspect-ratio: 4 / 3;
+  }
+
+  .glowObject {
+    top: auto;
+    right: -10%;
+    bottom: 4%;
+    width: 80%;
+  }
+
+  .sliceRight {
+    width: 60%;
   }
 }
 
@@ -96,5 +302,12 @@
   .step:hover,
   .step:active {
     transform: none;
+  }
+
+  .reveal,
+  .stepDescription,
+  .badge,
+  .step {
+    transition-duration: 1ms;
   }
 }

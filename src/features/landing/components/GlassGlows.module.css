@@ -3,7 +3,9 @@
   inset: 0;
   z-index: -1;
   display: none;
-  overflow: hidden;
+  /* Vertical clip only: the glows fade out on their own sideways, so the 1440px page column never shows as a hard edge. */
+  overflow-x: visible;
+  overflow-y: clip;
   pointer-events: none;
 }
 

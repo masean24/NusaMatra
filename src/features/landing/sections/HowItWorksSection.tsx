@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { surfaceClassName } from '@/components/ui/Surface/surfaceClassName';
-import { Reveal } from '@/features/motion';
+import { Reveal, useMediaQuery } from '@/features/motion';
 import { useStaggeredNavigate } from '@/features/navigation';
 import { SceneZone } from '../scene3d/SceneZone';
 import styles from './HowItWorksSection.module.css';
@@ -22,23 +23,49 @@ const STEPS = [
   },
 ] as const;
 
+/** The three layers of the 3D object, bottom to top; the same meaning as its form (data → analysis → decision). */
+const LAYER_LEGEND = [
+  { key: 'data', label: 'Data & Sumber' },
+  { key: 'analisis', label: 'Analisis & Simulasi' },
+  { key: 'keputusan', label: 'Keputusan & Bukti' },
+] as const;
+
 /* G3: heading rises 24px (600ms); steps follow one by one, 80ms apart, shifting 16px from the left. */
 const G3_STEP_STAGGER_MS = 80;
+
+/** Devices without hover (phones, tablets): the first tap opens a card, the second opens its page. */
+const NO_HOVER_QUERY = '(hover: none)';
 
 interface StepLinkProps {
   readonly step: (typeof STEPS)[number];
   readonly number: number;
+  /** Touch mode only: this card is the open one. */
+  readonly open: boolean;
+  readonly touch: boolean;
+  readonly onOpen: () => void;
 }
 
-/** A step card: the landing page staggers out (this card last) and the feature page staggers in. */
-function StepLink({ step, number }: StepLinkProps) {
+/**
+ * A step card. By default it shows only its number and title; the explanation slides open on hover
+ * or keyboard focus, or on the first tap on a touch device. The description always stays in the
+ * document (only its height collapses), so screen readers read the whole card and the link name is
+ * unchanged. The landing page staggers out (this card last) and the feature page staggers in.
+ */
+function StepLink({ step, number, open, touch, onOpen }: StepLinkProps) {
   const leaveTo = useStaggeredNavigate();
 
   return (
     <Link
       to={step.to}
       className={surfaceClassName('step', styles.step)}
+      data-open={open || undefined}
       onClick={(event) => {
+        if (touch && !open) {
+          // First tap on a touch screen: show the explanation instead of leaving the page.
+          event.preventDefault();
+          onOpen();
+          return;
+        }
         leaveTo(event, step.to);
       }}
     >
@@ -50,15 +77,27 @@ function StepLink({ step, number }: StepLinkProps) {
           <span className="visually-hidden">Langkah {number}: </span>
           {step.title}
         </span>
-        <span className={`kk-small ${styles.stepDescription}`}>{step.description}</span>
+        <span className={styles.reveal}>
+          <span className={`kk-small ${styles.stepDescription}`}>{step.description}</span>
+        </span>
       </span>
     </Link>
   );
 }
 
 export function HowItWorksSection() {
+  const touch = useMediaQuery(NO_HOVER_QUERY);
+  // One open card at a time (touch). Opening another closes the previous one.
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   return (
     <section id="cara-kerja" className={styles.section} aria-labelledby="cara-kerja-title">
+      {/* Kaca only: soft, cropped warm lights so the glass is not one flat blue. */}
+      <div className={styles.accents} aria-hidden="true">
+        <span className={styles.glowObject} />
+        <span className={styles.sliceRight} />
+        <span className={styles.sliceLeft} />
+      </div>
       <div className={styles.copy}>
         <Reveal distance={24} duration={600}>
           <h2 id="cara-kerja-title" className={`kk-h1 ${styles.title}`}>
@@ -67,19 +106,36 @@ export function HowItWorksSection() {
         </Reveal>
         <ol role="list" className={styles.steps}>
           {STEPS.map((step, index) => (
-            <li key={step.title}>
+            <li key={step.title} className={styles.item}>
               <Reveal distance={0} fromX={-16} duration={600} delay={120 + index * G3_STEP_STAGGER_MS}>
-                <StepLink step={step} number={index + 1} />
+                <StepLink
+                  step={step}
+                  number={index + 1}
+                  touch={touch}
+                  open={touch && openIndex === index}
+                  onOpen={() => {
+                    setOpenIndex(index);
+                  }}
+                />
               </Reveal>
             </li>
           ))}
         </ol>
       </div>
-      <SceneZone
-        kind="layeredIsland"
-        className={styles.visual}
-        description="Ilustrasi pulau berlapis data: satu pulau terangkat lalu terbuka menjadi tiga lapisan, yaitu risiko, sosial, dan layanan, mengikuti posisi gulir."
-      />
+      <div className={styles.visualColumn}>
+        <SceneZone
+          kind="layeredIsland"
+          className={styles.scene}
+          description="Objek tiga lapis yang terbuka mengikuti gulir: lapisan bawah Data & Sumber (titik-titik sumber), tengah Analisis & Simulasi (batang simulasi), atas Keputusan & Bukti (stempel bukti), dihubungkan tiang-tiang tipis."
+        />
+        <ol className={styles.legend} aria-label="Tiga lapisan, dari bawah ke atas">
+          {LAYER_LEGEND.map((layer) => (
+            <li key={layer.key} className="kk-caption" data-layer={layer.key}>
+              {layer.label}
+            </li>
+          ))}
+        </ol>
+      </div>
     </section>
   );
 }

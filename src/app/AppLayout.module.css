@@ -19,5 +19,7 @@
 
 .main {
   display: block;
+  /* Soft background lights may spill past the 1440px page column; they must never widen the page. */
+  overflow-x: clip;
   outline: none;
 }

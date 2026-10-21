@@ -138,6 +138,41 @@ test.describe('landing', () => {
     expect(orange).toBeGreaterThan(300);
   });
 
+  test('how-it-works cards show only number and title until hovered (or tapped on touch)', async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto('/');
+    const card = page.getByRole('link', { name: /Langkah 3/ });
+    await card.scrollIntoViewIfNeeded();
+    const description = card.getByText('Atur bobot kriteria dan lihat urutan bergeser.');
+    const reveal = description.locator('xpath=..');
+    await expect(reveal).toHaveCSS('opacity', '0');
+
+    if (isMobile) {
+      await card.tap();
+      await expect(card).toHaveAttribute('data-open', 'true');
+      await expect(page).toHaveURL(/\/$/); // the first tap only opens the card
+    } else {
+      await card.hover();
+    }
+    await expect(reveal).toHaveCSS('opacity', '1');
+  });
+
+  test('Kaca background lights never make the page scroll sideways', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('nusa-matra:display-mode', 'glass');
+    });
+    await page.setViewportSize({ width: 1900, height: 900 });
+    await page.goto('/');
+    await page.waitForTimeout(1500);
+    const scrolled = await page.evaluate(() => {
+      window.scrollTo(600, 0);
+      return window.scrollX;
+    });
+    expect(scrolled).toBe(0);
+  });
+
   test('has no horizontal page overflow', async ({ page }) => {
     await page.goto('/');
     const overflow = await page.evaluate(
