@@ -136,3 +136,11 @@
     text-align: left;
   }
 }
+
+/*
+ * Cards are always laid out (the connector lines measure them) but stay hidden until the map has
+ * finished its entrance. Reduced motion shows them without the rise.
+ */
+.cardHold {
+  opacity: 0;
+}

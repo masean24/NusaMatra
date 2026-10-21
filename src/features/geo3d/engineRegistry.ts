@@ -1,5 +1,5 @@
 import { lazy, type ComponentType } from 'react';
-import type { Explore3DMapProps, HeroDioramaProps } from './contract';
+import type { Explore3DMapProps, HeroDioramaProps, HeroHexMapProps } from './contract';
 
 /**
  * The single place where the external 3D engine is wired in. Each entry is loaded lazily, so
@@ -11,11 +11,17 @@ import type { Explore3DMapProps, HeroDioramaProps } from './contract';
  * See docs/integration/geo3d-engine.md.
  */
 export interface GeoEngineRegistry {
+  /** Hexagon map: the default landing hero. */
+  readonly HeroHexMap: ComponentType<HeroHexMapProps> | null;
+  /** Relief diorama: the hero's fallback when the hexagon map cannot start (no WebGL, no data). */
   readonly HeroDiorama: ComponentType<HeroDioramaProps> | null;
   readonly Explore3DMap: ComponentType<Explore3DMapProps> | null;
 }
 
 export const geoEngineRegistry: GeoEngineRegistry = {
+  HeroHexMap: lazy(() =>
+    import('@/features/hex-map').then((module) => ({ default: module.HexIndonesiaMap })),
+  ),
   HeroDiorama: lazy(() =>
     import('./engineAdapters').then((module) => ({ default: module.HeroDioramaAdapter })),
   ),

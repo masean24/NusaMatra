@@ -43,6 +43,15 @@ export interface GeoEngineBaseProps {
 /** Landing hero diorama (Figma 3D-1). Always illustrative, even when the app runs LIVE. */
 export type HeroDioramaProps = GeoEngineBaseProps;
 
+/**
+ * Landing hero map drawn with hexagons (the default hero engine). Illustrative and SIMULATED, like
+ * the diorama it replaces; it tells the host when its entrance has finished so the pins, the
+ * connector lines and the region cards can follow.
+ */
+export interface HeroHexMapProps extends GeoEngineBaseProps {
+  readonly onEntranceSettled?: (() => void) | undefined;
+}
+
 /** Interactive 3D map for Peta Utama / Jelajahi (Figma 61:1183, 29:34). */
 export interface Explore3DMapProps extends GeoEngineBaseProps {
   /**

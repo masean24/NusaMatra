@@ -1,0 +1,57 @@
+/*
+ * The zone's own sea plate: the canvas is transparent and draws only hexagons, so the plate and
+ * the graticule behind it carry the theme. Normal is the cobalt plate of the Figma hero; Kaca is
+ * the same cobalt as translucent glass over the page gradient.
+ */
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--nm-sea-deep) 0%, var(--nm-sea) 100%);
+}
+
+.root[data-display-mode='glass'] {
+  border: 1px solid #ffffff33;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--nm-sea-deep) 62%, transparent) 0%,
+    color-mix(in srgb, var(--nm-sea-deep) 34%, transparent) 100%
+  );
+  backdrop-filter: blur(8px);
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.badge {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 2;
+  margin: 0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgb(251 250 246 / 92%);
+  color: var(--nm-text);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.root[data-display-mode='glass'] .badge {
+  border: 1px solid #ffffff57;
+  background: rgb(18 24 38 / 52%);
+  color: var(--nm-text-on-sea);
+  backdrop-filter: blur(12px);
+}
+
+@media (width < 640px) {
+  .badge {
+    right: 12px;
+    font-size: 10px;
+  }
+}

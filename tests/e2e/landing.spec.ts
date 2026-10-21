@@ -60,6 +60,22 @@ test.describe('landing', () => {
     expect(barBox.x + barBox.width).toBeLessThanOrEqual((viewport?.width ?? 0) - 16);
   });
 
+  test('hero hexagon map: pins drop after the entrance and highlight their region card', async ({ page }) => {
+    await page.goto('/');
+    const pinB = page.getByRole('button', { name: /Sorot kartu Wilayah B/ });
+    await expect(page.locator('canvas').first()).toBeVisible();
+    // Pins and cards stay hidden until the hexagons have settled, then appear in order.
+    await expect(pinB).toHaveCSS('opacity', '1', { timeout: 10_000 });
+    const cardB = page.locator('[data-card="b"]');
+    await expect(cardB.locator('[data-card-hold]')).toHaveCSS('opacity', '1', { timeout: 10_000 });
+
+    await pinB.click();
+    await expect(pinB).toHaveAttribute('aria-pressed', 'true');
+    await expect(cardB.locator('[data-highlighted]')).toBeVisible();
+    await pinB.click();
+    await expect(pinB).toHaveAttribute('aria-pressed', 'false');
+  });
+
   test('has no horizontal page overflow', async ({ page }) => {
     await page.goto('/');
     const overflow = await page.evaluate(

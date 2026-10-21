@@ -1,3 +1,4 @@
+import { useEffect, useEffectEvent } from 'react';
 import dioramaGlassUrl from '@/assets/figma/landing/diorama-nusantara-kaca.svg';
 import dioramaUrl from '@/assets/figma/landing/diorama-nusantara.svg';
 import storyGlassUrl from '@/assets/figma/landing/placeholder-story-diorama-kaca.svg';
@@ -15,50 +16,88 @@ const PLACEHOLDER_ART = {
   story: { normal: storyUrl, glass: storyGlassUrl, width: 1190, height: 1088 },
 } as const;
 
-/** Figma 43:713: phones get the still image instead of WebGL. */
+/** Figma 43:713: phones skip the relief diorama fallback (the hexagon map itself runs on phones). */
 const STILL_IMAGE_QUERY = '(width < 768px)';
 
+/** What happened to the hexagon hero map, for the parts of the page that follow it. */
+export type HeroMapOutcome = 'settled' | 'unavailable';
+
 interface HeroDioramaSlotProps {
-  /** `hero` = 3D-1 landing hero; `story` = 3D-5 story band (the engine has no story scene yet). */
+  /** `hero` = landing hero map; `story` = 3D-5 story band (the engine has no story scene yet). */
   readonly scene: 'hero' | 'story';
   /** Plain-language description of the illustration for screen readers. */
   readonly description: string;
   readonly className?: string | undefined;
+  /** Hero only: `settled` once the hexagons finished entering, `unavailable` if they cannot render. */
+  readonly onHeroMapOutcome?: ((outcome: HeroMapOutcome) => void) | undefined;
+}
+
+function ReportOnMount({ onMount }: { readonly onMount: () => void }) {
+  const report = useEffectEvent(onMount);
+  useEffect(() => {
+    report();
+  }, []);
+  return null;
 }
 
 /**
- * Integration slot for the external `HeroDiorama` (Figma 3D-1). The static Figma illustration is
- * shown first, on phones, for the story scene, and whenever the engine fails.
+ * Integration slot for the landing hero. The hexagon map is the default engine; if it cannot start
+ * (no WebGL, data failed to load) the previous relief `HeroDiorama` takes over on larger screens,
+ * and the static Figma illustration remains the last resort. The illustration also shows while
+ * anything is loading.
  */
-export function HeroDioramaSlot({ scene, description, className }: HeroDioramaSlotProps) {
+export function HeroDioramaSlot({ scene, description, className, onHeroMapOutcome }: HeroDioramaSlotProps) {
   const { mode } = useDisplayMode();
   const reducedMotion = useReducedMotion();
   const stillImageOnly = useMediaQuery(STILL_IMAGE_QUERY);
   const art = PLACEHOLDER_ART[scene];
-  const engine = scene === 'hero' && !stillImageOnly ? geoEngineRegistry.HeroDiorama : null;
+  const isHero = scene === 'hero';
+  const hexEngine = isHero ? geoEngineRegistry.HeroHexMap : null;
+  const reliefEngine = isHero && !stillImageOnly ? geoEngineRegistry.HeroDiorama : null;
+  const engineProps = { displayMode: mode, dataMode: publicConfig.dataMode, reducedMotion };
+
+  const illustration = (
+    <img
+      className={styles.art}
+      src={art[mode]}
+      alt=""
+      width={art.width}
+      height={art.height}
+      loading={isHero ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  );
 
   return (
     <div className={[styles.frame, styles[scene], className].filter(Boolean).join(' ')}>
       <p className="visually-hidden">{description}</p>
-      <EngineSlot
-        engine={engine}
-        engineProps={{
-          displayMode: mode,
-          dataMode: publicConfig.dataMode,
-          reducedMotion,
-        }}
-        placeholder={
-          <img
-            className={styles.art}
-            src={art[mode]}
-            alt=""
-            width={art.width}
-            height={art.height}
-            loading={scene === 'hero' ? 'eager' : 'lazy'}
-            decoding="async"
-          />
-        }
-      />
+      {isHero ? (
+        <EngineSlot
+          engine={hexEngine}
+          engineProps={{
+            ...engineProps,
+            onEntranceSettled: () => {
+              onHeroMapOutcome?.('settled');
+            },
+          }}
+          placeholder={(state) =>
+            state === 'failed' || state === 'absent' ? (
+              <>
+                <ReportOnMount
+                  onMount={() => {
+                    onHeroMapOutcome?.('unavailable');
+                  }}
+                />
+                <EngineSlot engine={reliefEngine} engineProps={engineProps} placeholder={illustration} />
+              </>
+            ) : (
+              illustration
+            )
+          }
+        />
+      ) : (
+        <EngineSlot engine={null} engineProps={engineProps} placeholder={illustration} />
+      )}
     </div>
   );
 }

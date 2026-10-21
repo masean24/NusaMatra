@@ -7,4 +7,6 @@ export type {
   GeoDisplayMode,
   GeoRegionSelection,
   HeroDioramaProps,
+  HeroHexMapProps,
 } from './contract';
+export type { HeroMapOutcome } from './HeroDioramaSlot';

@@ -4,7 +4,8 @@ import { useEffect, useImperativeHandle, type ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useSearchParams } from 'react-router';
 import { ExplorationMapPanel } from '@/features/exploration';
 import { DisplayModeProvider } from '@/features/theme';
-import type { Explore3DMapProps, GeoCameraHandle, HeroDioramaProps } from './contract';
+import { setMediaQueryMatches } from '@/test/browserMocks';
+import type { Explore3DMapProps, GeoCameraHandle, HeroDioramaProps, HeroHexMapProps } from './contract';
 import { geoEngineRegistry } from './engineRegistry';
 import { HeroDioramaSlot } from './HeroDioramaSlot';
 
@@ -14,6 +15,7 @@ const realRegistry = { ...geoEngineRegistry };
 
 beforeEach(() => {
   // jsdom has no WebGL: tests swap in fake engines (or none) instead of loading three.js.
+  registry.HeroHexMap = null;
   registry.HeroDiorama = null;
   registry.Explore3DMap = null;
 });
@@ -65,6 +67,57 @@ describe('HeroDioramaSlot', () => {
       received?.onReady?.();
     });
     expect(container.querySelector('[data-engine="ready"]')).not.toBeNull();
+  });
+
+  it('runs the hexagon map first and reports when its entrance has settled', () => {
+    let hex: HeroHexMapProps | null = null;
+    const reliefMounted = vi.fn();
+    registry.HeroHexMap = function FakeHexMap(props: HeroHexMapProps) {
+      hex = props;
+      return <div data-testid="hex" />;
+    };
+    registry.HeroDiorama = function FakeRelief() {
+      reliefMounted();
+      return <div data-testid="relief" />;
+    };
+    const outcome = vi.fn();
+    withProviders(<HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />);
+
+    expect(screen.getByTestId('hex')).toBeInTheDocument();
+    expect(reliefMounted).not.toHaveBeenCalled();
+    expect(outcome).not.toHaveBeenCalled();
+    act(() => {
+      hex?.onEntranceSettled?.();
+    });
+    expect(outcome).toHaveBeenCalledWith('settled');
+  });
+
+  it('falls back to the relief diorama when the hexagon map reports an error', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    registry.HeroHexMap = function FailingHexMap(props: HeroHexMapProps) {
+      useEffect(() => {
+        props.onError?.(new Error('WebGL tidak tersedia'));
+      }, [props]);
+      return null;
+    };
+    registry.HeroDiorama = function FakeRelief() {
+      return <div data-testid="relief" />;
+    };
+    const outcome = vi.fn();
+    withProviders(<HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />);
+
+    expect(screen.getByTestId('relief')).toBeInTheDocument();
+    expect(outcome).toHaveBeenCalledWith('unavailable');
+  });
+
+  it('keeps the still illustration on phones when the hexagon map is unavailable', () => {
+    setMediaQueryMatches('(width < 768px)', true);
+    registry.HeroDiorama = function FakeRelief() {
+      return <div data-testid="relief" />;
+    };
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
+    expect(screen.queryByTestId('relief')).toBeNull();
+    expect(container.querySelector('img')).toBeInTheDocument();
   });
 
   it('never mounts the engine for the story scene, which it does not support', () => {
