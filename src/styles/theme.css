@@ -119,10 +119,12 @@
     #ffffff33 100%
   );
 
-  --c-nav-bg: var(--nm-glass-nav-fill);
-  --c-nav-border: var(--nm-glass-stroke-soft);
+  --c-nav-bg: var(
+    --nm-glass-surface
+  ); /* the previous balance: tinted and blurred enough to read over content */
+  --c-nav-border: #ffffff3d;
   --c-nav-shadow: var(--nm-shadow-nav-glass), var(--nm-glass-lighting);
-  --c-nav-blur: blur(1px) saturate(125%);
+  --c-nav-blur: blur(18px) saturate(130%);
   --c-nav-pill-bg: #ffffff14;
   --c-nav-pill-bg-preview: #ffffff0d;
   --c-nav-pill-text: var(--nm-text-on-sea);
@@ -138,7 +140,7 @@
   --c-nav-active-liquid: var(--nm-surface);
   --c-nav-active-text: var(--nm-sea-deep);
 
-  --c-switch-track: #ffffff12;
+  --c-switch-track: #ffffff1f;
   --c-switch-border: var(--nm-glass-stroke-soft);
   --c-switch-knob: var(--nm-accent);
   --c-switch-text: var(--nm-text-on-sea);

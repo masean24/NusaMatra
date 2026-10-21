@@ -1,6 +1,5 @@
 import type { PointerEvent } from 'react';
 import { NavLink } from 'react-router';
-import { Icon } from '@/components/ui/Icon/Icon';
 import type { NavItem } from './navItems';
 import styles from './FloatingNavItem.module.css';
 
@@ -33,10 +32,7 @@ export function FloatingNavItem({
         if (event.currentTarget.matches(':focus-visible')) onFocusPreview();
       }}
     >
-      <span className={styles.content}>
-        <Icon name={item.icon} size={18} />
-        <span className={styles.label}>{item.label}</span>
-      </span>
+      <span className={styles.content}>{item.label}</span>
     </NavLink>
   );
 }

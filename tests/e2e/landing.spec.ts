@@ -76,6 +76,68 @@ test.describe('landing', () => {
     await expect(pinB).toHaveAttribute('aria-pressed', 'false');
   });
 
+  test('hero map stays in the hero: right of the copy, over its pins, above the next section', async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto('/');
+    const canvas = page.locator('canvas').first();
+    await expect(canvas).toBeVisible();
+    const pin = page.getByRole('button', { name: /Sorot kartu Wilayah B/ });
+    await expect(pin).toHaveCSS('opacity', '1', { timeout: 10_000 });
+
+    const rect = (locator: typeof canvas) =>
+      locator.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        return { left: box.left, right: box.right, top: box.top + scrollY, bottom: box.bottom + scrollY };
+      });
+    const [map, copy, next, pinBox] = await Promise.all([
+      rect(canvas),
+      rect(page.getByRole('heading', { level: 1 })),
+      rect(page.locator('main section').nth(1)),
+      rect(pin),
+    ]);
+
+    // Never spills into the next section, and every pin sits inside the map's own box.
+    expect(map.bottom).toBeLessThanOrEqual(next.top);
+    expect(pinBox.left).toBeGreaterThanOrEqual(map.left);
+    expect(pinBox.right).toBeLessThanOrEqual(map.right);
+    expect(pinBox.top).toBeGreaterThanOrEqual(map.top);
+    expect(pinBox.bottom).toBeLessThanOrEqual(map.bottom);
+    if (!isMobile) {
+      // Two columns: the headline on the left, the whole map on the right, both on the first screen.
+      expect(map.left).toBeGreaterThanOrEqual(copy.right - 40);
+      expect(map.top).toBeLessThan(page.viewportSize()?.height ?? 0);
+    }
+    // The cards are on screen, and the tiles were really painted into the map's own box: count
+    // orange pixels in a screenshot of it (a blank or misplaced canvas leaves none).
+    await expect(page.locator('[data-card="a"] [data-card-hold]')).toHaveCSS('opacity', '1', {
+      timeout: 10_000,
+    });
+    await canvas.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(500);
+    const png = (await canvas.screenshot()).toString('base64');
+    const orange = await page.evaluate(async (data) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${data}`;
+      await image.decode();
+      const surface = document.createElement('canvas');
+      surface.width = image.width;
+      surface.height = image.height;
+      const context = surface.getContext('2d');
+      if (!context) return 0;
+      context.drawImage(image, 0, 0);
+      const pixels = context.getImageData(0, 0, image.width, image.height).data;
+      let count = 0;
+      for (let index = 0; index < pixels.length; index += 4) {
+        const [r, g, b] = [pixels[index] ?? 0, pixels[index + 1] ?? 0, pixels[index + 2] ?? 0];
+        if (r > 200 && g > 90 && g < 200 && b < 140 && r - b > 90) count += 1;
+      }
+      return count;
+    }, png);
+    expect(orange).toBeGreaterThan(300);
+  });
+
   test('has no horizontal page overflow', async ({ page }) => {
     await page.goto('/');
     const overflow = await page.evaluate(

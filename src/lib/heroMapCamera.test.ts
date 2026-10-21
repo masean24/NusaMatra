@@ -36,8 +36,8 @@ describe('projectToHeroFrame', () => {
   });
 
   it('keeps every hexagon of the dataset inside the zone, clear of the edges', () => {
-    for (const cell of hexDataset.cells) {
-      const { u, v } = projectToHeroFrame([cell.x, 0.4, cell.z]);
+    for (const [x, z] of hexDataset.cells as [number, number, number, number, number | null][]) {
+      const { u, v } = projectToHeroFrame([x, 0.2, z]);
       expect(u).toBeGreaterThan(0.01);
       expect(u).toBeLessThan(0.98);
       expect(v).toBeGreaterThan(0.05);

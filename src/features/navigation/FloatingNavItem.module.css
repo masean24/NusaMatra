@@ -1,5 +1,5 @@
 /*
- * Pill geometry from Figma 49:304: padding 10px 16px 10px 14px, gap 8px, Lexend Medium 14/1.3.
+ * Pill geometry from Figma 49:304 (Lexend Medium 14/1.3), now text only: even horizontal padding.
  * The item draws no background: the shared selection pill in NavLinkList sits behind it.
  */
 .item {
@@ -31,7 +31,7 @@
 .content {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
   width: 100%;
   font-size: 0.875rem;
   font-weight: 500;
@@ -41,7 +41,7 @@
 
 .pill .content {
   min-height: 38px;
-  padding: 10px 16px 10px 14px;
+  padding: 10px 20px;
 }
 
 .tab {
@@ -51,14 +51,12 @@
 
 /* Tabs size to their label; two-word labels may wrap so nothing is truncated at 360px. */
 .tab .content {
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  min-height: 52px;
-  padding: 6px 3px;
+  min-height: 46px;
+  padding: 6px 4px;
   font-size: 0.75rem;
   line-height: 1.15;
   white-space: normal;
+  text-wrap: balance;
   text-align: center;
 }
 

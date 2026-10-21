@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:hex": "node scripts/geo/build-hex-indonesia.mjs",
+    "build:hex": "node scripts/geo/build-hex-indonesia.mjs 0.4 hex-indonesia.json && node scripts/geo/build-hex-indonesia.mjs 0.7 hex-indonesia-compact.json",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "lint": "eslint . --max-warnings=0",

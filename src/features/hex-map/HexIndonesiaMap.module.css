@@ -1,27 +1,24 @@
 /*
- * The zone's own sea plate: the canvas is transparent and draws only hexagons, so the plate and
- * the graticule behind it carry the theme. Normal is the cobalt plate of the Figma hero; Kaca is
- * the same cobalt as translucent glass over the page gradient.
+ * No frame: the map floats straight over the hero background in both themes. The canvas is
+ * transparent and draws only the tiles and the shadow they cast; the graticule behind it uses the
+ * theme's own ink colour. `overflow` stays visible so soft shadows are never cut by a box.
  */
 .root {
+  --hex-ink: var(--nm-sea);
+  --hex-ink-strong: var(--nm-sea-deep);
+  --hex-label: var(--nm-text-muted);
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  background: linear-gradient(180deg, var(--nm-sea-deep) 0%, var(--nm-sea) 100%);
 }
 
 .root[data-display-mode='glass'] {
-  border: 1px solid #ffffff33;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--nm-sea-deep) 62%, transparent) 0%,
-    color-mix(in srgb, var(--nm-sea-deep) 34%, transparent) 100%
-  );
-  backdrop-filter: blur(8px);
+  --hex-ink: #ffffff;
+  --hex-ink-strong: #ffffff;
+  --hex-label: var(--nm-glass-text-muted);
 }
 
-.canvas {
+/* Owns the canvas position, so it never depends on the inline styles react-three-fiber puts on its own wrapper. */
+.canvasBox {
   position: absolute;
   inset: 0;
 }
@@ -33,6 +30,7 @@
   z-index: 2;
   margin: 0;
   padding: 5px 10px;
+  border: 1px solid var(--nm-land-3);
   border-radius: 8px;
   background: rgb(251 250 246 / 92%);
   color: var(--nm-text);
@@ -43,7 +41,7 @@
 }
 
 .root[data-display-mode='glass'] .badge {
-  border: 1px solid #ffffff57;
+  border-color: #ffffff57;
   background: rgb(18 24 38 / 52%);
   color: var(--nm-text-on-sea);
   backdrop-filter: blur(12px);
@@ -54,4 +52,20 @@
     right: 12px;
     font-size: 10px;
   }
+}
+
+.poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.noData {
+  stroke: var(--hex-ink-strong);
+  stroke-opacity: 0.6;
+  stroke-width: 1;
+  stroke-dasharray: 3 2;
+  vector-effect: non-scaling-stroke;
 }

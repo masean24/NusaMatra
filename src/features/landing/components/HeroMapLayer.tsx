@@ -46,7 +46,8 @@ export function HeroMapLayer({ visible, activeId, onToggle, reducedMotion }: Her
 
   useLayoutEffect(() => {
     const layer = layerRef.current;
-    const container = layer?.parentElement;
+    // The cards sit beside the map stage inside the hero visual, so measure against that container.
+    const container = layer?.closest('[data-hero-visual]') ?? layer?.parentElement;
     if (!layer || !container) return;
 
     const measure = () => {

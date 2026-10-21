@@ -11,19 +11,11 @@
 }
 
 /*
- * 3D-1 zone on 27:2: 720×660, radius 28 (41:194); the illustration sits 10px inside it (27:3).
- * The engine paints the whole zone, so the zone's rounded corners clip it.
+ * 3D-1 zone on 27:2: 720×660. The hexagon map has no frame and floats over the page, so the zone
+ * itself never clips (its soft shadows must not be cut), and it keeps this box while the map loads.
  */
 .hero {
   aspect-ratio: 720 / 660;
-  overflow: hidden;
-  border-radius: var(--nm-radius-zone);
-}
-
-.hero .art {
-  inset: 10px;
-  width: calc(100% - 20px);
-  height: calc(100% - 20px);
 }
 
 /* 3D-5 band (41:337): the story art is larger than its zone and bleeds off to the right. */

@@ -5,7 +5,7 @@ import { createMemoryRouter, RouterProvider, useSearchParams } from 'react-route
 import { ExplorationMapPanel } from '@/features/exploration';
 import { DisplayModeProvider } from '@/features/theme';
 import { setMediaQueryMatches } from '@/test/browserMocks';
-import type { Explore3DMapProps, GeoCameraHandle, HeroDioramaProps, HeroHexMapProps } from './contract';
+import type { Explore3DMapProps, GeoCameraHandle, HeroHexMapProps } from './contract';
 import { geoEngineRegistry } from './engineRegistry';
 import { HeroDioramaSlot } from './HeroDioramaSlot';
 
@@ -41,50 +41,53 @@ describe('engine registry', () => {
 });
 
 describe('HeroDioramaSlot', () => {
-  it('shows the static Figma illustration while no engine is available', () => {
-    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Ilustrasi diorama." />);
-    expect(container.querySelector('img')).toHaveAttribute(
-      'src',
-      expect.stringContaining('diorama-nusantara'),
-    );
+  const oldIllustration = (container: HTMLElement) =>
+    container.querySelector('img[src*="diorama-nusantara"]');
+
+  it('shows the hexagon poster, never the old illustration, while no engine is available', () => {
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta hexagon." />);
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
     expect(container.querySelector('[data-engine="absent"]')).not.toBeNull();
-    expect(screen.getByText('Ilustrasi diorama.')).toBeInTheDocument();
+    expect(screen.getByText('Peta hexagon.')).toBeInTheDocument();
+    expect(screen.getByText(/data simulasi/)).toBeInTheDocument();
   });
 
-  it('passes host state to the engine and keeps the placeholder until it is ready', () => {
-    let received: HeroDioramaProps | null = null;
-    registry.HeroDiorama = function FakeHeroDiorama(props: HeroDioramaProps) {
+  it('follows the active theme on the poster', () => {
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
+    expect(container.querySelector('[data-hex-poster]')).toHaveAttribute('data-display-mode', 'normal');
+  });
+
+  it('passes host state to the engine and keeps the poster until it is ready', () => {
+    let received: HeroHexMapProps | null = null;
+    registry.HeroHexMap = function FakeHexMap(props: HeroHexMapProps) {
       received = props;
       return <div data-testid="engine" />;
     };
-    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Diorama." />);
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
 
     expect(screen.getByTestId('engine')).toBeInTheDocument();
     expect(received).toMatchObject({ displayMode: 'normal', dataMode: 'DEMO', reducedMotion: false });
     expect(container.querySelector('[data-engine="loading"]')).not.toBeNull();
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
 
     act(() => {
       received?.onReady?.();
     });
     expect(container.querySelector('[data-engine="ready"]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
   });
 
-  it('runs the hexagon map first and reports when its entrance has settled', () => {
+  it('runs the hexagon map and reports when its entrance has settled', () => {
     let hex: HeroHexMapProps | null = null;
-    const reliefMounted = vi.fn();
     registry.HeroHexMap = function FakeHexMap(props: HeroHexMapProps) {
       hex = props;
       return <div data-testid="hex" />;
-    };
-    registry.HeroDiorama = function FakeRelief() {
-      reliefMounted();
-      return <div data-testid="relief" />;
     };
     const outcome = vi.fn();
     withProviders(<HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />);
 
     expect(screen.getByTestId('hex')).toBeInTheDocument();
-    expect(reliefMounted).not.toHaveBeenCalled();
     expect(outcome).not.toHaveBeenCalled();
     act(() => {
       hex?.onEntranceSettled?.();
@@ -92,8 +95,9 @@ describe('HeroDioramaSlot', () => {
     expect(outcome).toHaveBeenCalledWith('settled');
   });
 
-  it('falls back to the relief diorama when the hexagon map reports an error', () => {
+  it('keeps the hexagon poster when the hexagon map reports an error, and never mounts the relief map', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const reliefMounted = vi.fn();
     registry.HeroHexMap = function FailingHexMap(props: HeroHexMapProps) {
       useEffect(() => {
         props.onError?.(new Error('WebGL tidak tersedia'));
@@ -101,42 +105,46 @@ describe('HeroDioramaSlot', () => {
       return null;
     };
     registry.HeroDiorama = function FakeRelief() {
+      reliefMounted();
       return <div data-testid="relief" />;
     };
     const outcome = vi.fn();
-    withProviders(<HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />);
+    const { container } = withProviders(
+      <HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />,
+    );
 
-    expect(screen.getByTestId('relief')).toBeInTheDocument();
+    expect(container.querySelector('[data-engine="failed"]')).not.toBeNull();
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
+    expect(reliefMounted).not.toHaveBeenCalled();
     expect(outcome).toHaveBeenCalledWith('unavailable');
   });
 
-  it('keeps the still illustration on phones when the hexagon map is unavailable', () => {
-    setMediaQueryMatches('(width < 768px)', true);
-    registry.HeroDiorama = function FakeRelief() {
-      return <div data-testid="relief" />;
+  it('keeps the hexagon poster when the engine throws while rendering', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    registry.HeroHexMap = function BrokenEngine(): never {
+      throw new Error('WebGL context lost');
     };
     const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
-    expect(screen.queryByTestId('relief')).toBeNull();
-    expect(container.querySelector('img')).toBeInTheDocument();
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
+    expect(container.querySelector('[data-engine="failed"]')).not.toBeNull();
+  });
+
+  it('shows the same poster on phones (no separate still image)', () => {
+    setMediaQueryMatches('(width < 768px)', true);
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
   });
 
   it('never mounts the engine for the story scene, which it does not support', () => {
-    registry.HeroDiorama = function FakeHeroDiorama() {
+    registry.HeroHexMap = function FakeHexMap() {
       return <div data-testid="engine" />;
     };
     withProviders(<HeroDioramaSlot scene="story" description="Cerita." />);
     expect(screen.queryByTestId('engine')).toBeNull();
-  });
-
-  it('keeps the placeholder when the engine throws', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    registry.HeroDiorama = function BrokenEngine(): never {
-      throw new Error('WebGL context lost');
-    };
-    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Ilustrasi." />);
-    expect(container.querySelector('img')).toBeInTheDocument();
-    expect(container.querySelector('[data-engine="failed"]')).not.toBeNull();
   });
 });
 

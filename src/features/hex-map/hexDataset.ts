@@ -34,27 +34,25 @@ function finiteNumber(value: unknown, label: string): number {
   return value;
 }
 
+/** One row of `cells`: [x, z, lon, lat, value], with `value` null for "no data". */
 function parseCell(raw: unknown, index: number): HexCell {
-  if (!isRecord(raw)) fail(`sel ${String(index)} bukan objek`);
-  const id = raw['id'];
-  if (typeof id !== 'string' || id === '') fail(`sel ${String(index)} tanpa id`);
-  const hasData = raw['hasData'];
-  if (typeof hasData !== 'boolean') fail(`sel ${id} tanpa status data`);
-  const value = raw['value'];
-  if (hasData) {
+  if (!Array.isArray(raw) || raw.length !== 5) {
+    fail(`sel ${String(index)} bukan baris [x, z, lon, lat, nilai]`);
+  }
+  const [x, z, lon, lat, value] = raw as unknown[];
+  const id = `h${String(index)}`;
+  if (value !== null) {
     const numeric = finiteNumber(value, `nilai sel ${id}`);
     if (numeric < 0 || numeric > 1) fail(`nilai sel ${id} di luar 0–1`);
-  } else if (value !== null) {
-    fail(`sel ${id} tanpa data harus bernilai null`);
   }
   return {
     id,
-    x: finiteNumber(raw['x'], `x sel ${id}`),
-    z: finiteNumber(raw['z'], `z sel ${id}`),
-    lon: finiteNumber(raw['lon'], `lon sel ${id}`),
-    lat: finiteNumber(raw['lat'], `lat sel ${id}`),
-    value: hasData ? (value as number) : null,
-    hasData,
+    x: finiteNumber(x, `x sel ${id}`),
+    z: finiteNumber(z, `z sel ${id}`),
+    lon: finiteNumber(lon, `lon sel ${id}`),
+    lat: finiteNumber(lat, `lat sel ${id}`),
+    value: value === null ? null : (value as number),
+    hasData: value !== null,
   };
 }
 
@@ -82,4 +80,31 @@ export async function loadHexDataset(url: string, signal?: AbortSignal): Promise
   const response = await fetch(url, signal ? { signal } : undefined);
   if (!response.ok) throw new Error(`Gagal memuat ${url}: HTTP ${String(response.status)}`);
   return parseHexDataset(await response.json());
+}
+
+const DATASET_URL = `${import.meta.env.BASE_URL}data/hex-indonesia.json`;
+/** A coarser grid for phones: at about 340 px wide the fine one would be 5 px tiles. */
+const COMPACT_DATASET_URL = `${import.meta.env.BASE_URL}data/hex-indonesia-compact.json`;
+const PHONE_QUERY = '(width < 640px)';
+
+/** The grid for this device: the compact one on phones. */
+export function hexDatasetUrl(): string {
+  return window.matchMedia(PHONE_QUERY).matches ? COMPACT_DATASET_URL : DATASET_URL;
+}
+
+const loading = new Map<string, Promise<HexDataset>>();
+
+/**
+ * Loads a grid once per page: the poster (shown while the 3D scene loads) and the scene share the
+ * same request. A failed load is forgotten, so a later attempt can retry.
+ */
+export function loadHexDatasetOnce(url: string): Promise<HexDataset> {
+  const existing = loading.get(url);
+  if (existing) return existing;
+  const request = loadHexDataset(url);
+  loading.set(url, request);
+  request.catch(() => {
+    loading.delete(url);
+  });
+  return request;
 }

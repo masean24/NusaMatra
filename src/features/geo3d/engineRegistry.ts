@@ -1,4 +1,5 @@
 import { lazy, type ComponentType } from 'react';
+import { HexIndonesiaMap } from '@/features/hex-map';
 import type { Explore3DMapProps, HeroDioramaProps, HeroHexMapProps } from './contract';
 
 /**
@@ -13,15 +14,13 @@ import type { Explore3DMapProps, HeroDioramaProps, HeroHexMapProps } from './con
 export interface GeoEngineRegistry {
   /** Hexagon map: the default landing hero. */
   readonly HeroHexMap: ComponentType<HeroHexMapProps> | null;
-  /** Relief diorama: the hero's fallback when the hexagon map cannot start (no WebGL, no data). */
+  /** Relief diorama (archived): the hero no longer uses it; its loading and failure states show the hexagon poster. */
   readonly HeroDiorama: ComponentType<HeroDioramaProps> | null;
   readonly Explore3DMap: ComponentType<Explore3DMapProps> | null;
 }
 
 export const geoEngineRegistry: GeoEngineRegistry = {
-  HeroHexMap: lazy(() =>
-    import('@/features/hex-map').then((module) => ({ default: module.HexIndonesiaMap })),
-  ),
+  HeroHexMap: HexIndonesiaMap,
   HeroDiorama: lazy(() =>
     import('./engineAdapters').then((module) => ({ default: module.HeroDioramaAdapter })),
   ),

@@ -23,7 +23,7 @@ export const HERO_PINS: readonly HeroPin[] = [
 ];
 
 /** Height of a hexagon top (world units) a pin stands on. */
-const PIN_BASE_HEIGHT = 0.5;
+const PIN_BASE_HEIGHT = 0.22;
 
 /** Where a pin sits in the hero zone: `u` from the left, `v` from the top, both 0–1. */
 export function pinPositionInZone(pin: HeroPin): { readonly u: number; readonly v: number } {

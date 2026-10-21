@@ -47,6 +47,17 @@
   position: relative;
 }
 
+/*
+ * The map zone and its pin layer share this box. It has its own aspect ratio (the 720 × 660 zone), so
+ * the box exists before anything inside it has loaded and never depends on the canvas, and `contain`
+ * keeps whatever the scene does from changing the layout around it.
+ */
+.stage {
+  position: relative;
+  aspect-ratio: 720 / 660;
+  contain: layout style;
+}
+
 .dioramaReveal {
   width: 100%;
 }
@@ -86,15 +97,17 @@
 @media (width < 1180px) {
   .hero {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 48px;
-    padding: 120px var(--nm-gutter) 0;
+    row-gap: 32px;
+    padding: 96px var(--nm-gutter) 0;
   }
 
   .copy {
     padding-top: 0;
   }
 
+  /* One column: the map comes first so it is on the first screen, not below the buttons. */
   .visual {
+    order: -1;
     width: min(100%, 720px);
     justify-self: center;
   }
@@ -119,7 +132,18 @@
     padding-top: 96px;
   }
 
-  /* On phones the cards follow the illustration as a list instead of covering it. */
+  /*
+   * On phones the map stage comes first (so the map is on the first screen) and the headline
+   * follows it; the cards and caption drop below the copy as a list.
+   */
+  .visual {
+    display: contents;
+  }
+
+  .stage {
+    order: -1;
+  }
+
   .cards {
     position: static;
     display: grid;

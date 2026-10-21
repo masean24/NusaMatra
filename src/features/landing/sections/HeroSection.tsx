@@ -82,31 +82,33 @@ export function HeroSection() {
         </Reveal>
       </div>
 
-      <div className={styles.visual}>
-        <Reveal
-          trigger="load"
-          distance={60}
-          duration={1100}
-          delay={G2_DELAY_MS}
-          className={styles.dioramaReveal}
-        >
-          {/* Hexagon map (default engine); the relief diorama and the Figma illustration are its fallbacks. */}
-          <HeroDioramaSlot
-            scene="hero"
-            description="Peta hexagon Indonesia (ilustrasi, data simulasi): setiap sel hexagon mewakili sebagian daratan, diberi warna dari putih ke oranye tua sesuai nilai simulasi, dengan tiga titik penanda oranye."
-            onHeroMapOutcome={handleOutcome}
-          />
-        </Reveal>
-        {outcome !== 'unavailable' && (
-          <HeroMapLayer
-            visible={pinsVisible}
-            activeId={activeCard}
-            reducedMotion={reducedMotion}
-            onToggle={(id) => {
-              setActiveCard((current) => (current === id ? null : id));
-            }}
-          />
-        )}
+      <div className={styles.visual} data-hero-visual>
+        <div className={styles.stage}>
+          <Reveal
+            trigger="load"
+            distance={60}
+            duration={1100}
+            delay={G2_DELAY_MS}
+            className={styles.dioramaReveal}
+          >
+            {/* Hexagon map (default engine); the relief diorama and the Figma illustration are its fallbacks. */}
+            <HeroDioramaSlot
+              scene="hero"
+              description="Peta hexagon Indonesia (ilustrasi, data simulasi): setiap sel hexagon mewakili sebagian daratan, diberi warna dari putih ke oranye tua sesuai nilai simulasi, dengan tiga titik penanda oranye."
+              onHeroMapOutcome={handleOutcome}
+            />
+          </Reveal>
+          {outcome !== 'unavailable' && (
+            <HeroMapLayer
+              visible={pinsVisible}
+              activeId={activeCard}
+              reducedMotion={reducedMotion}
+              onToggle={(id) => {
+                setActiveCard((current) => (current === id ? null : id));
+              }}
+            />
+          )}
+        </div>
         <ul
           ref={cardsRef}
           role="list"

@@ -56,7 +56,6 @@
    * bounce on the opposite edge and a little shade along the bottom for thickness.
    */
   --nm-glass-lighting: inset 1px 1px 0 0 #ffffff26, inset -1px -1px 0 0 #ffffff0d;
-  --nm-glass-nav-fill: #ffffff0a; /* Kaca navbar: clear, the lens does the work */
   --nm-glass-stroke-soft: #ffffff1a; /* hairline under the directional rim, not a uniform white outline */
   --nm-shadow-knob: 0 3px 8px 0 #121e5a33;
   --nm-blur-panel: 8px; /* the landing panels use 8px; KK/Kaca panel style is 16px */
