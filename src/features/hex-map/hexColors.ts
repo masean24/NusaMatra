@@ -6,13 +6,17 @@
 export type HexTheme = 'normal' | 'glass';
 export type Rgb = readonly [number, number, number];
 
-/** Normal: limestone white → peach → orange → deep orange (the design's priority steps 1–5). */
+/**
+ * Normal: sand → cream-peach → peach → orange → deep orange. The light end is a warm sand, deliberately
+ * darker than the ivory page (#f2f1ec), so even the lowest tiles keep their outline and the
+ * archipelago reads at a glance. It is still the lightest tile and still means "lowest".
+ */
 const NORMAL_STOPS: readonly Rgb[] = [
-  [0xfb, 0xfa, 0xf6],
-  [0xff, 0xd9, 0xbf],
-  [0xff, 0xb0, 0x7a],
-  [0xff, 0x8a, 0x3d],
-  [0xd9, 0x58, 0x1a],
+  [0xe6, 0xd5, 0xb8],
+  [0xf2, 0xc8, 0x9f],
+  [0xff, 0xab, 0x72],
+  [0xff, 0x86, 0x36],
+  [0xd2, 0x52, 0x16],
 ];
 
 /** Kaca: the same warm ramp, but the light end is cobalt-tinted ice and the dark end a touch redder. */
@@ -57,12 +61,12 @@ export interface HexLightRig {
 /** Normal: warm daylight on a light page, neutral warm shadows. */
 const NORMAL_RIG: HexLightRig = {
   ambient: [255, 247, 238],
-  ambientIntensity: 0.55,
+  ambientIntensity: 0.4,
   hemiSky: [255, 250, 244],
   hemiGround: [226, 214, 196],
-  hemiIntensity: 1.05,
+  hemiIntensity: 0.8,
   key: [255, 252, 246],
-  keyIntensity: 2.1,
+  keyIntensity: 1.75,
   shadow: [70, 52, 36],
   shadowOpacity: 0.17,
   outline: [47, 91, 255],

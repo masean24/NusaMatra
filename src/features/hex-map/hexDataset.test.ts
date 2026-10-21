@@ -42,8 +42,8 @@ describe('parseHexDataset', () => {
 
 describe('valueToRgb', () => {
   it('runs from the lightest tile to deep orange in both themes and clamps out-of-range values', () => {
-    expect(valueToRgb(0, 'normal')).toEqual([0xfb, 0xfa, 0xf6]);
-    expect(valueToRgb(1, 'normal')).toEqual([0xd9, 0x58, 0x1a]);
+    expect(valueToRgb(0, 'normal')).toEqual([0xe6, 0xd5, 0xb8]);
+    expect(valueToRgb(1, 'normal')).toEqual([0xd2, 0x52, 0x16]);
     expect(valueToRgb(-3)).toEqual(valueToRgb(0));
     expect(valueToRgb(9, 'glass')).toEqual(valueToRgb(1, 'glass'));
   });
@@ -56,6 +56,12 @@ describe('valueToRgb', () => {
         expect(ramp[step]).toBeLessThanOrEqual((ramp[step - 1] ?? 0) + 1e-9);
       }
     }
+  });
+
+  it('keeps even the lightest Normal tile clearly darker than the ivory page, so the silhouette reads', () => {
+    const luminance = ([r, g, b]: readonly [number, number, number]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    const page = luminance([0xf2, 0xf1, 0xec]);
+    expect(page - luminance(valueToRgb(0, 'normal'))).toBeGreaterThan(18);
   });
 
   it('gives Kaca its own cool-tinted light end while the dark end stays orange', () => {
