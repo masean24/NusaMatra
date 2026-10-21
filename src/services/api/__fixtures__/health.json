@@ -1,0 +1,1 @@
+{"status":"healthy","version":"0.1.0","mode":"DEMO","active_snapshot":"2026.10.0-wia-demo","database":{"status":"connected","tables":{"dim_regions":552,"dim_indicators":33,"fact_indicator_values":15934,"data_snapshots":1},"detail":null},"redis":"not_configured","static_fallback_ready":true}

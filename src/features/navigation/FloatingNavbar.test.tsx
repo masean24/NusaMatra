@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { DisplayModeProvider } from '@/features/theme';
@@ -52,10 +52,14 @@ describe('FloatingNavbar', () => {
     expect(desktopNav().getByRole('link', { name: 'Lab Prioritas' })).not.toHaveAttribute('aria-current');
 
     await router.navigate(-1);
-    expect(await desktopNav().findByRole('link', { name: 'Lab Prioritas' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    // `findByRole` alone resolves as soon as the link exists, before the history pop has rendered;
+    // wait for the state itself (this raced when the whole suite ran under load).
+    await waitFor(() => {
+      expect(desktopNav().getByRole('link', { name: 'Lab Prioritas' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    });
     expect(desktopNav().getByRole('link', { name: 'Bandingkan' })).not.toHaveAttribute('aria-current');
   });
 

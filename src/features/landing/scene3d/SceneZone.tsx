@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ComponentType } from 'react';
-import { useMediaQuery, useReducedMotion } from '@/features/motion';
+import { STAGGER_ITEM_PROPS, useMediaQuery, useReducedMotion } from '@/features/motion';
 import { useDisplayMode } from '@/features/theme';
 import { RenderErrorBoundary } from '@/components/feedback/RenderErrorBoundary';
 import type { SceneProps } from './sceneProps';
@@ -83,6 +83,7 @@ export function SceneZone({ kind, description, className, values }: SceneZonePro
       ref={containerRef}
       className={[styles.zone, styles[kind], className].filter(Boolean).join(' ')}
       data-kind={kind}
+      {...STAGGER_ITEM_PROPS}
     >
       <p className="visually-hidden">{description}</p>
       {poster}
