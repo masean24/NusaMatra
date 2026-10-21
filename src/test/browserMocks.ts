@@ -75,6 +75,16 @@ export function enterViewport(): void {
   }
 }
 
+class MockResizeObserver implements ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+export function installResizeObserver(): void {
+  window.ResizeObserver = MockResizeObserver;
+}
+
 export function resetIntersectionObservers(): void {
   observers.length = 0;
 }

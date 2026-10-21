@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -23,6 +24,10 @@ function desktopNav() {
 }
 
 describe('FloatingNavbar', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('lists the Figma items in order with real destinations', () => {
     renderAt('/');
     const links = desktopNav().getAllByRole('link');
@@ -63,38 +68,56 @@ describe('FloatingNavbar', () => {
     expect(desktopNav().getByRole('link', { name: 'Bandingkan' })).not.toHaveAttribute('aria-current');
   });
 
-  it('starts the hover liquid only for mouse or pen, and recedes it on leave', () => {
-    renderAt('/');
-    const link = desktopNav().getByRole('link', { name: 'Jelajahi' });
-
-    fireEvent.pointerEnter(link, { pointerType: 'touch', clientX: 10, clientY: 10 });
-    expect(link).not.toHaveAttribute('data-liquid');
-
-    fireEvent.pointerEnter(link, { pointerType: 'mouse', clientX: 12, clientY: 8 });
-    expect(link).toHaveAttribute('data-liquid', 'on');
-    expect(link.style.getPropertyValue('--liquid-x')).toBe('12px');
-    expect(link.style.getPropertyValue('--liquid-y')).toBe('8px');
-
-    fireEvent.pointerLeave(link, { pointerType: 'mouse', clientX: 40, clientY: 8 });
-    expect(link).not.toHaveAttribute('data-liquid');
-    expect(link.style.getPropertyValue('--liquid-x')).toBe('40px');
+  it('rests the single selection pill on the current route', () => {
+    renderAt('/bandingkan');
+    const links = desktopNav().getAllByRole('link');
+    expect(links.filter((link) => link.dataset['targeted'] === 'true')).toHaveLength(1);
+    expect(desktopNav().getByRole('link', { name: 'Bandingkan' })).toHaveAttribute('data-targeted', 'true');
+    expect(document.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThan(0);
   });
 
-  it('marks a press so the item can compress, and clears it on release', () => {
-    renderAt('/');
-    const link = desktopNav().getByRole('link', { name: 'Uji' });
-    fireEvent.pointerDown(link, { pointerType: 'touch', clientX: 5, clientY: 5 });
-    expect(link).toHaveAttribute('data-pressed', 'true');
-    fireEvent.pointerUp(link, { pointerType: 'touch' });
-    expect(link).not.toHaveAttribute('data-pressed');
+  it('previews hover with the same pill for mouse and pen only, and returns to the route on leave', () => {
+    renderAt('/bandingkan');
+    const route = desktopNav().getByRole('link', { name: 'Bandingkan' });
+    const other = desktopNav().getByRole('link', { name: 'Cerita' });
+
+    fireEvent.pointerEnter(other, { pointerType: 'touch' });
+    expect(route).toHaveAttribute('data-targeted', 'true');
+
+    fireEvent.pointerEnter(other, { pointerType: 'mouse' });
+    expect(other).toHaveAttribute('data-targeted', 'true');
+    expect(route).not.toHaveAttribute('data-targeted');
+    expect(window.location.pathname).not.toBe('/cerita-wilayah'); // hover never navigates
+
+    const list = other.closest('ul')?.parentElement;
+    if (!list) throw new Error('link list not found');
+    fireEvent.pointerLeave(list, { pointerType: 'mouse' });
+    expect(route).toHaveAttribute('data-targeted', 'true');
+    expect(other).not.toHaveAttribute('data-targeted');
   });
 
-  it('keeps the decorative liquid out of the accessibility tree', () => {
-    renderAt('/');
-    const link = desktopNav().getByRole('link', { name: 'Cerita' });
-    expect(link).toHaveAccessibleName('Cerita');
-    link.querySelectorAll('svg').forEach((svg) => {
-      expect(svg.closest('[aria-hidden="true"]')).not.toBeNull();
+  it('follows keyboard focus with the pill and returns when focus leaves the list', async () => {
+    // jsdom has no :focus-visible; report keyboard-style focus the way a browser would.
+    // eslint-disable-next-line @typescript-eslint/unbound-method -- invoked with the right `this` below
+    const matches = Element.prototype.matches;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (this: Element, selector: string) {
+      return selector === ':focus-visible' || matches.call(this, selector);
     });
+    renderAt('/');
+    const first = desktopNav().getAllByRole('link')[0];
+    if (!first) throw new Error('no links');
+    first.focus();
+    await userEvent.keyboard('{Tab}');
+    const second = desktopNav().getAllByRole('link')[1];
+    expect(second).toHaveFocus();
+    expect(second).toHaveAttribute('data-targeted', 'true');
+  });
+
+  it('keeps the decorative pill out of the accessibility tree and the tab order', () => {
+    renderAt('/jelajahi');
+    const [desktop] = screen.getAllByRole('navigation', { name: 'Navigasi utama' });
+    const pill = desktop?.querySelector('span[aria-hidden="true"]');
+    expect(pill).not.toBeNull();
+    expect(desktopNav().getAllByRole('listitem')).toHaveLength(PRIMARY_NAV_ITEMS.length);
   });
 });

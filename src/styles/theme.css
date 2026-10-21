@@ -41,9 +41,20 @@
   --c-icon: var(--nm-text);
   --c-zone-fill: transparent;
 
+  --c-glass-rim: none; /* directional edge highlight; Kaca only */
+
   --c-nav-bg: var(--nm-surface);
   --c-nav-border: var(--nm-land-3);
   --c-nav-shadow: var(--nm-shadow-nav-normal);
+  --c-nav-blur: none;
+  /* The one sliding selection pill: cobalt at rest, laguna-muda while previewing another item. */
+  --c-nav-pill-bg: var(--nm-sea);
+  --c-nav-pill-bg-preview: #e3e9ff;
+  --c-nav-pill-text: var(--nm-text-on-sea);
+  --c-nav-pill-text-preview: var(--nm-sea-deep);
+  --c-nav-pill-shadow: 0 4px 10px #1e3fd933;
+  --c-nav-pill-sheen: none;
+  --c-nav-pill-blur: none;
   --c-nav-divider: var(--nm-land-3);
   --c-nav-text: var(--nm-text-muted);
   --c-nav-hover-liquid: #e3e9ff; /* info/laut-muda */
@@ -73,22 +84,22 @@
   --c-note: var(--nm-text-on-sea);
 
   --c-surface: var(--nm-glass-surface);
-  --c-surface-border: var(--nm-glass-stroke);
-  --c-surface-shadow: var(--nm-shadow-glass);
-  --c-surface-blur: blur(var(--nm-blur-panel));
+  --c-surface-border: var(--nm-glass-stroke-soft);
+  --c-surface-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
+  --c-surface-blur: blur(2px) saturate(120%);
   --c-surface-muted: var(--nm-glass-surface);
   --c-band: var(--nm-glass-surface);
-  --c-band-border: var(--nm-glass-stroke);
-  --c-band-shadow: var(--nm-shadow-glass);
+  --c-band-border: var(--nm-glass-stroke-soft);
+  --c-band-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
 
   --c-input-bg: var(--nm-glass-surface);
-  --c-input-border: var(--nm-glass-stroke);
-  --c-input-shadow: var(--nm-shadow-glass);
+  --c-input-border: var(--nm-glass-stroke-soft);
+  --c-input-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
   --c-input-placeholder: var(--nm-glass-text-muted);
 
   --c-cta-band: var(--nm-glass-surface);
-  --c-cta-band-border: var(--nm-glass-stroke);
-  --c-cta-band-shadow: var(--nm-shadow-glass);
+  --c-cta-band-border: var(--nm-glass-stroke-soft);
+  --c-cta-band-shadow: var(--nm-shadow-glass), var(--nm-glass-lighting);
   --c-on-cta-band: var(--nm-text-on-sea);
 
   --c-footer: var(--nm-sea-deep);
@@ -99,9 +110,26 @@
   --c-icon: var(--nm-text-on-sea);
   --c-zone-fill: var(--nm-glass-zone);
 
+  --c-glass-rim: linear-gradient(
+    160deg,
+    #ffffff66 0%,
+    #ffffff26 22%,
+    #ffffff00 50%,
+    #ffffff0a 78%,
+    #ffffff33 100%
+  );
+
   --c-nav-bg: var(--nm-glass-surface);
-  --c-nav-border: var(--nm-glass-stroke);
-  --c-nav-shadow: var(--nm-shadow-nav-glass);
+  --c-nav-border: var(--nm-glass-stroke-soft);
+  --c-nav-shadow: var(--nm-shadow-nav-glass), var(--nm-glass-lighting);
+  --c-nav-blur: blur(1px) saturate(125%);
+  --c-nav-pill-bg: #ffffff14;
+  --c-nav-pill-bg-preview: #ffffff0d;
+  --c-nav-pill-text: var(--nm-text-on-sea);
+  --c-nav-pill-text-preview: var(--nm-text-on-sea);
+  --c-nav-pill-shadow: 0 2px 8px #121e5a26, inset 1px 1px 0 #ffffff33, inset -1px -1px 0 #ffffff14;
+  --c-nav-pill-sheen: none;
+  --c-nav-pill-blur: saturate(115%);
   --c-nav-divider: var(--nm-glass-stroke);
   --c-nav-text: var(--nm-text-on-sea);
   --c-nav-hover-liquid: #ffffff;

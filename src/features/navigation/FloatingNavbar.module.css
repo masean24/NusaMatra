@@ -4,18 +4,40 @@
   z-index: var(--nm-z-nav);
 }
 
-.filterDefs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
 .bar {
   border: 1px solid var(--c-nav-border);
-  background: var(--c-nav-bg);
   box-shadow: var(--c-nav-shadow);
-  backdrop-filter: var(--c-surface-blur);
+}
+
+/*
+ * The glass is its own layer, not the bar: a backdrop-filter on the bar would make it the backdrop
+ * root, and the selection pill inside it could then only see the bar, never the page behind.
+ * `--glass-refraction` (set by useRefractiveGlass on Chromium in Kaca) bends what is behind the edge.
+ */
+.bar::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--c-nav-bg);
+  backdrop-filter: var(--glass-refraction,) var(--c-nav-blur);
+  content: '';
+  pointer-events: none;
+}
+
+/* Directional edge light: a 1px ring masked out of a gradient, so it follows the capsule's radius. */
+.bar::after {
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--c-glass-rim);
+  content: '';
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /*
@@ -55,12 +77,6 @@
   background: var(--c-nav-divider);
 }
 
-.items {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
 .compactTop,
 .tabBar {
   display: none;
@@ -93,17 +109,6 @@
     display: block;
     padding: 6px;
     border-radius: 24px;
-  }
-
-  .tabItems {
-    display: flex;
-    gap: 2px;
-  }
-
-  .tabCell {
-    display: flex;
-    flex: 1 1 auto;
-    min-width: max(44px, min-content);
   }
 }
 

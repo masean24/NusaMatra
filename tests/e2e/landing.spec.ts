@@ -106,6 +106,32 @@ test.describe('landing', () => {
     await expect(nav.getByRole('link', { name: 'Bandingkan' })).not.toHaveAttribute('aria-current', 'page');
   });
 
+  test('one selection pill glides to the hovered item, back on leave, and to the clicked item', async ({
+    page,
+    isMobile,
+  }) => {
+    await page.goto('/jelajahi');
+    const nav = visibleNav(page);
+    const pill = nav.locator('[data-nav-indicator]');
+    const pillLeft = async () => (await pill.boundingBox())?.x ?? Number.NaN;
+    const linkLeft = async (name: string) =>
+      (await nav.getByRole('link', { name }).boundingBox())?.x ?? Number.NaN;
+
+    await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Jelajahi'), 0);
+
+    if (!isMobile) {
+      await nav.getByRole('link', { name: 'Cerita' }).hover();
+      await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Cerita'), 0);
+      await expect(page).toHaveURL(/\/jelajahi$/); // hover never navigates
+      await page.mouse.move(700, 450);
+      await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Jelajahi'), 0);
+    }
+
+    await nav.getByRole('link', { name: 'Cerita' }).click();
+    await expect(page).toHaveURL(/\/cerita-wilayah$/);
+    await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Cerita'), 0);
+  });
+
   test('region search validates and hands the query to Jelajahi', async ({ page }) => {
     await mockDataHub(page);
     await page.goto('/');
