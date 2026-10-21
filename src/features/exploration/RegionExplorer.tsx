@@ -20,9 +20,23 @@ const LEVEL_FILTERS: readonly { readonly value: LevelFilter; readonly label: str
   { value: 'CITY', label: 'Kota' },
 ];
 
+interface RegionExplorerProps {
+  /** Render without its own card, for use inside the side panel. */
+  readonly bare?: boolean;
+  /** Receives the chosen region and its name; defaults to writing `?kode=` only. */
+  readonly onSelect?: ((code: string, name: string) => void) | undefined;
+}
+
 /** Jelajahi's region search: debounced, abortable and driven by the real Data Hub region list. */
-export function RegionExplorer() {
+export function RegionExplorer({ bare = false, onSelect }: RegionExplorerProps) {
   const { query, selectedCode, setQuery, selectCode } = useRegionBrowserParams();
+  const choose =
+    onSelect ??
+    ((code: string) => {
+      selectCode(code);
+    });
+  const Frame = bare ? 'div' : Surface;
+  const frameProps = bare ? { className: styles.bare } : { radius: 'card' as const, className: styles.panel };
   const [level, setLevel] = useState<LevelFilter>('ALL');
   const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
   const searchKey = `${debouncedQuery}|${level}`;
@@ -41,7 +55,7 @@ export function RegionExplorer() {
   const visibleCount = expanded?.key === searchKey ? expanded.count : PAGE_SIZE;
 
   return (
-    <Surface radius="card" className={styles.panel}>
+    <Frame {...frameProps}>
       <h2 className="kk-h3">Cari wilayah</h2>
       <TextField
         label="Cari kabupaten/kota"
@@ -121,7 +135,7 @@ export function RegionExplorer() {
                       className={styles.region}
                       aria-pressed={region.regionId === selectedCode}
                       onClick={() => {
-                        selectCode(region.regionId);
+                        choose(region.regionId, region.displayName);
                       }}
                     >
                       <span className="kk-body-strong">{region.displayName}</span>
@@ -147,6 +161,6 @@ export function RegionExplorer() {
           );
         }}
       </ResourceView>
-    </Surface>
+    </Frame>
   );
 }

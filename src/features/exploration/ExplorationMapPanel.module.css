@@ -57,3 +57,34 @@
     color: var(--c-nav-hover-text);
   }
 }
+
+/*
+ * The map fills its column beside the side panel. It keeps one size whether the panel is open or
+ * collapsed on desktop; on phones it takes about half the screen and the sheet covers the rest.
+ */
+.workspace .map {
+  height: auto;
+  min-height: 360px;
+  max-height: calc(100vh - 150px);
+  aspect-ratio: 3 / 2;
+}
+
+@media (width < 960px) {
+  .workspace .map {
+    height: 52vh;
+    min-height: 340px;
+  }
+}
+
+.workspace .loadingFrame {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-card);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--nm-sea) 22%, var(--c-surface)),
+    var(--c-surface-muted)
+  );
+}

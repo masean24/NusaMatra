@@ -1,4 +1,5 @@
 export { BoundaryNotice } from './BoundaryNotice';
+export { ExploreWorkspace } from './ExploreWorkspace';
 export { ExplorationMapPanel } from './ExplorationMapPanel';
 export { IndicatorPanel } from './IndicatorPanel';
 export { RegionDetailPanel } from './RegionDetailPanel';

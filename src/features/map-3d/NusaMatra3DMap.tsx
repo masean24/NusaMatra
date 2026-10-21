@@ -20,6 +20,43 @@ import { HERO_SUN_DIRECTION } from './terrain/heightField';
 import { fitCameraToPoints, type CameraPose } from './terrain/cameraFit';
 
 /** Hero framing: elevation of the camera and the free border kept for parallax and the intro. */
+/** Start-up camera of the Explore map, (0, 33, 29): its distance and the direction it looks from. */
+const EXPLORE_CAMERA_DISTANCE = Math.hypot(33, 29);
+const EXPLORE_CAMERA_DIRECTION = new THREE.Vector3(0, 33, 29).normalize();
+const EXPLORE_FOG_NEAR = 32;
+const EXPLORE_FOG_FAR = 118;
+/** Extra room around the official geography when it is fitted to the canvas width. */
+const EXPLORE_FIT_MARGIN = 1.2;
+
+/**
+ * Host fix: how far the camera must be for a ground strip of `width` to fit the canvas. LIVE
+ * geography (the whole archipelago) is fitted this way so it is never cropped, whatever the shape of
+ * the canvas beside the side panel or above a phone's sheet; it never comes closer than start-up.
+ */
+function exploreDefaultPosition(
+  eng: { camera: THREE.PerspectiveCamera; scene: THREE.Scene; exploreFrame: { width: number } | null },
+  target: THREE.Vector3,
+): THREE.Vector3 {
+  const distance = eng.exploreFrame
+    ? exploreFitDistance(eng.camera, eng.exploreFrame.width, eng.scene)
+    : EXPLORE_CAMERA_DISTANCE;
+  return target.clone().addScaledVector(EXPLORE_CAMERA_DIRECTION, distance);
+}
+
+function exploreFitDistance(camera: THREE.PerspectiveCamera, width: number, scene?: THREE.Scene): number {
+  const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+  const fitting = (width * EXPLORE_FIT_MARGIN) / (2 * Math.tan(halfFov) * camera.aspect);
+  const distance = Math.max(EXPLORE_CAMERA_DISTANCE, fitting);
+  // The haze was tuned for the start-up distance; keep it in proportion when the camera backs off,
+  // or the land washes out toward the sea colour.
+  if (scene?.fog instanceof THREE.Fog) {
+    const ratio = distance / EXPLORE_CAMERA_DISTANCE;
+    scene.fog.near = EXPLORE_FOG_NEAR * ratio;
+    scene.fog.far = EXPLORE_FOG_FAR * ratio;
+  }
+  return distance;
+}
+
 const HERO_CAMERA_ELEVATION_DEG = 54;
 const HERO_FRAME_MARGIN = 0.05;
 const HERO_MARKER_SCALE = 2.2;
@@ -1154,6 +1191,8 @@ interface InternalEngineState {
   /** Hero only: coastline relief scene and the camera pose that frames it. */
   heroTerrain: HeroTerrain | null;
   heroPose: CameraPose | null;
+  /** Explore, LIVE geography only: centre and width of the drawn regions, for fitting the camera. */
+  exploreFrame: { center: THREE.Vector3; width: number } | null;
 }
 
 export const NusaMatra3DMap = forwardRef<
@@ -1301,7 +1340,7 @@ export const NusaMatra3DMap = forwardRef<
         if (preset === 'top-down') {
           eng.cameraTargetPos = new THREE.Vector3(target.x, 42, target.z + 0.01);
         } else {
-          eng.cameraTargetPos = new THREE.Vector3(target.x, 33, target.z + 29);
+          eng.cameraTargetPos = exploreDefaultPosition(eng, target);
         }
       },
       triggerExploreTransition: () => {
@@ -1351,7 +1390,7 @@ export const NusaMatra3DMap = forwardRef<
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(KAPUR_KOBALT_PALETTE.sea);
-    scene.fog = new THREE.Fog(KAPUR_KOBALT_PALETTE.seaShallow, 32, 118);
+    scene.fog = new THREE.Fog(KAPUR_KOBALT_PALETTE.seaShallow, EXPLORE_FOG_NEAR, EXPLORE_FOG_FAR);
 
     const camera = new THREE.PerspectiveCamera(
       mode === 'hero' ? 40 : 45,
@@ -1534,6 +1573,7 @@ export const NusaMatra3DMap = forwardRef<
       isVisible: true,
       heroTerrain,
       heroPose,
+      exploreFrame: null,
     };
 
     onReady?.();
@@ -1546,6 +1586,19 @@ export const NusaMatra3DMap = forwardRef<
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
         const eng = engineRef.current;
+        if (mode === 'explore' && eng?.exploreFrame) {
+          // Refit to the new canvas shape, keeping the direction the user is looking from.
+          const target = eng.controls ? eng.controls.target : new THREE.Vector3();
+          if (eng.cameraTargetPos) {
+            // A camera move is under way (start-up framing): retarget it for the new shape.
+            eng.cameraTargetPos.copy(exploreDefaultPosition(eng, eng.controlsTargetPos ?? target));
+          } else {
+            camera.position
+              .sub(target)
+              .setLength(exploreFitDistance(camera, eng.exploreFrame.width, scene))
+              .add(target);
+          }
+        }
         if (eng?.heroTerrain && !eng.cameraTargetPos) {
           // Re-frame the whole archipelago for the new aspect ratio.
           eng.heroPose = fitCameraToPoints(camera, eng.heroTerrain.framingPoints, {
@@ -1777,6 +1830,23 @@ export const NusaMatra3DMap = forwardRef<
       eng.interactiveMeshes.push(mesh);
     });
 
+    // LIVE geography is the whole archipelago: centre the view on it and fit it to the canvas.
+    if (mode === 'explore' && validatedDataset.metadata.dataMode === 'LIVE' && eng.regionsGroup.children.length > 0) {
+      const bounds = new THREE.Box3().setFromObject(eng.regionsGroup);
+      const center = bounds.getCenter(new THREE.Vector3());
+      center.y = 0;
+      eng.exploreFrame = { center, width: bounds.max.x - bounds.min.x };
+      const target = eng.controls ? eng.controls.target : new THREE.Vector3();
+      target.copy(center);
+      eng.camera.position
+        .copy(center)
+        .addScaledVector(EXPLORE_CAMERA_DIRECTION, exploreFitDistance(eng.camera, eng.exploreFrame.width, eng.scene));
+      eng.camera.lookAt(center);
+      eng.controls?.update();
+    } else {
+      eng.exploreFrame = null;
+    }
+
     const activeMarkers =
       mode === 'hero'
         ? HERO_DIORAMA_MARKERS
@@ -1878,7 +1948,7 @@ export const NusaMatra3DMap = forwardRef<
     if (cameraPreset === 'top-down') {
       eng.cameraTargetPos = new THREE.Vector3(target.x, 42, target.z + 0.01);
     } else {
-      eng.cameraTargetPos = new THREE.Vector3(target.x, 33, target.z + 29);
+      eng.cameraTargetPos = exploreDefaultPosition(eng, target);
     }
   }, [cameraPreset, mode]);
 

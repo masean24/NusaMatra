@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {
   createFixtureFetch,
   fixtureJson,
@@ -9,118 +10,228 @@ import {
 } from '@/test/dataHubFixtures';
 import { RegionDetailPanel } from './RegionDetailPanel';
 
-interface CapturedIndicator {
+interface WireIndicator {
+  indicator_id: string;
   indicator_name: string;
   raw_value: number | null;
+  national_percentile: number | null;
+  quality_flag: string;
   provenance: { official_url?: string };
 }
 
-interface CapturedDetail {
-  data: { indicators: CapturedIndicator[] };
+interface WireDetail {
+  data: { region: { area_km2: number }; indicators: WireIndicator[] };
 }
 
-/** The 3201 capture with its first two indicators edited: no capture contains a measured 0 or a missing value. */
-function editedDetail(edit: (first: CapturedIndicator, second: CapturedIndicator) => void): {
-  body: CapturedDetail;
-  first: CapturedIndicator;
-  second: CapturedIndicator;
-} {
-  const body = structuredClone(fixtureJson('region_detail')) as CapturedDetail;
-  const first = present(body.data.indicators[0], 'the first captured indicator');
-  const second = present(body.data.indicators[1], 'the second captured indicator');
-  edit(first, second);
-  return { body, first, second };
+function liveFetch(edit?: (detail: WireDetail) => void) {
+  const detail = structuredClone(fixtureJson('live/region_detail_1101')) as WireDetail;
+  edit?.(detail);
+  return createFixtureFetch({
+    '/api/v1/regions/1101': () => jsonResponse(detail),
+    '/api/v1/indicators': () => jsonResponse(fixtureJson('live/indicators')),
+  });
 }
 
-function rowOf(name: string): HTMLElement {
-  const row = screen.getByText(name).closest('li');
-  if (!row) throw new Error(`No row for ${name}`);
-  return row;
+const renderLive = (fetchImpl: ReturnType<typeof liveFetch>, props = {}) =>
+  renderWithDataHub(<RegionDetailPanel regionId="1101" {...props} />, { fetchImpl, dataMode: 'LIVE' });
+
+/** The collapsed row of one indicator, opened. */
+async function openIndicator(name: string): Promise<HTMLElement> {
+  const summary = (await screen.findByText(name)).closest('summary');
+  if (!summary) throw new Error(`No row for ${name}`);
+  const details = summary.closest('details');
+  if (!details) throw new Error(`No details for ${name}`);
+  await userEvent.click(summary);
+  return details;
 }
 
-describe('RegionDetailPanel', () => {
-  it('shows region 3201 under its synthetic name, with every indicator marked DEMO_EXAMPLE', async () => {
-    const fetchImpl = createFixtureFetch({ '/api/v1/regions/3201': () => fixtureResponse('region_detail') });
-    renderWithDataHub(<RegionDetailPanel regionId="3201" />, { fetchImpl });
+describe('RegionDetailPanel on a captured LIVE profile', () => {
+  it('shows the name at once, then identity, LIVE status and the plain-language summary', async () => {
+    renderLive(liveFetch(), { fallbackName: 'Kabupaten Aceh Selatan' });
+    // The name is there before the profile arrives.
+    expect(screen.getByRole('heading', { name: 'Kabupaten Aceh Selatan' })).toBeInTheDocument();
 
-    expect(await screen.findByRole('heading', { name: 'Kabupaten Demo Jabar 1' })).toBeInTheDocument();
-    expect(screen.getByText('Nama sintetis (DEMO), bukan nama resmi')).toBeInTheDocument();
-    expect(screen.getByText('Skor komposit simulasi (0–100)')).toBeInTheDocument();
-    expect(screen.getByText('Indikator (31)')).toBeInTheDocument();
-    expect(screen.getAllByText('DEMO_EXAMPLE')).toHaveLength(31);
+    expect(await screen.findByText('Data resmi LIVE')).toBeInTheDocument();
+    expect(screen.getByText(/Provinsi Aceh/)).toBeInTheDocument();
+    expect(screen.getByText(/luas wilayah dari sumber tidak valid \(0 km²\)/)).toBeInTheDocument();
+    const summary = within(screen.getByRole('region', { name: 'Ringkasan' }));
+    expect(summary.getAllByRole('listitem')).toHaveLength(4);
+    expect(summary.getByText('Indeks Pembangunan Manusia (IPM / HDI)')).toBeInTheDocument();
+  });
+
+  it('judges only by polarity-aligned percentile: lower stunting with a high percentile is favorable, higher risk with a low one is not', async () => {
+    renderLive(
+      liveFetch((detail) => {
+        const set = (id: string, percentile: number | null) => {
+          present(
+            detail.data.indicators.find((indicator) => indicator.indicator_id === id),
+            id,
+          ).national_percentile = percentile;
+        };
+        set('hlt_stunting_prevalence', 90);
+        set('dis_multihazard_index', 10);
+        set('soc_hdi', 50);
+        set('soc_poverty_rate', null);
+      }),
+    );
+    await screen.findByText('Data resmi LIVE');
+
+    const summary = within(screen.getByRole('region', { name: 'Ringkasan' }));
+    const card = (label: string) => within(summary.getByText(label).closest('li') as HTMLElement);
+    expect(card('Prevalensi Balita Stunting').getByText('Relatif lebih baik')).toBeInTheDocument();
+    expect(
+      card('Indeks Risiko Bencana Indonesia (IRBI) Multi-Bencana').getByText('Relatif kurang baik'),
+    ).toBeInTheDocument();
+    expect(card('Indeks Pembangunan Manusia (IPM / HDI)').getByText('Di sekitar tengah')).toBeInTheDocument();
+    expect(card('Persentase Penduduk Miskin (P0)').getByText('Tidak dinilai')).toBeInTheDocument();
+    expect(
+      card('Persentase Penduduk Miskin (P0)').getByText(/tidak menyertakan pembanding nasional/),
+    ).toBeInTheDocument();
+  });
+
+  it('keeps indicators grouped by theme and the precise values one tap away, raw apart from normalized', async () => {
+    renderLive(liveFetch());
+    await screen.findByText('Data resmi LIVE');
+
+    await userEvent.click(screen.getByText('Risiko bencana'));
+    const item = within(await openIndicator('Indeks Bahaya Banjir (Rata-rata Wilayah)'));
+    expect(item.getByText('Nilai asli (dari sumber)')).toBeInTheDocument();
+    expect(
+      item.getByText(/Skor ternormalisasi \(0–100; 100 = kondisi relatif terbaik\)/),
+    ).toBeInTheDocument();
+    expect(
+      item.getByText('Nilai yang lebih rendah menunjukkan kondisi yang lebih baik pada indikator ini.'),
+    ).toBeInTheDocument();
+    expect(item.getByText('2024')).toBeInTheDocument();
+    expect(item.getByRole('link', { name: 'BNPB' })).toBeInTheDocument();
+  });
+
+  it('corrects no value but flags the 0.0–1.0 hazard unit that the data contradicts', async () => {
+    renderLive(liveFetch());
+    await screen.findByText('Data resmi LIVE');
+    await userEvent.click(screen.getByText('Risiko bencana'));
+
+    const item = within(await openIndicator('Indeks Bahaya Gempabumi (Rata-rata Wilayah)'));
+    expect(item.getAllByText(/21,6/).length).toBeGreaterThan(0);
+    expect(item.getByText('Satuan dari sumber tidak konsisten')).toBeInTheDocument();
+    expect(item.getByText(/Sumber menyebut skala 0–1, tetapi nilainya mencapai/)).toBeInTheDocument();
+    expect(screen.queryByText(/index \(0\.0-1\.0\)/)).not.toBeInTheDocument();
+  });
+
+  it('does not judge a value imputed from the province and says so', async () => {
+    renderLive(liveFetch());
+    await screen.findByText('Data resmi LIVE');
+    await userEvent.click(screen.getByText('Infrastruktur'));
+
+    const item = within(await openIndicator('Persentase Rumah Tangga Pengguna Listrik (PLN & Non-PLN)'));
+    expect(item.getByText('Tidak dinilai')).toBeInTheDocument();
+    expect(item.getAllByText(/Diimputasi dari nilai tingkat provinsi/).length).toBeGreaterThan(0);
   });
 
   it('shows a measured 0 as 0 and a missing value as "Data belum tersedia", never 0', async () => {
-    const { body, first, second } = editedDetail((a, b) => {
-      a.raw_value = 0;
-      b.raw_value = null;
-    });
-    const fetchImpl = createFixtureFetch({ '/api/v1/regions/3201': () => jsonResponse(body) });
-    renderWithDataHub(<RegionDetailPanel regionId="3201" />, { fetchImpl });
-    await screen.findByRole('heading', { name: 'Kabupaten Demo Jabar 1' });
+    renderLive(
+      liveFetch((detail) => {
+        const [first, second] = detail.data.indicators;
+        present(first, 'first').raw_value = 0;
+        present(second, 'second').raw_value = null;
+      }),
+    );
+    await screen.findByText('Data resmi LIVE');
+    await userEvent.click(screen.getByText('Risiko bencana'));
 
-    expect(within(rowOf(first.indicator_name)).getByText('0')).toBeInTheDocument();
-    expect(within(rowOf(second.indicator_name)).getByText('Data belum tersedia')).toBeInTheDocument();
-    expect(within(rowOf(second.indicator_name)).queryByText('0')).not.toBeInTheDocument();
+    const row = (name: string) => within(screen.getByText(name).closest('summary') as HTMLElement);
+    expect(row('Indeks Bahaya Gempabumi (Rata-rata Wilayah)').getByText('0')).toBeInTheDocument();
+    expect(
+      row('Indeks Bahaya Banjir (Rata-rata Wilayah)').getAllByText('Data belum tersedia').length,
+    ).toBeGreaterThan(0);
+    expect(row('Indeks Bahaya Banjir (Rata-rata Wilayah)').queryByText('0')).not.toBeInTheDocument();
+  });
+
+  it('lists the evidence: each source agency with its years, and links the Paspor Bukti page', async () => {
+    renderLive(liveFetch());
+    await screen.findByText('Data resmi LIVE');
+
+    const evidence = within(screen.getByRole('region', { name: 'Bukti dan sumber' }));
+    expect(evidence.getByRole('link', { name: 'BNPB' })).toBeInTheDocument();
+    expect(evidence.getByRole('link', { name: 'Paspor Bukti (sedang dikembangkan)' })).toHaveAttribute(
+      'href',
+      '/paspor-bukti',
+    );
+    expect(evidence.getByText(/Data Hub belum menerbitkan dokumen metodologi/)).toBeInTheDocument();
   });
 
   it('links only real web sources and leaves anything else as plain text', async () => {
-    const { body, first } = editedDetail((a) => {
-      a.provenance.official_url = 'internal://nusamatra-data-hub';
-    });
-    const fetchImpl = createFixtureFetch({ '/api/v1/regions/3201': () => jsonResponse(body) });
-    renderWithDataHub(<RegionDetailPanel regionId="3201" />, { fetchImpl });
-    await screen.findByRole('heading', { name: 'Kabupaten Demo Jabar 1' });
-
-    expect(within(rowOf(first.indicator_name)).queryByRole('link')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('link').every((link) => link.getAttribute('href')?.startsWith('http'))).toBe(
-      true,
+    renderLive(
+      liveFetch((detail) => {
+        present(detail.data.indicators[0], 'first').provenance.official_url = 'internal://nusamatra-data-hub';
+      }),
     );
+    await screen.findByText('Data resmi LIVE');
+    await userEvent.click(screen.getByText('Risiko bencana'));
+    await openIndicator('Indeks Bahaya Gempabumi (Rata-rata Wilayah)');
+
+    expect(
+      screen
+        .getAllByRole('link')
+        .every(
+          (link) =>
+            link.getAttribute('href')?.startsWith('/') || link.getAttribute('href')?.startsWith('http'),
+        ),
+    ).toBe(true);
   });
 
-  it('says a zero area from the source is invalid instead of presenting it as a real area', async () => {
-    const body = structuredClone(fixtureJson('region_detail')) as { data: { region: { area_km2: number } } };
-    body.data.region.area_km2 = 0;
-    const fetchImpl = createFixtureFetch({ '/api/v1/regions/3201': () => jsonResponse(body) });
-    renderWithDataHub(<RegionDetailPanel regionId="3201" />, { fetchImpl });
-    await screen.findByRole('heading', { name: 'Kabupaten Demo Jabar 1' });
-
-    expect(screen.getByText(/luas wilayah dari sumber tidak valid \(0 km²\)/)).toBeInTheDocument();
-    expect(screen.queryByText(/ 0 km²$/)).not.toBeInTheDocument();
+  it('offers to close the profile', async () => {
+    const onClose = vi.fn();
+    renderLive(liveFetch(), { onClose });
+    await userEvent.click(await screen.findByRole('button', { name: 'Tutup profil' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('shows a captured LIVE profile with source agency, year and quality notes, and no DEMO scores', async () => {
+  it('says plainly when a region has no data yet', async () => {
     const fetchImpl = createFixtureFetch({
-      '/api/v1/regions/1101': () => jsonResponse(fixtureJson('live/region_detail_1101')),
+      '/api/v1/regions/1101': () =>
+        jsonResponse({
+          ...(fixtureJson('live/region_detail_1101') as object),
+          data: { ...(fixtureJson('live/region_detail_1101') as { data: object }).data, indicators: [] },
+        }),
+      '/api/v1/indicators': () => jsonResponse(fixtureJson('live/indicators')),
     });
-    renderWithDataHub(<RegionDetailPanel regionId="1101" />, { fetchImpl, dataMode: 'LIVE' });
+    renderLive(fetchImpl);
+    expect(await screen.findByText(/Belum ada data indikator untuk wilayah ini/)).toBeInTheDocument();
+  });
+});
 
-    expect(await screen.findByRole('heading', { name: 'Kabupaten Aceh Selatan' })).toBeInTheDocument();
-    expect(screen.getByText(/luas wilayah dari sumber tidak valid \(0 km²\)/)).toBeInTheDocument();
-    const row = within(rowOf('Indeks Bahaya Gempabumi (Rata-rata Wilayah)'));
-    expect(row.getByText(/Tahun 2024/)).toBeInTheDocument();
-    expect(row.getByRole('link', { name: 'BNPB' })).toBeInTheDocument();
-    expect(screen.getAllByText(/Diimputasi dari nilai tingkat provinsi/)).toHaveLength(2);
-    expect(screen.queryByText('DEMO_EXAMPLE')).not.toBeInTheDocument();
-    expect(screen.queryByText('Skor komposit simulasi (0–100)')).not.toBeInTheDocument();
-    expect(screen.getByText(/belum ditampilkan pada mode LIVE/)).toBeInTheDocument();
+describe('RegionDetailPanel in DEMO', () => {
+  it('labels the data as simulated and every indicator DEMO_EXAMPLE', async () => {
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/regions/3201': () => fixtureResponse('region_detail'),
+      '/api/v1/indicators': () => fixtureResponse('indicators'),
+    });
+    renderWithDataHub(<RegionDetailPanel regionId="3201" />, { fetchImpl });
+
+    expect(await screen.findByText('Data simulasi (DEMO)')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Kabupaten Demo Jabar 1' })).toBeInTheDocument();
+    expect(screen.getByText('Nama sintetis (DEMO), bukan nama resmi')).toBeInTheDocument();
+    expect(screen.getByText('Semua indikator (31)')).toBeInTheDocument();
+    expect(screen.queryByText('Data resmi LIVE')).not.toBeInTheDocument();
   });
 
   it('asks for a selection instead of fetching when no region is chosen', () => {
     const fetchImpl = createFixtureFetch({});
     renderWithDataHub(<RegionDetailPanel regionId={null} />, { fetchImpl });
-    expect(screen.getByText(/Pilih wilayah pada daftar/)).toBeInTheDocument();
+    expect(screen.getByText(/Pilih wilayah di peta atau dari daftar/)).toBeInTheDocument();
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it('words a missing region as an error with a way to retry', async () => {
     const fetchImpl = createFixtureFetch({
       '/api/v1/regions/9999': () => jsonResponse({ detail: 'Not Found' }, 404),
+      '/api/v1/indicators': () => fixtureResponse('indicators'),
     });
-    renderWithDataHub(<RegionDetailPanel regionId="9999" />, { fetchImpl });
+    renderWithDataHub(<RegionDetailPanel regionId="9999" fallbackName="Wilayah uji" />, { fetchImpl });
 
+    expect(screen.getByRole('heading', { name: 'Wilayah uji' })).toBeInTheDocument();
     expect(await screen.findByText('Data belum dapat dimuat')).toBeInTheDocument();
-    expect(screen.getByText('Data untuk wilayah dan periode ini belum tersedia.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Coba lagi' })).toBeInTheDocument();
   });
 });

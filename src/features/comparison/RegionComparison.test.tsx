@@ -45,6 +45,7 @@ function comparisonFetch() {
   return createFixtureFetch({
     '/api/v1/regions/1101': () => jsonResponse(profileA()),
     '/api/v1/regions/1102': () => jsonResponse(profileB()),
+    '/api/v1/indicators': () => jsonResponse(fixtureJson('live/indicators')),
   });
 }
 
@@ -73,9 +74,30 @@ describe('RegionComparison on captured LIVE profiles', () => {
 
     const row = within(rowOf('Persentase Penduduk Miskin (P0)'));
     expect(row.getByText(/Uji 2,0× lebih tinggi|Uji 2× lebih tinggi/)).toBeInTheDocument();
-    expect(row.getByText('2025 · 2025 · BPS')).toBeInTheDocument();
+    expect(row.getByText('2025 · BPS')).toBeInTheDocument();
     expect(row.getByText('9,89')).toBeInTheDocument();
     expect(row.getByText('19,78')).toBeInTheDocument();
+  });
+
+  it('explains a lower-is-better gap in words and names the better side, from the catalog polarity', async () => {
+    await renderComparison();
+
+    const row = within(rowOf('Persentase Penduduk Miskin (P0)'));
+    expect(row.getByText('Lebih baik: Aceh Selatan')).toBeInTheDocument();
+    expect(
+      row.getByText(/Persentase Penduduk Miskin \(P0\) Uji sekitar 2× lebih tinggi dibanding Aceh Selatan\./),
+    ).toBeInTheDocument();
+    expect(
+      row.getByText(/Nilai yang lebih rendah menunjukkan kondisi yang lebih baik pada indikator ini\./),
+    ).toBeInTheDocument();
+  });
+
+  it('flags the hazard unit the data contradicts instead of printing it', async () => {
+    await renderComparison();
+
+    const row = within(rowOf('Indeks Bahaya Banjir (Rata-rata Wilayah)'));
+    expect(row.getByText(/Sumber menyebut skala 0–1, tetapi nilainya mencapai/)).toBeInTheDocument();
+    expect(row.queryByText(/0\.0-1\.0/)).not.toBeInTheDocument();
   });
 
   it('keeps comparing across different years but says so', async () => {

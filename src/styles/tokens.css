@@ -28,6 +28,16 @@
   --nm-accent-text: #121826;
   --nm-peach: #ffd9bf; /* "Matra" in the logotype on dark/sea surfaces; also prioritas/2 */
 
+  /*
+   * Semantic condition colours (indicator verdicts). Restrained and always used as filled pills with
+   * text AND an icon, never as bare colour: the soft backgrounds are opaque so contrast holds on the
+   * translucent Kaca surfaces too (jade 5.7:1 and coral 4.6:1 on their soft fills, WCAG AA).
+   */
+  --nm-positive: #176b52;
+  --nm-positive-soft: #e7f5ee;
+  --nm-negative: #b5474d;
+  --nm-negative-soft: #fcebec;
+
   /* prioritas/* */
   --nm-priority-1: #fbfaf6;
   --nm-priority-2: #ffd9bf;

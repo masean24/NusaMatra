@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { mockDataHub } from './dataHubMocks';
+import { openRegionPanel } from './jelajahiHelpers';
 
 test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('searches, opens a region, and shows its profile and indicator value with DEMO labels', async ({
@@ -7,6 +8,7 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   }) => {
     await mockDataHub(page);
     await page.goto('/jelajahi');
+    await openRegionPanel(page);
 
     await expect(page.getByText('Menampilkan 30 dari 514 wilayah')).toBeVisible();
     await expect(page.getByText('Simulasi — bukan data atau rekomendasi resmi.')).toBeVisible();
@@ -24,6 +26,7 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('answers a search for "bogor" honestly instead of inventing Kabupaten Bogor', async ({ page }) => {
     await mockDataHub(page);
     await page.goto('/jelajahi?cari=bogor');
+    await openRegionPanel(page);
 
     await expect(page.getByText('Tidak ada wilayah yang cocok pada dataset DEMO saat ini')).toBeVisible();
     await expect(page.getByText('Kabupaten Bogor')).toHaveCount(0);
@@ -42,6 +45,7 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('blocks LIVE on HTTP 503: no data, no fallback, and DEMO again only on request', async ({ page }) => {
     const mock = await mockDataHub(page);
     await page.goto('/jelajahi');
+    await openRegionPanel(page);
     await expect(page.getByText('Menampilkan 30 dari 514 wilayah')).toBeVisible();
 
     await page.locator('label', { hasText: 'LIVE' }).click();

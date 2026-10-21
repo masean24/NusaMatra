@@ -1,0 +1,38 @@
+.badge {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 3px 10px 3px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--nm-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.positive {
+  background: var(--nm-positive-soft);
+  color: var(--nm-positive);
+  border-color: color-mix(in srgb, var(--nm-positive) 22%, transparent);
+}
+
+.negative {
+  background: var(--nm-negative-soft);
+  color: var(--nm-negative);
+  border-color: color-mix(in srgb, var(--nm-negative) 22%, transparent);
+}
+
+/* Neutral and "no judgement" stay in the brand palette: cobalt text on the pale sea tint. */
+.neutral,
+.unknown {
+  background: #e3e9ff;
+  color: var(--nm-sea-deep);
+  border-color: color-mix(in srgb, var(--nm-sea-deep) 18%, transparent);
+}
+
+.unknown {
+  padding-left: 10px;
+  background: var(--nm-land-2);
+  color: var(--nm-text);
+}

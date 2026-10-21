@@ -1,8 +1,10 @@
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
+import { ConditionBadge } from '@/components/ui/ConditionBadge/ConditionBadge';
+import { describeUnit, readComparison, type DisplayUnit } from '@/domain/indicators';
 import { ResourceView, categoryLabel, formatDecimalId, useDataHubResource } from '@/features/data-hub';
-import type { RegionProfileDTO } from '@/services/api';
+import type { DataHubIndicatorDTO, IndicatorCatalogDTO, RegionProfileDTO } from '@/services/api';
 import { buildComparisonRows, type ComparisonRow, type ComparisonSide } from './comparisonRows';
 import { RegionPicker } from './RegionPicker';
 import { useComparisonParams } from './comparisonParams';
@@ -48,11 +50,17 @@ function ComparisonTable({ codeA, codeB }: { readonly codeA: string; readonly co
     repository.getRegionDetail({ dataMode, regionId: codeB, signal }),
   );
 
+  // Polarity and definitions come from the catalog; without it nothing is called better or worse.
+  const catalog = useDataHubResource('catalog', (repository, dataMode, signal) =>
+    repository.getIndicatorCatalog({ dataMode, signal }),
+  );
+  const definitions = catalog.state.status === 'success' ? catalog.state.data.data : null;
+
   return (
     <ResourceView state={profileA.state} onRetry={profileA.retry} loadingTitle="Memuat Wilayah A…">
       {(envelopeA) => (
         <ResourceView state={profileB.state} onRetry={profileB.retry} loadingTitle="Memuat Wilayah B…">
-          {(envelopeB) => <ComparisonResult a={envelopeA.data} b={envelopeB.data} />}
+          {(envelopeB) => <ComparisonResult a={envelopeA.data} b={envelopeB.data} catalog={definitions} />}
         </ResourceView>
       )}
     </ResourceView>
@@ -63,7 +71,15 @@ function shortName(profile: RegionProfileDTO): string {
   return profile.region.shortName ?? profile.region.displayName;
 }
 
-function ComparisonResult({ a, b }: { readonly a: RegionProfileDTO; readonly b: RegionProfileDTO }) {
+function ComparisonResult({
+  a,
+  b,
+  catalog,
+}: {
+  readonly a: RegionProfileDTO;
+  readonly b: RegionProfileDTO;
+  readonly catalog: IndicatorCatalogDTO | null;
+}) {
   const rows = buildComparisonRows(a, b);
   if (rows.length === 0) {
     return (
@@ -87,7 +103,7 @@ function ComparisonResult({ a, b }: { readonly a: RegionProfileDTO; readonly b: 
         {blocked > 0
           ? ` dan ${String(blocked)} tidak dibandingkan karena data kosong, satuan atau definisi berbeda, atau nilai diimputasi.`
           : '.'}{' '}
-        Angka yang lebih tinggi tidak selalu berarti lebih baik: itu bergantung pada indikatornya.
+        Angka yang lebih tinggi tidak selalu berarti lebih baik; arahnya mengikuti definisi tiap indikator.
       </p>
       <div className={styles.scroll}>
         <table className={styles.table}>
@@ -110,7 +126,13 @@ function ComparisonResult({ a, b }: { readonly a: RegionProfileDTO; readonly b: 
                 </th>
               </tr>
               {items.map((row) => (
-                <IndicatorRow key={row.indicatorId} row={row} nameA={shortName(a)} nameB={shortName(b)} />
+                <IndicatorRow
+                  key={row.indicatorId}
+                  row={row}
+                  nameA={shortName(a)}
+                  nameB={shortName(b)}
+                  definition={catalog?.items.find((item) => item.indicatorId === row.indicatorId)}
+                />
               ))}
             </tbody>
           ))}
@@ -136,12 +158,29 @@ function IndicatorRow({
   row,
   nameA,
   nameB,
+  definition,
 }: {
   readonly row: ComparisonRow;
   readonly nameA: string;
   readonly nameB: string;
+  readonly definition: DataHubIndicatorDTO | undefined;
 }) {
   const { assessment } = row;
+  const unit = describeUnit(
+    row.unit,
+    Math.max(Number(definition?.stats?.max ?? 0), Number(row.a?.decimal ?? 0), Number(row.b?.decimal ?? 0)),
+  );
+  const useRatio = unit.kind !== 'years' && unit.kind !== 'other';
+  const reading = readComparison({
+    indicatorLabel: row.label,
+    polarity: definition?.polarity ?? 'unknown',
+    nameA,
+    nameB,
+    assessment,
+    unitLabel: unit.label,
+    useRatio,
+    formatNumber: (value, digits) => formatDecimalId(value.toFixed(digits)),
+  });
   const peak = Math.max(Number(row.a?.decimal ?? 0), Number(row.b?.decimal ?? 0));
 
   return (
@@ -151,14 +190,31 @@ function IndicatorRow({
         <span className={`kk-small ${styles.muted}`}>{describeProvenance(row)}</span>
       </th>
       <td>
-        <ValueCell side={row.a} unit={row.unit} peak={assessment.allowed ? peak : null} tone="a" />
+        <ValueCell side={row.a} unit={unit} peak={assessment.allowed ? peak : null} tone="a" />
       </td>
       <td>
-        <ValueCell side={row.b} unit={row.unit} peak={assessment.allowed ? peak : null} tone="b" />
+        <ValueCell side={row.b} unit={unit} peak={assessment.allowed ? peak : null} tone="b" />
       </td>
       <td className={styles.difference}>
         {assessment.allowed ? (
-          <span className="kk-body-strong">{describeDifference(row, nameA, nameB)}</span>
+          <>
+            <span className="kk-body-strong">{describeDifference(row, nameA, nameB, unit, useRatio)}</span>
+            {reading && (
+              <ConditionBadge
+                tone={
+                  reading.verdict === 'NO_JUDGEMENT'
+                    ? 'unknown'
+                    : reading.verdict === 'EQUAL'
+                      ? 'neutral'
+                      : 'positive'
+                }
+              >
+                {verdictLabel(reading.verdict, nameA, nameB)}
+              </ConditionBadge>
+            )}
+            {reading && <span className={`kk-small ${styles.muted}`}>{reading.sentence}</span>}
+            {unit.warning && <span className={`kk-small ${styles.warning}`}>{unit.warning}</span>}
+          </>
         ) : (
           <>
             <span className="kk-body-strong">Tidak dibandingkan</span>
@@ -180,25 +236,46 @@ function IndicatorRow({
 }
 
 function describeProvenance(row: ComparisonRow): string {
-  const years = [row.a, row.b].map((side) =>
-    (side?.referenceYear ?? null) === null ? '—' : String(side?.referenceYear),
-  );
+  const years = [
+    ...new Set(
+      [row.a, row.b].map((side) =>
+        (side?.referenceYear ?? null) === null ? '—' : String(side?.referenceYear),
+      ),
+    ),
+  ];
   const agencies = [...new Set([row.a, row.b].flatMap((side) => (side ? [side.agencyCode] : [])))];
   return `${years.join(' · ')} · ${agencies.join(', ') || 'sumber tidak diketahui'}`;
 }
 
-function describeDifference(row: ComparisonRow, nameA: string, nameB: string): string {
+function verdictLabel(
+  verdict: 'A_BETTER' | 'B_BETTER' | 'EQUAL' | 'NO_JUDGEMENT',
+  nameA: string,
+  nameB: string,
+): string {
+  if (verdict === 'A_BETTER') return `Lebih baik: ${nameA}`;
+  if (verdict === 'B_BETTER') return `Lebih baik: ${nameB}`;
+  if (verdict === 'EQUAL') return 'Sama';
+  return 'Tidak dinilai';
+}
+
+function describeDifference(
+  row: ComparisonRow,
+  nameA: string,
+  nameB: string,
+  unit: DisplayUnit,
+  useRatio: boolean,
+): string {
   const { difference } = row.assessment;
   if (!difference) return '';
   if (difference.higher === 'EQUAL') return 'Sama';
   const higherName = difference.higher === 'A' ? nameA : nameB;
-  if (difference.ratio !== null && difference.ratio >= SIMILAR_RATIO) {
+  if (useRatio && difference.ratio !== null && difference.ratio >= SIMILAR_RATIO) {
     return `${higherName} ${formatDecimalId(difference.ratio.toFixed(1))}× lebih tinggi`;
   }
   const gap = formatDecimalId(Math.abs(difference.absolute).toFixed(2));
-  return difference.ratio !== null
-    ? `Hampir sama (selisih ${gap} ${row.unit})`
-    : `${higherName} lebih tinggi ${gap} ${row.unit}`;
+  return difference.ratio !== null && difference.ratio < SIMILAR_RATIO
+    ? `Hampir sama (selisih ${gap} ${unit.label})`.trim()
+    : `${higherName} lebih tinggi ${gap} ${unit.label}`.trim();
 }
 
 function ValueCell({
@@ -208,7 +285,7 @@ function ValueCell({
   tone,
 }: {
   readonly side: ComparisonSide | null;
-  readonly unit: string;
+  readonly unit: DisplayUnit;
   /** Larger of the two values when the pair is comparable (bars are drawn then); `null` otherwise. */
   readonly peak: number | null;
   readonly tone: 'a' | 'b';
@@ -226,7 +303,7 @@ function ValueCell({
       )}
       <span className="kk-body-strong">
         {formatDecimalId(side.decimal)}
-        {unit ? <span className={`kk-small ${styles.muted}`}> {unit}</span> : null}
+        {unit.label ? <span className={`kk-small ${styles.muted}`}> {unit.label}</span> : null}
       </span>
     </span>
   );

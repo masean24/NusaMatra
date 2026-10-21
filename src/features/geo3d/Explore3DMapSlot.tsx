@@ -28,6 +28,12 @@ const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: str
   },
 };
 
+const LIVE_LOADING_STATUS = {
+  kind: 'loading',
+  title: 'Menyiapkan peta 3D…',
+  children: 'Membangun batas wilayah resmi dari BIG.',
+} as const;
+
 interface Explore3DMapSlotProps {
   readonly geography: Explore3DMapProps['geography'];
   readonly selectedRegionId: string | null;
@@ -70,19 +76,30 @@ export function Explore3DMapSlot({
           onRegionHover,
           cameraRef,
         }}
-        placeholder={(state) => (
-          <div className={styles.placeholder}>
-            <img
-              className={styles.art}
-              src={mode === 'glass' ? dioramaGlassUrl : dioramaUrl}
-              alt=""
-              width={700}
-              height={640}
-              decoding="async"
-            />
-            <StatusMessage className={styles.status} {...PLACEHOLDER_STATUS[state]} />
-          </div>
-        )}
+        placeholder={(state) =>
+          dataMode === 'LIVE' ? (
+            // Official geometry is on its way: no illustration that could pass for the map, just a quiet
+            // skeleton of the same size, so nothing jumps when the map appears.
+            <div className={`${styles.placeholder} ${styles.skeleton}`}>
+              <StatusMessage
+                className={styles.status}
+                {...(state === 'loading' ? LIVE_LOADING_STATUS : PLACEHOLDER_STATUS[state])}
+              />
+            </div>
+          ) : (
+            <div className={styles.placeholder}>
+              <img
+                className={styles.art}
+                src={mode === 'glass' ? dioramaGlassUrl : dioramaUrl}
+                alt=""
+                width={700}
+                height={640}
+                decoding="async"
+              />
+              <StatusMessage className={styles.status} {...PLACEHOLDER_STATUS[state]} />
+            </div>
+          )
+        }
       />
     </section>
   );

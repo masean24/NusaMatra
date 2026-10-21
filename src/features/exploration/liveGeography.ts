@@ -9,6 +9,17 @@ const CODE_SYSTEM = 'BPS';
  * point-only or DEMO collection can never reach the map as administrative geometry.
  */
 export function buildLiveGeography(boundaries: BoundaryCollectionDTO, snapshotId: string): unknown {
+  const known = built.get(boundaries);
+  if (known && known.snapshotId === snapshotId) return known.geography;
+  const geography = convert(boundaries, snapshotId);
+  built.set(boundaries, { snapshotId, geography });
+  return geography;
+}
+
+/** One conversion per collection: the object is shared by the map each time it is mounted. */
+const built = new WeakMap<BoundaryCollectionDTO, { snapshotId: string; geography: unknown }>();
+
+function convert(boundaries: BoundaryCollectionDTO, snapshotId: string): unknown {
   const { geometryStatus, features } = boundaries;
   if (geometryStatus.dataMode !== 'LIVE' || !geometryStatus.canExtrudePolygons) return null;
   if (geometryStatus.boundaryVersion === null) return null;

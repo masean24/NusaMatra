@@ -1,5 +1,6 @@
 import { Chip } from '@/components/ui/Chip/Chip';
 import { ResourceView, useDataHub, useDataHubResource } from '@/features/data-hub';
+import { loadBoundaries } from './boundaryCache';
 import { describeBoundaryReadiness } from './boundaryReadiness';
 import styles from './BoundaryNotice.module.css';
 
@@ -10,8 +11,8 @@ import styles from './BoundaryNotice.module.css';
  */
 export function BoundaryNotice() {
   const { dataMode } = useDataHub();
-  const boundaries = useDataHubResource('boundaries-kabupaten', (repository, mode, signal) =>
-    repository.getBoundaries({ dataMode: mode, adminLevel: 'REGENCY', signal }),
+  const boundaries = useDataHubResource('boundaries-kabupaten', (repository, mode) =>
+    loadBoundaries(repository, mode),
   );
 
   return (

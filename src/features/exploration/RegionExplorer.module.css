@@ -81,3 +81,10 @@
   overflow-y: auto;
   list-style: none;
 }
+
+.bare {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
