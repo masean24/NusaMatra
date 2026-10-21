@@ -193,14 +193,14 @@ test.describe('landing', () => {
     await expect(page.getByText('Gugus Pulau Jawa & Madura (Simulasi) dipilih')).toBeVisible();
 
     const nav = visibleNav(page);
-    await nav.getByRole('link', { name: 'Bandingkan' }).click();
-    await expect(page).toHaveURL(/\/bandingkan$/);
-    await expect(nav.getByRole('link', { name: 'Bandingkan' })).toHaveAttribute('aria-current', 'page');
+    await nav.getByRole('link', { name: 'Uji' }).click();
+    await expect(page).toHaveURL(/\/uji-rekomendasi$/);
+    await expect(nav.getByRole('link', { name: 'Uji' })).toHaveAttribute('aria-current', 'page');
     await expect(page.getByText('Sedang dikembangkan')).toBeVisible();
 
     await page.goBack();
     await expect(page).toHaveURL(/\/peta\?wilayah=ID-DEMO-JAWA$/);
-    await expect(nav.getByRole('link', { name: 'Bandingkan' })).not.toHaveAttribute('aria-current', 'page');
+    await expect(nav.getByRole('link', { name: 'Uji' })).not.toHaveAttribute('aria-current', 'page');
   });
 
   test('one selection pill glides to the hovered item, back on leave, and to the clicked item', async ({

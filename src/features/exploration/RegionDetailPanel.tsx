@@ -7,6 +7,8 @@ import {
   describeObservation,
   formatDecimalId,
   publicHttpUrl,
+  qualityFlagNote,
+  useDataHub,
   useDataHubResource,
 } from '@/features/data-hub';
 import type {
@@ -69,6 +71,7 @@ export function RegionDetailPanel({ regionId }: RegionDetailPanelProps) {
 }
 
 function RegionProfile({ profile }: { readonly profile: RegionProfileDTO }) {
+  const { dataMode } = useDataHub();
   const { region, compositeScores, indicators } = profile;
   const publicIdentifiers = region.identifiers
     .map(({ codeSystem, code }) => `${codeSystem} ${code}`)
@@ -81,13 +84,23 @@ function RegionProfile({ profile }: { readonly profile: RegionProfileDTO }) {
         <p className={`kk-small ${styles.muted}`}>
           {adminLevelLabel(region.adminLevel)} · {region.provinceName ?? 'provinsi tidak diketahui'}
           {region.islandGroup ? ` · ${region.islandGroup}` : ''}
-          {region.areaKm2 !== null ? ` · ${formatDecimalId(String(region.areaKm2))} km²` : ''}
+          {region.areaKm2 === null
+            ? ''
+            : region.areaKm2 > 0
+              ? ` · ${formatDecimalId(String(region.areaKm2))} km²`
+              : ' · luas wilayah dari sumber tidak valid (0 km²)'}
         </p>
         {publicIdentifiers && <p className={`kk-small ${styles.muted}`}>Kode: {publicIdentifiers}</p>}
         {region.isSyntheticDemoName && <Chip tone="warning">Nama sintetis (DEMO), bukan nama resmi</Chip>}
       </header>
 
-      {compositeScores && (
+      {compositeScores && dataMode === 'LIVE' && (
+        <p className={`kk-small ${styles.muted}`}>
+          Skor ringkasan wilayah dari Data Hub belum ditampilkan pada mode LIVE: cara menghitung dan arah
+          nilainya (kondisi lebih baik atau prioritas lebih tinggi) belum didokumentasikan.
+        </p>
+      )}
+      {compositeScores && dataMode === 'DEMO' && (
         <section aria-labelledby="skor-komposit">
           <h4 id="skor-komposit" className="kk-body-strong">
             Skor komposit simulasi (0–100)
@@ -113,7 +126,10 @@ function RegionProfile({ profile }: { readonly profile: RegionProfileDTO }) {
           Indikator ({indicators.length})
         </h4>
         {indicators.length === 0 && (
-          <p className="kk-body">Data Hub tidak mengirim indikator untuk wilayah ini.</p>
+          <p className="kk-body">
+            Belum ada data indikator untuk wilayah ini pada snapshot ini. Wilayahnya terdaftar, tetapi Data
+            Hub belum memuat datanya, jadi wilayah ini tidak ikut dalam perbandingan dan peringkat.
+          </p>
         )}
         {groupByCategory(indicators).map(([category, items]) => (
           <div key={category} className={styles.group}>
@@ -155,6 +171,11 @@ function IndicatorRow({ item }: { readonly item: RegionProfileIndicatorValueDTO 
           item.provenance.agencyCode
         )}
       </span>
+      {qualityFlagNote(item.qualityFlag) && (
+        <span className={styles.badge}>
+          <Chip tone="warning">{qualityFlagNote(item.qualityFlag)}</Chip>
+        </span>
+      )}
       {item.isDemoExample && (
         <span className={styles.badge}>
           <Chip tone="warning">DEMO_EXAMPLE</Chip>

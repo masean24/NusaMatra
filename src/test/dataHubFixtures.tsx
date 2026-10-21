@@ -7,7 +7,7 @@ import { DisplayModeProvider } from '@/features/theme';
 import { DataHubHttpClient, NusaMatraDataHubRepository, type DataMode } from '@/services/api';
 
 /** Test helpers over the responses captured from the real Data Hub (src/services/api/__fixtures__). */
-const capturedFiles = import.meta.glob<string>('../services/api/__fixtures__/*.{json,txt}', {
+const capturedFiles = import.meta.glob<string>('../services/api/__fixtures__/**/*.{json,txt}', {
   query: '?raw',
   import: 'default',
   eager: true,

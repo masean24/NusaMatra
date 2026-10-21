@@ -4,6 +4,7 @@ import { FEATURE_SHELLS, FeatureShellPage, type FeatureShell } from '@/features/
 import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
 import { AccessibilityPage } from './pages/AccessibilityPage';
+import { ComparisonPage } from './pages/ComparisonPage';
 import { ExplorePage } from './pages/ExplorePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PriorityLabPage } from './pages/PriorityLabPage';
@@ -11,6 +12,7 @@ import { PriorityLabPage } from './pages/PriorityLabPage';
 /** Features that are built; every other shell is an honest "under development" page. */
 const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
   '/jelajahi': (shell) => <ExplorePage shell={shell} />,
+  '/bandingkan': (shell) => <ComparisonPage shell={shell} />,
   '/lab-prioritas': (shell) => <PriorityLabPage shell={shell} />,
 };
 

@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DEMO_GEO_REGIONS } from '@/data/fixtures/demoGeoRegions';
 import { Explore3DMapSlot, type GeoCameraHandle, type GeoRegionSelection } from '@/features/geo3d';
-import { publicConfig } from '@/lib/publicConfig';
+import { ResourceView, useDataHub, useDataHubResource } from '@/features/data-hub';
+import { buildLiveGeography } from './liveGeography';
+import { useRegionBrowserParams } from './regionCode';
 import { useRegionSelection } from './regionSelection';
 import styles from './ExplorationMapPanel.module.css';
 
@@ -14,8 +16,55 @@ import styles from './ExplorationMapPanel.module.css';
  */
 const NO_VERIFIED_GEOGRAPHY = null;
 
-/** Map workspace for Peta Utama and Jelajahi: the host owns selection, data and navigation. */
+/**
+ * Map workspace for Peta Utama and Jelajahi: the host owns selection, data and navigation.
+ * DEMO shows the labelled illustration; LIVE draws only the official boundaries the Data Hub sent.
+ */
 export function ExplorationMapPanel() {
+  const { dataMode } = useDataHub();
+  return dataMode === 'LIVE' ? <LiveMapWorkspace /> : <DemoMapWorkspace />;
+}
+
+/** LIVE: the 3D map is fed BIG polygons, and its selection is the same `?kode=` the region list uses. */
+function LiveMapWorkspace() {
+  const { selectedCode, selectCode } = useRegionBrowserParams();
+  const boundaries = useDataHubResource('boundaries-kabupaten', (repository, dataMode, signal) =>
+    repository.getBoundaries({ dataMode, adminLevel: 'REGENCY', signal }),
+  );
+  const cameraRef = useRef<GeoCameraHandle>(null);
+
+  return (
+    <div className={styles.workspace}>
+      <ResourceView
+        state={boundaries.state}
+        onRetry={boundaries.retry}
+        loadingTitle="Memuat batas wilayah resmi…"
+      >
+        {(envelope) => {
+          const geography = buildLiveGeography(envelope.data, envelope.meta.snapshotId);
+          return geography ? (
+            <Explore3DMapSlot
+              dataMode="LIVE"
+              geography={geography}
+              selectedRegionId={selectedCode}
+              onRegionSelect={(selection) => {
+                selectCode(selection.regionId);
+              }}
+              cameraRef={cameraRef}
+            />
+          ) : (
+            <StatusMessage kind="unavailable" title="Batas wilayah resmi tidak dapat dipakai">
+              Data Hub tidak mengirim poligon batas resmi untuk snapshot ini, jadi peta tidak ditampilkan.
+              Pilih wilayah dari daftar.
+            </StatusMessage>
+          );
+        }}
+      </ResourceView>
+    </div>
+  );
+}
+
+function DemoMapWorkspace() {
   const { selectedRegionId, selectRegion, clearRegion } = useRegionSelection();
   const [lastSelection, setLastSelection] = useState<GeoRegionSelection | null>(null);
   const cameraRef = useRef<GeoCameraHandle>(null);
@@ -45,34 +94,33 @@ export function ExplorationMapPanel() {
   return (
     <div className={styles.workspace}>
       <Explore3DMapSlot
+        dataMode="DEMO"
         geography={NO_VERIFIED_GEOGRAPHY}
         selectedRegionId={selectedRegionId}
         onRegionSelect={handleSelect}
         cameraRef={cameraRef}
       />
       <div className={styles.selection}>
-        {publicConfig.dataMode === 'DEMO' && <Chip>Mode data: simulasi (DEMO)</Chip>}
-        {publicConfig.dataMode === 'DEMO' && (
-          <fieldset className={styles.regionList}>
-            <legend className="kk-body-strong">Pilih wilayah ilustratif</legend>
-            <ul role="list" className={styles.regionItems}>
-              {DEMO_GEO_REGIONS.map((region) => (
-                <li key={region.regionId}>
-                  <button
-                    type="button"
-                    className={styles.regionButton}
-                    aria-pressed={region.regionId === selectedRegionId}
-                    onClick={() => {
-                      handleListSelect(region.regionId, region.displayName);
-                    }}
-                  >
-                    {region.displayName}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </fieldset>
-        )}
+        <Chip>Mode data: simulasi (DEMO)</Chip>
+        <fieldset className={styles.regionList}>
+          <legend className="kk-body-strong">Pilih wilayah ilustratif</legend>
+          <ul role="list" className={styles.regionItems}>
+            {DEMO_GEO_REGIONS.map((region) => (
+              <li key={region.regionId}>
+                <button
+                  type="button"
+                  className={styles.regionButton}
+                  aria-pressed={region.regionId === selectedRegionId}
+                  onClick={() => {
+                    handleListSelect(region.regionId, region.displayName);
+                  }}
+                >
+                  {region.displayName}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </fieldset>
         {selectedRegionId ? (
           <StatusMessage
             kind="unavailable"

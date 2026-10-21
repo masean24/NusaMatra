@@ -47,8 +47,8 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
     await page.locator('label', { hasText: 'LIVE' }).click();
 
     await expect(page.getByText('LIVE Belum Tersedia', { exact: true })).toHaveCount(1);
-    // Search, boundary notice and indicators each asked and failed: three quiet notes, one message.
-    await expect(page.getByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toHaveCount(3);
+    // Search, map, boundary notice and indicators each asked and failed: four quiet notes, one message.
+    await expect(page.getByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toHaveCount(4);
     await expect(page.locator('[data-kind="unavailable"], [data-kind="error"]')).toHaveCount(1);
     await expect(page.getByText(/Tidak ada fallback otomatis ke data DEMO/).first()).toBeVisible();
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
@@ -79,10 +79,11 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
     for (let step = 0; step < 10; step += 1) await slider.press('ArrowRight');
 
     await expect(page.getByText(/^Total: 100%/)).toBeVisible();
-    await expect.poll(() => mock.compositeRequests.length).toBeGreaterThan(1);
-    const latest = mock.compositeRequests.at(-1) as { weights: Record<string, number> };
-    expect(Object.values(latest.weights).reduce((sum, bps) => sum + bps, 0)).toBe(10000);
-    expect(latest.weights['soc_poverty_rate']).toBe(3500);
+    // The debounce can send an intermediate weight set first; wait for the one the last key press made.
+    const latestWeights = () =>
+      (mock.compositeRequests.at(-1) as { weights: Record<string, number> } | undefined)?.weights ?? {};
+    await expect.poll(() => latestWeights()['soc_poverty_rate']).toBe(3500);
+    expect(Object.values(latestWeights()).reduce((sum, bps) => sum + bps, 0)).toBe(10000);
   });
 
   test('blocks LIVE: no ranking appears', async ({ page }) => {

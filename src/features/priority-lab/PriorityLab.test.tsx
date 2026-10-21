@@ -17,6 +17,7 @@ function labFetch(catalog: () => Response = () => fixtureResponse('indicators'))
   const bodies: CompositeRequest[] = [];
   const fetchImpl = createFixtureFetch({
     '/api/v1/indicators': catalog,
+    '/api/v1/regions': () => fixtureResponse('regions_nonempty'),
     '/api/v1/indicators/composite-query': (_url, init) => {
       bodies.push(JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as CompositeRequest);
       return fixtureResponse('composite_valid');
@@ -27,6 +28,77 @@ function labFetch(catalog: () => Response = () => fixtureResponse('indicators'))
 
 const sumOf = (weights: Record<string, number>) =>
   Object.values(weights).reduce((sum, value) => sum + value, 0);
+
+/** The 514 real LIVE region ids, as minimal registry rows (name and codes are not what is checked here). */
+function liveRegistryResponse(): Response {
+  const { region_ids: ids } = fixtureJson('live/registry_ids') as { region_ids: string[] };
+  return jsonResponse({
+    status: 'success',
+    meta: {
+      snapshot_id: '2026.10.0-official-live',
+      mode: 'LIVE',
+      boundary_version: null,
+      total_count: ids.length,
+    },
+    data: ids.map((id) => ({
+      region_id: id,
+      parent_region_id: id.slice(0, 2),
+      province_name: 'Provinsi Uji',
+      level: 'kabupaten',
+      name: `Wilayah ${id}`,
+      short_name: id,
+      codes: { bps: id },
+    })),
+  });
+}
+
+describe('PriorityLab on the deployed LIVE composite (captured)', () => {
+  function liveFetch() {
+    return createFixtureFetch({
+      '/api/v1/indicators': () => jsonResponse(fixtureJson('live/indicators')),
+      '/api/v1/regions': liveRegistryResponse,
+      '/api/v1/indicators/composite-query': () => jsonResponse(fixtureJson('live/composite')),
+    });
+  }
+
+  it('withholds the ranking and says why: 27 regions uncovered and empty components scored as 0', async () => {
+    renderWithDataHub(<PriorityLab />, { fetchImpl: liveFetch(), dataMode: 'LIVE' });
+
+    expect(await screen.findByText('Peringkat ditahan: hasil komposit tidak konsisten')).toBeInTheDocument();
+    expect(screen.getByText(/487 wilayah, sedangkan daftar wilayah snapshot ini 514/)).toBeInTheDocument();
+    expect(screen.getByText(/dihitung sebagai 0, padahal data kosong bukan nol/)).toBeInTheDocument();
+    expect(screen.queryByText(/Kota Administrasi Jakarta Selatan/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
+  });
+
+  it('starts from criteria the LIVE snapshot has data for, not the DEMO set with an empty criterion', async () => {
+    const bodies: CompositeRequest[] = [];
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/indicators': () => jsonResponse(fixtureJson('live/indicators')),
+      '/api/v1/regions': liveRegistryResponse,
+      '/api/v1/indicators/composite-query': (_url, init) => {
+        bodies.push(JSON.parse(typeof init?.body === 'string' ? init.body : '{}') as CompositeRequest);
+        return jsonResponse(fixtureJson('live/composite'));
+      },
+    });
+    renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+    await screen.findByText('Peringkat ditahan: hasil komposit tidak konsisten');
+
+    expect(bodies[0]?.weights).toEqual({
+      soc_hdi: 3000,
+      dis_multihazard_index: 3000,
+      soc_poverty_rate: 2000,
+      hlt_stunting_prevalence: 2000,
+    });
+  });
+
+  it('explains that a high score means better relative conditions, not higher intervention priority', async () => {
+    renderWithDataHub(<PriorityLab />, { fetchImpl: liveFetch(), dataMode: 'LIVE' });
+    await screen.findByText('Peringkat ditahan: hasil komposit tidak konsisten');
+
+    expect(screen.getByText(/bukan wilayah dengan prioritas intervensi tertinggi/)).toBeInTheDocument();
+  });
+});
 
 describe('PriorityLab (exploratory DEMO composite query)', () => {
   it('starts from the Data Hub preview weights and labels the ranking as a DEMO preview without a run id', async () => {
@@ -51,6 +123,26 @@ describe('PriorityLab (exploratory DEMO composite query)', () => {
       .find((item) => item.textContent.includes('Kabupaten Demo Lampung 11'));
     expect(first).toHaveTextContent('1');
     expect(first).toHaveTextContent('91,1');
+  });
+
+  it('flags a composite whose scores do not reproduce from its components, and neither hides nor repairs it', async () => {
+    const tampered = fixtureJson('composite_valid') as {
+      data: { regions: { composite_score: number }[] };
+    };
+    const [first] = tampered.data.regions;
+    if (!first) throw new Error('fixture has no rows');
+    first.composite_score = 12.34;
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/indicators': () => fixtureResponse('indicators'),
+      '/api/v1/regions': () => fixtureResponse('regions_nonempty'),
+      '/api/v1/indicators/composite-query': () => jsonResponse(tampered),
+    });
+    renderWithDataHub(<PriorityLab />, { fetchImpl });
+
+    expect(await screen.findByText('Hasil komposit tidak konsisten')).toBeInTheDocument();
+    expect(screen.getByText(/tidak sama dengan jumlah berbobot skor komponennya/)).toBeInTheDocument();
+    // DEMO still shows its (simulated) rows, exactly as the backend sent them.
+    expect(screen.getAllByText('12,34').length).toBeGreaterThan(0);
   });
 
   it('does not present component scores as weighted contributions and keeps the explanation gated', async () => {

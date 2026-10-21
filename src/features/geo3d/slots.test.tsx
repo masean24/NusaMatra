@@ -2,6 +2,7 @@ import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect, useImperativeHandle, type ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useSearchParams } from 'react-router';
+import { DataHubProvider } from '@/features/data-hub';
 import { ExplorationMapPanel } from '@/features/exploration';
 import { DisplayModeProvider } from '@/features/theme';
 import { setMediaQueryMatches } from '@/test/browserMocks';
@@ -28,7 +29,9 @@ function withProviders(ui: ReactNode, path = '/') {
   const router = createMemoryRouter([{ path: '*', element: ui }], { initialEntries: [path] });
   return render(
     <DisplayModeProvider>
-      <RouterProvider router={router} />
+      <DataHubProvider repository={null} initialDataMode="DEMO">
+        <RouterProvider router={router} />
+      </DataHubProvider>
     </DisplayModeProvider>,
   );
 }

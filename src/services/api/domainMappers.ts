@@ -855,7 +855,7 @@ export function mapBoundariesData(rawData: unknown, meta: AdaptedResponseMeta): 
   const geometryTypeReturned = readString(gs.geometry_type_returned);
   const source = readString(gs.source) ?? 'UNKNOWN';
   const boundaryVersion = readString(gs.boundary_version) ?? meta.boundaryVersion;
-  const gsMode = readDataMode(gs.data_mode);
+  const gsMode = readBoundaryDataMode(gs.data_mode);
   if (!gsMode || gsMode !== meta.dataMode) {
     throw new ApiError(
       409,
@@ -1108,6 +1108,16 @@ function rejectDemoExampleInLive(meta: AdaptedResponseMeta, flag: string | null)
       serverMessage: 'DEMO_EXAMPLE observation in LIVE payload',
     });
   }
+}
+
+/**
+ * The boundary endpoint labels official geometry `REAL_OFFICIAL` instead of `LIVE`. That label
+ * counts as LIVE and nothing else does, so the comparison with the envelope's mode still rejects
+ * any other value.
+ */
+function readBoundaryDataMode(value: unknown): DataMode | null {
+  if (typeof value === 'string' && value.trim().toUpperCase() === 'REAL_OFFICIAL') return 'LIVE';
+  return readDataMode(value);
 }
 
 function readDataMode(value: unknown): DataMode | null {

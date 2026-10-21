@@ -8,9 +8,18 @@ import {
   formatDecimalId,
   preferredDirectionLabel,
   publicHttpUrl,
+  qualityFlagNote,
   useDataHubResource,
 } from '@/features/data-hub';
-import type { DataHubIndicatorDTO, IndicatorCatalogDTO, RegionIndicatorMeasurementDTO } from '@/services/api';
+import type {
+  AdaptedEnvelope,
+  DataHubIndicatorDTO,
+  IndicatorCatalogDTO,
+  IndicatorValuesMapDTO,
+  RegionIndicatorMeasurementDTO,
+} from '@/services/api';
+
+type IndicatorValuesEnvelope = AdaptedEnvelope<IndicatorValuesMapDTO>;
 import styles from './IndicatorPanel.module.css';
 
 /** Opened first when the catalog has it; otherwise the first indicator the Data Hub lists. */
@@ -72,8 +81,7 @@ export function IndicatorPanel({ regionId }: IndicatorPanelProps) {
                   ))}
                 </select>
               </div>
-              <IndicatorDefinition indicator={indicator} />
-              <IndicatorRegionValue indicator={indicator} regionId={regionId} />
+              <IndicatorDetail indicator={indicator} regionId={regionId} />
             </>
           );
         }}
@@ -82,7 +90,44 @@ export function IndicatorPanel({ regionId }: IndicatorPanelProps) {
   );
 }
 
-function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicatorDTO }) {
+/**
+ * The catalog does not carry a reference year; the values response does. Until it arrives the
+ * definition says the period is not yet known rather than guessing one.
+ */
+function IndicatorDetail({
+  indicator,
+  regionId,
+}: {
+  readonly indicator: DataHubIndicatorDTO;
+  readonly regionId: string | null;
+}) {
+  const values = useDataHubResource(indicator.indicatorId, (repository, dataMode, signal) =>
+    repository.getIndicatorValues({ dataMode, indicatorId: indicator.indicatorId, signal }),
+  );
+  const referenceYear =
+    indicator.referenceYear ??
+    (values.state.status === 'success' ? values.state.data.data.indicator.referenceYear : null);
+
+  return (
+    <>
+      <IndicatorDefinition indicator={indicator} referenceYear={referenceYear} />
+      <IndicatorRegionValue
+        indicator={indicator}
+        referenceYear={referenceYear}
+        regionId={regionId}
+        values={values}
+      />
+    </>
+  );
+}
+
+function IndicatorDefinition({
+  indicator,
+  referenceYear,
+}: {
+  readonly indicator: DataHubIndicatorDTO;
+  readonly referenceYear: number | null;
+}) {
   const portalUrl = publicHttpUrl(indicator.provenance.officialPortalUrl);
   return (
     <section aria-label="Definisi indikator" className={styles.definition}>
@@ -90,9 +135,7 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
       <p className={`kk-small ${styles.muted}`}>
         {categoryLabel(indicator.category)} · satuan: {indicator.unitCode || 'tidak dicantumkan'} ·{' '}
         {preferredDirectionLabel(indicator.preferredDirection)}
-        {indicator.referenceYear !== null
-          ? ` · tahun ${String(indicator.referenceYear)}`
-          : ' · periode belum tersedia'}
+        {referenceYear !== null ? ` · tahun ${String(referenceYear)}` : ' · periode belum tersedia'}
       </p>
       {indicator.derivationFormula && (
         <p className={`kk-small ${styles.muted}`}>Rumus turunan: {indicator.derivationFormula}</p>
@@ -128,15 +171,15 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
 
 function IndicatorRegionValue({
   indicator,
+  referenceYear,
   regionId,
+  values,
 }: {
   readonly indicator: DataHubIndicatorDTO;
+  readonly referenceYear: number | null;
   readonly regionId: string | null;
+  readonly values: ReturnType<typeof useDataHubResource<IndicatorValuesEnvelope>>;
 }) {
-  const values = useDataHubResource(indicator.indicatorId, (repository, dataMode, signal) =>
-    repository.getIndicatorValues({ dataMode, indicatorId: indicator.indicatorId, signal }),
-  );
-
   return (
     <section aria-label="Nilai pada wilayah terpilih" className={styles.value}>
       <h3 className="kk-body-strong">Nilai pada wilayah terpilih</h3>
@@ -145,9 +188,22 @@ function IndicatorRegionValue({
       ) : (
         <ResourceView state={values.state} onRetry={values.retry} loadingTitle="Memuat nilai indikator…">
           {(envelope) => {
+            if (Object.keys(envelope.data.valuesByRegion).length === 0) {
+              return (
+                <p className="kk-body">
+                  Data Hub tidak memuat nilai untuk indikator ini pada snapshot {envelope.data.snapshotId}.
+                  Indikatornya terdaftar di katalog, tetapi belum ada datanya.
+                </p>
+              );
+            }
             const cell = envelope.data.valuesByRegion[regionId];
             return cell ? (
-              <MeasurementCard cell={cell} unit={indicator.unitCode} />
+              <MeasurementCard
+                cell={cell}
+                unit={indicator.unitCode}
+                referenceYear={referenceYear}
+                agencyCode={indicator.provenance.agencyCode}
+              />
             ) : (
               <p className="kk-body">Wilayah kode {regionId} tidak ada dalam respons indikator ini.</p>
             );
@@ -161,10 +217,15 @@ function IndicatorRegionValue({
 function MeasurementCard({
   cell,
   unit,
+  referenceYear,
+  agencyCode,
 }: {
   readonly cell: RegionIndicatorMeasurementDTO;
   readonly unit: string;
+  readonly referenceYear: number | null;
+  readonly agencyCode: string;
 }) {
+  const qualityNote = qualityFlagNote(cell.qualityFlag);
   return (
     <div className={styles.measurement}>
       <p className="kk-h2">
@@ -180,6 +241,11 @@ function MeasurementCard({
           ? ` · skor ternormalisasi ${formatDecimalId(cell.normalizedScoreDecimal)}`
           : ''}
       </p>
+      <p className={`kk-small ${styles.muted}`}>
+        {referenceYear === null ? 'Periode belum tersedia' : `Tahun ${String(referenceYear)}`} · Sumber:{' '}
+        {agencyCode}
+      </p>
+      {qualityNote && <Chip tone="warning">{qualityNote}</Chip>}
       {cell.isDemoExample && <Chip tone="warning">DEMO_EXAMPLE</Chip>}
     </div>
   );

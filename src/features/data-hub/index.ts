@@ -13,4 +13,5 @@ export {
   formatDecimalId,
   preferredDirectionLabel,
   publicHttpUrl,
+  qualityFlagNote,
 } from './formatters';

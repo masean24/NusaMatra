@@ -1,0 +1,23 @@
+{
+ "status": "success",
+ "meta": {
+  "snapshot_id": "2026.10.0-official-live",
+  "mode": "LIVE",
+  "boundary_version": null,
+  "total_count": 1
+ },
+ "data": [
+  {
+   "snapshot_id": "2026.10.0-official-live",
+   "label": "Nusa Matra Official LIVE Snapshot (BIG, BPS, BNPB, Kemenkes, Kemendikdasmen)",
+   "environment_tag": "LIVE",
+   "is_active_default": true,
+   "boundary_version": "BIG-20260601",
+   "created_at": "2026-10-21 17:14:49",
+   "published_at": "2026-10-21 17:14:49",
+   "manifest_checksum": "60c1d0314914ddca1cb41f13180481aecfdda3cc5e88dd6748e20a007f32325e",
+   "notes": "100% verified official data compiled from primary government sources.",
+   "indicator_completeness_pct": 51.6
+  }
+ ]
+}

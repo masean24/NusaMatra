@@ -5,7 +5,7 @@ import { StatusMessage, type StatusKind } from '@/components/feedback/StatusMess
 import { useReducedMotion } from '@/features/motion';
 import { useDisplayMode } from '@/features/theme';
 import { publicConfig } from '@/lib/publicConfig';
-import type { Explore3DMapProps, GeoCameraHandle } from './contract';
+import type { Explore3DMapProps, GeoCameraHandle, GeoDataMode } from './contract';
 import { EngineSlot, type EngineSlotState } from './EngineSlot';
 import { geoEngineRegistry } from './engineRegistry';
 import styles from './Explore3DMapSlot.module.css';
@@ -35,6 +35,8 @@ interface Explore3DMapSlotProps {
   readonly onRegionHover?: Explore3DMapProps['onRegionHover'];
   readonly cameraRef?: Ref<GeoCameraHandle> | undefined;
   readonly className?: string | undefined;
+  /** The mode the page is in right now; defaults to the build-time mode. */
+  readonly dataMode?: GeoDataMode | undefined;
 }
 
 /**
@@ -49,6 +51,7 @@ export function Explore3DMapSlot({
   onRegionHover,
   cameraRef,
   className,
+  dataMode = publicConfig.dataMode,
 }: Explore3DMapSlotProps) {
   const { mode } = useDisplayMode();
   const reducedMotion = useReducedMotion();
@@ -59,7 +62,7 @@ export function Explore3DMapSlot({
         engine={geoEngineRegistry.Explore3DMap}
         engineProps={{
           displayMode: mode,
-          dataMode: publicConfig.dataMode,
+          dataMode,
           reducedMotion,
           geography,
           selectedRegionId,

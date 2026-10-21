@@ -20,6 +20,19 @@ export function describeObservation(value: ObservationValue): string {
   }
 }
 
+const QUALITY_FLAG_NOTE: Readonly<Record<string, string>> = {
+  IMPUTED_PROVINCE: 'Diimputasi dari nilai tingkat provinsi, bukan pengukuran kabupaten/kota',
+};
+
+/**
+ * What a reader must know about a value's quality flag. `VERIFIED` and `DEMO_EXAMPLE` need no note
+ * here (DEMO has its own badge); any other flag is shown as sent rather than hidden.
+ */
+export function qualityFlagNote(flag: string | null): string | null {
+  if (flag === null || flag === 'VERIFIED' || flag === 'DEMO_EXAMPLE') return null;
+  return QUALITY_FLAG_NOTE[flag] ?? `Penanda kualitas dari sumber: ${flag}`;
+}
+
 /** Only real web links are made clickable; `internal://…` and anything else stay plain text. */
 export function publicHttpUrl(url: string | null): string | null {
   if (!url) return null;

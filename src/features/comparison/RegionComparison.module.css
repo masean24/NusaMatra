@@ -1,0 +1,132 @@
+.comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.pickers {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 24px;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table thead th {
+  padding: 10px 12px;
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.table td,
+.table tbody th {
+  padding: 12px;
+  border-top: 1px solid var(--c-input-border);
+  vertical-align: top;
+}
+
+.group {
+  padding: 14px 12px 6px;
+  border-top: 0;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 400;
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+.value {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.track {
+  display: block;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--c-surface-muted);
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+}
+
+/* Region A is solid cobalt and region B dashed orange, as in the Figma comparison. */
+.bar[data-tone='a'] {
+  background: var(--nm-sea);
+}
+
+.bar[data-tone='b'] {
+  border: 1.5px dashed var(--nm-sea);
+  background: color-mix(in srgb, var(--nm-accent) 35%, transparent);
+}
+
+.difference {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reasons {
+  margin: 0;
+  padding: 0;
+  color: var(--c-text-muted);
+  list-style: none;
+}
+
+.warning {
+  color: var(--c-text-muted);
+}
+
+tr[data-blocked] td,
+tr[data-blocked] th[scope='row'] {
+  background: color-mix(in srgb, var(--nm-accent) 12%, transparent);
+}
+
+@media (width <= 720px) {
+  .pickers {
+    grid-template-columns: 1fr;
+  }
+
+  /* The table scrolls sideways inside its frame; the indicator name stays in view. */
+  .table tbody th[scope='row'] {
+    position: sticky;
+    left: 0;
+    min-width: 150px;
+    background: var(--c-surface);
+  }
+}

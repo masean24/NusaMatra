@@ -78,6 +78,34 @@ describe('RegionDetailPanel', () => {
     );
   });
 
+  it('says a zero area from the source is invalid instead of presenting it as a real area', async () => {
+    const body = structuredClone(fixtureJson('region_detail')) as { data: { region: { area_km2: number } } };
+    body.data.region.area_km2 = 0;
+    const fetchImpl = createFixtureFetch({ '/api/v1/regions/3201': () => jsonResponse(body) });
+    renderWithDataHub(<RegionDetailPanel regionId="3201" />, { fetchImpl });
+    await screen.findByRole('heading', { name: 'Kabupaten Demo Jabar 1' });
+
+    expect(screen.getByText(/luas wilayah dari sumber tidak valid \(0 km²\)/)).toBeInTheDocument();
+    expect(screen.queryByText(/ 0 km²$/)).not.toBeInTheDocument();
+  });
+
+  it('shows a captured LIVE profile with source agency, year and quality notes, and no DEMO scores', async () => {
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/regions/1101': () => jsonResponse(fixtureJson('live/region_detail_1101')),
+    });
+    renderWithDataHub(<RegionDetailPanel regionId="1101" />, { fetchImpl, dataMode: 'LIVE' });
+
+    expect(await screen.findByRole('heading', { name: 'Kabupaten Aceh Selatan' })).toBeInTheDocument();
+    expect(screen.getByText(/luas wilayah dari sumber tidak valid \(0 km²\)/)).toBeInTheDocument();
+    const row = within(rowOf('Indeks Bahaya Gempabumi (Rata-rata Wilayah)'));
+    expect(row.getByText(/Tahun 2024/)).toBeInTheDocument();
+    expect(row.getByRole('link', { name: 'BNPB' })).toBeInTheDocument();
+    expect(screen.getAllByText(/Diimputasi dari nilai tingkat provinsi/)).toHaveLength(2);
+    expect(screen.queryByText('DEMO_EXAMPLE')).not.toBeInTheDocument();
+    expect(screen.queryByText('Skor komposit simulasi (0–100)')).not.toBeInTheDocument();
+    expect(screen.getByText(/belum ditampilkan pada mode LIVE/)).toBeInTheDocument();
+  });
+
   it('asks for a selection instead of fetching when no region is chosen', () => {
     const fetchImpl = createFixtureFetch({});
     renderWithDataHub(<RegionDetailPanel regionId={null} />, { fetchImpl });
