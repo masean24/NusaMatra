@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/Button/Button';
-import { Chip } from '@/components/ui/Chip/Chip';
+import { useState, type CSSProperties } from 'react';
+import { Icon } from '@/components/ui/Icon/Icon';
 import {
   TOTAL_BASIS_POINTS,
   redistributeWeights,
@@ -13,159 +12,144 @@ import styles from './PriorityLab.module.css';
 
 type Weights = WeightsBps<string>;
 
-interface WeightControlsProps {
-  readonly weights: Weights;
-  readonly options: readonly IndicatorOption[];
-  readonly onChange: (weights: Weights) => void;
-  readonly onReset: () => void;
-  readonly presets: readonly CompositePresetDTO[] | null;
-  /** Why presets are not offered, when they are not. */
-  readonly presetsNote: string | null;
-}
-
 /** Same set of weights, ignoring order. */
 function sameWeights(a: Weights, b: Readonly<Record<string, number>>): boolean {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
   return [...keys].every((key) => (a[key] ?? 0) === (b[key] ?? 0));
 }
 
-/**
- * The priority sliders. Moving one makes the others give way proportionally, so the total is always
- * exactly 100 %; the note under the sliders says what moved. Presets from the Data Hub set all
- * weights at once.
- */
-export function WeightControls({
-  weights,
-  options,
-  onChange,
-  onReset,
-  presets,
-  presetsNote,
-}: WeightControlsProps) {
-  const [lastChange, setLastChange] = useState<{ id: string; before: Weights } | null>(null);
-  const ids = Object.keys(weights);
-  const total = ids.reduce((sum, id) => sum + (weights[id] ?? 0), 0);
-  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
-  const activePreset = presets?.find((preset) => sameWeights(weights, preset.weightsBasisPoints)) ?? null;
+interface ScenarioPickerProps {
+  readonly weights: Weights;
+  readonly presets: readonly CompositePresetDTO[] | null;
+  /** Why presets are missing or incomplete, when they are. */
+  readonly note: string | null;
+  readonly onApply: (weights: Weights) => void;
+}
 
-  const adjustments =
-    lastChange === null
-      ? []
-      : ids
-          .filter((id) => id !== lastChange.id && (lastChange.before[id] ?? 0) !== (weights[id] ?? 0))
-          .map(
-            (id) =>
-              `${labelOf(id)} ${percentLabel(lastChange.before[id] ?? 0)} → ${percentLabel(weights[id] ?? 0)}`,
-          );
-
+/** Data Hub presets as one-tap starting points; the active one is pressed, otherwise "Bobot sendiri". */
+export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPickerProps) {
+  const active = presets?.find((preset) => sameWeights(weights, preset.weightsBasisPoints)) ?? null;
   return (
-    <div className={styles.weights}>
+    <section className={styles.configSection} aria-labelledby="lab-skenario">
+      <div className={styles.sectionHead}>
+        <h2 id="lab-skenario" className={styles.sectionTitle}>
+          Skenario
+        </h2>
+        <span className={styles.sectionMeta}>{active ? active.label : 'Bobot sendiri'}</span>
+      </div>
       {presets && presets.length > 0 && (
-        <div className={styles.presets} role="group" aria-label="Skenario siap pakai">
+        <div className={styles.chips} role="group" aria-label="Skenario siap pakai">
           {presets.map((preset) => (
             <button
               key={preset.presetId}
               type="button"
-              className={styles.preset}
-              aria-pressed={activePreset?.presetId === preset.presetId}
+              className={styles.chip}
+              aria-pressed={active?.presetId === preset.presetId}
               title={preset.description ?? undefined}
               onClick={() => {
-                setLastChange(null);
-                onChange({ ...preset.weightsBasisPoints });
+                onApply({ ...preset.weightsBasisPoints });
               }}
             >
               {preset.label}
             </button>
           ))}
-          {!activePreset && <Chip>Bobot sendiri</Chip>}
         </div>
       )}
-      {presetsNote && <p className={`kk-small ${styles.muted}`}>{presetsNote}</p>}
+      {note && <p className={styles.hint}>{note}</p>}
+    </section>
+  );
+}
 
-      <div className={styles.totalBar} aria-hidden="true">
-        {ids.map((id, index) => (
-          <span
-            key={id}
-            className={styles.segment}
-            data-index={index % 6}
-            style={{ width: `${String(((weights[id] ?? 0) / TOTAL_BASIS_POINTS) * 100)}%` }}
-          />
-        ))}
+interface WeightSlidersProps {
+  readonly weights: Weights;
+  readonly options: readonly IndicatorOption[];
+  readonly onChange: (weights: Weights) => void;
+  readonly seriesOf: (id: string) => number;
+}
+
+/**
+ * One slider per criterion. Moving one makes the others give way proportionally, so the total is
+ * always exactly 100 %; a one-line note says what moved.
+ */
+export function WeightSliders({ weights, options, onChange, seriesOf }: WeightSlidersProps) {
+  const [lastChange, setLastChange] = useState<{ id: string; before: Weights } | null>(null);
+  const ids = Object.keys(weights);
+  const total = ids.reduce((sum, id) => sum + (weights[id] ?? 0), 0);
+  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
+
+  const adjusted =
+    lastChange === null
+      ? []
+      : ids.filter((id) => id !== lastChange.id && (lastChange.before[id] ?? 0) !== (weights[id] ?? 0));
+
+  return (
+    <section className={styles.configSection} aria-labelledby="lab-bobot-judul">
+      <div className={styles.sectionHead}>
+        <h2 id="lab-bobot-judul" className={styles.sectionTitle}>
+          Bobot kriteria
+        </h2>
+        <span className={styles.sectionMeta} role="status">
+          Total: {percentLabel(total)}
+          {total === TOTAL_BASIS_POINTS ? '' : ' — harus tepat 100%'}
+        </span>
       </div>
-      <p className="kk-body-strong" role="status">
-        Total: {percentLabel(total)}
-        {total === TOTAL_BASIS_POINTS ? ' — siap dihitung' : ' — harus tepat 100%'}
-      </p>
-
       {ids.length === 0 ? (
-        <p className="kk-body">Pilih minimal satu kriteria untuk mulai menghitung peringkat.</p>
+        <p className={styles.hint}>Pilih minimal satu kriteria di bawah.</p>
       ) : (
         <ul role="list" className={styles.sliders}>
           {ids.map((id) => {
             const option = options.find((entry) => entry.id === id);
             const reason = option ? unavailableReason(option) : 'Indikator tidak ada di katalog Data Hub.';
-            const percent = (weights[id] ?? 0) / 100;
             return (
               <li key={id} className={styles.slider}>
-                <label htmlFor={`bobot-${id}`} className="kk-body">
+                <span className={styles.swatch} data-series={seriesOf(id)} aria-hidden="true" />
+                <label htmlFor={`bobot-${id}`} className={styles.sliderLabel}>
                   {/* Distinct from the criterion's checkbox, which has the indicator name alone. */}
-                  <span className="visually-hidden">Bobot </span>
+                  <span className={styles.visuallyHidden}>Bobot </span>
                   {labelOf(id)}
                 </label>
+                <output htmlFor={`bobot-${id}`} className={styles.sliderValue}>
+                  {percentLabel(weights[id] ?? 0)}
+                </output>
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  aria-label={`Lepas kriteria ${labelOf(id)}`}
+                  title="Lepas kriteria"
+                  onClick={() => {
+                    setLastChange(null);
+                    onChange(removeCriterion(weights, id));
+                  }}
+                >
+                  <Icon name="close" size={14} />
+                </button>
                 <input
                   id={`bobot-${id}`}
                   type="range"
                   min={0}
                   max={100}
                   step={1}
-                  value={percent}
+                  value={(weights[id] ?? 0) / 100}
                   disabled={ids.length === 1}
+                  data-series={seriesOf(id)}
+                  style={{ '--fill': `${String((weights[id] ?? 0) / 100)}%` } as CSSProperties}
                   aria-valuetext={percentLabel(weights[id] ?? 0)}
                   onChange={(event) => {
                     setLastChange({ id, before: weights });
                     onChange(redistributeWeights(weights, id, Number(event.target.value) * 100));
                   }}
                 />
-                <output htmlFor={`bobot-${id}`} className={`kk-body-strong ${styles.percent}`}>
-                  {percentLabel(weights[id] ?? 0)}
-                </output>
-                <button
-                  type="button"
-                  className={styles.remove}
-                  aria-label={`Lepas kriteria ${labelOf(id)}`}
-                  onClick={() => {
-                    setLastChange(null);
-                    onChange(removeCriterion(weights, id));
-                  }}
-                >
-                  Lepas
-                </button>
-                {reason && (
-                  <p className={`kk-small ${styles.unavailable}`}>
-                    {reason} Bobotnya akan dialihkan ke kriteria lain saat dihitung.
-                  </p>
-                )}
+                {reason && <p className={styles.sliderNote}>Belum ada data — bobotnya akan dialihkan.</p>}
               </li>
             );
           })}
         </ul>
       )}
-      {adjustments.length > 0 && (
-        <p className={`kk-small ${styles.muted}`} aria-live="polite">
-          Agar total tetap 100%, bobot lain ikut menyesuaikan: {adjustments.join('; ')}.
+      {adjusted.length > 0 && (
+        <p className={styles.hint} aria-live="polite">
+          Bobot lain ikut menyesuaikan agar total tetap 100%: {adjusted.map(labelOf).join(', ')}.
         </p>
       )}
-      <div className={styles.footer}>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setLastChange(null);
-            onReset();
-          }}
-        >
-          Atur ulang bobot
-        </Button>
-      </div>
-    </div>
+    </section>
   );
 }

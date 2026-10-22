@@ -58,9 +58,9 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
     const { fetchImpl, bodies } = labFetch();
     renderWithDataHub(<PriorityLab />, { fetchImpl });
 
-    expect(await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false })).toBeInTheDocument();
-    expect(screen.getByText('Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)')).toBeInTheDocument();
-    expect(screen.getByText('Simulasi — bukan data atau rekomendasi resmi.')).toBeInTheDocument();
+    expect(await screen.findByText('10 dari 514 wilayah')).toBeInTheDocument();
+    expect(screen.getByText('Data simulasi (DEMO)')).toBeInTheDocument();
+    expect(screen.getByText(/bukan data atau rekomendasi resmi/)).toBeInTheDocument();
     expect(bodies[0]).toEqual({
       weights: {
         dis_multihazard_index: 3500,
@@ -93,8 +93,10 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
     });
     renderWithDataHub(<PriorityLab />, { fetchImpl });
 
-    expect(await screen.findByText('Hasil perhitungan tidak konsisten')).toBeInTheDocument();
-    expect(screen.getByText(/tidak sama dengan jumlah berbobot skor komponennya/)).toBeInTheDocument();
+    expect(await screen.findByText('Hasil simulasi tidak konsisten')).toBeInTheDocument();
+    expect(screen.getAllByText(/tidak sama dengan jumlah berbobot skor komponennya/).length).toBeGreaterThan(
+      0,
+    );
     // DEMO still shows its (simulated) rows, exactly as the backend sent them.
     expect(screen.getAllByText('12,34').length).toBeGreaterThan(0);
   });
@@ -102,14 +104,14 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
   it('moves one slider, rebalances the others to exactly 100%, says so, and queries again', async () => {
     const { fetchImpl, bodies } = labFetch();
     renderWithDataHub(<PriorityLab />, { fetchImpl });
-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
+    await screen.findByText('10 dari 514 wilayah');
 
     fireEvent.change(screen.getByLabelText('Bobot Persentase Penduduk Miskin (P0)'), {
       target: { value: '60' },
     });
 
     expect(screen.getByText(/^Total: 100%/)).toBeInTheDocument();
-    expect(screen.getByText(/bobot lain ikut menyesuaikan/)).toBeInTheDocument();
+    expect(screen.getByText(/Bobot lain ikut menyesuaikan/)).toBeInTheDocument();
     await waitFor(() => {
       expect(bodies).toHaveLength(2);
     });
@@ -121,7 +123,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
 
   it('resets to the starting weights', async () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl: labFetch().fetchImpl });
-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
+    await screen.findByText('10 dari 514 wilayah');
     const slider = screen.getByLabelText('Bobot Persentase Penduduk Miskin (P0)');
 
     fireEvent.change(slider, { target: { value: '60' } });
@@ -133,7 +135,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
   it('adds and removes criteria while the total stays exactly 100%', async () => {
     const { fetchImpl, bodies } = labFetch();
     renderWithDataHub(<PriorityLab />, { fetchImpl });
-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
+    await screen.findByText('10 dari 514 wilayah');
 
     openPicker();
     fireEvent.click(screen.getByRole('checkbox', { name: 'Indeks Pembangunan Manusia (IPM / HDI)' }));
@@ -175,14 +177,14 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
 
   it('shows a focused page of results, more on request, and finds a region by name', async () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl: labFetch().fetchImpl });
-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
+    await screen.findByText('10 dari 514 wilayah');
     fireEvent.click(screen.getByRole('button', { name: 'Tampilkan 10 lagi' }));
-    expect(screen.getByText('Menampilkan 20 dari 514 wilayah', { exact: false })).toBeInTheDocument();
+    expect(screen.getByText('20 dari 514 wilayah')).toBeInTheDocument();
 
     fireEvent.change(screen.getByLabelText('Cari wilayah dalam peringkat'), {
       target: { value: 'Lampung 11' },
     });
-    expect(screen.getByText(/Menampilkan 1 dari 1 hasil pencarian/)).toBeInTheDocument();
+    expect(screen.getByText('1 hasil pencarian')).toBeInTheDocument();
   });
 
   it('is blocked in LIVE: a quiet note, no ranking, no query, and no DEMO numbers', async () => {
@@ -191,7 +193,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
 
     expect(await screen.findByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toBeInTheDocument();
-    expect(screen.queryByText('Hasil peringkat')).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
     expect(bodies).toHaveLength(0);
   });
@@ -261,7 +263,7 @@ const completeRegions = () =>
 describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE data)', () => {
   it('lists every indicator, disables those without LIVE data and says why, with source, year and unit', async () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl: liveLabFetch().fetchImpl, dataMode: 'LIVE' });
-    await screen.findByText(/wilayah dihitung/);
+    await screen.findByText('Hasil siap dan sudah diperiksa');
 
     expect(screen.getByText(/4 dari 33 indikator punya data/)).toBeInTheDocument();
     openPicker();
@@ -282,55 +284,79 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
 
     const complete = completeRegions();
-    expect(await screen.findByText(`${String(complete)} wilayah`)).toBeInTheDocument();
+    expect(await screen.findByText('Hasil siap dan sudah diperiksa')).toBeInTheDocument();
+    expect(
+      screen.getByText(new RegExp(`^${String(complete)} wilayah dihitung dari data resmi LIVE`)),
+    ).toHaveTextContent(`${String(514 - complete)} wilayah belum lengkap datanya dan tidak ikut`);
     expect(bodies[0]?.weights).toEqual({
       soc_hdi: 3000,
       dis_multihazard_index: 3000,
       soc_poverty_rate: 2000,
       hlt_stunting_prevalence: 2000,
     });
-    expect(screen.getByText('Data resmi LIVE · pratinjau, belum disimpan')).toBeInTheDocument();
-    expect(
-      screen.getByText(`${String(514 - complete)} wilayah tidak masuk peringkat — lihat daftar`),
-    ).toBeInTheDocument();
+    // The technical facts are kept, behind "Sumber, metodologi & pemeriksaan".
+    expect(screen.getByText(`${String(514 - complete)} wilayah tidak ikut dihitung`)).toBeInTheDocument();
     expect(screen.getByText(/Wilayah ini tidak diberi skor, bukan diberi skor nol/)).toBeInTheDocument();
     expect(
       screen.getByText(
-        new RegExp(`Persentase Penduduk Miskin \\(P0\\) — sesuai \\(${String(complete)} wilayah\\)`),
+        new RegExp(
+          `Arah skor Persentase Penduduk Miskin \\(P0\\): sesuai data sumber \\(${String(complete)} wilayah\\)`,
+        ),
       ),
     ).toBeInTheDocument();
+    expect(screen.getByText(/belum disimpan dan belum punya ID permanen/)).toBeInTheDocument();
     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
   });
 
-  it('explains a region score as the sum of its weighted criteria', async () => {
+  it('charts the ranking and explains the selected region as the sum of its weighted criteria', async () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl: liveLabFetch().fetchImpl, dataMode: 'LIVE' });
-    const [why] = await screen.findAllByRole('button', { name: 'Mengapa skor ini?' });
-    if (!why) throw new Error('no rows');
-    fireEvent.click(why);
-    const table = screen.getByRole('table', { name: /Sumbangan setiap kriteria/ });
-    const rows = within(table).getAllByRole('row');
-    expect(rows.length).toBe(1 + 4 + 1); // header, four criteria, total
+    const ranking = await screen.findByRole('region', { name: 'Daftar peringkat' });
+    const list = within(ranking).getByRole('list');
+    const rows = within(list).getAllByRole('button', { pressed: false });
+    expect(within(list).getByRole('button', { pressed: true })).toHaveTextContent(
+      'Kota Administrasi Jakarta Selatan',
+    );
+
+    const table = screen.getByRole('table', {
+      name: /Sumbangan setiap kriteria ke skor Kota Administrasi Jakarta Selatan/,
+    });
+    expect(within(table).getAllByRole('row')).toHaveLength(1 + 4 + 1); // header, four criteria, total
     expect(within(table).getByText('Skor gabungan')).toBeInTheDocument();
+
+    const second = rows.find((row) => row.textContent.includes('Kota Tangerang Selatan'));
+    if (!second) throw new Error('no second row');
+    fireEvent.click(second);
+    expect(
+      screen.getByRole('table', { name: /Sumbangan setiap kriteria ke skor Kota Tangerang Selatan/ }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(ranking).getByRole('button', { name: 'Kondisi paling berat dulu' }));
+    expect(within(list).getByRole('button', { pressed: true })).not.toHaveTextContent(
+      'Kota Administrasi Jakarta Selatan',
+    );
   });
 
   it('applies a Data Hub preset with an indicator without data, and explains where its weight went', async () => {
     const { fetchImpl, bodies } = liveLabFetch();
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
-    await screen.findByText(/wilayah dihitung/);
+    await screen.findByText('Hasil siap dan sudah diperiksa');
 
     fireEvent.click(screen.getByRole('button', { name: 'Risiko bencana & sekolah' }));
     expect(screen.getByRole('button', { name: 'Risiko bencana & sekolah' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-    expect(screen.getByText(/Bobotnya akan dialihkan ke kriteria lain saat dihitung/)).toBeInTheDocument();
+    expect(screen.getByText('Belum ada data — bobotnya akan dialihkan.')).toBeInTheDocument();
     await waitFor(() => {
       expect(bodies.at(-1)?.weights['edu_damaged_classrooms_pct']).toBe(2000);
     });
 
+    // The weight chart shows both bars and says where the weight went.
     expect(
-      await screen.findByText(/1 kriteria belum punya data, jadi bobotnya dialihkan/),
+      await screen.findByText(/belum punya data, jadi bobotnya dibagi ke kriteria lain/),
     ).toBeInTheDocument();
+    expect(screen.getByText('20% → tidak dipakai')).toBeInTheDocument();
+    expect(screen.getByText('35% → 43,75%')).toBeInTheDocument();
     const table = screen.getByRole('table', {
       name: /Bobot pilihan Anda dan bobot yang benar-benar dipakai/,
     });
@@ -342,7 +368,7 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
 
   it('drops a preset whose weights are not exactly 100%, and says how many', async () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl: liveLabFetch().fetchImpl, dataMode: 'LIVE' });
-    await screen.findByText(/wilayah dihitung/);
+    await screen.findByText('Hasil siap dan sudah diperiksa');
     expect(screen.queryByRole('button', { name: 'Preset tidak lengkap' })).not.toBeInTheDocument();
     expect(screen.getByText(/1 skenario dari Data Hub tidak ditampilkan/)).toBeInTheDocument();
     expect(screen.getByText(/bukan rekomendasi resmi/)).toBeInTheDocument();
@@ -351,14 +377,14 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
   it('limits the ranking to one province and checks every region belongs to it', async () => {
     const { fetchImpl, bodies } = liveLabFetch();
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
-    await screen.findByText(/wilayah dihitung/);
+    await screen.findByText('Hasil siap dan sudah diperiksa');
 
     fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
     await waitFor(() => {
       expect(bodies.at(-1)?.filter_province_id).toBe('33');
     });
-    expect(await screen.findByText(/di provinsi 33/)).toBeInTheDocument();
-    expect(screen.queryByText(/Peringkat ditahan/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/wilayah di Provinsi 33 dihitung/)).toBeInTheDocument();
+    expect(screen.queryByText('Peringkat belum dapat ditampilkan')).not.toBeInTheDocument();
   });
 
   it('withholds the deployed v1 composite: empty values scored as 0 (counterexample Kota Surakarta)', async () => {
@@ -367,19 +393,21 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
     });
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
 
-    expect(
-      await screen.findByText('Peringkat ditahan: hasil perhitungan tidak konsisten'),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/dihitung sebagai 0, padahal data kosong bukan nol/)).toBeInTheDocument();
-    expect(screen.getByText(/3372/)).toBeInTheDocument();
-    expect(screen.queryByText('Mengapa skor ini?')).not.toBeInTheDocument();
+    expect(await screen.findByText('Peringkat belum dapat ditampilkan')).toBeInTheDocument();
+    expect(screen.getByText(/Sebagian data wilayah belum lengkap. Hasil ditahan/)).toBeInTheDocument();
+    // The facts stay one click away: the zero-filled scores, with a named counterexample.
+    expect(screen.getByText('Lihat alasan dan detail teknis')).toBeInTheDocument();
+    expect(screen.getAllByText(/dihitung sebagai 0, padahal data kosong bukan nol/).length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.getAllByText(/Kota Surakarta \(3372\)/).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('table', { name: /Sumbangan setiap kriteria/ })).not.toBeInTheDocument();
+    // The chosen weights stay visible.
+    expect(screen.getByText('Pembagian bobot')).toBeInTheDocument();
   });
 
   it('withholds a ranking whose component runs against the indicator direction', async () => {
-    const flipped = structuredClone(fixtureJson('live/indicator_values_soc_poverty_rate')) as {
-      data: { indicator: { polarity: string } };
-    };
-    flipped.data.indicator.polarity = 'positive';
     const catalog = structuredClone(liveCatalog()) as unknown as {
       data: Record<string, { indicator_id: string; polarity: string }[]>;
     };
@@ -389,10 +417,9 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
     const { fetchImpl } = liveLabFetch({ '/api/v1/indicators': () => jsonResponse(catalog) });
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
 
-    expect(
-      await screen.findByText('Peringkat ditahan: arah skor tidak sesuai data sumber'),
-    ).toBeInTheDocument();
-    expect(screen.queryByText('Mengapa skor ini?')).not.toBeInTheDocument();
+    expect(await screen.findByText('Peringkat belum dapat ditampilkan')).toBeInTheDocument();
+    expect(screen.getByText(/Arah skor tidak cocok dengan data sumber/)).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
   });
 
   it('shows an error with retry when the calculation fails, and never falls back to DEMO', async () => {
@@ -402,7 +429,8 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
 
     expect(await screen.findByRole('button', { name: /Coba lagi/ })).toBeInTheDocument();
-    expect(screen.queryByText('Mengapa skor ini?')).not.toBeInTheDocument();
+    expect(screen.getByText('Perhitungan belum berhasil')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
     expect(requestedUrls(fetchImpl).every((url) => url.searchParams.get('mode') === 'live')).toBe(true);
   });
 

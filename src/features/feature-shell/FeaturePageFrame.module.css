@@ -19,7 +19,7 @@
 /* Map-first workspace: wider column, narrower gutters, less space above the content. */
 .page[data-workspace] {
   gap: 12px;
-  max-width: 1760px;
+  max-width: var(--page-workspace-max, 1760px);
   padding: 104px var(--nm-band-gutter) 96px;
 }
 

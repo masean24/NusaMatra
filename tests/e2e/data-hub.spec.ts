@@ -72,8 +72,10 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
     const mock = await mockDataHub(page);
     await page.goto('/lab-prioritas');
 
-    await expect(page.getByText('Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)')).toBeVisible();
-    await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible();
+    await expect(page.getByText('Data simulasi (DEMO)')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Daftar peringkat' }).getByText('Kabupaten Demo Lampung 11'),
+    ).toBeVisible();
     expect(mock.compositeRequests[0]).toMatchObject({
       weights: { dis_multihazard_index: 3500, soc_poverty_rate: 2500 },
     });
@@ -93,7 +95,9 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
   test('blocks LIVE: no ranking appears', async ({ page }) => {
     await mockDataHub(page);
     await page.goto('/lab-prioritas');
-    await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Daftar peringkat' }).getByText('Kabupaten Demo Lampung 11'),
+    ).toBeVisible();
 
     await page.locator('label', { hasText: 'LIVE' }).click();
 

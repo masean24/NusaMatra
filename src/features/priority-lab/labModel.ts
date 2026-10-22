@@ -192,3 +192,9 @@ export function rankMovement(
   }
   return moves;
 }
+
+/** "Kota Surakarta (3372)" when the registry knows the code, else the code. */
+export function regionLabel(regionId: string, registry: readonly DataHubRegionDTO[]): string {
+  const region = registry.find((entry) => entry.regionId === regionId);
+  return region ? `${region.displayName} (${regionId})` : regionId;
+}

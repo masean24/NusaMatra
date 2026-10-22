@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { useStaggeredEnter } from '@/features/motion';
 import { BackToHubLink } from '@/features/navigation';
 import type { FeatureShell } from './featureShells';
@@ -13,6 +13,8 @@ interface FeaturePageFrameProps {
    * map is in the first viewport. Takes precedence over `wide`.
    */
   readonly workspace?: boolean;
+  /** Workspace pages only: a narrower cap than 1760px (Lab Prioritas uses 1600px). */
+  readonly workspaceMaxWidthPx?: number;
   readonly children: ReactNode;
 }
 
@@ -21,6 +23,7 @@ export function FeaturePageFrame({
   shell,
   wide = false,
   workspace = false,
+  workspaceMaxWidthPx,
   children,
 }: FeaturePageFrameProps) {
   const pageRef = useRef<HTMLDivElement>(null);
@@ -40,6 +43,11 @@ export function FeaturePageFrame({
       className={styles.page}
       data-wide={(wide && !workspace) || undefined}
       data-workspace={workspace || undefined}
+      style={
+        workspace && workspaceMaxWidthPx
+          ? ({ '--page-workspace-max': `${String(workspaceMaxWidthPx)}px` } as CSSProperties)
+          : undefined
+      }
     >
       <title>{`${shell.title} — Nusa Matra`}</title>
       {workspace ? <header className={styles.header}>{heading}</header> : heading}

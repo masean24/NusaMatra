@@ -9,7 +9,7 @@ import { mockLiveLab, type CompositeKind } from './liveLabMock';
 async function openLiveLab(page: Page, composite: CompositeKind = 'v2') {
   const mock = await mockLiveLab(page, composite);
   await page.goto('/lab-prioritas');
-  await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible(); // DEMO first
+  await expect(results(page).getByText('Kabupaten Demo Lampung 11')).toBeVisible(); // DEMO first
   await page.locator('label', { hasText: 'LIVE' }).click();
   return mock;
 }
@@ -22,9 +22,9 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
   }) => {
     const mock = await openLiveLab(page);
 
-    await expect(page.getByText('Data resmi LIVE · pratinjau, belum disimpan')).toBeVisible();
-    await expect(page.getByText(/wilayah tidak masuk peringkat — lihat daftar/)).toBeVisible();
-    await expect(results(page).getByText(/^Menampilkan 10 dari \d+ wilayah/)).toBeVisible();
+    await expect(page.getByText('Hasil siap dan sudah diperiksa')).toBeVisible();
+    await expect(page.getByText(/wilayah belum lengkap datanya dan tidak ikut/)).toBeVisible();
+    await expect(results(page).getByText(/^10 dari \d+ wilayah$/)).toBeVisible();
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
     expect(mock.compositeRequests.at(-1)?.weights).toEqual({
       soc_hdi: 3000,
@@ -33,14 +33,18 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
       hlt_stunting_prevalence: 2000,
     });
 
-    const firstBest = await results(page).locator('ol > li').first().innerText();
-    await page.getByRole('button', { name: 'Kondisi paling berat dulu' }).click();
-    await expect(results(page).locator('ol > li').first()).not.toHaveText(firstBest);
-
-    await page.getByRole('button', { name: 'Mengapa skor ini?' }).first().click();
+    // The selected region's breakdown is shown beside the ranking, and follows the selection.
     const breakdown = page.getByRole('table', { name: /Sumbangan setiap kriteria/ });
     await expect(breakdown).toBeVisible();
     await expect(breakdown.getByRole('row')).toHaveCount(6);
+    await results(page).locator('ol button').nth(1).click();
+    await expect(
+      page.getByRole('table', { name: /Sumbangan setiap kriteria ke skor Kota Tangerang Selatan/ }),
+    ).toBeVisible();
+
+    const firstBest = await results(page).locator('ol > li').first().innerText();
+    await page.getByRole('button', { name: 'Kondisi paling berat dulu' }).click();
+    await expect(results(page).locator('ol > li').first()).not.toHaveText(firstBest);
   });
 
   test('a preset with an indicator without data shows where its weight went', async ({ page }) => {
@@ -48,10 +52,9 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
     await expect(results(page)).toBeVisible();
 
     await page.getByRole('button', { name: 'Risiko bencana & sekolah' }).click();
-    await expect(page.getByText(/1 kriteria belum punya data, jadi bobotnya dialihkan/)).toBeVisible();
-    const table = page.getByRole('table', { name: /Bobot pilihan Anda/ });
-    await expect(table.getByText('Tidak dipakai (tanpa data)')).toBeVisible();
-    await expect(table.getByText('43,75%')).toBeVisible();
+    await expect(page.getByText(/belum punya data, jadi bobotnya dibagi ke kriteria lain/)).toBeVisible();
+    await expect(page.getByText('20% → tidak dipakai')).toBeVisible();
+    await expect(page.getByText('35% → 43,75%')).toBeVisible();
   });
 
   test('dragging a slider settles to one request with weights summing to exactly 10 000', async ({
@@ -78,14 +81,19 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
     await expect(results(page)).toBeVisible();
     await page.getByLabel('Cakupan wilayah').selectOption('33');
     await expect.poll(() => mock.compositeRequests.at(-1)?.filter_province_id).toBe('33');
-    await expect(page.getByText(/di provinsi 33/)).toBeVisible();
+    await expect(page.getByText(/wilayah di Provinsi 33 dihitung/)).toBeVisible();
   });
 
   test('withholds the deployed v1 composite and names a counterexample', async ({ page }) => {
     await openLiveLab(page, 'v1');
-    await expect(page.getByText('Peringkat ditahan: hasil perhitungan tidak konsisten')).toBeVisible();
-    await expect(page.getByText(/dihitung sebagai 0/)).toBeVisible();
-    await expect(page.getByText(/3372/)).toBeVisible();
+    await expect(page.getByText('Peringkat belum dapat ditampilkan')).toBeVisible();
+    await expect(page.getByText(/Sebagian data wilayah belum lengkap/)).toBeVisible();
+    // Short by default; the facts are one click away.
+    await expect(page.getByText(/dihitung sebagai 0/).first()).toBeHidden();
+    await page.getByText('Lihat alasan dan detail teknis').click();
+    await expect(page.getByText(/dihitung sebagai 0/).first()).toBeVisible();
+    await expect(page.getByText(/Kota Surakarta \(3372\)/).first()).toBeVisible();
+    await expect(page.getByText('Pembagian bobot')).toBeVisible();
     await expect(results(page)).toHaveCount(0);
   });
 

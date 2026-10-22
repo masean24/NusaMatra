@@ -1,13 +1,13 @@
 import { useId, useState } from 'react';
-import { StatusMessage } from '@/components/feedback/StatusMessage';
-import { Surface } from '@/components/ui/Surface/Surface';
+import { Button } from '@/components/ui/Button/Button';
 import { addCriterion, removeCriterion, type WeightsBps } from '@/domain/prioritization';
 import { ResourceView, useDataHub, useDataHubResource, type ResourceState } from '@/features/data-hub';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { CompositePresetsDTO, DataHubRegionDTO } from '@/services/api';
+import { AnalysisPanel } from './AnalysisPanel';
 import { IndicatorPicker } from './IndicatorPicker';
-import { RankingResults } from './RankingResults';
-import { WeightControls } from './WeightControls';
+import { SERIES_COUNT } from './LabCharts';
+import { ScenarioPicker, WeightSliders } from './WeightControls';
 import { buildIndicatorOptions, provinceOptions, startingWeights, type IndicatorOption } from './labModel';
 import styles from './PriorityLab.module.css';
 
@@ -52,6 +52,10 @@ function LabInputs() {
   );
 }
 
+/**
+ * Settings on the left (scenario, weights, criteria, scope), the analysis on the right. On narrow
+ * screens the two stack in the same order.
+ */
 function Workbench({ options }: { readonly options: readonly IndicatorOption[] }) {
   const { dataMode } = useDataHub();
   const [start] = useState(() => startingWeights(dataMode, options));
@@ -60,6 +64,8 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
   const settledWeights = useDebouncedValue(weights, RECOMPUTE_DEBOUNCE_MS);
   const isSettling = settledWeights !== weights;
   const provinceFieldId = useId();
+  // A criterion keeps its colour while it stays selected, across sliders and charts.
+  const [series, setSeries] = useState<readonly string[]>(() => Object.keys(start.weights));
 
   const presets = useDataHubResource('presets', (repository, mode, signal) =>
     repository.getCompositePresets({ dataMode: mode, signal }),
@@ -71,48 +77,50 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
     registry.state.status === 'success' ? registry.state.data.data : null;
   const provinces = regions ? provinceOptions(regions) : [];
 
+  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
+  const seriesOf = (id: string) => {
+    const index = series.indexOf(id);
+    return (index < 0 ? Object.keys(weights).indexOf(id) : index) % SERIES_COUNT;
+  };
+  const changeWeights = (next: Weights) => {
+    setSeries((current) => {
+      const kept = current.filter((id) => id in next);
+      return [...kept, ...Object.keys(next).filter((id) => !kept.includes(id))];
+    });
+    setWeights(next);
+  };
+
   return (
     <div className={styles.lab}>
-      <Surface radius="card" className={styles.panel}>
-        <h2 className="kk-h3">Atur prioritas</h2>
-        <p className={`kk-small ${styles.muted}`}>
-          Pilih kriteria yang penting bagi Anda dan tentukan seberapa besar pengaruhnya. Data Hub menghitung
-          peringkatnya dari data resmi; halaman ini memeriksa dan menjelaskan hasilnya.
-        </p>
+      <aside className={`${styles.panel} ${styles.config}`} aria-label="Atur prioritas">
+        <ScenarioPicker
+          weights={weights}
+          presets={presets.state.status === 'success' ? presets.state.data.data.presets : null}
+          note={presetsNote(presets.state)}
+          onApply={changeWeights}
+        />
+        <WeightSliders weights={weights} options={options} onChange={changeWeights} seriesOf={seriesOf} />
         {start.dropped.length > 0 && (
-          <p className={`kk-small ${styles.unavailable}`}>
-            Kriteria awal tanpa data tidak dipakai: {start.dropped.join(', ')}. Tidak ada kriteria pengganti
-            yang dipilih otomatis.
+          <p className={styles.hint}>
+            Kriteria awal tanpa data tidak dipakai: {start.dropped.join(', ')}. Tidak ada pengganti otomatis.
           </p>
         )}
-
         <IndicatorPicker
           options={options}
           selected={new Set(Object.keys(weights))}
           maxSelected={MAX_CRITERIA}
           onToggle={(id, next) => {
-            setWeights((current) => (next ? addCriterion(current, id) : removeCriterion(current, id)));
+            changeWeights(next ? addCriterion(weights, id) : removeCriterion(weights, id));
           }}
         />
-
-        <WeightControls
-          weights={weights}
-          options={options}
-          onChange={setWeights}
-          onReset={() => {
-            setWeights(start.weights);
-          }}
-          presets={presets.state.status === 'success' ? presets.state.data.data.presets : null}
-          presetsNote={presetsNote(presets.state)}
-        />
-
         {provinces.length > 0 && (
-          <div className={styles.province}>
-            <label htmlFor={provinceFieldId} className="kk-body">
+          <section className={styles.configSection}>
+            <label htmlFor={provinceFieldId} className={styles.sectionTitle}>
               Cakupan wilayah
             </label>
             <select
               id={provinceFieldId}
+              className={styles.input}
               value={provinceId ?? ''}
               onChange={(event) => {
                 setProvinceId(event.target.value === '' ? null : event.target.value);
@@ -125,21 +133,33 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
                 </option>
               ))}
             </select>
-          </div>
+          </section>
         )}
-      </Surface>
+        {regions === null && registry.state.status === 'error' && (
+          <p className={styles.hint}>
+            Daftar wilayah tidak dapat dimuat: peringkat tetap dihitung, tetapi wilayah yang tidak ikut tidak
+            dapat dicantumkan.
+          </p>
+        )}
+        <Button
+          variant="secondary"
+          onClick={() => {
+            changeWeights(start.weights);
+          }}
+        >
+          Atur ulang bobot
+        </Button>
+      </aside>
 
-      {regions === null && registry.state.status === 'error' && (
-        <StatusMessage kind="unavailable" title="Daftar wilayah tidak dapat dimuat">
-          Peringkat tetap dihitung, tetapi wilayah yang tidak ikut dihitung tidak dapat dicantumkan.
-        </StatusMessage>
-      )}
-      <RankingResults
+      <AnalysisPanel
+        chosen={weights}
         weights={settledWeights}
         isSettling={isSettling}
         provinceId={provinceId}
         registry={regions ?? []}
         options={options}
+        labelOf={labelOf}
+        seriesOf={seriesOf}
       />
     </div>
   );
@@ -147,12 +167,11 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
 
 function presetsNote(state: ResourceState<{ readonly data: CompositePresetsDTO }>): string | null {
   if (state.status === 'error')
-    return 'Skenario siap pakai dari Data Hub tidak dapat dimuat; bobot tetap bisa diatur sendiri.';
+    return 'Skenario dari Data Hub tidak dapat dimuat. Bobot tetap bisa diatur sendiri.';
   if (state.status !== 'success') return null;
   const { presets, rejectedCount } = state.data.data;
   const notes: string[] = [];
-  if (presets.length > 0)
-    notes.push('Skenario siap pakai disediakan Data Hub sebagai titik awal, bukan rekomendasi resmi.');
+  if (presets.length > 0) notes.push('Titik awal dari Data Hub, bukan rekomendasi resmi.');
   if (rejectedCount > 0) {
     notes.push(
       `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobotnya tidak tepat 100%.`,
