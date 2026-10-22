@@ -211,6 +211,67 @@ export function getTierColorHex(tier: 1 | 2 | 3 | 4 = 1): number {
   }
 }
 
+/**
+ * Jelajahi atlas materials per display mode (Kapur & Kobalt). Every region gets the same land
+ * colour: the map shows no indicator, so nothing may read as a choropleth. Hover and selection
+ * recolour only the top surface, and stay distinct from the earthquake markers (dark discs with a
+ * light ring).
+ */
+export interface AtlasPalette {
+  readonly ocean: string;
+  readonly landTop: string;
+  readonly landSide: string;
+  readonly boundary: string;
+  readonly hover: string;
+  readonly selected: string;
+  readonly graticule: string;
+}
+
+export const EXPLORE_ATLAS_PALETTE: Readonly<Record<NusaMatraDisplayMode, AtlasPalette>> = {
+  normal: {
+    ocean: '#DCE8FF',
+    landTop: '#F2EBDD',
+    landSide: '#D4CBB8',
+    boundary: '#B9AB92',
+    hover: '#8CACFF',
+    selected: '#2F5BFF',
+    graticule: '#AFC4F2',
+  },
+  glass: {
+    ocean: '#17368C',
+    landTop: '#FBFAF6',
+    landSide: '#D4CBB8',
+    boundary: '#B9AB92',
+    hover: '#8CACFF',
+    selected: '#2F5BFF',
+    graticule: '#2F5BFF',
+  },
+};
+
+/**
+ * Explore lights. MeshStandardMaterial reflects albedo / π of the light it receives, so a surface
+ * facing up is lit with about π in total (sky + sun + rim) and renders at its palette colour. Most of
+ * it is soft sky light, which keeps shadows and extruded sides gentle.
+ */
+const EXPLORE_HEMI_INTENSITY = 2.1;
+const EXPLORE_SUN_INTENSITY = 1.25;
+const EXPLORE_RIM_INTENSITY = 0.25;
+
+/** Share of land colour in the hemisphere's ground (bounce) light; the rest is the sea's. */
+const SIDE_BOUNCE_LAND_SHARE = 0.8;
+
+type RegionPaint = 'idle' | 'hover' | 'selected';
+const REGION_LIFT: Readonly<Record<RegionPaint, number>> = { idle: 0, hover: 0.08, selected: 0.16 };
+
+/** Colour and lift of one region for its interaction state; the only place regions are recoloured. */
+function paintRegion(group: THREE.Group, palette: AtlasPalette, state: RegionPaint): void {
+  const top = group.userData.topMaterial as THREE.MeshStandardMaterial;
+  top.color.set(
+    state === 'selected' ? palette.selected : state === 'hover' ? palette.hover : palette.landTop
+  );
+  group.position.y = REGION_LIFT[state];
+}
+
 // ============================================================================
 // 3. DOCUMENTED EQUIDISTANT CYLINDRICAL PROJECTION
 // ============================================================================
@@ -1202,6 +1263,11 @@ interface InternalEngineState {
   exploreFrame: { center: THREE.Vector3; width: number } | null;
   /** Points over the map (host overlay), in their own group. */
   overlay: PointOverlay;
+  /** Explore: lights and materials the atlas palette recolours in place on a theme change. */
+  hemiLight: THREE.HemisphereLight;
+  gridMaterial: THREE.LineBasicMaterial;
+  regionSideMaterial: THREE.MeshStandardMaterial | null;
+  regionBoundaryMaterial: THREE.LineBasicMaterial | null;
 }
 
 export const NusaMatra3DMap = forwardRef<
@@ -1265,6 +1331,9 @@ export const NusaMatra3DMap = forwardRef<
   // Motion preference must not tear down/recreate the WebGL scene.
   const isMotionReducedRef = useRef(isMotionReduced);
   isMotionReducedRef.current = isMotionReduced;
+  // Read when regions are (re)built, so new materials start in the current theme.
+  const displayModeRef = useRef(displayMode);
+  displayModeRef.current = displayMode;
 
   const validationResult = useMemo<{
     dataset: GeographyDataset | null;
@@ -1531,10 +1600,14 @@ export const NusaMatra3DMap = forwardRef<
       dirLight.shadow.normalBias = 0.02;
       dirLight.shadow.camera.updateProjectionMatrix();
     } else {
+      // Colours come from EXPLORE_ATLAS_PALETTE (theme effect); no metalness, so the sea is its colour.
+      hemiLight.intensity = EXPLORE_HEMI_INTENSITY;
+      dirLight.intensity = EXPLORE_SUN_INTENSITY;
+      rimLight.intensity = EXPLORE_RIM_INTENSITY;
       oceanMaterial = new THREE.MeshStandardMaterial({
-        color: KAPUR_KOBALT_PALETTE.sea,
+        color: EXPLORE_ATLAS_PALETTE[displayMode].ocean,
         roughness: displayMode === 'glass' ? 0.36 : 0.6,
-        metalness: 0.1,
+        metalness: 0,
         bumpMap: textures.oceanBumpMap,
         bumpScale: 0.035,
       });
@@ -1588,6 +1661,10 @@ export const NusaMatra3DMap = forwardRef<
       heroPose,
       exploreFrame: null,
       overlay,
+      hemiLight,
+      gridMaterial,
+      regionSideMaterial: null,
+      regionBoundaryMaterial: null,
     };
 
     onReady?.();
@@ -1743,17 +1820,28 @@ export const NusaMatra3DMap = forwardRef<
     eng.featureMeshes.clear();
     eng.interactiveMeshes = [];
 
+    const palette = EXPLORE_ATLAS_PALETTE[displayModeRef.current];
+    // Shared by every region (one draw state), recoloured in place on a theme change.
     const borderMat = new THREE.LineBasicMaterial({
-      color: KAPUR_KOBALT_PALETTE.land4,
+      color: palette.boundary,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
     });
+    const sideMaterial = new THREE.MeshStandardMaterial({
+      color: palette.landSide,
+      roughness: 0.95,
+      metalness: 0,
+      wireframe: devWireframe,
+    });
+    eng.regionSideMaterial = sideMaterial;
+    eng.regionBoundaryMaterial = borderMat;
 
     // The hero draws the coastline relief built with the scene; selectable regions are Explore's.
     const regionFeatures = mode === 'hero' ? [] : validatedDataset.features;
     regionFeatures.forEach((feature) => {
-      const { regionId, displayName, tier = 1 } = feature.properties;
-      const tierDepth = mode === 'hero' ? 0.26 + tier * 0.06 : 0.28;
+      const { regionId, displayName } = feature.properties;
+      // Regions are Explore's only (the hero draws its own relief): one uniform height.
+      const tierDepth = 0.28;
 
       const extrudeSettings: THREE.ExtrudeGeometryOptions = {
         depth: tierDepth,
@@ -1811,20 +1899,14 @@ export const NusaMatra3DMap = forwardRef<
       const geometry = consolidateExtrudeGroups(new THREE.ExtrudeGeometry(shapes, extrudeSettings));
       geometry.rotateX(-Math.PI / 2);
 
+      // One uniform land colour (no tier tint, no mottled texture): a faint bump keeps it material.
+      // Its own instance only so hover and selection can recolour this region alone.
       const topMaterial = new THREE.MeshStandardMaterial({
-        color: getTierColorHex(tier),
-        map: eng.textures.diffuseMap,
+        color: palette.landTop,
         bumpMap: eng.textures.bumpMap,
-        bumpScale: 0.16,
-        roughness: 0.9,
-        metalness: 0.02,
-        wireframe: devWireframe,
-      });
-
-      const sideMaterial = new THREE.MeshStandardMaterial({
-        color: KAPUR_KOBALT_PALETTE.land4,
-        roughness: 0.95,
-        metalness: 0.02,
+        bumpScale: 0.05,
+        roughness: 0.88,
+        metalness: 0,
         wireframe: devWireframe,
       });
 
@@ -1932,6 +2014,20 @@ export const NusaMatra3DMap = forwardRef<
   useEffect(() => {
     const eng = engineRef.current;
     if (!eng) return;
+    if (mode === 'explore') {
+      // Theme change in place: no rebuild of regions, no new canvas.
+      const palette = EXPLORE_ATLAS_PALETTE[displayMode];
+      const ocean = new THREE.Color(palette.ocean);
+      eng.scene.background = ocean;
+      if (eng.scene.fog instanceof THREE.Fog) eng.scene.fog.color.copy(ocean);
+      eng.oceanMaterial.color.copy(ocean);
+      // Light bounced up onto the extruded sides: sea and land mixed, so a deep Kaca sea tints the
+      // sides without turning them grey.
+      eng.hemiLight.groundColor.copy(ocean).lerp(new THREE.Color(palette.landSide), SIDE_BOUNCE_LAND_SHARE);
+      eng.gridMaterial.color.set(palette.graticule);
+      eng.regionSideMaterial?.color.set(palette.landSide);
+      eng.regionBoundaryMaterial?.color.set(palette.boundary);
+    }
     eng.oceanMaterial.roughness = displayMode === 'glass' ? 0.36 : 0.6;
     eng.oceanMaterial.needsUpdate = true;
     eng.gridGroup.visible = mode === 'explore' && showGraticule;
@@ -1944,20 +2040,12 @@ export const NusaMatra3DMap = forwardRef<
     const eng = engineRef.current;
     if (!eng) return;
     eng.renderer.shadowMap.needsUpdate = true;
+    const palette = EXPLORE_ATLAS_PALETTE[displayMode];
     eng.featureMeshes.forEach((group, id) => {
-      const mat = group.userData.topMaterial as THREE.MeshStandardMaterial;
-      const isSelected = id === selectedRegionId;
-      if (isSelected) {
-        mat.emissive.set(KAPUR_KOBALT_PALETTE.accent);
-        mat.emissiveIntensity = 0.38;
-        group.position.y = 0.16;
-      } else {
-        mat.emissive.setHex(0x000000);
-        mat.emissiveIntensity = 0;
-        group.position.y = 0;
-      }
+      paintRegion(group, palette, id === selectedRegionId ? 'selected' : 'idle');
     });
-  }, [selectedRegionId, validatedDataset]);
+    hoveredIdRef.current = null;
+  }, [selectedRegionId, validatedDataset, displayMode]);
 
   useEffect(() => {
     const eng = engineRef.current;
@@ -2069,24 +2157,13 @@ export const NusaMatra3DMap = forwardRef<
             hoveredIdRef.current !== selectedRegionId
           ) {
             const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
-            if (prevGroup) {
-              const prevMat = prevGroup.userData
-                .topMaterial as THREE.MeshStandardMaterial;
-              prevMat.emissive.setHex(0x000000);
-              prevGroup.position.y = 0;
-            }
+            if (prevGroup) paintRegion(prevGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
           }
           hoveredIdRef.current = rId;
           eng.renderer.shadowMap.needsUpdate = true;
           if (rId !== selectedRegionId) {
             const currGroup = eng.featureMeshes.get(rId);
-            if (currGroup) {
-              const currMat = currGroup.userData
-                .topMaterial as THREE.MeshStandardMaterial;
-              currMat.emissive.set(KAPUR_KOBALT_PALETTE.accent);
-              currMat.emissiveIntensity = 0.22;
-              currGroup.position.y = 0.08;
-            }
+            if (currGroup) paintRegion(currGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'hover');
           }
           onHoverRegion?.({
             regionId: rId,
@@ -2112,12 +2189,7 @@ export const NusaMatra3DMap = forwardRef<
         if (hoveredIdRef.current) {
           if (hoveredIdRef.current !== selectedRegionId) {
             const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
-            if (prevGroup) {
-              const prevMat = prevGroup.userData
-                .topMaterial as THREE.MeshStandardMaterial;
-              prevMat.emissive.setHex(0x000000);
-              prevGroup.position.y = 0;
-            }
+            if (prevGroup) paintRegion(prevGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
           }
           hoveredIdRef.current = null;
           eng.renderer.shadowMap.needsUpdate = true;
@@ -2129,6 +2201,7 @@ export const NusaMatra3DMap = forwardRef<
       mode,
       validatedDataset,
       selectedRegionId,
+      displayMode,
       enableDevInspector,
       getBoundedNDC,
       onHoverRegion,
@@ -2201,19 +2274,14 @@ export const NusaMatra3DMap = forwardRef<
       const previousId = hoveredIdRef.current;
       if (previousId && previousId !== selectedRegionId) {
         const previousGroup = eng.featureMeshes.get(previousId);
-        if (previousGroup) {
-          const previousMat = previousGroup.userData.topMaterial as THREE.MeshStandardMaterial;
-          previousMat.emissive.setHex(0x000000);
-          previousMat.emissiveIntensity = 0;
-          previousGroup.position.y = 0;
-        }
+        if (previousGroup) paintRegion(previousGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
       }
     }
     hoveredIdRef.current = null;
     if (eng) eng.renderer.shadowMap.needsUpdate = true;
     setHoveredInfo(null);
     onHoverRegion?.(null);
-  }, [selectedRegionId, onHoverRegion]);
+  }, [selectedRegionId, displayMode, onHoverRegion]);
 
   if (webglError || dataValidationError) {
     return (
