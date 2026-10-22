@@ -78,7 +78,7 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
       weights: { dis_multihazard_index: 3500, soc_poverty_rate: 2500 },
     });
 
-    const slider = page.getByLabel('Persentase Penduduk Miskin (P0)');
+    const slider = page.getByLabel('Bobot Persentase Penduduk Miskin (P0)');
     await slider.focus();
     for (let step = 0; step < 10; step += 1) await slider.press('ArrowRight');
 

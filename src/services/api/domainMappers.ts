@@ -750,9 +750,20 @@ export function validateAndBuildCompositeWeights(
  * Explicitly marks `runId: null`, `isExploratoryPreview: true`, and
  * `weightedContributionsAvailable: false` (ARGON_RUNTIME_CONTRACT.md Blocker #5).
  */
+function readBasisPointRecord(value: unknown): Record<string, number> | null {
+  if (!isRecord(value)) return null;
+  const weights: Record<string, number> = {};
+  for (const [indicatorId, bps] of Object.entries(value)) {
+    const parsed = readIntegerOrNull(bps);
+    if (parsed !== null) weights[indicatorId] = parsed;
+  }
+  return weights;
+}
+
 export function mapCompositeQueryData(
   rawData: unknown,
   meta: AdaptedResponseMeta,
+  filterProvinceId: string | null = null,
 ): ExploratoryCompositeResultDTO {
   if (!isRecord(rawData) || !Array.isArray(rawData.regions)) {
     throw new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
@@ -762,15 +773,12 @@ export function mapCompositeQueryData(
 
   const totalRegions = readIntegerOrNull(rawData.total_regions) ?? rawData.regions.length;
 
-  const weightsBasisPoints: Record<string, number> = {};
-  if (isRecord(rawData.weights_basis_points)) {
-    for (const [indId, bpsVal] of Object.entries(rawData.weights_basis_points)) {
-      const parsedBps = readIntegerOrNull(bpsVal);
-      if (parsedBps !== null) {
-        weightsBasisPoints[indId] = parsedBps;
-      }
-    }
-  }
+  const weightsBasisPoints = readBasisPointRecord(rawData.weights_basis_points) ?? {};
+  // Guide v2 provenance of the redistribution; absent fields stay null (not reported), never assumed.
+  const unavailable = rawData.unavailable_indicators;
+  const unavailableIndicatorIds = Array.isArray(unavailable)
+    ? unavailable.filter((id): id is string => typeof id === 'string')
+    : null;
 
   const items: ExploratoryRegionRankDTO[] = rawData.regions.map((row) => {
     if (!isRecord(row)) {
@@ -825,6 +833,10 @@ export function mapCompositeQueryData(
     snapshotId: meta.snapshotId,
     totalRegions,
     weightsBasisPoints,
+    renormalized: typeof rawData.renormalized === 'boolean' ? rawData.renormalized : null,
+    unavailableIndicatorIds,
+    effectiveWeightsBasisPoints: readBasisPointRecord(rawData.effective_weights),
+    filterProvinceId,
     items,
   };
 }

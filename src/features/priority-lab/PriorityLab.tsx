@@ -1,319 +1,162 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
-import { Button } from '@/components/ui/Button/Button';
-import { Chip } from '@/components/ui/Chip/Chip';
 import { Surface } from '@/components/ui/Surface/Surface';
-import {
-  TOTAL_BASIS_POINTS,
-  assessCompositeIntegrity,
-  basisPointsToPercent,
-  redistributeWeights,
-  type CompositeIntegrity,
-  type WeightsBps,
-} from '@/domain/prioritization';
-import { ResourceView, formatDecimalId, useDataHub, useDataHubResource } from '@/features/data-hub';
+import { addCriterion, removeCriterion, type WeightsBps } from '@/domain/prioritization';
+import { ResourceView, useDataHub, useDataHubResource, type ResourceState } from '@/features/data-hub';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import {
-  INDONESIAN_ERROR_COPY,
-  type ExploratoryCompositeResultDTO,
-  type IndicatorCatalogDTO,
-} from '@/services/api';
-import { integrityInputFromResult } from './compositeCheck';
-import { startingCriteriaFor, weightsKey } from './criteria';
+import type { CompositePresetsDTO, DataHubRegionDTO } from '@/services/api';
+import { IndicatorPicker } from './IndicatorPicker';
+import { RankingResults } from './RankingResults';
+import { WeightControls } from './WeightControls';
+import { buildIndicatorOptions, provinceOptions, startingWeights, type IndicatorOption } from './labModel';
 import styles from './PriorityLab.module.css';
 
+/** Waits this long after the last slider move before asking the Data Hub again. */
 const RECOMPUTE_DEBOUNCE_MS = 400;
-const PAGE_SIZE = 10;
+/** Enough criteria to express a policy, few enough that every slider stays meaningful. */
+const MAX_CRITERIA = 8;
 
 type Weights = WeightsBps<string>;
 
-/** Weight sliders on the Data Hub's exploratory composite query, with a ranked preview. */
+/**
+ * Lab Prioritas: choose criteria, weigh them, and read the Data Hub's ranking with an explanation of
+ * how it was calculated. The Data Hub calculates; this page validates and explains.
+ */
 export function PriorityLab() {
   const { dataMode } = useDataHub();
-  // Each mode has its own starting criteria, so switching mode starts over instead of carrying weights across.
-  return <Lab key={dataMode} startingWeights={startingCriteriaFor(dataMode)} />;
+  // Each mode starts over, so weights or results never carry across DEMO and LIVE.
+  return <LabInputs key={dataMode} />;
 }
 
-function Lab({ startingWeights }: { readonly startingWeights: Weights }) {
-  const catalog = useDataHubResource('catalog', (repository, dataMode, signal) =>
-    repository.getIndicatorCatalog({ dataMode, signal }),
-  );
-  const [weights, setWeights] = useState<Weights>(startingWeights);
+/**
+ * The catalog and, in LIVE, the coverage matrix load as one resource: in LIVE the Lab cannot say
+ * which criteria hold data without both, and one failure is one message.
+ */
+function LabInputs() {
+  const inputs = useDataHubResource('lab-inputs', async (repository, dataMode, signal) => {
+    const [catalog, coverage] = await Promise.all([
+      repository.getIndicatorCatalog({ dataMode, signal }),
+      dataMode === 'LIVE' ? repository.getIndicatorCoverage({ dataMode, signal }) : Promise.resolve(null),
+    ]);
+    return buildIndicatorOptions(catalog.data, coverage?.data ?? null);
+  });
 
   return (
-    <ResourceView state={catalog.state} onRetry={catalog.retry} loadingTitle="Memuat katalog indikator…">
-      {(envelope) => {
-        const known = new Set(envelope.data.items.map((item) => item.indicatorId));
-        const missing = Object.keys(startingWeights).filter((id) => !known.has(id));
-        if (missing.length > 0) {
-          return (
-            <StatusMessage kind="error" title="Kriteria awal tidak ada di katalog Data Hub">
-              Lab Prioritas tidak dijalankan karena indikator berikut tidak ditemukan: {missing.join(', ')}.
-              Tidak ada indikator pengganti yang dipilih secara diam-diam.
-            </StatusMessage>
-          );
-        }
-        return (
-          <Workbench
-            catalog={envelope.data}
-            weights={weights}
-            startingWeights={startingWeights}
-            onWeightsChange={setWeights}
-          />
-        );
-      }}
+    <ResourceView
+      state={inputs.state}
+      onRetry={inputs.retry}
+      loadingTitle="Memuat kriteria dan ketersediaan data…"
+    >
+      {(options) => <Workbench options={options} />}
     </ResourceView>
   );
 }
 
-interface WorkbenchProps {
-  readonly catalog: IndicatorCatalogDTO;
-  readonly weights: Weights;
-  readonly startingWeights: Weights;
-  readonly onWeightsChange: (weights: Weights) => void;
-}
+function Workbench({ options }: { readonly options: readonly IndicatorOption[] }) {
+  const { dataMode } = useDataHub();
+  const [start] = useState(() => startingWeights(dataMode, options));
+  const [weights, setWeights] = useState<Weights>(start.weights);
+  const [provinceId, setProvinceId] = useState<string | null>(null);
+  const settledWeights = useDebouncedValue(weights, RECOMPUTE_DEBOUNCE_MS);
+  const isSettling = settledWeights !== weights;
+  const provinceFieldId = useId();
 
-function Workbench({ catalog, weights, startingWeights, onWeightsChange }: WorkbenchProps) {
-  const labelOf = (id: string) => catalog.items.find((item) => item.indicatorId === id)?.labelId ?? id;
-  const debouncedWeights = useDebouncedValue(weights, RECOMPUTE_DEBOUNCE_MS);
-  const isSettling = debouncedWeights !== weights;
-
-  const criterionIds = Object.keys(weights);
-  const total = criterionIds.reduce((sum, id) => sum + (weights[id] ?? 0), 0);
+  const presets = useDataHubResource('presets', (repository, mode, signal) =>
+    repository.getCompositePresets({ dataMode: mode, signal }),
+  );
+  const registry = useDataHubResource('registry', (repository, mode, signal) =>
+    repository.searchRegions({ dataMode: mode, query: '', signal }),
+  );
+  const regions: readonly DataHubRegionDTO[] | null =
+    registry.state.status === 'success' ? registry.state.data.data : null;
+  const provinces = regions ? provinceOptions(regions) : [];
 
   return (
     <div className={styles.lab}>
       <Surface radius="card" className={styles.panel}>
-        <h2 className="kk-h3">Bobot kriteria</h2>
+        <h2 className="kk-h3">Atur prioritas</h2>
         <p className={`kk-small ${styles.muted}`}>
-          Geser satu bobot dan bobot lainnya menyesuaikan, sehingga totalnya selalu 100% (10.000 basis poin).
+          Pilih kriteria yang penting bagi Anda dan tentukan seberapa besar pengaruhnya. Data Hub menghitung
+          peringkatnya dari data resmi; halaman ini memeriksa dan menjelaskan hasilnya.
         </p>
-        <div className={styles.sliders}>
-          {criterionIds.map((id) => (
-            <div key={id} className={styles.slider}>
-              <label htmlFor={`bobot-${id}`} className="kk-body">
-                {labelOf(id)}
-              </label>
-              <input
-                id={`bobot-${id}`}
-                type="range"
-                min={0}
-                max={100}
-                step={1}
-                value={basisPointsToPercent(weights[id] ?? 0)}
-                aria-valuetext={`${formatDecimalId(String(basisPointsToPercent(weights[id] ?? 0)))} persen`}
-                onChange={(event) => {
-                  onWeightsChange(redistributeWeights(weights, id, Number(event.target.value) * 100));
-                }}
-              />
-              <output htmlFor={`bobot-${id}`} className={`kk-body-strong ${styles.percent}`}>
-                {formatDecimalId(String(basisPointsToPercent(weights[id] ?? 0)))}%
-              </output>
-            </div>
-          ))}
-        </div>
-        <div className={styles.footer}>
-          <p className="kk-body-strong" role="status">
-            Total: {formatDecimalId(String(basisPointsToPercent(total)))}% ({formatDecimalId(String(total))}{' '}
-            basis poin dari {formatDecimalId(String(TOTAL_BASIS_POINTS))})
+        {start.dropped.length > 0 && (
+          <p className={`kk-small ${styles.unavailable}`}>
+            Kriteria awal tanpa data tidak dipakai: {start.dropped.join(', ')}. Tidak ada kriteria pengganti
+            yang dipilih otomatis.
           </p>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              onWeightsChange(startingWeights);
-            }}
-          >
-            Atur ulang bobot
-          </Button>
-        </div>
+        )}
+
+        <IndicatorPicker
+          options={options}
+          selected={new Set(Object.keys(weights))}
+          maxSelected={MAX_CRITERIA}
+          onToggle={(id, next) => {
+            setWeights((current) => (next ? addCriterion(current, id) : removeCriterion(current, id)));
+          }}
+        />
+
+        <WeightControls
+          weights={weights}
+          options={options}
+          onChange={setWeights}
+          onReset={() => {
+            setWeights(start.weights);
+          }}
+          presets={presets.state.status === 'success' ? presets.state.data.data.presets : null}
+          presetsNote={presetsNote(presets.state)}
+        />
+
+        {provinces.length > 0 && (
+          <div className={styles.province}>
+            <label htmlFor={provinceFieldId} className="kk-body">
+              Cakupan wilayah
+            </label>
+            <select
+              id={provinceFieldId}
+              value={provinceId ?? ''}
+              onChange={(event) => {
+                setProvinceId(event.target.value === '' ? null : event.target.value);
+              }}
+            >
+              <option value="">Seluruh Indonesia</option>
+              {provinces.map((province) => (
+                <option key={province.id} value={province.id}>
+                  {province.name} ({province.regionCount} kab/kota)
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </Surface>
 
-      <RankingPanel weights={debouncedWeights} isSettling={isSettling} labelOf={labelOf} />
+      {regions === null && registry.state.status === 'error' && (
+        <StatusMessage kind="unavailable" title="Daftar wilayah tidak dapat dimuat">
+          Peringkat tetap dihitung, tetapi wilayah yang tidak ikut dihitung tidak dapat dicantumkan.
+        </StatusMessage>
+      )}
+      <RankingResults
+        weights={settledWeights}
+        isSettling={isSettling}
+        provinceId={provinceId}
+        registry={regions ?? []}
+        options={options}
+      />
     </div>
   );
 }
 
-interface RankingPanelProps {
-  readonly weights: Weights;
-  readonly isSettling: boolean;
-  readonly labelOf: (id: string) => string;
-}
-
-/** The ranked preview, shown only when it reproduces from its own components and covers the registry. */
-function RankingPanel({ weights, isSettling, labelOf }: RankingPanelProps) {
-  const { dataMode } = useDataHub();
-  const ranking = useDataHubResource(weightsKey(weights), (repository, mode, signal) =>
-    repository.runExploratoryCompositeQuery({
-      dataMode: mode,
-      criteria: Object.entries(weights).map(([indicatorId, basisPoints]) => ({ indicatorId, basisPoints })),
-      signal,
-    }),
-  );
-  // Coverage can only be judged against the region registry of the same snapshot.
-  const registry = useDataHubResource('registry-size', (repository, mode, signal) =>
-    repository.searchRegions({ dataMode: mode, query: '', signal }),
-  );
-
-  return (
-    <Surface radius="card" className={styles.panel} aria-busy={isSettling}>
-      <div className={styles.titleRow}>
-        <h2 className="kk-h3">Pratinjau peringkat</h2>
-        <Chip tone="warning">
-          {dataMode === 'DEMO'
-            ? 'Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)'
-            : 'Pratinjau Eksploratif LIVE (Tanpa Run ID Imutabel)'}
-        </Chip>
-      </div>
-      {dataMode === 'DEMO' && (
-        <p className="kk-body-strong">{INDONESIAN_ERROR_COPY['data.demo_disclaimer']}</p>
-      )}
-      {isSettling ? (
-        <StatusMessage kind="loading" title={INDONESIAN_ERROR_COPY['analysis.running'] ?? 'Menghitung…'} />
-      ) : (
-        <ResourceView
-          state={ranking.state}
-          onRetry={ranking.retry}
-          loadingTitle={INDONESIAN_ERROR_COPY['analysis.running'] ?? 'Menghitung…'}
-        >
-          {(envelope) => (
-            <ResourceView
-              state={registry.state}
-              onRetry={registry.retry}
-              loadingTitle="Memeriksa cakupan wilayah…"
-            >
-              {(regions) => (
-                <CheckedRanking
-                  result={envelope.data}
-                  registryRegionCount={regions.data.length}
-                  labelOf={labelOf}
-                />
-              )}
-            </ResourceView>
-          )}
-        </ResourceView>
-      )}
-      <p className={`kk-small ${styles.muted}`}>
-        Skor tinggi berarti kondisi relatif lebih baik pada kriteria terpilih (bahaya, kemiskinan, atau
-        stunting lebih rendah; IPM lebih tinggi). Peringkat 1 adalah wilayah dengan kondisi relatif terbaik,
-        bukan wilayah dengan prioritas intervensi tertinggi.
-      </p>
-      <p className={`kk-small ${styles.muted}`}>
-        Rincian kontribusi berbobot per kriteria (“Mengapa Diprioritaskan”) belum tersedia: Data Hub belum
-        menyediakan endpoint penjelasan analisis. Skor komponen di bawah adalah nilai ternormalisasi 0–100,
-        bukan kontribusi berbobot, dan hasil ini bukan rekomendasi kebijakan.
-      </p>
-    </Surface>
-  );
-}
-
-/**
- * LIVE: a ranking that fails the integrity check is withheld, because LIVE must be verifiable.
- * DEMO: the simulated list is still shown, with the problem flagged above it.
- */
-function CheckedRanking({
-  result,
-  registryRegionCount,
-  labelOf,
-}: {
-  readonly result: ExploratoryCompositeResultDTO;
-  readonly registryRegionCount: number;
-  readonly labelOf: (id: string) => string;
-}) {
-  const { dataMode } = useDataHub();
-  const integrity = assessCompositeIntegrity(integrityInputFromResult(result, registryRegionCount));
-
-  if (!integrity.ok && dataMode === 'LIVE') {
-    return <IntegrityProblem integrity={integrity} withheld />;
+function presetsNote(state: ResourceState<{ readonly data: CompositePresetsDTO }>): string | null {
+  if (state.status === 'error')
+    return 'Skenario siap pakai dari Data Hub tidak dapat dimuat; bobot tetap bisa diatur sendiri.';
+  if (state.status !== 'success') return null;
+  const { presets, rejectedCount } = state.data.data;
+  const notes: string[] = [];
+  if (presets.length > 0)
+    notes.push('Skenario siap pakai disediakan Data Hub sebagai titik awal, bukan rekomendasi resmi.');
+  if (rejectedCount > 0) {
+    notes.push(
+      `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobotnya tidak tepat 100%.`,
+    );
   }
-  return (
-    <>
-      {!integrity.ok && <IntegrityProblem integrity={integrity} withheld={false} />}
-      <RankingList result={result} registryRegionCount={registryRegionCount} labelOf={labelOf} />
-    </>
-  );
-}
-
-function IntegrityProblem({
-  integrity,
-  withheld,
-}: {
-  readonly integrity: CompositeIntegrity;
-  readonly withheld: boolean;
-}) {
-  return (
-    <StatusMessage
-      kind="error"
-      title={
-        withheld ? 'Peringkat ditahan: hasil komposit tidak konsisten' : 'Hasil komposit tidak konsisten'
-      }
-    >
-      <ul role="list">
-        {integrity.issues.map((issue) => (
-          <li key={issue.code}>{issue.message}</li>
-        ))}
-      </ul>
-      Data Hub perlu memperbaikinya; antarmuka tidak menghitung ulang atau menutup selisih ini.
-    </StatusMessage>
-  );
-}
-
-function RankingList({
-  result,
-  registryRegionCount,
-  labelOf,
-}: {
-  readonly result: ExploratoryCompositeResultDTO;
-  readonly registryRegionCount: number;
-  readonly labelOf: (id: string) => string;
-}) {
-  const { dataMode } = useDataHub();
-  const [shown, setShown] = useState(PAGE_SIZE);
-  const rows = result.items.slice(0, shown);
-
-  return (
-    <>
-      <p className="kk-small" role="status">
-        Menampilkan {rows.length} dari {result.totalRegions} wilayah
-        {dataMode === 'DEMO'
-          ? ' · nama wilayah pada dataset DEMO bersifat sintetis'
-          : ` · daftar wilayah snapshot ini berisi ${String(registryRegionCount)} kabupaten/kota`}
-      </p>
-      <ol className={styles.ranking}>
-        {rows.map((item) => (
-          <li key={item.regionId} className={styles.rank}>
-            <span className={`kk-number ${styles.position}`}>{item.rankPosition ?? '—'}</span>
-            <span className={styles.name}>
-              <span className="kk-body-strong">{item.regionDisplayName}</span>
-              <span className={`kk-small ${styles.muted}`}>Kode {item.regionId}</span>
-            </span>
-            <span className="kk-body-strong">
-              {item.compositeScoreDecimal === null
-                ? 'Tidak dapat dihitung'
-                : formatDecimalId(item.compositeScoreDecimal)}
-            </span>
-            <details className={styles.components}>
-              <summary className="kk-small">Skor komponen (ternormalisasi)</summary>
-              <ul role="list" className={styles.componentList}>
-                {Object.entries(item.componentScoresDecimal).map(([id, score]) => (
-                  <li key={id} className="kk-small">
-                    {labelOf(id)}: {score === null ? 'Data belum tersedia' : formatDecimalId(score)}
-                  </li>
-                ))}
-              </ul>
-            </details>
-          </li>
-        ))}
-      </ol>
-      {shown < result.items.length && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setShown((current) => current + PAGE_SIZE);
-          }}
-        >
-          Tampilkan {Math.min(PAGE_SIZE, result.items.length - shown)} lagi
-        </Button>
-      )}
-    </>
-  );
+  return notes.length > 0 ? notes.join(' ') : null;
 }

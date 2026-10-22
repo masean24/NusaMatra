@@ -78,3 +78,44 @@ export function redistributeWeights<CriterionId extends string>(
 export function basisPointsToPercent(basisPoints: number): number {
   return basisPoints / 100;
 }
+
+/**
+ * Scales weights to exactly `TOTAL_BASIS_POINTS`, keeping their proportions (largest remainder,
+ * ties to the criterion listed first). All-zero weights become equal shares.
+ */
+export function scaleToTotal<CriterionId extends string>(
+  weights: WeightsBps<CriterionId>,
+): WeightsBps<CriterionId> {
+  const ids = Object.keys(weights) as CriterionId[];
+  if (ids.length === 0) return weights;
+  const total = ids.reduce((sum, id) => sum + weights[id], 0);
+  const divisor = total > 0 ? total : ids.length;
+  const shares = ids.map((id, index) => {
+    const numerator = (total > 0 ? weights[id] : 1) * TOTAL_BASIS_POINTS;
+    return { id, index, whole: Math.floor(numerator / divisor), fraction: numerator % divisor };
+  });
+  let leftover = TOTAL_BASIS_POINTS - shares.reduce((sum, share) => sum + share.whole, 0);
+  const bonus = new Set<CriterionId>();
+  for (const share of [...shares].sort((a, b) => b.fraction - a.fraction || a.index - b.index)) {
+    if (leftover <= 0) break;
+    bonus.add(share.id);
+    leftover -= 1;
+  }
+  return Object.fromEntries(
+    shares.map((share) => [share.id, share.whole + (bonus.has(share.id) ? 1 : 0)]),
+  ) as WeightsBps<CriterionId>;
+}
+
+/** Adds a criterion with an equal share (1/n of the total); the others give way proportionally. */
+export function addCriterion(weights: WeightsBps<string>, id: string): WeightsBps<string> {
+  if (id in weights) return weights;
+  const count = Object.keys(weights).length + 1;
+  return redistributeWeights({ ...weights, [id]: 0 }, id, Math.round(TOTAL_BASIS_POINTS / count));
+}
+
+/** Removes a criterion; the remaining ones are scaled back up to the full total. */
+export function removeCriterion(weights: WeightsBps<string>, id: string): WeightsBps<string> {
+  if (!(id in weights)) return weights;
+  const rest = Object.fromEntries(Object.entries(weights).filter(([key]) => key !== id));
+  return scaleToTotal(rest);
+}

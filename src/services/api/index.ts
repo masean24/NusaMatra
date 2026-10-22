@@ -6,3 +6,4 @@ export * from './httpClient';
 export * from './domainMappers';
 export * from './repositories';
 export * from './earthquakes';
+export * from './labContract';

@@ -15,6 +15,12 @@ import {
   validateAndBuildCompositeWeights,
 } from './domainMappers';
 import { mapEarthquakeFeed, type EarthquakeFeedDTO } from './earthquakes';
+import {
+  mapCompositePresetsData,
+  mapIndicatorCoverageData,
+  type CompositePresetsDTO,
+  type IndicatorCoverageDTO,
+} from './labContract';
 import { DataHubHttpClient } from './httpClient';
 import type {
   AdaptedEnvelope,
@@ -279,12 +285,38 @@ export class NusaMatraDataHubRepository {
       },
       {
         parse: (raw, ctx) =>
-          mapEnvelope(raw, input.dataMode, ctx, (data, meta) => mapCompositeQueryData(data, meta)),
+          mapEnvelope(raw, input.dataMode, ctx, (data, meta) =>
+            mapCompositeQueryData(data, meta, input.filterProvinceId ?? null),
+          ),
       },
       {
         dataMode: input.dataMode,
         signal: input.signal,
       },
+    );
+  }
+
+  /** Which indicators hold data in this mode, and for how many regions (guide v2, BE-03). */
+  async getIndicatorCoverage(input: {
+    readonly dataMode: DataMode;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<AdaptedEnvelope<IndicatorCoverageDTO>> {
+    return this.client.get(
+      '/api/v1/indicators/coverage',
+      { parse: (raw, ctx) => mapEnvelope(raw, input.dataMode, ctx, mapIndicatorCoverageData) },
+      { dataMode: input.dataMode, signal: input.signal },
+    );
+  }
+
+  /** Scenario presets the Data Hub publishes; only presets matching the contract are kept. */
+  async getCompositePresets(input: {
+    readonly dataMode: DataMode;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<AdaptedEnvelope<CompositePresetsDTO>> {
+    return this.client.get(
+      '/api/v1/indicators/composite-presets',
+      { parse: (raw, ctx) => mapEnvelope(raw, input.dataMode, ctx, mapCompositePresetsData) },
+      { dataMode: input.dataMode, signal: input.signal },
     );
   }
 

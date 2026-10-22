@@ -262,7 +262,19 @@ export interface ExploratoryCompositeResultDTO {
   readonly dataMode: DataMode;
   readonly snapshotId: string;
   readonly totalRegions: number;
+  /** The weights the request sent, as the Data Hub echoes them (`weights_basis_points`). */
   readonly weightsBasisPoints: Readonly<Record<string, number>>;
+  /**
+   * Guide v2: whether weights of indicators without data in this mode were redistributed over the
+   * others (`renormalized`). `null` when the response does not say (v1 responses).
+   */
+  readonly renormalized: boolean | null;
+  /** Guide v2: weighted indicators left out because the mode holds no data for them. */
+  readonly unavailableIndicatorIds: readonly string[] | null;
+  /** Guide v2: the weights actually used (`effective_weights`); `null` when not reported. */
+  readonly effectiveWeightsBasisPoints: Readonly<Record<string, number>> | null;
+  /** The province the request was limited to, if any. */
+  readonly filterProvinceId: string | null;
   readonly items: readonly ExploratoryRegionRankDTO[];
 }
 

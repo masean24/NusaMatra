@@ -40,7 +40,7 @@
 
 .percent {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1;
   min-width: 3.5ch;
   text-align: right;
 }
@@ -94,26 +94,363 @@
   min-width: 0;
 }
 
-.components {
-  grid-column: 2 / span 2;
+@media (width < 960px) {
+  .lab {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-.components summary {
-  color: var(--c-text-muted);
+/* Criteria picker: a disclosure so the sliders stay in view. */
+.picker {
+  border: 1px solid var(--c-input-border);
+  border-radius: var(--nm-radius-control);
+  padding: 10px 14px;
+}
+
+.picker > summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  align-items: baseline;
+  min-height: 44px;
+  align-content: center;
   cursor: pointer;
 }
 
-.componentList {
+.category {
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.category legend {
+  margin-bottom: 6px;
+  color: var(--c-text-muted);
+  font-weight: 600;
+}
+
+.options {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin: 6px 0 0;
+  gap: 4px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-@media (width < 960px) {
-  .lab {
-    grid-template-columns: minmax(0, 1fr);
+.option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 6px;
+  border-radius: var(--nm-radius-chip);
+}
+
+.option input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--nm-sea);
+}
+
+.option[data-disabled] label {
+  color: var(--c-text-muted);
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.optionText label {
+  cursor: pointer;
+}
+
+.weights {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.presets,
+.orderToggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Pill toggles, like the DEMO region buttons; the pressed one is filled (and aria-pressed). */
+.preset {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--c-input-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.preset[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--c-nav-active-liquid);
+  color: var(--c-nav-active-text);
+  font-weight: 600;
+}
+
+/* Proportion of each weight; the same numbers are written next to every slider. */
+.totalBar {
+  display: flex;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface-muted);
+}
+
+.segment {
+  height: 100%;
+  transition: width var(--nm-duration-feedback) ease;
+}
+
+.segment[data-index='0'] {
+  background: var(--nm-sea);
+}
+.segment[data-index='1'] {
+  background: var(--nm-accent);
+}
+.segment[data-index='2'] {
+  background: var(--nm-sea-shallow);
+}
+.segment[data-index='3'] {
+  background: var(--nm-land-4);
+}
+.segment[data-index='4'] {
+  background: var(--nm-sea-deep);
+}
+.segment[data-index='5'] {
+  background: var(--nm-land-3);
+}
+
+.slider .remove {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+}
+
+.remove {
+  min-height: 32px;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: var(--nm-radius-pill);
+  background: transparent;
+  color: var(--c-text-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.unavailable {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--c-note);
+}
+
+.province {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.province select,
+.search {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--c-input-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--c-input-bg);
+  color: var(--c-text);
+  font: inherit;
+}
+
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notes p {
+  margin: 0;
+}
+
+.callout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--nm-accent);
+  border-radius: var(--nm-radius-chip);
+  background: var(--c-surface-muted);
+}
+
+.weightTable,
+.breakdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.weightTable caption,
+.breakdown caption {
+  margin-bottom: 4px;
+  color: var(--c-text-muted);
+  text-align: left;
+}
+
+.weightTable th,
+.weightTable td,
+.breakdown th,
+.breakdown td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--c-input-border);
+  font-weight: 400;
+  text-align: left;
+}
+
+.weightTable thead th,
+.breakdown thead th,
+.breakdown tfoot th,
+.breakdown tfoot td {
+  font-weight: 600;
+}
+
+.weightTable td,
+.breakdown td {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.excluded summary,
+.method summary {
+  min-height: 44px;
+  align-content: center;
+  color: var(--c-text-muted);
+  cursor: pointer;
+}
+
+.excludedList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 2px 12px;
+  max-height: 220px;
+  margin: 6px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.method ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding-left: 1.2em;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resultControls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.move {
+  color: var(--c-text-strong-accent);
+}
+
+.scoreCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  min-width: 5.5rem;
+}
+
+.scoreBar {
+  width: 5rem;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface);
+}
+
+.scoreBar span {
+  display: block;
+  height: 100%;
+  background: var(--nm-sea);
+}
+
+.why {
+  grid-column: 2 / -1;
+  justify-self: start;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid var(--c-input-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface);
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.breakdown {
+  grid-column: 1 / -1;
+  overflow-x: auto;
+}
+
+.record {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.record div {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 8px;
+}
+
+.record dt {
+  color: var(--c-text-muted);
+}
+
+.record dd {
+  margin: 0;
+}
+
+@media (width < 600px) {
+  .panel {
+    padding: 18px 16px;
+  }
+
+  .rank {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment {
+    transition: none;
   }
 }

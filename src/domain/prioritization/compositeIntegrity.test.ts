@@ -71,6 +71,9 @@ describe('assessCompositeIntegrity on the deployed LIVE composite (captured 2026
     const missing = result.issues.find((issue) => issue.code === 'MISSING_COMPONENT');
     expect(missing?.count).toBe(26);
     expect(missing?.message).toMatch(/dihitung sebagai 0/);
+    expect(missing?.severity).toBe('block');
+    // Kota Surakarta (3372) has no stunting value and 74.57 = its three other components at 30/30/20 %.
+    expect(missing?.examples).toContain('3372');
     expect(result.ok).toBe(false);
   });
 });
@@ -83,13 +86,22 @@ describe('assessCompositeIntegrity', () => {
     expect(result.maxScoreError).toBeLessThanOrEqual(0.05);
   });
 
-  it('reports a ranking that covers fewer regions than the registry (the 487-of-514 case)', () => {
+  it('lets a sound ranking of fewer regions than the registry stand, but discloses the gap', () => {
     const { rows } = capturedInput();
     const partial = rows.slice(0, 487);
     const result = assessCompositeIntegrity(input({ rows: partial, reportedTotalRegions: 487 }));
-    expect(result.ok).toBe(false);
-    expect(result.issues.map((issue) => issue.code)).toEqual(['REGISTRY_COUNT_MISMATCH']);
+    expect(result.ok).toBe(true);
+    expect(result.issues.map((issue) => [issue.code, issue.severity])).toEqual([
+      ['REGISTRY_COUNT_MISMATCH', 'disclose'],
+    ]);
     expect(result.issues[0]?.count).toBe(27);
+    expect(result.issues[0]?.message).toMatch(/27 dari 514 wilayah tidak masuk peringkat/);
+  });
+
+  it('blocks a ranking with more regions than the registry', () => {
+    const result = assessCompositeIntegrity(input({ registryRegionCount: 500 }));
+    expect(result.ok).toBe(false);
+    expect(result.issues[0]).toMatchObject({ code: 'REGISTRY_COUNT_MISMATCH', severity: 'block' });
   });
 
   it('reports a response whose own total does not match the rows it contains', () => {
@@ -168,6 +180,133 @@ describe('assessCompositeIntegrity', () => {
     const result = assessCompositeIntegrity(
       input({ rows: [...rows, unscored], reportedTotalRegions: 515, registryRegionCount: 515 }),
     );
+    expect(result.issues).toEqual([]);
+  });
+
+  it('ranks may share a position on equal scores, but never exceed the regions counted', () => {
+    const row = (regionId: string, rankPosition: number, compositeScore: number): CompositeRowInput => ({
+      regionId,
+      rankPosition,
+      compositeScore,
+      componentScores: { a: compositeScore },
+    });
+    const base = { weightsBasisPoints: { a: 10000 }, registryRegionCount: null };
+    const tied = [row('1', 1, 80), row('2', 1, 80), row('3', 3, 70)];
+    expect(assessCompositeIntegrity({ ...base, reportedTotalRegions: 3, rows: tied }).ok).toBe(true);
+    const beyond = [row('1', 1, 80), row('2', 2, 75), row('3', 9, 70)];
+    const codes = assessCompositeIntegrity({ ...base, reportedTotalRegions: 3, rows: beyond }).issues.map(
+      (issue) => issue.code,
+    );
+    expect(codes).toEqual(expect.arrayContaining(['RANK_ORDER', 'RANK_BEYOND_POPULATION']));
+  });
+
+  it('blocks scores outside 0–100 or not finite', () => {
+    const rows: CompositeRowInput[] = [
+      { regionId: '1', rankPosition: 1, compositeScore: 120, componentScores: { a: 120 } },
+      { regionId: '2', rankPosition: 2, compositeScore: Number.NaN, componentScores: { a: 50 } },
+    ];
+    const result = assessCompositeIntegrity({
+      weightsBasisPoints: { a: 10000 },
+      reportedTotalRegions: 2,
+      rows,
+    });
+    expect(result.issues.find((issue) => issue.code === 'SCORE_OUT_OF_RANGE')?.count).toBe(2);
+    expect(result.ok).toBe(false);
+  });
+
+  it('blocks a response whose weights differ from the request', () => {
+    const { weights } = capturedInput();
+    const requested = { ...weights, extra: 0 };
+    expect(assessCompositeIntegrity(input({ requestedWeights: requested })).ok).toBe(true);
+    const changed = Object.fromEntries(
+      Object.entries(weights).map(([id, bps], index) => [id, index === 0 ? bps + 100 : bps]),
+    );
+    const result = assessCompositeIntegrity(input({ requestedWeights: changed }));
+    expect(result.issues.map((issue) => issue.code)).toContain('WEIGHTS_ECHO_MISMATCH');
+  });
+
+  it('blocks regions outside the province the ranking was filtered to', () => {
+    const { rows } = capturedInput();
+    const result = assessCompositeIntegrity(
+      input({ rows, filterProvinceId: '32', registryRegionCount: null }),
+    );
+    const issue = result.issues.find((entry) => entry.code === 'PROVINCE_FILTER_MISMATCH');
+    expect(issue?.severity).toBe('block');
+    expect(issue?.examples?.length).toBeGreaterThan(0);
+  });
+});
+
+describe('assessCompositeIntegrity with guide v2 renormalisation', () => {
+  // The guide's example: edu_damaged_classrooms_pct has no LIVE data, so 35/25/20 % of the rest is
+  // scaled to 43.75/31.25/25 %.
+  const requested = {
+    dis_multihazard_index: 3500,
+    soc_poverty_rate: 2500,
+    edu_damaged_classrooms_pct: 2000,
+    hlt_stunting_prevalence: 2000,
+  };
+  const effective = { dis_multihazard_index: 4375, soc_poverty_rate: 3125, hlt_stunting_prevalence: 2500 };
+  const components = { dis_multihazard_index: 72.1, soc_poverty_rate: 61.5, hlt_stunting_prevalence: 70.3 };
+  // 72.1 × 0.4375 + 61.5 × 0.3125 + 70.3 × 0.25 = 68.32
+  const row: CompositeRowInput = {
+    regionId: '3201',
+    rankPosition: 1,
+    compositeScore: 68.32,
+    componentScores: components,
+  };
+  const v2 = (overrides: Partial<CompositeIntegrityInput> = {}): CompositeIntegrityInput => ({
+    weightsBasisPoints: requested,
+    requestedWeights: requested,
+    effectiveWeightsBasisPoints: effective,
+    unavailableIndicatorIds: ['edu_damaged_classrooms_pct'],
+    renormalized: true,
+    reportedTotalRegions: 1,
+    rows: [row],
+    ...overrides,
+  });
+
+  it('checks scores against the effective weights, not the requested ones', () => {
+    const result = assessCompositeIntegrity(v2());
+    expect(result.issues).toEqual([]);
+    expect(result.weightsUsed).toEqual(effective);
+  });
+
+  it('flags the guide example itself: its 68.42 does not follow from its own components', () => {
+    const result = assessCompositeIntegrity(v2({ rows: [{ ...row, compositeScore: 68.42 }] }));
+    expect(result.issues.map((issue) => issue.code)).toEqual(['SCORE_MISMATCH']);
+  });
+
+  it('blocks effective weights that do not sum to 10 000 or are not proportional', () => {
+    const short = assessCompositeIntegrity(
+      v2({ effectiveWeightsBasisPoints: { ...effective, hlt_stunting_prevalence: 2400 } }),
+    );
+    expect(short.issues.map((issue) => issue.code)).toEqual(
+      expect.arrayContaining(['EFFECTIVE_WEIGHTS_NOT_100_PERCENT', 'RENORMALIZATION_INCONSISTENT']),
+    );
+    const skewed = { dis_multihazard_index: 5000, soc_poverty_rate: 2500, hlt_stunting_prevalence: 2500 };
+    expect(
+      assessCompositeIntegrity(v2({ effectiveWeightsBasisPoints: skewed })).issues.map((issue) => issue.code),
+    ).toContain('RENORMALIZATION_INCONSISTENT');
+  });
+
+  it('blocks a renormalisation flag that contradicts the lists, and unknown unavailable indicators', () => {
+    expect(assessCompositeIntegrity(v2({ renormalized: false })).ok).toBe(false);
+    expect(
+      assessCompositeIntegrity(v2({ unavailableIndicatorIds: ['edu_damaged_classrooms_pct', 'zzz'] })).ok,
+    ).toBe(false);
+  });
+
+  it('accepts rounding of effective weights by one basis point', () => {
+    const thirds = { a: 3333, b: 3333, c: 3334, d: 0 };
+    const result = assessCompositeIntegrity({
+      weightsBasisPoints: { a: 2500, b: 2500, c: 2500, d: 2500 },
+      effectiveWeightsBasisPoints: { a: 3333, b: 3333, c: 3334 },
+      unavailableIndicatorIds: ['d'],
+      renormalized: true,
+      reportedTotalRegions: 0,
+      rows: [],
+    });
+    expect(thirds.d).toBe(0);
     expect(result.issues).toEqual([]);
   });
 });

@@ -1,4 +1,11 @@
-import { TOTAL_BASIS_POINTS, redistributeWeights, validateWeights } from './weights';
+import {
+  TOTAL_BASIS_POINTS,
+  addCriterion,
+  redistributeWeights,
+  removeCriterion,
+  scaleToTotal,
+  validateWeights,
+} from './weights';
 
 const total = (weights: Record<string, number>) =>
   Object.values(weights).reduce((sum, value) => sum + value, 0);
@@ -57,5 +64,30 @@ describe('redistributeWeights', () => {
     const frozen = Object.freeze({ ...start });
     redistributeWeights(frozen, 'a', 100);
     expect(frozen).toEqual(start);
+  });
+});
+
+describe('addCriterion and removeCriterion', () => {
+  const total = (weights: Readonly<Record<string, number>>) =>
+    Object.values(weights).reduce((sum, value) => sum + value, 0);
+
+  it('gives a new criterion an equal share and keeps the total at exactly 10 000', () => {
+    const added = addCriterion({ a: 5000, b: 5000 }, 'c');
+    expect(added).toEqual({ a: 3334, b: 3333, c: 3333 }); // rounding tie to the first listed
+    expect(total(added)).toBe(10000);
+    expect(addCriterion(added, 'c')).toBe(added);
+  });
+
+  it('scales the remaining criteria back to the full total when one is removed', () => {
+    const removed = removeCriterion({ a: 2000, b: 3000, c: 5000 }, 'c');
+    expect(removed).toEqual({ a: 4000, b: 6000 });
+    expect(total(removeCriterion({ a: 3333, b: 3333, c: 3334 }, 'a'))).toBe(10000);
+    expect(removeCriterion({ a: 0, b: 0, c: 10000 }, 'c')).toEqual({ a: 5000, b: 5000 });
+  });
+
+  it('scaleToTotal keeps integers and the exact total', () => {
+    const scaled = scaleToTotal({ a: 1, b: 1, c: 1 });
+    expect(Object.values(scaled).every(Number.isInteger)).toBe(true);
+    expect(total(scaled)).toBe(10000);
   });
 });
