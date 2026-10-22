@@ -1,0 +1,3812 @@
+From 77ae529b2b41297ec829de8d7fc84dd764c05ef5 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 22 Oct 2026 19:17:51 +0000
+Subject: [PATCH] Redesign Lab Prioritas as a wide workspace with analytical
+ charts
+
+Present the LIVE/DEMO Lab as a 1600px decision workspace: settings on the
+left (scenario, weights, criteria, scope), analysis on the right in reading
+order: weight chart, status, ranking, contribution breakdown, then
+expandable sources, method and checks.
+
+- WeightChart shows chosen vs effective weights and stays visible when a
+  result is withheld; RankingChart and ContributionChart render only after
+  the composite integrity and score-direction checks pass, each with a
+  text/table equivalent.
+- StatusPanel gives one heading, one sentence and an expandable
+  "Lihat alasan dan detail teknis" per state (validated, loading,
+  incomplete, blocked, error, DEMO); retry only where it helps.
+- Kaca: one translucent settings panel over opaque inner cards, dense
+  enough to keep muted text at WCAG AA over the lightest backdrop; solid
+  fallbacks for missing backdrop-filter, reduced transparency and high
+  contrast; reduced motion respected.
+- FeaturePageFrame gains an optional workspace max-width (default 1760px
+  unchanged). RankingResults is replaced by AnalysisPanel, LabCharts,
+  LabDetails and StatusPanel.
+
+Integrity guards, LIVE/DEMO isolation, direction checks, source
+attribution and the original/effective weight disclosure are unchanged.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01MjCVoxXfmrbBWHu6rhvcf2
+---
+ src/app/pages/PriorityLabPage.tsx             |    9 +-
+ src/features/data-hub/index.ts                |    1 +
+ .../feature-shell/FeaturePageFrame.module.css |    2 +-
+ .../feature-shell/FeaturePageFrame.tsx        |   10 +-
+ src/features/priority-lab/AnalysisPanel.tsx   |  406 +++++++
+ src/features/priority-lab/LabCharts.tsx       |  205 ++++
+ src/features/priority-lab/LabDetails.tsx      |  207 ++++
+ .../priority-lab/PriorityLab.module.css       | 1073 +++++++++++++----
+ .../priority-lab/PriorityLab.test.tsx         |  126 +-
+ src/features/priority-lab/PriorityLab.tsx     |   99 +-
+ src/features/priority-lab/RankingResults.tsx  |  622 ----------
+ src/features/priority-lab/StatusPanel.tsx     |   63 +
+ src/features/priority-lab/WeightControls.tsx  |  188 ++-
+ src/features/priority-lab/labModel.ts         |    6 +
+ tests/e2e/data-hub.spec.ts                    |   10 +-
+ tests/e2e/priority-lab.spec.ts                |   42 +-
+ 16 files changed, 2001 insertions(+), 1068 deletions(-)
+ create mode 100644 src/features/priority-lab/AnalysisPanel.tsx
+ create mode 100644 src/features/priority-lab/LabCharts.tsx
+ create mode 100644 src/features/priority-lab/LabDetails.tsx
+ delete mode 100644 src/features/priority-lab/RankingResults.tsx
+ create mode 100644 src/features/priority-lab/StatusPanel.tsx
+
+diff --git a/src/app/pages/PriorityLabPage.tsx b/src/app/pages/PriorityLabPage.tsx
+index ff8b92c..a618de1 100644
+--- a/src/app/pages/PriorityLabPage.tsx
++++ b/src/app/pages/PriorityLabPage.tsx
+@@ -2,12 +2,15 @@ import { DataHubBanner } from '@/features/data-hub';
+ import { FeaturePageFrame, type FeatureShell } from '@/features/feature-shell';
+ import { PriorityLab } from '@/features/priority-lab';
+ 
+-/** Lab Prioritas (Figma 11:152): weight sliders on the Data Hub's exploratory DEMO ranking preview. */
++/** Lab Prioritas (Figma 11:152): a wide decision workspace on the Data Hub's composite ranking. */
+ export function PriorityLabPage({ shell }: { readonly shell: FeatureShell }) {
+   return (
+-    <FeaturePageFrame shell={shell} wide>
+-      <DataHubBanner />
++    <FeaturePageFrame shell={shell} workspace workspaceMaxWidthPx={LAB_WORKSPACE_MAX_PX}>
++      <DataHubBanner compact />
+       <PriorityLab />
+     </FeaturePageFrame>
+   );
+ }
++
++/** Room for a 380px settings column and charts beside it, without lines too long to read. */
++const LAB_WORKSPACE_MAX_PX = 1600;
+diff --git a/src/features/data-hub/index.ts b/src/features/data-hub/index.ts
+index 5ea1ccf..09f0a26 100644
+--- a/src/features/data-hub/index.ts
++++ b/src/features/data-hub/index.ts
+@@ -5,6 +5,7 @@ export { DataModeSwitch } from './DataModeSwitch';
+ export { ResourceView } from './ResourceView';
+ export { useDataHub } from './useDataHub';
+ export { useDataHubResource } from './useDataHubResource';
++export { isLiveBlockedError } from './liveBlocked';
+ export type { ResourceState } from './useDataHubResource';
+ export {
+   adminLevelLabel,
+diff --git a/src/features/feature-shell/FeaturePageFrame.module.css b/src/features/feature-shell/FeaturePageFrame.module.css
+index d2a6c18..6879752 100644
+--- a/src/features/feature-shell/FeaturePageFrame.module.css
++++ b/src/features/feature-shell/FeaturePageFrame.module.css
+@@ -19,7 +19,7 @@
+ /* Map-first workspace: wider column, narrower gutters, less space above the content. */
+ .page[data-workspace] {
+   gap: 12px;
+-  max-width: 1760px;
++  max-width: var(--page-workspace-max, 1760px);
+   padding: 104px var(--nm-band-gutter) 96px;
+ }
+ 
+diff --git a/src/features/feature-shell/FeaturePageFrame.tsx b/src/features/feature-shell/FeaturePageFrame.tsx
+index 2824ad5..bf1de96 100644
+--- a/src/features/feature-shell/FeaturePageFrame.tsx
++++ b/src/features/feature-shell/FeaturePageFrame.tsx
+@@ -1,4 +1,4 @@
+-import { useRef, type ReactNode } from 'react';
++import { useRef, type CSSProperties, type ReactNode } from 'react';
+ import { useStaggeredEnter } from '@/features/motion';
+ import { BackToHubLink } from '@/features/navigation';
+ import type { FeatureShell } from './featureShells';
+@@ -13,6 +13,8 @@ interface FeaturePageFrameProps {
+    * map is in the first viewport. Takes precedence over `wide`.
+    */
+   readonly workspace?: boolean;
++  /** Workspace pages only: a narrower cap than 1760px (Lab Prioritas uses 1600px). */
++  readonly workspaceMaxWidthPx?: number;
+   readonly children: ReactNode;
+ }
+ 
+@@ -21,6 +23,7 @@ export function FeaturePageFrame({
+   shell,
+   wide = false,
+   workspace = false,
++  workspaceMaxWidthPx,
+   children,
+ }: FeaturePageFrameProps) {
+   const pageRef = useRef<HTMLDivElement>(null);
+@@ -40,6 +43,11 @@ export function FeaturePageFrame({
+       className={styles.page}
+       data-wide={(wide && !workspace) || undefined}
+       data-workspace={workspace || undefined}
++      style={
++        workspace && workspaceMaxWidthPx
++          ? ({ '--page-workspace-max': `${String(workspaceMaxWidthPx)}px` } as CSSProperties)
++          : undefined
++      }
+     >
+       <title>{`${shell.title} — Nusa Matra`}</title>
+       {workspace ? <header className={styles.header}>{heading}</header> : heading}
+diff --git a/src/features/priority-lab/AnalysisPanel.tsx b/src/features/priority-lab/AnalysisPanel.tsx
+new file mode 100644
+index 0000000..12a9516
+--- /dev/null
++++ b/src/features/priority-lab/AnalysisPanel.tsx
+@@ -0,0 +1,406 @@
++import { useCallback, useEffect, useId, useState } from 'react';
++import { Button } from '@/components/ui/Button/Button';
++import { assessCompositeIntegrity, type CompositeIntegrity } from '@/domain/prioritization';
++import { isLiveBlockedError, useDataHub, useDataHubResource } from '@/features/data-hub';
++import { ApiError, type DataHubRegionDTO, type ExploratoryCompositeResultDTO } from '@/services/api';
++import { integrityInputFromResult } from './compositeCheck';
++import { weightsKey } from './criteria';
++import { ContributionChart, RankingChart, WeightChart } from './LabCharts';
++import { IssueList, LabDetails } from './LabDetails';
++import { rankMovement, type IndicatorOption } from './labModel';
++import { StatusPanel } from './StatusPanel';
++import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
++import styles from './PriorityLab.module.css';
++
++const PAGE_SIZE = 10;
++
++interface AnalysisPanelProps {
++  /** The sliders' weights, for the weight chart (updates while dragging). */
++  readonly chosen: Readonly<Record<string, number>>;
++  /** The weights to calculate with (debounced). */
++  readonly weights: Readonly<Record<string, number>>;
++  readonly isSettling: boolean;
++  readonly provinceId: string | null;
++  readonly registry: readonly DataHubRegionDTO[];
++  readonly options: readonly IndicatorOption[];
++  readonly labelOf: (id: string) => string;
++  readonly seriesOf: (id: string) => number;
++}
++
++/** The last result shown and the one before it, kept while new weights are calculated. */
++interface ShownHistory {
++  readonly current: ExploratoryCompositeResultDTO | null;
++  readonly previous: ExploratoryCompositeResultDTO | null;
++}
++
++/**
++ * Runs the Data Hub's composite query for the settled weights, checks it, and shows it in order:
++ * weights, status, ranking, one region's breakdown, then the details. In LIVE a result that fails a
++ * blocking check, or whose components run against their indicator's direction, is never charted.
++ */
++export function AnalysisPanel(props: AnalysisPanelProps) {
++  const { chosen, weights, isSettling, provinceId, registry, options, labelOf, seriesOf } = props;
++  const { dataMode } = useDataHub();
++  const live = dataMode === 'LIVE';
++  const ready = Object.keys(weights).length > 0;
++
++  const ranking = useDataHubResource(
++    `${weightsKey(weights)}|${provinceId ?? 'all'}`,
++    (repository, mode, signal) =>
++      repository.runExploratoryCompositeQuery({
++        dataMode: mode,
++        criteria: Object.entries(weights).map(([indicatorId, basisPoints]) => ({ indicatorId, basisPoints })),
++        filterProvinceId: provinceId,
++        signal,
++      }),
++    ready,
++  );
++  const result = ranking.state.status === 'success' ? ranking.state.data.data : null;
++  const scopeCount = result?.filterProvinceId
++    ? registry.filter((region) => region.parentRegionId === result.filterProvinceId).length
++    : registry.length;
++  const integrity = result
++    ? assessCompositeIntegrity(integrityInputFromResult(result, scopeCount > 0 ? scopeCount : null, weights))
++    : null;
++  const direction = useDirectionCheck(
++    live && result && integrity?.ok ? result : null,
++    integrity?.weightsUsed ?? {},
++    options,
++  );
++  const checks = direction.state.status === 'success' ? direction.state.data : null;
++  const wrongDirection = checks?.filter((check) => check.verdict.status === 'inconsistent') ?? [];
++
++  const blocked = live && integrity !== null && !integrity.ok;
++  const checking = live && integrity?.ok === true && direction.state.status === 'loading';
++  const directionBlocked = live && wrongDirection.length > 0;
++  const validated = result !== null && integrity !== null && !blocked && !checking && !directionBlocked;
++  const current = !isSettling && ranking.state.status === 'success';
++
++  // Rank moves are described against the result shown before (same scope only).
++  const [history, setHistory] = useState<ShownHistory>({ current: null, previous: null });
++  const recordShown = useCallback((shown: ExploratoryCompositeResultDTO) => {
++    setHistory((before) =>
++      before.current === shown ? before : { current: shown, previous: before.current },
++    );
++  }, []);
++
++  return (
++    <div className={styles.analysis}>
++      <WeightChart
++        chosen={chosen}
++        used={current && validated ? integrity.weightsUsed : null}
++        labelOf={labelOf}
++        seriesOf={seriesOf}
++      />
++
++      <AnalysisStatus
++        ready={ready}
++        isSettling={isSettling}
++        state={ranking.state}
++        onRetry={ranking.retry}
++        result={result}
++        integrity={integrity}
++        registry={registry}
++        checking={checking}
++        wrongDirection={wrongDirection}
++        directionFailed={live && direction.state.status === 'error'}
++        onRetryDirection={direction.retry}
++        labelOf={labelOf}
++      />
++
++      {current && validated && (
++        <RankingWorkspace
++          result={result}
++          integrity={integrity}
++          previous={history.current === result ? history.previous : history.current}
++          onShown={recordShown}
++          labelOf={labelOf}
++          seriesOf={seriesOf}
++        />
++      )}
++
++      {ready && (
++        <LabDetails
++          options={options}
++          chosenIds={Object.keys(chosen)}
++          result={current ? result : null}
++          integrity={current ? integrity : null}
++          registry={registry}
++          checks={current ? checks : null}
++        />
++      )}
++    </div>
++  );
++}
++
++interface AnalysisStatusProps {
++  readonly ready: boolean;
++  readonly isSettling: boolean;
++  readonly state: ReturnType<typeof useDataHubResource<unknown>>['state'];
++  readonly onRetry: () => void;
++  readonly result: ExploratoryCompositeResultDTO | null;
++  readonly integrity: CompositeIntegrity | null;
++  readonly registry: readonly DataHubRegionDTO[];
++  readonly checking: boolean;
++  readonly wrongDirection: readonly DirectionCheck[];
++  readonly directionFailed: boolean;
++  readonly onRetryDirection: () => void;
++  readonly labelOf: (id: string) => string;
++}
++
++/** One status at a time, in plain words; the technical facts are one click away. */
++function AnalysisStatus(props: AnalysisStatusProps) {
++  const { ready, isSettling, state, onRetry, result, integrity, registry, checking, wrongDirection } = props;
++  const { dataMode } = useDataHub();
++  const live = dataMode === 'LIVE';
++
++  if (!ready) {
++    return (
++      <StatusPanel tone="warning" title="Pilih minimal satu kriteria">
++        Peringkat dihitung setelah ada kriteria berdata.
++      </StatusPanel>
++    );
++  }
++  if (isSettling || state.status === 'loading' || state.status === 'idle') {
++    return <StatusPanel tone="loading" title="Menghitung peringkat…" />;
++  }
++  if (state.status === 'error' || state.status === 'unconfigured') {
++    const error = state.status === 'error' ? state.error : null;
++    if (isLiveBlockedError(error, dataMode)) {
++      return <p className={styles.quietNote}>Tidak ada data LIVE untuk ditampilkan di sini.</p>;
++    }
++    return (
++      <StatusPanel
++        tone="error"
++        title="Perhitungan belum berhasil"
++        details={
++          error instanceof ApiError ? (
++            <p>
++              Kode {error.code} · HTTP {String(error.status)}
++              {error.serverMessage ? ` · ${error.serverMessage}` : ''}
++            </p>
++          ) : undefined
++        }
++        action={
++          state.status === 'error' ? (
++            <Button variant="secondary" onClick={onRetry}>
++              Coba lagi
++            </Button>
++          ) : undefined
++        }
++      >
++        Data Hub tidak memberi hasil. Tidak ada peringkat lain yang ditampilkan sebagai gantinya.
++      </StatusPanel>
++    );
++  }
++  if (!result || !integrity) return null;
++
++  const blocking = integrity.issues.filter((issue) => issue.severity === 'block');
++  if (live && !integrity.ok) {
++    const missingData = blocking.some(
++      (issue) => issue.code === 'MISSING_COMPONENT' || issue.code === 'CRITERION_WITHOUT_DATA',
++    );
++    return (
++      <StatusPanel
++        tone="blocked"
++        title="Peringkat belum dapat ditampilkan"
++        details={<BlockedDetails issues={blocking} registry={registry} />}
++      >
++        {missingData
++          ? 'Sebagian data wilayah belum lengkap. Hasil ditahan agar tidak menyesatkan.'
++          : 'Hasil dari Data Hub tidak konsisten. Hasil ditahan agar tidak menyesatkan.'}
++      </StatusPanel>
++    );
++  }
++  if (checking) return <StatusPanel tone="loading" title="Memeriksa hasil terhadap data sumber…" />;
++  if (live && wrongDirection.length > 0) {
++    return (
++      <StatusPanel
++        tone="blocked"
++        title="Peringkat belum dapat ditampilkan"
++        details={
++          <ul role="list" className={styles.issueList}>
++            {wrongDirection.map(({ indicatorId, verdict }) => (
++              <li key={indicatorId}>
++                {props.labelOf(indicatorId)}: {verdict.status === 'inconsistent' ? verdict.reason : ''}
++                {verdict.status === 'inconsistent' && ` Contoh kode wilayah: ${verdict.examples.join(', ')}.`}
++              </li>
++            ))}
++          </ul>
++        }
++      >
++        Arah skor tidak cocok dengan data sumber. Hasil ditahan agar tidak menyesatkan.
++      </StatusPanel>
++    );
++  }
++
++  const excluded = integrity.issues.find((issue) => issue.code === 'REGISTRY_COUNT_MISMATCH');
++  const province = result.filterProvinceId
++    ? (registry.find((region) => region.parentRegionId === result.filterProvinceId)?.provinceName ??
++      `provinsi ${result.filterProvinceId}`)
++    : null;
++  const counted = `${String(result.items.length)} wilayah${province ? ` di ${province}` : ''} dihitung`;
++  if (!live) {
++    return (
++      <StatusPanel
++        tone={integrity.ok ? 'demo' : 'warning'}
++        title={integrity.ok ? 'Data simulasi (DEMO)' : 'Hasil simulasi tidak konsisten'}
++        details={integrity.ok ? undefined : <BlockedDetails issues={blocking} registry={registry} />}
++      >
++        {counted}. Nama wilayah sintetis; bukan data atau rekomendasi resmi.
++      </StatusPanel>
++    );
++  }
++  return (
++    <StatusPanel
++      tone={props.directionFailed ? 'warning' : 'ok'}
++      title="Hasil siap dan sudah diperiksa"
++      action={
++        props.directionFailed ? (
++          <Button variant="secondary" onClick={props.onRetryDirection}>
++            Periksa arah skor lagi
++          </Button>
++        ) : undefined
++      }
++    >
++      {counted} dari data resmi LIVE (snapshot {result.snapshotId}).
++      {excluded && ` ${String(excluded.count)} wilayah belum lengkap datanya dan tidak ikut.`}
++      {props.directionFailed && ' Pemeriksaan arah skor belum selesai.'}
++    </StatusPanel>
++  );
++}
++
++function BlockedDetails({
++  issues,
++  registry,
++}: {
++  readonly issues: CompositeIntegrity['issues'];
++  readonly registry: readonly DataHubRegionDTO[];
++}) {
++  return (
++    <>
++      <IssueList issues={issues} registry={registry} />
++      <p>Data Hub perlu memperbaikinya. Antarmuka tidak menghitung ulang atau menutup selisih ini.</p>
++    </>
++  );
++}
++
++type Order = 'best' | 'hardest';
++
++interface RankingWorkspaceProps {
++  readonly result: ExploratoryCompositeResultDTO;
++  readonly integrity: CompositeIntegrity;
++  readonly previous: ExploratoryCompositeResultDTO | null;
++  readonly onShown: (result: ExploratoryCompositeResultDTO) => void;
++  readonly labelOf: (id: string) => string;
++  readonly seriesOf: (id: string) => number;
++}
++
++/** The validated ranking as a bar chart, with sort, search and paging, and the selected region's breakdown. */
++function RankingWorkspace({
++  result,
++  integrity,
++  previous,
++  onShown,
++  labelOf,
++  seriesOf,
++}: RankingWorkspaceProps) {
++  const [shown, setShown] = useState(PAGE_SIZE);
++  const [order, setOrder] = useState<Order>('best');
++  const [query, setQuery] = useState('');
++  const [selectedId, setSelectedId] = useState<string | null>(null);
++  const searchId = useId();
++
++  const moves = rankMovement(previous, result);
++  useEffect(() => {
++    onShown(result);
++  }, [result, onShown]);
++
++  const scored = result.items.filter((item) => item.rankPosition !== null);
++  const ordered = order === 'best' ? scored : [...scored].reverse();
++  const needle = query.trim().toLowerCase();
++  const matching = needle
++    ? ordered.filter((item) => item.regionDisplayName.toLowerCase().includes(needle))
++    : ordered;
++  const rows = matching.slice(0, shown);
++  const selected = scored.find((item) => item.regionId === selectedId) ?? rows[0] ?? null;
++
++  return (
++    <div className={styles.results}>
++      <section className={`${styles.card} ${styles.rankingCard}`} aria-label="Daftar peringkat">
++        <div className={styles.rankingHead}>
++          <h2 className={styles.cardTitle}>Peringkat wilayah</h2>
++          <div className={styles.segmented} role="group" aria-label="Urutan tampilan">
++            {(['best', 'hardest'] as const).map((value) => (
++              <button
++                key={value}
++                type="button"
++                aria-pressed={order === value}
++                onClick={() => {
++                  setOrder(value);
++                  setShown(PAGE_SIZE);
++                  setSelectedId(null);
++                }}
++              >
++                {value === 'best' ? 'Kondisi terbaik dulu' : 'Kondisi paling berat dulu'}
++              </button>
++            ))}
++          </div>
++        </div>
++        <p className={styles.cardLead}>
++          Skor 0–100: makin tinggi, makin baik kondisinya pada kriteria pilihan Anda. Ini perbandingan
++          relatif, bukan penilaian mutlak.
++        </p>
++        <div className={styles.searchRow}>
++          <label htmlFor={searchId} className={styles.visuallyHidden}>
++            Cari wilayah dalam peringkat
++          </label>
++          <input
++            id={searchId}
++            type="search"
++            className={styles.input}
++            value={query}
++            placeholder="Cari kabupaten/kota"
++            onChange={(event) => {
++              setQuery(event.target.value);
++              setShown(PAGE_SIZE);
++            }}
++          />
++          <p className={styles.muted} role="status">
++            {needle
++              ? `${String(matching.length)} hasil pencarian`
++              : `${String(rows.length)} dari ${String(scored.length)} wilayah`}
++          </p>
++        </div>
++        {rows.length === 0 ? (
++          <p className={styles.muted}>Tidak ada wilayah yang cocok dengan “{query}”.</p>
++        ) : (
++          <RankingChart
++            rows={rows}
++            selectedId={selected?.regionId ?? null}
++            onSelect={setSelectedId}
++            moves={moves}
++          />
++        )}
++        {shown < matching.length && (
++          <Button
++            variant="secondary"
++            onClick={() => {
++              setShown((current) => current + PAGE_SIZE);
++            }}
++          >
++            Tampilkan {Math.min(PAGE_SIZE, matching.length - shown)} lagi
++          </Button>
++        )}
++      </section>
++      {selected && (
++        <ContributionChart
++          item={selected}
++          weightsUsed={integrity.weightsUsed}
++          labelOf={labelOf}
++          seriesOf={seriesOf}
++        />
++      )}
++    </div>
++  );
++}
+diff --git a/src/features/priority-lab/LabCharts.tsx b/src/features/priority-lab/LabCharts.tsx
+new file mode 100644
+index 0000000..2f95c4d
+--- /dev/null
++++ b/src/features/priority-lab/LabCharts.tsx
+@@ -0,0 +1,205 @@
++import { formatDecimalId } from '@/features/data-hub';
++import type { ExploratoryRegionRankDTO } from '@/services/api';
++import { contributions, percentLabel } from './labModel';
++import styles from './PriorityLab.module.css';
++
++/** Six series colours (theme tokens); a criterion keeps its colour across the three charts. */
++export const SERIES_COUNT = 6;
++
++interface SeriesProps {
++  readonly labelOf: (id: string) => string;
++  /** 0..SERIES_COUNT-1, stable per criterion. */
++  readonly seriesOf: (id: string) => number;
++}
++
++function Segments({
++  weights,
++  seriesOf,
++}: {
++  readonly weights: readonly (readonly [string, number])[];
++  readonly seriesOf: (id: string) => number;
++}) {
++  return (
++    <span className={styles.stack} aria-hidden="true">
++      {weights
++        .filter(([, value]) => value > 0)
++        .map(([id, value]) => (
++          <span
++            key={id}
++            className={styles.stackPart}
++            data-series={seriesOf(id)}
++            style={{ flexGrow: value }}
++          />
++        ))}
++    </span>
++  );
++}
++
++interface WeightChartProps extends SeriesProps {
++  /** The sliders' weights, in basis points. */
++  readonly chosen: Readonly<Record<string, number>>;
++  /** The weights the last validated calculation used; `null` until there is one. */
++  readonly used: Readonly<Record<string, number>> | null;
++}
++
++/**
++ * Chosen weights as one bar, and the weights the Data Hub used as a second one when they differ.
++ * The legend is the text equivalent.
++ */
++export function WeightChart({ chosen, used, labelOf, seriesOf }: WeightChartProps) {
++  const ids = Object.keys(chosen);
++  const differs = used !== null && ids.some((id) => (used[id] ?? 0) !== (chosen[id] ?? 0));
++  const leftOut = used === null ? [] : ids.filter((id) => (chosen[id] ?? 0) > 0 && (used[id] ?? 0) === 0);
++
++  return (
++    <figure className={`${styles.card} ${styles.chart}`}>
++      <figcaption className={styles.chartTitle}>Pembagian bobot</figcaption>
++      <div className={styles.barRow}>
++        <span className={styles.barLabel}>Pilihan Anda</span>
++        <Segments weights={ids.map((id) => [id, chosen[id] ?? 0] as const)} seriesOf={seriesOf} />
++      </div>
++      {differs && (
++        <div className={styles.barRow}>
++          <span className={styles.barLabel}>Dipakai</span>
++          <Segments weights={ids.map((id) => [id, used[id] ?? 0] as const)} seriesOf={seriesOf} />
++        </div>
++      )}
++      <ul role="list" className={styles.legend}>
++        {ids.map((id) => (
++          <li key={id}>
++            <span className={styles.swatch} data-series={seriesOf(id)} aria-hidden="true" />
++            <span className={styles.legendName}>{labelOf(id)}</span>
++            <span className={styles.legendValue}>
++              {percentLabel(chosen[id] ?? 0)}
++              {differs && ` → ${(used[id] ?? 0) === 0 ? 'tidak dipakai' : percentLabel(used[id] ?? 0)}`}
++            </span>
++          </li>
++        ))}
++      </ul>
++      {leftOut.length > 0 && (
++        <p className={styles.chartNote}>
++          {leftOut.map(labelOf).join(', ')} belum punya data, jadi bobotnya dibagi ke kriteria lain sesuai
++          perbandingan pilihan Anda.
++        </p>
++      )}
++    </figure>
++  );
++}
++
++interface RankingChartProps {
++  readonly rows: readonly ExploratoryRegionRankDTO[];
++  readonly selectedId: string | null;
++  readonly onSelect: (regionId: string) => void;
++  /** Rank change since the previous result (positive = up). */
++  readonly moves: ReadonlyMap<string, number>;
++}
++
++/** Horizontal bars, one row per region; each row selects the region for the breakdown below. */
++export function RankingChart({ rows, selectedId, onSelect, moves }: RankingChartProps) {
++  return (
++    <ol className={styles.rankChart}>
++      {rows.map((item) => {
++        const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
++        const move = moves.get(item.regionId) ?? 0;
++        return (
++          <li key={item.regionId}>
++            <button
++              type="button"
++              className={styles.rankRow}
++              aria-pressed={item.regionId === selectedId}
++              onClick={() => {
++                onSelect(item.regionId);
++              }}
++            >
++              <span className={styles.rankNumber}>{item.rankPosition ?? '—'}</span>
++              <span className={styles.rankName}>
++                {item.regionDisplayName}
++                {move !== 0 && (
++                  <span className={styles.rankMove}>
++                    {move > 0 ? ` ▲ naik ${String(move)}` : ` ▼ turun ${String(-move)}`}
++                  </span>
++                )}
++              </span>
++              <span className={styles.rankTrack} aria-hidden="true">
++                <span style={{ width: `${String(Math.max(0, Math.min(100, score ?? 0)))}%` }} />
++              </span>
++              <span className={styles.rankScore}>
++                {score === null ? 'Tidak dapat dihitung' : formatDecimalId(String(score))}
++              </span>
++            </button>
++          </li>
++        );
++      })}
++    </ol>
++  );
++}
++
++interface ContributionChartProps extends SeriesProps {
++  readonly item: ExploratoryRegionRankDTO;
++  readonly weightsUsed: Readonly<Record<string, number>>;
++}
++
++/**
++ * What one validated score is made of: each criterion's score × its weight, as one stacked bar and as
++ * a table (the text equivalent). Only shown for results that passed the integrity check.
++ */
++export function ContributionChart({ item, weightsUsed, labelOf, seriesOf }: ContributionChartProps) {
++  const rows = contributions(item, weightsUsed);
++  const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
++
++  return (
++    <figure className={`${styles.card} ${styles.chart}`} aria-labelledby={`sumbangan-${item.regionId}`}>
++      <figcaption id={`sumbangan-${item.regionId}`} className={styles.chartTitle}>
++        Mengapa {item.regionDisplayName} mendapat skor {score === null ? '—' : formatDecimalId(String(score))}
++        ?
++      </figcaption>
++      <span className={styles.contributionTrack} aria-hidden="true">
++        {rows.map((row) => (
++          <span
++            key={row.id}
++            className={styles.stackPart}
++            data-series={seriesOf(row.id)}
++            style={{ width: `${String(Math.max(0, row.points))}%` }}
++          />
++        ))}
++      </span>
++      <table className={`${styles.table} ${styles.contributionTable}`}>
++        <caption className={styles.visuallyHidden}>
++          Sumbangan setiap kriteria ke skor {item.regionDisplayName}
++        </caption>
++        <thead>
++          <tr>
++            <th scope="col">Kriteria</th>
++            <th scope="col">Skor 0–100</th>
++            <th scope="col">Bobot</th>
++            <th scope="col">Sumbangan</th>
++          </tr>
++        </thead>
++        <tbody>
++          {rows.map((row) => (
++            <tr key={row.id}>
++              <th scope="row">
++                <span className={styles.swatch} data-series={seriesOf(row.id)} aria-hidden="true" />
++                {labelOf(row.id)}
++              </th>
++              <td data-label="Skor">{formatDecimalId(String(row.score))}</td>
++              <td data-label="Bobot">{percentLabel(row.weight)}</td>
++              <td data-label="Sumbangan">{formatDecimalId(row.points.toFixed(2))}</td>
++            </tr>
++          ))}
++        </tbody>
++        <tfoot>
++          <tr>
++            <th scope="row" colSpan={3}>
++              Skor gabungan
++            </th>
++            <td>{score === null ? '—' : formatDecimalId(String(score))}</td>
++          </tr>
++        </tfoot>
++      </table>
++      <p className={styles.chartNote}>
++        Sumbangan = skor kriteria × bobot. Jumlahnya bisa selisih 0,01–0,02 karena pembulatan.
++      </p>
++    </figure>
++  );
++}
+diff --git a/src/features/priority-lab/LabDetails.tsx b/src/features/priority-lab/LabDetails.tsx
+new file mode 100644
+index 0000000..250b817
+--- /dev/null
++++ b/src/features/priority-lab/LabDetails.tsx
+@@ -0,0 +1,207 @@
++import type { CompositeIntegrity, CompositeIssue } from '@/domain/prioritization';
++import type { DataHubRegionDTO, ExploratoryCompositeResultDTO } from '@/services/api';
++import {
++  compareWeights,
++  directionLabel,
++  excludedRegions,
++  percentLabel,
++  regionLabel,
++  type IndicatorOption,
++} from './labModel';
++import type { DirectionCheck } from './useDirectionCheck';
++import styles from './PriorityLab.module.css';
++
++/** The integrity issues in full: message, and the regions concerned by name. */
++export function IssueList({
++  issues,
++  registry,
++}: {
++  readonly issues: readonly CompositeIssue[];
++  readonly registry: readonly DataHubRegionDTO[];
++}) {
++  return (
++    <ul role="list" className={styles.issueList}>
++      {issues.map((issue) => (
++        <li key={issue.code}>
++          {issue.message}
++          {issue.examples && issue.examples.length > 0 && (
++            <> Contoh: {issue.examples.map((id) => regionLabel(id, registry)).join(', ')}.</>
++          )}{' '}
++          <span className={styles.code}>[{issue.code}]</span>
++        </li>
++      ))}
++    </ul>
++  );
++}
++
++interface LabDetailsProps {
++  readonly options: readonly IndicatorOption[];
++  /** Criteria currently chosen, for the source list. */
++  readonly chosenIds: readonly string[];
++  readonly result: ExploratoryCompositeResultDTO | null;
++  readonly integrity: CompositeIntegrity | null;
++  readonly registry: readonly DataHubRegionDTO[];
++  readonly checks: readonly DirectionCheck[] | null;
++}
++
++/**
++ * Everything a careful reader may want to verify, closed by default: sources, the weights actually
++ * used, who is left out and why, what was checked, and the record a Paspor Bukti will keep.
++ */
++export function LabDetails({ options, chosenIds, result, integrity, registry, checks }: LabDetailsProps) {
++  const optionOf = (id: string) => options.find((option) => option.id === id);
++  const labelOf = (id: string) => optionOf(id)?.label ?? id;
++  const excluded = result ? excludedRegions(registry, result) : [];
++  const comparison = result ? compareWeights(result) : [];
++
++  return (
++    <details className={`${styles.card} ${styles.details}`}>
++      <summary className={styles.detailsSummary}>Sumber, metodologi &amp; pemeriksaan</summary>
++      <div className={styles.detailsGrid}>
++        <section aria-labelledby="lab-sumber">
++          <h3 id="lab-sumber" className={styles.detailsHeading}>
++            Sumber data
++          </h3>
++          <ul role="list" className={styles.sourceList}>
++            {chosenIds.map((id) => {
++              const option = optionOf(id);
++              return (
++                <li key={id}>
++                  <span className={styles.sourceName}>{labelOf(id)}</span>
++                  <span className={styles.muted}>
++                    {option?.agency ?? 'Sumber tidak disebutkan'}
++                    {option?.referenceYear != null && ` · ${String(option.referenceYear)}`}
++                    {option && ` · ${option.unit} · ${directionLabel(option.polarity)}`}
++                    {option?.coverageCount != null &&
++                      option.totalRegions != null &&
++                      ` · data untuk ${String(option.coverageCount)} dari ${String(option.totalRegions)} wilayah`}
++                  </span>
++                </li>
++              );
++            })}
++          </ul>
++        </section>
++
++        {result && (
++          <section aria-labelledby="lab-bobot">
++            <h3 id="lab-bobot" className={styles.detailsHeading}>
++              Bobot pilihan dan bobot dipakai
++            </h3>
++            <table className={styles.table}>
++              <caption className={styles.visuallyHidden}>
++                Bobot pilihan Anda dan bobot yang benar-benar dipakai
++              </caption>
++              <thead>
++                <tr>
++                  <th scope="col">Kriteria</th>
++                  <th scope="col">Pilihan Anda</th>
++                  <th scope="col">Dipakai</th>
++                </tr>
++              </thead>
++              <tbody>
++                {comparison.map((row) => (
++                  <tr key={row.id}>
++                    <th scope="row">{labelOf(row.id)}</th>
++                    <td>{percentLabel(row.chosen)}</td>
++                    <td>{row.used === null ? 'Tidak dipakai (tanpa data)' : percentLabel(row.used)}</td>
++                  </tr>
++                ))}
++              </tbody>
++            </table>
++          </section>
++        )}
++
++        {excluded.length > 0 && (
++          <section aria-labelledby="lab-keluar">
++            <h3 id="lab-keluar" className={styles.detailsHeading}>
++              {excluded.length} wilayah tidak ikut dihitung
++            </h3>
++            <p className={styles.muted}>
++              Data Hub tidak menyertakannya, biasanya karena salah satu kriteria terpilih belum punya data
++              untuk wilayah itu. Wilayah ini tidak diberi skor, bukan diberi skor nol.
++            </p>
++            <ul role="list" className={styles.excludedList}>
++              {excluded.map((region) => (
++                <li key={region.regionId}>{region.displayName}</li>
++              ))}
++            </ul>
++          </section>
++        )}
++
++        <section aria-labelledby="lab-metode">
++          <h3 id="lab-metode" className={styles.detailsHeading}>
++            Cara menghitung dan memeriksa
++          </h3>
++          <ul role="list" className={styles.methodList}>
++            <li>
++              Data Hub mengubah setiap kriteria ke skala 0–100 (100 = kondisi terbaik di antara wilayah yang
++              dihitung). Skor gabungan = jumlah skor kriteria × bobot.
++            </li>
++            <li>
++              Bobot dikirim sebagai bilangan bulat dengan total tepat 10.000 (= 100%). Kriteria tanpa data
++              tidak dihitung; bobotnya dibagi ke kriteria lain.
++            </li>
++            {integrity && (
++              <li>
++                Diperiksa di peramban: total bobot, bobot yang dipakai, rentang 0–100, setiap skor sama dengan
++                jumlah komponennya (selisih terbesar {integrity.maxScoreError.toFixed(3)}), urutan peringkat,
++                dan tidak ada data kosong yang dihitung nol.
++              </li>
++            )}
++            {checks?.map(({ indicatorId, verdict }) => (
++              <li key={indicatorId}>
++                Arah skor {labelOf(indicatorId)}:{' '}
++                {verdict.status === 'consistent'
++                  ? `sesuai data sumber (${String(verdict.checked)} wilayah)`
++                  : verdict.status === 'unverifiable'
++                    ? `belum dapat diperiksa — ${verdict.reason}`
++                    : `tidak sesuai — ${verdict.reason}`}
++              </li>
++            ))}
++          </ul>
++          {integrity && integrity.issues.length > 0 && (
++            <IssueList issues={integrity.issues} registry={registry} />
++          )}
++        </section>
++
++        {result && integrity && (
++          <section aria-labelledby="lab-catatan">
++            <h3 id="lab-catatan" className={styles.detailsHeading}>
++              Catatan perhitungan (bahan Paspor Bukti)
++            </h3>
++            <dl className={styles.record}>
++              <div>
++                <dt>Snapshot</dt>
++                <dd>{result.snapshotId}</dd>
++              </div>
++              <div>
++                <dt>Mode data</dt>
++                <dd>{result.dataMode}</dd>
++              </div>
++              <div>
++                <dt>Cakupan</dt>
++                <dd>
++                  {result.filterProvinceId ? `Provinsi ${result.filterProvinceId}` : 'Seluruh Indonesia'} ·{' '}
++                  {result.items.length} wilayah dihitung
++                </dd>
++              </div>
++              <div>
++                <dt>Bobot dipakai</dt>
++                <dd>
++                  {Object.entries(integrity.weightsUsed)
++                    .filter(([, bps]) => bps > 0)
++                    .map(([id, bps]) => `${labelOf(id)} ${percentLabel(bps)}`)
++                    .join(', ')}
++                </dd>
++              </div>
++            </dl>
++            <p className={styles.muted}>
++              Paspor Bukti (segera hadir) akan menyimpan catatan ini. Hasil di halaman ini belum disimpan dan
++              belum punya ID permanen.
++            </p>
++          </section>
++        )}
++      </div>
++    </details>
++  );
++}
+diff --git a/src/features/priority-lab/PriorityLab.module.css b/src/features/priority-lab/PriorityLab.module.css
+index 841305e..0b80030 100644
+--- a/src/features/priority-lab/PriorityLab.module.css
++++ b/src/features/priority-lab/PriorityLab.module.css
+@@ -1,110 +1,454 @@
++/*
++ * Lab Prioritas surfaces. One translucent layer at most: in Kaca only the settings panel is glass;
++ * every card with content (status, charts, details) is opaque, so text never sits on glass over
++ * glass. All colours are local tokens, set once per display mode below.
++ */
+ .lab {
++  --lab-panel-bg: var(--nm-surface);
++  --lab-panel-border: #e4ded1;
++  --lab-panel-shadow: 0 1px 2px #1218260a, 0 12px 32px #1e3fd90f;
++  --lab-panel-blur: none;
++  --lab-card-bg: #ffffff;
++  --lab-card-border: #e9e4d9;
++  --lab-card-shadow: 0 1px 2px #1218260a;
++  --lab-ink: var(--nm-text);
++  --lab-muted: #4f5666;
++  --lab-strong: var(--nm-sea-deep);
++  --lab-track: #ece8df;
++  --lab-bar: var(--nm-sea);
++  --lab-input-bg: #ffffff;
++  --lab-input-border: #d3ccbb;
++  --lab-chip-bg: #f4f1ea;
++  --lab-chip-ink: var(--nm-text);
++  --lab-chip-on-bg: var(--nm-sea);
++  --lab-chip-on-ink: #ffffff;
++  --lab-series-0: #2f5bff;
++  --lab-series-1: #e8742a;
++  --lab-series-2: #8a7f68;
++  --lab-series-3: #9cb2ff;
++  --lab-series-4: #1a2b6b;
++  --lab-series-5: #f2b48a;
++  --lab-ok-bg: #f1f4ff;
++  --lab-ok-edge: var(--nm-sea);
++  --lab-ok-icon: var(--nm-sea-deep);
++  --lab-warn-bg: #fff4ea;
++  --lab-warn-edge: #e8742a;
++  --lab-warn-icon: #a64a0b;
++  --lab-block-bg: #fdeeec;
++  --lab-block-edge: #c0362c;
++  --lab-block-icon: #a8241b;
++  --lab-block-title: #861c15;
++
+   display: grid;
+-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+-  gap: 20px;
++  grid-template-columns: minmax(340px, 380px) minmax(0, 1fr);
++  gap: 24px;
+   align-items: start;
+   width: 100%;
++  color: var(--lab-ink);
++}
++
++:global([data-display-mode='glass']) .lab {
++  /* Dense enough that muted text stays ≥ 4.5:1 even over the lightest part of the backdrop. */
++  --lab-panel-bg: rgb(12 27 92 / 66%);
++  --lab-panel-border: rgb(255 255 255 / 20%);
++  --lab-panel-shadow: inset 0 1px 0 rgb(255 255 255 / 28%), 0 18px 40px rgb(6 16 64 / 35%);
++  --lab-panel-blur: blur(18px) saturate(150%);
++  --lab-card-bg: #13286f;
++  --lab-card-border: rgb(255 255 255 / 13%);
++  --lab-card-shadow: inset 0 1px 0 rgb(255 255 255 / 9%), 0 10px 28px rgb(6 16 64 / 30%);
++  --lab-ink: #ffffff;
++  --lab-muted: #cdd6f6;
++  --lab-strong: #ffffff;
++  --lab-track: rgb(255 255 255 / 14%);
++  --lab-bar: #8cacff;
++  --lab-input-bg: #0d1d57;
++  --lab-input-border: rgb(255 255 255 / 24%);
++  --lab-chip-bg: rgb(255 255 255 / 10%);
++  --lab-chip-ink: #ffffff;
++  --lab-chip-on-bg: var(--nm-surface);
++  --lab-chip-on-ink: #13286f;
++  --lab-series-0: #8cacff;
++  --lab-series-1: #ff9f5a;
++  --lab-series-2: #d4cbb8;
++  --lab-series-3: #ffffff;
++  --lab-series-4: #5c7fff;
++  --lab-series-5: #f2b48a;
++  --lab-ok-bg: #13286f;
++  --lab-ok-edge: #8cacff;
++  --lab-ok-icon: #8cacff;
++  --lab-warn-bg: #13286f;
++  --lab-warn-edge: #ffb27a;
++  --lab-warn-icon: #ffb27a;
++  --lab-block-bg: #2a1a4f;
++  --lab-block-edge: #ff8f85;
++  --lab-block-icon: #ff8f85;
++  --lab-block-title: #ffffff;
+ }
+ 
++/* ---------------------------------------------------------------- surfaces */
++
+ .panel {
+-  display: flex;
+-  flex-direction: column;
+-  gap: 14px;
++  border: 1px solid var(--lab-panel-border);
++  border-radius: var(--nm-radius-card);
++  background: var(--lab-panel-bg);
++  box-shadow: var(--lab-panel-shadow);
++  backdrop-filter: var(--lab-panel-blur);
++}
++
++.card {
+   min-width: 0;
+-  padding: 24px;
++  padding: 18px 20px;
++  border: 1px solid var(--lab-card-border);
++  border-radius: 20px;
++  background: var(--lab-card-bg);
++  box-shadow: var(--lab-card-shadow);
+ }
+ 
+-.muted {
+-  margin: 0;
+-  color: var(--c-text-muted);
++/* Glass only where it can stay legible: opaque without backdrop-filter or when asked to reduce it. */
++@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
++  :global([data-display-mode='glass']) .lab {
++    --lab-panel-bg: #13286f;
++  }
+ }
+ 
+-.sliders {
++@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
++  :global([data-display-mode='glass']) .lab {
++    --lab-panel-bg: #13286f;
++    --lab-panel-blur: none;
++  }
++}
++
++/* ---------------------------------------------------------------- layout */
++
++.config {
++  position: sticky;
++  top: 96px;
++  display: flex;
++  flex-direction: column;
++  gap: 18px;
++  max-height: calc(100dvh - 112px);
++  padding: 20px;
++  overflow-y: auto;
++  overscroll-behavior: contain;
++}
++
++.analysis {
+   display: flex;
+   flex-direction: column;
+   gap: 16px;
++  min-width: 0;
+ }
+ 
+-.slider {
++/* Ranking and the selected region's breakdown side by side when there is room. */
++.results {
+   display: grid;
+-  grid-template-columns: minmax(0, 1fr) auto;
+-  gap: 6px 12px;
+-  align-items: center;
++  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr);
++  gap: 16px;
++  align-items: start;
+ }
+ 
+-.slider input[type='range'] {
+-  grid-column: 1;
+-  width: 100%;
+-  accent-color: var(--nm-accent);
++@media (width < 1500px) {
++  .results {
++    grid-template-columns: minmax(0, 1fr);
++  }
+ }
+ 
+-.percent {
+-  grid-column: 2;
+-  grid-row: 1;
+-  min-width: 3.5ch;
+-  text-align: right;
++@media (width < 1100px) {
++  .lab {
++    grid-template-columns: minmax(0, 1fr);
++  }
++
++  .config {
++    position: static;
++    max-height: none;
++    overflow: visible;
++  }
++}
++
++@media (width < 600px) {
++  .lab {
++    gap: 16px;
++  }
++
++  .config {
++    padding: 16px;
++  }
++
++  .card {
++    padding: 14px 16px;
++  }
++}
++
++/* ---------------------------------------------------------------- text */
++
++.muted {
++  margin: 0;
++  color: var(--lab-muted);
++  font-size: 0.875rem;
+ }
+ 
+-.footer {
++.hint {
++  margin: 0;
++  color: var(--lab-muted);
++  font-size: 0.8125rem;
++  line-height: 1.45;
++}
++
++.visuallyHidden {
++  position: absolute;
++  width: 1px;
++  height: 1px;
++  margin: -1px;
++  padding: 0;
++  overflow: hidden;
++  clip-path: inset(50%);
++  white-space: nowrap;
++  border: 0;
++}
++
++.code {
++  color: var(--lab-muted);
++  font-family: var(--nm-font-mono, ui-monospace, monospace);
++  font-size: 0.75rem;
++}
++
++.quietNote {
++  margin: 0;
++  color: var(--lab-muted);
++  font-size: 0.875rem;
++}
++
++/* ---------------------------------------------------------------- settings */
++
++.configSection {
+   display: flex;
+-  flex-wrap: wrap;
+-  gap: 12px;
+-  align-items: center;
++  flex-direction: column;
++  gap: 10px;
++}
++
++.sectionHead {
++  display: flex;
++  gap: 8px;
++  align-items: baseline;
+   justify-content: space-between;
+ }
+ 
+-.footer p {
++.sectionTitle {
+   margin: 0;
++  font-size: 1rem;
++  font-weight: 600;
+ }
+ 
+-.titleRow {
++.sectionMeta {
++  color: var(--lab-muted);
++  font-size: 0.8125rem;
++  font-weight: 500;
++}
++
++.chips,
++.segmented {
+   display: flex;
+   flex-wrap: wrap;
+-  gap: 8px 12px;
+-  align-items: center;
+-  justify-content: space-between;
++  gap: 8px;
++}
++
++.chip,
++.segmented button {
++  min-height: 40px;
++  padding: 8px 14px;
++  border: 1px solid var(--lab-input-border);
++  border-radius: var(--nm-radius-pill);
++  background: var(--lab-chip-bg);
++  color: var(--lab-chip-ink);
++  font: inherit;
++  font-size: 0.875rem;
++  cursor: pointer;
++  transition: background-color var(--nm-duration-feedback) ease;
+ }
+ 
+-.ranking {
++.chip[aria-pressed='true'],
++.segmented button[aria-pressed='true'] {
++  border-color: transparent;
++  background: var(--lab-chip-on-bg);
++  color: var(--lab-chip-on-ink);
++  font-weight: 600;
++}
++
++.sliders {
+   display: flex;
+   flex-direction: column;
+-  gap: 8px;
++  gap: 14px;
+   margin: 0;
+   padding: 0;
+   list-style: none;
+ }
+ 
+-.rank {
++.slider {
+   display: grid;
+-  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+-  gap: 4px 12px;
++  grid-template-columns: 10px minmax(0, 1fr) auto 32px;
++  gap: 4px 8px;
+   align-items: center;
+-  padding: 10px 14px;
+-  border-radius: 14px;
+-  background: var(--c-surface-muted);
+ }
+ 
+-.position {
+-  text-align: center;
++.sliderLabel {
++  font-size: 0.9375rem;
++  line-height: 1.3;
+ }
+ 
+-.name {
+-  display: flex;
+-  flex-direction: column;
+-  min-width: 0;
++.sliderValue {
++  font-size: 0.9375rem;
++  font-weight: 600;
++  font-variant-numeric: tabular-nums;
+ }
+ 
+-@media (width < 960px) {
+-  .lab {
+-    grid-template-columns: minmax(0, 1fr);
+-  }
++/* Custom range: the filled part takes the criterion's colour (--fill is set inline). */
++.slider input[type='range'] {
++  grid-column: 2 / -1;
++  width: 100%;
++  height: 24px;
++  margin: 0;
++  background: transparent;
++  cursor: pointer;
++  appearance: none;
+ }
+ 
+-/* Criteria picker: a disclosure so the sliders stay in view. */
+-.picker {
+-  border: 1px solid var(--c-input-border);
++.slider input[type='range']::-webkit-slider-runnable-track {
++  height: 6px;
++  border-radius: var(--nm-radius-pill);
++  background: linear-gradient(
++    to right,
++    var(--series, var(--lab-bar)) var(--fill, 0%),
++    var(--lab-track) var(--fill, 0%)
++  );
++}
++
++.slider input[type='range']::-moz-range-track {
++  height: 6px;
++  border-radius: var(--nm-radius-pill);
++  background: var(--lab-track);
++}
++
++.slider input[type='range']::-moz-range-progress {
++  height: 6px;
++  border-radius: var(--nm-radius-pill);
++  background: var(--series, var(--lab-bar));
++}
++
++.slider input[type='range']::-webkit-slider-thumb {
++  width: 20px;
++  height: 20px;
++  margin-top: -7px;
++  border: 2px solid var(--series, var(--lab-bar));
++  border-radius: 50%;
++  background: #ffffff;
++  box-shadow: 0 1px 3px rgb(18 24 38 / 30%);
++  appearance: none;
++}
++
++.slider input[type='range']::-moz-range-thumb {
++  width: 16px;
++  height: 16px;
++  border: 2px solid var(--series, var(--lab-bar));
++  border-radius: 50%;
++  background: #ffffff;
++  box-shadow: 0 1px 3px rgb(18 24 38 / 30%);
++}
++
++.slider input[type='range']:focus-visible {
++  outline: none;
++}
++
++.slider input[type='range']:focus-visible::-webkit-slider-thumb {
++  outline: 3px solid var(--lab-bar);
++  outline-offset: 2px;
++}
++
++.slider input[type='range']:focus-visible::-moz-range-thumb {
++  outline: 3px solid var(--lab-bar);
++  outline-offset: 2px;
++}
++
++.slider input[type='range']:disabled {
++  cursor: not-allowed;
++  opacity: 0.6;
++}
++
++.sliderNote {
++  grid-column: 2 / -1;
++  margin: 0;
++  color: var(--lab-warn-icon);
++  font-size: 0.8125rem;
++}
++
++.iconButton {
++  display: inline-grid;
++  place-items: center;
++  width: 32px;
++  height: 32px;
++  border: 0;
++  border-radius: 50%;
++  background: transparent;
++  color: var(--lab-muted);
++  cursor: pointer;
++}
++
++.iconButton:hover {
++  background: var(--lab-chip-bg);
++}
++
++.input {
++  width: 100%;
++  min-height: 44px;
++  padding: 8px 12px;
++  border: 1px solid var(--lab-input-border);
+   border-radius: var(--nm-radius-control);
+-  padding: 10px 14px;
++  background: var(--lab-input-bg);
++  color: var(--lab-ink);
++  font: inherit;
++}
++
++.input::placeholder {
++  color: var(--lab-muted);
++}
++
++/* Criteria picker: a disclosure, so the sliders stay the first thing in the panel. */
++.picker {
++  border-top: 1px solid var(--lab-panel-border);
++  padding-top: 12px;
++}
++
++.picker > summary,
++.details > summary,
++.statusDetails > summary {
++  list-style: none;
++}
++
++.picker > summary::-webkit-details-marker,
++.details > summary::-webkit-details-marker,
++.statusDetails > summary::-webkit-details-marker {
++  display: none;
++}
++
++/* A chevron, so the closed sections read as openable. */
++.picker > summary::before,
++.details > summary::before,
++.statusDetails > summary::before {
++  content: '';
++  display: inline-block;
++  flex: none;
++  width: 8px;
++  height: 8px;
++  margin-right: 4px;
++  border-right: 2px solid currentcolor;
++  border-bottom: 2px solid currentcolor;
++  transform: rotate(-45deg);
++  transition: transform var(--nm-duration-feedback) ease;
++}
++
++.picker[open] > summary::before,
++.details[open] > summary::before,
++.statusDetails[open] > summary::before {
++  transform: rotate(45deg);
+ }
+ 
+ .picker > summary {
+@@ -112,8 +456,8 @@
+   flex-wrap: wrap;
+   gap: 2px 10px;
+   align-items: baseline;
+-  min-height: 44px;
+   align-content: center;
++  min-height: 44px;
+   cursor: pointer;
+ }
+ 
+@@ -125,14 +469,15 @@
+ 
+ .category legend {
+   margin-bottom: 6px;
+-  color: var(--c-text-muted);
++  color: var(--lab-muted);
++  font-size: 0.8125rem;
+   font-weight: 600;
+ }
+ 
+ .options {
+   display: flex;
+   flex-direction: column;
+-  gap: 4px;
++  gap: 2px;
+   margin: 0;
+   padding: 0;
+   list-style: none;
+@@ -142,8 +487,7 @@
+   display: flex;
+   gap: 10px;
+   align-items: flex-start;
+-  padding: 8px 6px;
+-  border-radius: var(--nm-radius-chip);
++  padding: 6px 4px;
+ }
+ 
+ .option input {
+@@ -151,11 +495,11 @@
+   width: 20px;
+   height: 20px;
+   margin-top: 2px;
+-  accent-color: var(--nm-sea);
++  accent-color: var(--lab-bar);
+ }
+ 
+ .option[data-disabled] label {
+-  color: var(--c-text-muted);
++  color: var(--lab-muted);
+ }
+ 
+ .optionText {
+@@ -169,288 +513,557 @@
+   cursor: pointer;
+ }
+ 
+-.weights {
++/* ---------------------------------------------------------------- status */
++
++.status {
+   display: flex;
++  gap: 14px;
++  align-items: flex-start;
++  padding: 14px 18px;
++  border: 1px solid var(--lab-card-border);
++  border-left: 4px solid var(--lab-ok-edge);
++  border-radius: 16px;
++  background: var(--lab-ok-bg);
++  box-shadow: var(--lab-card-shadow);
++}
++
++.status[data-tone='loading'] {
++  border-left-color: var(--lab-bar);
++  background: var(--lab-card-bg);
++}
++
++.status[data-tone='warning'],
++.status[data-tone='demo'] {
++  border-left-color: var(--lab-warn-edge);
++  background: var(--lab-warn-bg);
++}
++
++.status[data-tone='blocked'],
++.status[data-tone='error'] {
++  border-left-color: var(--lab-block-edge);
++  background: var(--lab-block-bg);
++}
++
++.statusIcon {
++  display: inline-grid;
++  flex: none;
++  place-items: center;
++  width: 32px;
++  height: 32px;
++  border-radius: 50%;
++  background: var(--lab-card-bg);
++  color: var(--lab-ok-icon);
++}
++
++.status[data-tone='warning'] .statusIcon,
++.status[data-tone='demo'] .statusIcon {
++  color: var(--lab-warn-icon);
++}
++
++.status[data-tone='blocked'] .statusIcon,
++.status[data-tone='error'] .statusIcon {
++  color: var(--lab-block-icon);
++}
++
++.spinner {
++  width: 18px;
++  height: 18px;
++  border: 2px solid var(--lab-track);
++  border-top-color: var(--lab-bar);
++  border-radius: 50%;
++  animation: spin 900ms linear infinite;
++}
++
++@keyframes spin {
++  to {
++    transform: rotate(360deg);
++  }
++}
++
++.statusBody {
++  display: flex;
++  flex: 1;
+   flex-direction: column;
+-  gap: 12px;
++  gap: 4px;
++  min-width: 0;
+ }
+ 
+-.presets,
+-.orderToggle {
++.statusTitle {
++  margin: 0;
++  font-weight: 600;
++  line-height: 1.35;
++}
++
++.status[data-tone='blocked'] .statusTitle,
++.status[data-tone='error'] .statusTitle {
++  color: var(--lab-block-title);
++}
++
++.statusText {
++  margin: 0;
++  color: var(--lab-ink);
++  font-size: 0.9375rem;
++  line-height: 1.45;
++}
++
++.statusDetails summary,
++.detailsSummary {
+   display: flex;
+-  flex-wrap: wrap;
+-  gap: 8px;
++  gap: 6px;
+   align-items: center;
++  min-height: 36px;
++  align-content: center;
++  color: var(--lab-strong);
++  font-size: 0.875rem;
++  font-weight: 600;
++  cursor: pointer;
+ }
+ 
+-/* Pill toggles, like the DEMO region buttons; the pressed one is filled (and aria-pressed). */
+-.preset {
+-  min-height: 44px;
+-  padding: 8px 14px;
+-  border: 1px solid var(--c-input-border);
+-  border-radius: var(--nm-radius-pill);
+-  background: var(--c-surface);
+-  color: var(--c-text);
+-  font: inherit;
++.statusDetailsBody {
++  display: flex;
++  flex-direction: column;
++  gap: 8px;
++  margin-top: 6px;
+   font-size: 0.875rem;
+-  cursor: pointer;
++  line-height: 1.45;
+ }
+ 
+-.preset[aria-pressed='true'] {
+-  border-color: transparent;
+-  background: var(--c-nav-active-liquid);
+-  color: var(--c-nav-active-text);
++.statusDetailsBody p {
++  margin: 0;
++}
++
++.statusAction {
++  margin-top: 6px;
++}
++
++.issueList {
++  display: flex;
++  flex-direction: column;
++  gap: 6px;
++  margin: 0;
++  padding-left: 1.1em;
++  font-size: 0.875rem;
++  line-height: 1.45;
++}
++
++/* ---------------------------------------------------------------- charts */
++
++.chart {
++  display: flex;
++  flex-direction: column;
++  gap: 12px;
++  margin: 0;
++}
++
++.chartTitle,
++.cardTitle {
++  margin: 0;
++  font-size: 1rem;
+   font-weight: 600;
+ }
+ 
+-/* Proportion of each weight; the same numbers are written next to every slider. */
+-.totalBar {
++.cardLead {
++  margin: 0;
++  color: var(--lab-muted);
++  font-size: 0.875rem;
++}
++
++.chartNote {
++  margin: 0;
++  color: var(--lab-muted);
++  font-size: 0.8125rem;
++}
++
++.barRow {
++  display: grid;
++  grid-template-columns: 6.5rem minmax(0, 1fr);
++  gap: 12px;
++  align-items: center;
++}
++
++.barLabel {
++  color: var(--lab-muted);
++  font-size: 0.8125rem;
++}
++
++.stack,
++.contributionTrack {
+   display: flex;
+-  height: 10px;
++  height: 14px;
+   overflow: hidden;
+   border-radius: var(--nm-radius-pill);
+-  background: var(--c-surface-muted);
++  background: var(--lab-track);
++}
++
++.contributionTrack {
++  height: 18px;
+ }
+ 
+-.segment {
++.stackPart {
++  flex-basis: 0;
+   height: 100%;
+-  transition: width var(--nm-duration-feedback) ease;
++  transition:
++    flex-grow var(--nm-duration-feedback) ease,
++    width var(--nm-duration-feedback) ease;
+ }
+ 
+-.segment[data-index='0'] {
+-  background: var(--nm-sea);
++.contributionTrack .stackPart {
++  flex: none;
+ }
+-.segment[data-index='1'] {
+-  background: var(--nm-accent);
++
++.stackPart + .stackPart {
++  box-shadow: inset 2px 0 0 var(--lab-card-bg);
+ }
+-.segment[data-index='2'] {
+-  background: var(--nm-sea-shallow);
++
++/* A criterion's colour, everywhere it appears: swatches, chart segments, slider fill. */
++.lab [data-series='0'] {
++  --series: var(--lab-series-0);
+ }
+-.segment[data-index='3'] {
+-  background: var(--nm-land-4);
++.lab [data-series='1'] {
++  --series: var(--lab-series-1);
+ }
+-.segment[data-index='4'] {
+-  background: var(--nm-sea-deep);
++.lab [data-series='2'] {
++  --series: var(--lab-series-2);
+ }
+-.segment[data-index='5'] {
+-  background: var(--nm-land-3);
++.lab [data-series='3'] {
++  --series: var(--lab-series-3);
++}
++.lab [data-series='4'] {
++  --series: var(--lab-series-4);
++}
++.lab [data-series='5'] {
++  --series: var(--lab-series-5);
+ }
+ 
+-.slider .remove {
+-  grid-column: 2;
+-  grid-row: 2;
+-  justify-self: end;
++.swatch,
++.stackPart {
++  background: var(--series, var(--lab-bar));
+ }
+ 
+-.remove {
+-  min-height: 32px;
+-  padding: 2px 10px;
+-  border: 0;
+-  border-radius: var(--nm-radius-pill);
+-  background: transparent;
+-  color: var(--c-text-muted);
+-  font: inherit;
+-  font-size: 0.8125rem;
+-  text-decoration: underline;
+-  cursor: pointer;
++.swatch {
++  display: inline-block;
++  flex: none;
++  width: 10px;
++  height: 10px;
++  margin-right: 6px;
++  border-radius: 3px;
+ }
+ 
+-.unavailable {
+-  grid-column: 1 / -1;
++.legend {
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
++  gap: 6px 18px;
+   margin: 0;
+-  color: var(--c-note);
++  padding: 0;
++  list-style: none;
++  font-size: 0.875rem;
+ }
+ 
+-.province {
++.legend li {
+   display: flex;
+-  flex-direction: column;
+   gap: 6px;
++  align-items: baseline;
++  min-width: 0;
+ }
+ 
+-.province select,
+-.search {
+-  min-height: 44px;
+-  padding: 8px 12px;
+-  border: 1px solid var(--c-input-border);
+-  border-radius: var(--nm-radius-control);
+-  background: var(--c-input-bg);
+-  color: var(--c-text);
+-  font: inherit;
++.legendName {
++  flex: 1;
++  min-width: 0;
++  line-height: 1.3;
++}
++
++.legendValue {
++  font-weight: 600;
++  font-variant-numeric: tabular-nums;
++  white-space: nowrap;
+ }
+ 
+-.notes {
++/* ---------------------------------------------------------------- ranking */
++
++.rankingCard {
+   display: flex;
+   flex-direction: column;
+-  gap: 10px;
++  gap: 12px;
+ }
+ 
+-.notes p {
+-  margin: 0;
++.rankingHead {
++  display: flex;
++  flex-wrap: wrap;
++  gap: 8px 12px;
++  align-items: center;
++  justify-content: space-between;
++}
++
++.searchRow {
++  display: grid;
++  grid-template-columns: minmax(0, 1fr) auto;
++  gap: 12px;
++  align-items: center;
+ }
+ 
+-.callout {
++.rankChart {
+   display: flex;
+   flex-direction: column;
+-  gap: 4px;
+-  padding: 12px 14px;
+-  border-left: 4px solid var(--nm-accent);
+-  border-radius: var(--nm-radius-chip);
+-  background: var(--c-surface-muted);
++  gap: 2px;
++  margin: 0;
++  padding: 0;
++  list-style: none;
+ }
+ 
+-.weightTable,
+-.breakdown table {
++.rankRow {
++  display: grid;
++  grid-template-columns: 2rem minmax(0, 1.4fr) minmax(80px, 1fr) 3.5rem;
++  gap: 12px;
++  align-items: center;
+   width: 100%;
+-  border-collapse: collapse;
+-  font-size: 0.875rem;
++  min-height: 44px;
++  padding: 6px 10px;
++  border: 1px solid transparent;
++  border-radius: 12px;
++  background: transparent;
++  color: inherit;
++  font: inherit;
++  text-align: left;
++  cursor: pointer;
+ }
+ 
+-.weightTable caption,
+-.breakdown caption {
+-  margin-bottom: 4px;
+-  color: var(--c-text-muted);
+-  text-align: left;
++.rankRow:hover {
++  background: var(--lab-chip-bg);
+ }
+ 
+-.weightTable th,
+-.weightTable td,
+-.breakdown th,
+-.breakdown td {
+-  padding: 6px 8px;
+-  border-bottom: 1px solid var(--c-input-border);
++.rankRow[aria-pressed='true'] {
++  border-color: var(--lab-bar);
++  background: var(--lab-chip-bg);
++}
++
++.rankNumber {
++  color: var(--lab-muted);
++  font-weight: 600;
++  font-variant-numeric: tabular-nums;
++  text-align: right;
++}
++
++.rankName {
++  min-width: 0;
++  font-size: 0.9375rem;
++  line-height: 1.3;
++}
++
++.rankMove {
++  color: var(--lab-muted);
++  font-size: 0.75rem;
++}
++
++.rankTrack {
++  height: 10px;
++  overflow: hidden;
++  border-radius: var(--nm-radius-pill);
++  background: var(--lab-track);
++}
++
++.rankTrack span {
++  display: block;
++  height: 100%;
++  border-radius: inherit;
++  background: var(--lab-bar);
++  transition: width var(--nm-duration-feedback) ease;
++}
++
++.rankScore {
++  font-weight: 600;
++  font-variant-numeric: tabular-nums;
++  text-align: right;
++}
++
++@media (width < 600px) {
++  .rankRow {
++    grid-template-columns: 1.6rem minmax(0, 1fr) 3rem;
++    row-gap: 4px;
++  }
++
++  .rankTrack {
++    grid-column: 2 / -1;
++    grid-row: 2;
++  }
++
++  .searchRow {
++    grid-template-columns: minmax(0, 1fr);
++  }
++}
++
++/* ---------------------------------------------------------------- tables */
++
++.table {
++  width: 100%;
++  border-collapse: collapse;
++  font-size: 0.875rem;
++}
++
++.table th,
++.table td {
++  padding: 7px 8px;
++  border-bottom: 1px solid var(--lab-card-border);
+   font-weight: 400;
+   text-align: left;
+ }
+ 
+-.weightTable thead th,
+-.breakdown thead th,
+-.breakdown tfoot th,
+-.breakdown tfoot td {
++.table thead th,
++.table tfoot th,
++.table tfoot td {
++  color: var(--lab-muted);
+   font-weight: 600;
+ }
+ 
+-.weightTable td,
+-.breakdown td {
++.table tfoot th,
++.table tfoot td {
++  color: var(--lab-ink);
++  border-bottom: 0;
++}
++
++.table td {
++  font-variant-numeric: tabular-nums;
+   text-align: right;
+   white-space: nowrap;
+ }
+ 
+-.excluded summary,
+-.method summary {
+-  min-height: 44px;
+-  align-content: center;
+-  color: var(--c-text-muted);
+-  cursor: pointer;
++/* Phones: one block per criterion — its full name, then score, weight and contribution side by side. */
++@media (width < 600px) {
++  /* Hidden visually only: screen readers keep the column headers. */
++  .contributionTable thead {
++    position: absolute;
++    width: 1px;
++    height: 1px;
++    overflow: hidden;
++    clip-path: inset(50%);
++    white-space: nowrap;
++  }
++
++  .contributionTable tbody tr {
++    display: grid;
++    grid-template-columns: repeat(3, minmax(0, 1fr));
++    border-bottom: 1px solid var(--lab-card-border);
++  }
++
++  .contributionTable tbody th {
++    grid-column: 1 / -1;
++    padding-bottom: 2px;
++    border-bottom: 0;
++  }
++
++  .contributionTable tbody td {
++    border-bottom: 0;
++    text-align: left;
++  }
++
++  .contributionTable tbody td::before {
++    content: attr(data-label);
++    display: block;
++    color: var(--lab-muted);
++    font-size: 0.75rem;
++  }
++
++  .segmented {
++    display: grid;
++    grid-template-columns: 1fr 1fr;
++    width: 100%;
++  }
++
++  .segmented button {
++    padding: 8px 10px;
++    font-size: 0.8125rem;
++  }
+ }
+ 
+-.excludedList {
++/* ---------------------------------------------------------------- details */
++
++.detailsGrid {
+   display: grid;
+-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+-  gap: 2px 12px;
+-  max-height: 220px;
+-  margin: 6px 0 0;
+-  padding: 0;
+-  overflow-y: auto;
+-  list-style: none;
++  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
++  gap: 20px 28px;
++  margin-top: 14px;
+ }
+ 
+-.method ul {
++.detailsGrid section {
+   display: flex;
+   flex-direction: column;
+-  gap: 6px;
+-  margin: 6px 0 0;
+-  padding-left: 1.2em;
++  gap: 8px;
++  min-width: 0;
+ }
+ 
+-.results {
+-  display: flex;
+-  flex-direction: column;
+-  gap: 10px;
++.detailsHeading {
++  margin: 0;
++  font-size: 0.9375rem;
++  font-weight: 600;
+ }
+ 
+-.resultControls {
++.sourceList,
++.methodList {
+   display: flex;
+   flex-direction: column;
+-  gap: 6px;
++  gap: 8px;
++  margin: 0;
++  padding: 0;
++  list-style: none;
++  font-size: 0.875rem;
++  line-height: 1.45;
+ }
+ 
+-.move {
+-  color: var(--c-text-strong-accent);
++.methodList {
++  padding-left: 1.1em;
++  list-style: disc;
+ }
+ 
+-.scoreCell {
++.sourceList li {
+   display: flex;
+   flex-direction: column;
+-  gap: 4px;
+-  align-items: flex-end;
+-  min-width: 5.5rem;
+ }
+ 
+-.scoreBar {
+-  width: 5rem;
+-  height: 6px;
+-  overflow: hidden;
+-  border-radius: var(--nm-radius-pill);
+-  background: var(--c-surface);
+-}
+-
+-.scoreBar span {
+-  display: block;
+-  height: 100%;
+-  background: var(--nm-sea);
++.sourceName {
++  font-weight: 600;
+ }
+ 
+-.why {
+-  grid-column: 2 / -1;
+-  justify-self: start;
+-  min-height: 44px;
+-  padding: 6px 12px;
+-  border: 1px solid var(--c-input-border);
+-  border-radius: var(--nm-radius-pill);
+-  background: var(--c-surface);
+-  color: var(--c-text);
+-  font: inherit;
++.excludedList {
++  display: grid;
++  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
++  gap: 2px 12px;
++  max-height: 200px;
++  margin: 0;
++  padding: 0;
++  overflow-y: auto;
++  list-style: none;
+   font-size: 0.8125rem;
+-  cursor: pointer;
+-}
+-
+-.breakdown {
+-  grid-column: 1 / -1;
+-  overflow-x: auto;
+ }
+ 
+ .record {
+   display: grid;
+   gap: 4px;
+-  margin: 6px 0;
++  margin: 0;
++  font-size: 0.875rem;
+ }
+ 
+ .record div {
+   display: grid;
+-  grid-template-columns: 8rem minmax(0, 1fr);
++  grid-template-columns: 7rem minmax(0, 1fr);
+   gap: 8px;
+ }
+ 
+ .record dt {
+-  color: var(--c-text-muted);
++  color: var(--lab-muted);
+ }
+ 
+ .record dd {
+   margin: 0;
+ }
+ 
+-@media (width < 600px) {
+-  .panel {
+-    padding: 18px 16px;
+-  }
+-
+-  .rank {
+-    grid-template-columns: 2rem minmax(0, 1fr) auto;
++@media (prefers-reduced-motion: reduce) {
++  .spinner {
++    animation-duration: 2400ms;
+   }
+-}
+ 
+-@media (prefers-reduced-motion: reduce) {
+-  .segment {
++  .stackPart,
++  .rankTrack span,
++  .chip,
++  .segmented button {
+     transition: none;
+   }
+ }
+diff --git a/src/features/priority-lab/PriorityLab.test.tsx b/src/features/priority-lab/PriorityLab.test.tsx
+index 9d2a797..e6ea756 100644
+--- a/src/features/priority-lab/PriorityLab.test.tsx
++++ b/src/features/priority-lab/PriorityLab.test.tsx
+@@ -58,9 +58,9 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+     const { fetchImpl, bodies } = labFetch();
+     renderWithDataHub(<PriorityLab />, { fetchImpl });
+ 
+-    expect(await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false })).toBeInTheDocument();
+-    expect(screen.getByText('Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)')).toBeInTheDocument();
+-    expect(screen.getByText('Simulasi — bukan data atau rekomendasi resmi.')).toBeInTheDocument();
++    expect(await screen.findByText('10 dari 514 wilayah')).toBeInTheDocument();
++    expect(screen.getByText('Data simulasi (DEMO)')).toBeInTheDocument();
++    expect(screen.getByText(/bukan data atau rekomendasi resmi/)).toBeInTheDocument();
+     expect(bodies[0]).toEqual({
+       weights: {
+         dis_multihazard_index: 3500,
+@@ -93,8 +93,10 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+     });
+     renderWithDataHub(<PriorityLab />, { fetchImpl });
+ 
+-    expect(await screen.findByText('Hasil perhitungan tidak konsisten')).toBeInTheDocument();
+-    expect(screen.getByText(/tidak sama dengan jumlah berbobot skor komponennya/)).toBeInTheDocument();
++    expect(await screen.findByText('Hasil simulasi tidak konsisten')).toBeInTheDocument();
++    expect(screen.getAllByText(/tidak sama dengan jumlah berbobot skor komponennya/).length).toBeGreaterThan(
++      0,
++    );
+     // DEMO still shows its (simulated) rows, exactly as the backend sent them.
+     expect(screen.getAllByText('12,34').length).toBeGreaterThan(0);
+   });
+@@ -102,14 +104,14 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+   it('moves one slider, rebalances the others to exactly 100%, says so, and queries again', async () => {
+     const { fetchImpl, bodies } = labFetch();
+     renderWithDataHub(<PriorityLab />, { fetchImpl });
+-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
++    await screen.findByText('10 dari 514 wilayah');
+ 
+     fireEvent.change(screen.getByLabelText('Bobot Persentase Penduduk Miskin (P0)'), {
+       target: { value: '60' },
+     });
+ 
+     expect(screen.getByText(/^Total: 100%/)).toBeInTheDocument();
+-    expect(screen.getByText(/bobot lain ikut menyesuaikan/)).toBeInTheDocument();
++    expect(screen.getByText(/Bobot lain ikut menyesuaikan/)).toBeInTheDocument();
+     await waitFor(() => {
+       expect(bodies).toHaveLength(2);
+     });
+@@ -121,7 +123,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+ 
+   it('resets to the starting weights', async () => {
+     renderWithDataHub(<PriorityLab />, { fetchImpl: labFetch().fetchImpl });
+-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
++    await screen.findByText('10 dari 514 wilayah');
+     const slider = screen.getByLabelText('Bobot Persentase Penduduk Miskin (P0)');
+ 
+     fireEvent.change(slider, { target: { value: '60' } });
+@@ -133,7 +135,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+   it('adds and removes criteria while the total stays exactly 100%', async () => {
+     const { fetchImpl, bodies } = labFetch();
+     renderWithDataHub(<PriorityLab />, { fetchImpl });
+-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
++    await screen.findByText('10 dari 514 wilayah');
+ 
+     openPicker();
+     fireEvent.click(screen.getByRole('checkbox', { name: 'Indeks Pembangunan Manusia (IPM / HDI)' }));
+@@ -175,14 +177,14 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+ 
+   it('shows a focused page of results, more on request, and finds a region by name', async () => {
+     renderWithDataHub(<PriorityLab />, { fetchImpl: labFetch().fetchImpl });
+-    await screen.findByText('Menampilkan 10 dari 514 wilayah', { exact: false });
++    await screen.findByText('10 dari 514 wilayah');
+     fireEvent.click(screen.getByRole('button', { name: 'Tampilkan 10 lagi' }));
+-    expect(screen.getByText('Menampilkan 20 dari 514 wilayah', { exact: false })).toBeInTheDocument();
++    expect(screen.getByText('20 dari 514 wilayah')).toBeInTheDocument();
+ 
+     fireEvent.change(screen.getByLabelText('Cari wilayah dalam peringkat'), {
+       target: { value: 'Lampung 11' },
+     });
+-    expect(screen.getByText(/Menampilkan 1 dari 1 hasil pencarian/)).toBeInTheDocument();
++    expect(screen.getByText('1 hasil pencarian')).toBeInTheDocument();
+   });
+ 
+   it('is blocked in LIVE: a quiet note, no ranking, no query, and no DEMO numbers', async () => {
+@@ -191,7 +193,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+ 
+     expect(await screen.findByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toBeInTheDocument();
+-    expect(screen.queryByText('Hasil peringkat')).not.toBeInTheDocument();
++    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
+     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
+     expect(bodies).toHaveLength(0);
+   });
+@@ -261,7 +263,7 @@ const completeRegions = () =>
+ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE data)', () => {
+   it('lists every indicator, disables those without LIVE data and says why, with source, year and unit', async () => {
+     renderWithDataHub(<PriorityLab />, { fetchImpl: liveLabFetch().fetchImpl, dataMode: 'LIVE' });
+-    await screen.findByText(/wilayah dihitung/);
++    await screen.findByText('Hasil siap dan sudah diperiksa');
+ 
+     expect(screen.getByText(/4 dari 33 indikator punya data/)).toBeInTheDocument();
+     openPicker();
+@@ -282,55 +284,79 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+ 
+     const complete = completeRegions();
+-    expect(await screen.findByText(`${String(complete)} wilayah`)).toBeInTheDocument();
++    expect(await screen.findByText('Hasil siap dan sudah diperiksa')).toBeInTheDocument();
++    expect(
++      screen.getByText(new RegExp(`^${String(complete)} wilayah dihitung dari data resmi LIVE`)),
++    ).toHaveTextContent(`${String(514 - complete)} wilayah belum lengkap datanya dan tidak ikut`);
+     expect(bodies[0]?.weights).toEqual({
+       soc_hdi: 3000,
+       dis_multihazard_index: 3000,
+       soc_poverty_rate: 2000,
+       hlt_stunting_prevalence: 2000,
+     });
+-    expect(screen.getByText('Data resmi LIVE · pratinjau, belum disimpan')).toBeInTheDocument();
+-    expect(
+-      screen.getByText(`${String(514 - complete)} wilayah tidak masuk peringkat — lihat daftar`),
+-    ).toBeInTheDocument();
++    // The technical facts are kept, behind "Sumber, metodologi & pemeriksaan".
++    expect(screen.getByText(`${String(514 - complete)} wilayah tidak ikut dihitung`)).toBeInTheDocument();
+     expect(screen.getByText(/Wilayah ini tidak diberi skor, bukan diberi skor nol/)).toBeInTheDocument();
+     expect(
+       screen.getByText(
+-        new RegExp(`Persentase Penduduk Miskin \\(P0\\) — sesuai \\(${String(complete)} wilayah\\)`),
++        new RegExp(
++          `Arah skor Persentase Penduduk Miskin \\(P0\\): sesuai data sumber \\(${String(complete)} wilayah\\)`,
++        ),
+       ),
+     ).toBeInTheDocument();
++    expect(screen.getByText(/belum disimpan dan belum punya ID permanen/)).toBeInTheDocument();
+     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
+   });
+ 
+-  it('explains a region score as the sum of its weighted criteria', async () => {
++  it('charts the ranking and explains the selected region as the sum of its weighted criteria', async () => {
+     renderWithDataHub(<PriorityLab />, { fetchImpl: liveLabFetch().fetchImpl, dataMode: 'LIVE' });
+-    const [why] = await screen.findAllByRole('button', { name: 'Mengapa skor ini?' });
+-    if (!why) throw new Error('no rows');
+-    fireEvent.click(why);
+-    const table = screen.getByRole('table', { name: /Sumbangan setiap kriteria/ });
+-    const rows = within(table).getAllByRole('row');
+-    expect(rows.length).toBe(1 + 4 + 1); // header, four criteria, total
++    const ranking = await screen.findByRole('region', { name: 'Daftar peringkat' });
++    const list = within(ranking).getByRole('list');
++    const rows = within(list).getAllByRole('button', { pressed: false });
++    expect(within(list).getByRole('button', { pressed: true })).toHaveTextContent(
++      'Kota Administrasi Jakarta Selatan',
++    );
++
++    const table = screen.getByRole('table', {
++      name: /Sumbangan setiap kriteria ke skor Kota Administrasi Jakarta Selatan/,
++    });
++    expect(within(table).getAllByRole('row')).toHaveLength(1 + 4 + 1); // header, four criteria, total
+     expect(within(table).getByText('Skor gabungan')).toBeInTheDocument();
++
++    const second = rows.find((row) => row.textContent.includes('Kota Tangerang Selatan'));
++    if (!second) throw new Error('no second row');
++    fireEvent.click(second);
++    expect(
++      screen.getByRole('table', { name: /Sumbangan setiap kriteria ke skor Kota Tangerang Selatan/ }),
++    ).toBeInTheDocument();
++
++    fireEvent.click(within(ranking).getByRole('button', { name: 'Kondisi paling berat dulu' }));
++    expect(within(list).getByRole('button', { pressed: true })).not.toHaveTextContent(
++      'Kota Administrasi Jakarta Selatan',
++    );
+   });
+ 
+   it('applies a Data Hub preset with an indicator without data, and explains where its weight went', async () => {
+     const { fetchImpl, bodies } = liveLabFetch();
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+-    await screen.findByText(/wilayah dihitung/);
++    await screen.findByText('Hasil siap dan sudah diperiksa');
+ 
+     fireEvent.click(screen.getByRole('button', { name: 'Risiko bencana & sekolah' }));
+     expect(screen.getByRole('button', { name: 'Risiko bencana & sekolah' })).toHaveAttribute(
+       'aria-pressed',
+       'true',
+     );
+-    expect(screen.getByText(/Bobotnya akan dialihkan ke kriteria lain saat dihitung/)).toBeInTheDocument();
++    expect(screen.getByText('Belum ada data — bobotnya akan dialihkan.')).toBeInTheDocument();
+     await waitFor(() => {
+       expect(bodies.at(-1)?.weights['edu_damaged_classrooms_pct']).toBe(2000);
+     });
+ 
++    // The weight chart shows both bars and says where the weight went.
+     expect(
+-      await screen.findByText(/1 kriteria belum punya data, jadi bobotnya dialihkan/),
++      await screen.findByText(/belum punya data, jadi bobotnya dibagi ke kriteria lain/),
+     ).toBeInTheDocument();
++    expect(screen.getByText('20% → tidak dipakai')).toBeInTheDocument();
++    expect(screen.getByText('35% → 43,75%')).toBeInTheDocument();
+     const table = screen.getByRole('table', {
+       name: /Bobot pilihan Anda dan bobot yang benar-benar dipakai/,
+     });
+@@ -342,7 +368,7 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
+ 
+   it('drops a preset whose weights are not exactly 100%, and says how many', async () => {
+     renderWithDataHub(<PriorityLab />, { fetchImpl: liveLabFetch().fetchImpl, dataMode: 'LIVE' });
+-    await screen.findByText(/wilayah dihitung/);
++    await screen.findByText('Hasil siap dan sudah diperiksa');
+     expect(screen.queryByRole('button', { name: 'Preset tidak lengkap' })).not.toBeInTheDocument();
+     expect(screen.getByText(/1 skenario dari Data Hub tidak ditampilkan/)).toBeInTheDocument();
+     expect(screen.getByText(/bukan rekomendasi resmi/)).toBeInTheDocument();
+@@ -351,14 +377,14 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
+   it('limits the ranking to one province and checks every region belongs to it', async () => {
+     const { fetchImpl, bodies } = liveLabFetch();
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+-    await screen.findByText(/wilayah dihitung/);
++    await screen.findByText('Hasil siap dan sudah diperiksa');
+ 
+     fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+     await waitFor(() => {
+       expect(bodies.at(-1)?.filter_province_id).toBe('33');
+     });
+-    expect(await screen.findByText(/di provinsi 33/)).toBeInTheDocument();
+-    expect(screen.queryByText(/Peringkat ditahan/)).not.toBeInTheDocument();
++    expect(await screen.findByText(/wilayah di Provinsi 33 dihitung/)).toBeInTheDocument();
++    expect(screen.queryByText('Peringkat belum dapat ditampilkan')).not.toBeInTheDocument();
+   });
+ 
+   it('withholds the deployed v1 composite: empty values scored as 0 (counterexample Kota Surakarta)', async () => {
+@@ -367,19 +393,21 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
+     });
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+ 
+-    expect(
+-      await screen.findByText('Peringkat ditahan: hasil perhitungan tidak konsisten'),
+-    ).toBeInTheDocument();
+-    expect(screen.getByText(/dihitung sebagai 0, padahal data kosong bukan nol/)).toBeInTheDocument();
+-    expect(screen.getByText(/3372/)).toBeInTheDocument();
+-    expect(screen.queryByText('Mengapa skor ini?')).not.toBeInTheDocument();
++    expect(await screen.findByText('Peringkat belum dapat ditampilkan')).toBeInTheDocument();
++    expect(screen.getByText(/Sebagian data wilayah belum lengkap. Hasil ditahan/)).toBeInTheDocument();
++    // The facts stay one click away: the zero-filled scores, with a named counterexample.
++    expect(screen.getByText('Lihat alasan dan detail teknis')).toBeInTheDocument();
++    expect(screen.getAllByText(/dihitung sebagai 0, padahal data kosong bukan nol/).length).toBeGreaterThan(
++      0,
++    );
++    expect(screen.getAllByText(/Kota Surakarta \(3372\)/).length).toBeGreaterThan(0);
++    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
++    expect(screen.queryByRole('table', { name: /Sumbangan setiap kriteria/ })).not.toBeInTheDocument();
++    // The chosen weights stay visible.
++    expect(screen.getByText('Pembagian bobot')).toBeInTheDocument();
+   });
+ 
+   it('withholds a ranking whose component runs against the indicator direction', async () => {
+-    const flipped = structuredClone(fixtureJson('live/indicator_values_soc_poverty_rate')) as {
+-      data: { indicator: { polarity: string } };
+-    };
+-    flipped.data.indicator.polarity = 'positive';
+     const catalog = structuredClone(liveCatalog()) as unknown as {
+       data: Record<string, { indicator_id: string; polarity: string }[]>;
+     };
+@@ -389,10 +417,9 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
+     const { fetchImpl } = liveLabFetch({ '/api/v1/indicators': () => jsonResponse(catalog) });
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+ 
+-    expect(
+-      await screen.findByText('Peringkat ditahan: arah skor tidak sesuai data sumber'),
+-    ).toBeInTheDocument();
+-    expect(screen.queryByText('Mengapa skor ini?')).not.toBeInTheDocument();
++    expect(await screen.findByText('Peringkat belum dapat ditampilkan')).toBeInTheDocument();
++    expect(screen.getByText(/Arah skor tidak cocok dengan data sumber/)).toBeInTheDocument();
++    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
+   });
+ 
+   it('shows an error with retry when the calculation fails, and never falls back to DEMO', async () => {
+@@ -402,7 +429,8 @@ describe('PriorityLab in LIVE (guide v2 contract, simulated from captured LIVE d
+     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+ 
+     expect(await screen.findByRole('button', { name: /Coba lagi/ })).toBeInTheDocument();
+-    expect(screen.queryByText('Mengapa skor ini?')).not.toBeInTheDocument();
++    expect(screen.getByText('Perhitungan belum berhasil')).toBeInTheDocument();
++    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
+     expect(requestedUrls(fetchImpl).every((url) => url.searchParams.get('mode') === 'live')).toBe(true);
+   });
+ 
+diff --git a/src/features/priority-lab/PriorityLab.tsx b/src/features/priority-lab/PriorityLab.tsx
+index db7299f..0684aec 100644
+--- a/src/features/priority-lab/PriorityLab.tsx
++++ b/src/features/priority-lab/PriorityLab.tsx
+@@ -1,13 +1,13 @@
+ import { useId, useState } from 'react';
+-import { StatusMessage } from '@/components/feedback/StatusMessage';
+-import { Surface } from '@/components/ui/Surface/Surface';
++import { Button } from '@/components/ui/Button/Button';
+ import { addCriterion, removeCriterion, type WeightsBps } from '@/domain/prioritization';
+ import { ResourceView, useDataHub, useDataHubResource, type ResourceState } from '@/features/data-hub';
+ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+ import type { CompositePresetsDTO, DataHubRegionDTO } from '@/services/api';
++import { AnalysisPanel } from './AnalysisPanel';
+ import { IndicatorPicker } from './IndicatorPicker';
+-import { RankingResults } from './RankingResults';
+-import { WeightControls } from './WeightControls';
++import { SERIES_COUNT } from './LabCharts';
++import { ScenarioPicker, WeightSliders } from './WeightControls';
+ import { buildIndicatorOptions, provinceOptions, startingWeights, type IndicatorOption } from './labModel';
+ import styles from './PriorityLab.module.css';
+ 
+@@ -52,6 +52,10 @@ function LabInputs() {
+   );
+ }
+ 
++/**
++ * Settings on the left (scenario, weights, criteria, scope), the analysis on the right. On narrow
++ * screens the two stack in the same order.
++ */
+ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }) {
+   const { dataMode } = useDataHub();
+   const [start] = useState(() => startingWeights(dataMode, options));
+@@ -60,6 +64,8 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
+   const settledWeights = useDebouncedValue(weights, RECOMPUTE_DEBOUNCE_MS);
+   const isSettling = settledWeights !== weights;
+   const provinceFieldId = useId();
++  // A criterion keeps its colour while it stays selected, across sliders and charts.
++  const [series, setSeries] = useState<readonly string[]>(() => Object.keys(start.weights));
+ 
+   const presets = useDataHubResource('presets', (repository, mode, signal) =>
+     repository.getCompositePresets({ dataMode: mode, signal }),
+@@ -71,48 +77,50 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
+     registry.state.status === 'success' ? registry.state.data.data : null;
+   const provinces = regions ? provinceOptions(regions) : [];
+ 
++  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
++  const seriesOf = (id: string) => {
++    const index = series.indexOf(id);
++    return (index < 0 ? Object.keys(weights).indexOf(id) : index) % SERIES_COUNT;
++  };
++  const changeWeights = (next: Weights) => {
++    setSeries((current) => {
++      const kept = current.filter((id) => id in next);
++      return [...kept, ...Object.keys(next).filter((id) => !kept.includes(id))];
++    });
++    setWeights(next);
++  };
++
+   return (
+     <div className={styles.lab}>
+-      <Surface radius="card" className={styles.panel}>
+-        <h2 className="kk-h3">Atur prioritas</h2>
+-        <p className={`kk-small ${styles.muted}`}>
+-          Pilih kriteria yang penting bagi Anda dan tentukan seberapa besar pengaruhnya. Data Hub menghitung
+-          peringkatnya dari data resmi; halaman ini memeriksa dan menjelaskan hasilnya.
+-        </p>
++      <aside className={`${styles.panel} ${styles.config}`} aria-label="Atur prioritas">
++        <ScenarioPicker
++          weights={weights}
++          presets={presets.state.status === 'success' ? presets.state.data.data.presets : null}
++          note={presetsNote(presets.state)}
++          onApply={changeWeights}
++        />
++        <WeightSliders weights={weights} options={options} onChange={changeWeights} seriesOf={seriesOf} />
+         {start.dropped.length > 0 && (
+-          <p className={`kk-small ${styles.unavailable}`}>
+-            Kriteria awal tanpa data tidak dipakai: {start.dropped.join(', ')}. Tidak ada kriteria pengganti
+-            yang dipilih otomatis.
++          <p className={styles.hint}>
++            Kriteria awal tanpa data tidak dipakai: {start.dropped.join(', ')}. Tidak ada pengganti otomatis.
+           </p>
+         )}
+-
+         <IndicatorPicker
+           options={options}
+           selected={new Set(Object.keys(weights))}
+           maxSelected={MAX_CRITERIA}
+           onToggle={(id, next) => {
+-            setWeights((current) => (next ? addCriterion(current, id) : removeCriterion(current, id)));
++            changeWeights(next ? addCriterion(weights, id) : removeCriterion(weights, id));
+           }}
+         />
+-
+-        <WeightControls
+-          weights={weights}
+-          options={options}
+-          onChange={setWeights}
+-          onReset={() => {
+-            setWeights(start.weights);
+-          }}
+-          presets={presets.state.status === 'success' ? presets.state.data.data.presets : null}
+-          presetsNote={presetsNote(presets.state)}
+-        />
+-
+         {provinces.length > 0 && (
+-          <div className={styles.province}>
+-            <label htmlFor={provinceFieldId} className="kk-body">
++          <section className={styles.configSection}>
++            <label htmlFor={provinceFieldId} className={styles.sectionTitle}>
+               Cakupan wilayah
+             </label>
+             <select
+               id={provinceFieldId}
++              className={styles.input}
+               value={provinceId ?? ''}
+               onChange={(event) => {
+                 setProvinceId(event.target.value === '' ? null : event.target.value);
+@@ -125,21 +133,33 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
+                 </option>
+               ))}
+             </select>
+-          </div>
++          </section>
++        )}
++        {regions === null && registry.state.status === 'error' && (
++          <p className={styles.hint}>
++            Daftar wilayah tidak dapat dimuat: peringkat tetap dihitung, tetapi wilayah yang tidak ikut tidak
++            dapat dicantumkan.
++          </p>
+         )}
+-      </Surface>
++        <Button
++          variant="secondary"
++          onClick={() => {
++            changeWeights(start.weights);
++          }}
++        >
++          Atur ulang bobot
++        </Button>
++      </aside>
+ 
+-      {regions === null && registry.state.status === 'error' && (
+-        <StatusMessage kind="unavailable" title="Daftar wilayah tidak dapat dimuat">
+-          Peringkat tetap dihitung, tetapi wilayah yang tidak ikut dihitung tidak dapat dicantumkan.
+-        </StatusMessage>
+-      )}
+-      <RankingResults
++      <AnalysisPanel
++        chosen={weights}
+         weights={settledWeights}
+         isSettling={isSettling}
+         provinceId={provinceId}
+         registry={regions ?? []}
+         options={options}
++        labelOf={labelOf}
++        seriesOf={seriesOf}
+       />
+     </div>
+   );
+@@ -147,12 +167,11 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
+ 
+ function presetsNote(state: ResourceState<{ readonly data: CompositePresetsDTO }>): string | null {
+   if (state.status === 'error')
+-    return 'Skenario siap pakai dari Data Hub tidak dapat dimuat; bobot tetap bisa diatur sendiri.';
++    return 'Skenario dari Data Hub tidak dapat dimuat. Bobot tetap bisa diatur sendiri.';
+   if (state.status !== 'success') return null;
+   const { presets, rejectedCount } = state.data.data;
+   const notes: string[] = [];
+-  if (presets.length > 0)
+-    notes.push('Skenario siap pakai disediakan Data Hub sebagai titik awal, bukan rekomendasi resmi.');
++  if (presets.length > 0) notes.push('Titik awal dari Data Hub, bukan rekomendasi resmi.');
+   if (rejectedCount > 0) {
+     notes.push(
+       `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobotnya tidak tepat 100%.`,
+diff --git a/src/features/priority-lab/RankingResults.tsx b/src/features/priority-lab/RankingResults.tsx
+deleted file mode 100644
+index c0d04a6..0000000
+--- a/src/features/priority-lab/RankingResults.tsx
++++ /dev/null
+@@ -1,622 +0,0 @@
+-import { useCallback, useEffect, useId, useState } from 'react';
+-import { StatusMessage } from '@/components/feedback/StatusMessage';
+-import { Button } from '@/components/ui/Button/Button';
+-import { Chip } from '@/components/ui/Chip/Chip';
+-import { Surface } from '@/components/ui/Surface/Surface';
+-import { assessCompositeIntegrity, type CompositeIntegrity } from '@/domain/prioritization';
+-import { ResourceView, formatDecimalId, useDataHub, useDataHubResource } from '@/features/data-hub';
+-import {
+-  INDONESIAN_ERROR_COPY,
+-  type DataHubRegionDTO,
+-  type ExploratoryCompositeResultDTO,
+-  type ExploratoryRegionRankDTO,
+-} from '@/services/api';
+-import { integrityInputFromResult } from './compositeCheck';
+-import { weightsKey } from './criteria';
+-import {
+-  compareWeights,
+-  contributions,
+-  excludedRegions,
+-  percentLabel,
+-  rankMovement,
+-  type IndicatorOption,
+-} from './labModel';
+-import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
+-import styles from './PriorityLab.module.css';
+-
+-const PAGE_SIZE = 10;
+-
+-/** The last result shown and the one before it; kept while new weights are calculated. */
+-interface ShownHistory {
+-  readonly current: ExploratoryCompositeResultDTO | null;
+-  readonly previous: ExploratoryCompositeResultDTO | null;
+-}
+-
+-interface RankingResultsProps {
+-  readonly weights: Readonly<Record<string, number>>;
+-  readonly isSettling: boolean;
+-  readonly provinceId: string | null;
+-  readonly registry: readonly DataHubRegionDTO[];
+-  readonly options: readonly IndicatorOption[];
+-}
+-
+-/** Runs the Data Hub's composite query for the settled weights and shows only what checks out. */
+-export function RankingResults({ weights, isSettling, provinceId, registry, options }: RankingResultsProps) {
+-  const { dataMode } = useDataHub();
+-  const ready = Object.keys(weights).length > 0;
+-  // The last result shown, kept while new weights are calculated, so rank moves can be described.
+-  const [history, setHistory] = useState<ShownHistory>({ current: null, previous: null });
+-  const recordShown = useCallback((result: ExploratoryCompositeResultDTO) => {
+-    setHistory((before) =>
+-      before.current === result ? before : { current: result, previous: before.current },
+-    );
+-  }, []);
+-  const ranking = useDataHubResource(
+-    `${weightsKey(weights)}|${provinceId ?? 'all'}`,
+-    (repository, mode, signal) =>
+-      repository.runExploratoryCompositeQuery({
+-        dataMode: mode,
+-        criteria: Object.entries(weights).map(([indicatorId, basisPoints]) => ({ indicatorId, basisPoints })),
+-        filterProvinceId: provinceId,
+-        signal,
+-      }),
+-    ready,
+-  );
+-
+-  return (
+-    <Surface radius="card" className={styles.panel} aria-busy={isSettling}>
+-      <div className={styles.titleRow}>
+-        <h2 className="kk-h3">Hasil peringkat</h2>
+-        <Chip tone="warning">
+-          {dataMode === 'DEMO'
+-            ? 'Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)'
+-            : 'Data resmi LIVE · pratinjau, belum disimpan'}
+-        </Chip>
+-      </div>
+-      {dataMode === 'DEMO' && (
+-        <p className="kk-body-strong">{INDONESIAN_ERROR_COPY['data.demo_disclaimer']}</p>
+-      )}
+-      {!ready ? (
+-        <StatusMessage kind="empty" title="Belum ada kriteria">
+-          Pilih minimal satu kriteria berdata untuk menghitung peringkat.
+-        </StatusMessage>
+-      ) : isSettling ? (
+-        <StatusMessage kind="loading" title={INDONESIAN_ERROR_COPY['analysis.running'] ?? 'Menghitung…'} />
+-      ) : (
+-        <ResourceView
+-          state={ranking.state}
+-          onRetry={ranking.retry}
+-          loadingTitle={INDONESIAN_ERROR_COPY['analysis.running'] ?? 'Menghitung…'}
+-        >
+-          {(envelope) => (
+-            <CheckedResult
+-              result={envelope.data}
+-              requested={weights}
+-              registry={registry}
+-              options={options}
+-              history={history}
+-              onShown={recordShown}
+-            />
+-          )}
+-        </ResourceView>
+-      )}
+-      <p className={`kk-small ${styles.muted}`}>
+-        Cara membaca: skor 0–100 menunjukkan kondisi relatif pada kriteria yang Anda pilih. Skor lebih tinggi
+-        berarti kondisi lebih baik (misalnya kemiskinan atau risiko bencana lebih rendah, IPM lebih tinggi).
+-        Peringkat 1 adalah kondisi relatif terbaik, bukan wilayah yang paling perlu dibantu; pilih “Kondisi
+-        paling berat dulu” untuk melihat wilayah dengan kebutuhan relatif terbesar. Peringkat berubah bila
+-        kriteria atau bobotnya berubah, dan bukan penilaian mutlak atas suatu wilayah atau rekomendasi
+-        kebijakan.
+-      </p>
+-    </Surface>
+-  );
+-}
+-
+-interface CheckedResultProps {
+-  readonly result: ExploratoryCompositeResultDTO;
+-  readonly requested: Readonly<Record<string, number>>;
+-  readonly registry: readonly DataHubRegionDTO[];
+-  readonly options: readonly IndicatorOption[];
+-  readonly history: ShownHistory;
+-  readonly onShown: (result: ExploratoryCompositeResultDTO) => void;
+-}
+-
+-/**
+- * LIVE: a ranking that fails a blocking check is withheld, and the direction of every component
+- * is verified against the published values before anything is shown.
+- * DEMO: the simulated list is still shown, with any problem flagged above it.
+- */
+-function CheckedResult({ result, requested, registry, options, history, onShown }: CheckedResultProps) {
+-  const { dataMode } = useDataHub();
+-  const scopeCount = result.filterProvinceId
+-    ? registry.filter((region) => region.parentRegionId === result.filterProvinceId).length
+-    : registry.length;
+-  const integrity = assessCompositeIntegrity(
+-    integrityInputFromResult(result, scopeCount > 0 ? scopeCount : null, requested),
+-  );
+-  const live = dataMode === 'LIVE';
+-  const direction = useDirectionCheck(live && integrity.ok ? result : null, integrity.weightsUsed, options);
+-
+-  if (!integrity.ok && live) return <IntegrityProblem integrity={integrity} withheld />;
+-  if (live && direction.state.status === 'loading') {
+-    return <StatusMessage kind="loading" title="Memeriksa arah skor terhadap data sumber…" />;
+-  }
+-  const checks = direction.state.status === 'success' ? direction.state.data : null;
+-  const wrongDirection = checks?.filter((check) => check.verdict.status === 'inconsistent') ?? [];
+-  if (live && wrongDirection.length > 0) {
+-    return <DirectionProblem checks={wrongDirection} options={options} />;
+-  }
+-
+-  return (
+-    <>
+-      {!integrity.ok && <IntegrityProblem integrity={integrity} withheld={false} />}
+-      <CalculationNotes
+-        result={result}
+-        integrity={integrity}
+-        registry={registry}
+-        options={options}
+-        checks={checks}
+-        checkFailed={live && direction.state.status === 'error'}
+-        onRetryCheck={direction.retry}
+-      />
+-      <RankingList
+-        result={result}
+-        integrity={integrity}
+-        options={options}
+-        previous={history.current === result ? history.previous : history.current}
+-        onShown={onShown}
+-      />
+-      <EvidenceRecord result={result} integrity={integrity} options={options} />
+-    </>
+-  );
+-}
+-
+-function IntegrityProblem({
+-  integrity,
+-  withheld,
+-}: {
+-  readonly integrity: CompositeIntegrity;
+-  readonly withheld: boolean;
+-}) {
+-  const blocking = integrity.issues.filter((issue) => issue.severity === 'block');
+-  return (
+-    <StatusMessage
+-      kind="error"
+-      title={
+-        withheld
+-          ? 'Peringkat ditahan: hasil perhitungan tidak konsisten'
+-          : 'Hasil perhitungan tidak konsisten'
+-      }
+-    >
+-      <ul role="list">
+-        {blocking.map((issue) => (
+-          <li key={issue.code}>
+-            {issue.message}
+-            {issue.examples &&
+-              issue.examples.length > 0 &&
+-              ` Contoh kode wilayah: ${issue.examples.join(', ')}.`}
+-          </li>
+-        ))}
+-      </ul>
+-      Data Hub perlu memperbaikinya; antarmuka tidak menghitung ulang atau menutup selisih ini.
+-    </StatusMessage>
+-  );
+-}
+-
+-function DirectionProblem({
+-  checks,
+-  options,
+-}: {
+-  readonly checks: readonly DirectionCheck[];
+-  readonly options: readonly IndicatorOption[];
+-}) {
+-  return (
+-    <StatusMessage kind="error" title="Peringkat ditahan: arah skor tidak sesuai data sumber">
+-      <ul role="list">
+-        {checks.map(({ indicatorId, verdict }) => (
+-          <li key={indicatorId}>
+-            {options.find((option) => option.id === indicatorId)?.label ?? indicatorId}:{' '}
+-            {verdict.status === 'inconsistent' ? verdict.reason : ''}
+-            {verdict.status === 'inconsistent' && ` Contoh kode wilayah: ${verdict.examples.join(', ')}.`}
+-          </li>
+-        ))}
+-      </ul>
+-      Skor yang arahnya terbalik akan menukar wilayah terbaik dengan yang terberat, jadi hasil ini tidak
+-      ditampilkan.
+-    </StatusMessage>
+-  );
+-}
+-
+-interface CalculationNotesProps {
+-  readonly result: ExploratoryCompositeResultDTO;
+-  readonly integrity: CompositeIntegrity;
+-  readonly registry: readonly DataHubRegionDTO[];
+-  readonly options: readonly IndicatorOption[];
+-  readonly checks: readonly DirectionCheck[] | null;
+-  readonly checkFailed: boolean;
+-  readonly onRetryCheck: () => void;
+-}
+-
+-/** What was actually calculated: chosen vs. used weights, what was left out, and what was checked. */
+-function CalculationNotes({
+-  result,
+-  integrity,
+-  registry,
+-  options,
+-  checks,
+-  checkFailed,
+-  onRetryCheck,
+-}: CalculationNotesProps) {
+-  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
+-  const rows = compareWeights(result);
+-  const leftOut = rows.filter((row) => row.used === null);
+-  const excluded = excludedRegions(registry, result);
+-  const coverageGap = integrity.issues.find((issue) => issue.code === 'REGISTRY_COUNT_MISMATCH');
+-  const lowest = Object.keys(integrity.weightsUsed)
+-    .map((id) => options.find((option) => option.id === id))
+-    .filter((option): option is IndicatorOption => option?.coverageCount != null)
+-    .sort((a, b) => (a.coverageCount ?? 0) - (b.coverageCount ?? 0))[0];
+-
+-  return (
+-    <section className={styles.notes} aria-label="Cara skor dihitung">
+-      <p className="kk-body">
+-        Dihitung oleh Data Hub untuk <strong>{result.items.length} wilayah</strong>
+-        {result.filterProvinceId ? ` di provinsi ${result.filterProvinceId}` : ''} · snapshot{' '}
+-        {result.snapshotId}.
+-      </p>
+-
+-      {leftOut.length > 0 && (
+-        <div className={styles.callout} role="note">
+-          <p className="kk-body-strong">
+-            {leftOut.length} kriteria belum punya data, jadi bobotnya dialihkan ke kriteria lain.
+-          </p>
+-          <p className="kk-small">
+-            {leftOut.map((row) => labelOf(row.id)).join(', ')} tidak bisa dihitung karena data resminya belum
+-            tersedia. Supaya total tetap 100%, bobotnya dibagi ke kriteria berdata sesuai perbandingan bobot
+-            yang Anda pilih. Hasil ini karena itu tidak memasukkan{' '}
+-            {leftOut.length === 1 ? 'kriteria tersebut' : 'kriteria-kriteria tersebut'}.
+-          </p>
+-        </div>
+-      )}
+-
+-      <table className={styles.weightTable}>
+-        <caption className="kk-small">Bobot pilihan Anda dan bobot yang benar-benar dipakai</caption>
+-        <thead>
+-          <tr>
+-            <th scope="col">Kriteria</th>
+-            <th scope="col">Pilihan Anda</th>
+-            <th scope="col">Dipakai</th>
+-          </tr>
+-        </thead>
+-        <tbody>
+-          {rows.map((row) => (
+-            <tr key={row.id}>
+-              <th scope="row">{labelOf(row.id)}</th>
+-              <td>{percentLabel(row.chosen)}</td>
+-              <td>{row.used === null ? 'Tidak dipakai (tanpa data)' : percentLabel(row.used)}</td>
+-            </tr>
+-          ))}
+-        </tbody>
+-      </table>
+-
+-      {coverageGap && excluded.length > 0 && (
+-        <details className={styles.excluded}>
+-          <summary className="kk-small">
+-            {excluded.length} wilayah tidak masuk peringkat — lihat daftar
+-          </summary>
+-          <p className="kk-small">
+-            Data Hub tidak menyertakan wilayah ini dalam perhitungan
+-            {lowest
+-              ? `; kriteria terpilih dengan data paling sedikit adalah ${lowest.label} (${String(lowest.coverageCount)} dari ${String(lowest.totalRegions ?? '?')} wilayah)`
+-              : ''}
+-            . Wilayah ini tidak diberi skor, bukan diberi skor nol.
+-          </p>
+-          <ul role="list" className={styles.excludedList}>
+-            {excluded.map((region) => (
+-              <li key={region.regionId} className="kk-small">
+-                {region.displayName} ({region.regionId})
+-              </li>
+-            ))}
+-          </ul>
+-        </details>
+-      )}
+-
+-      <details className={styles.method}>
+-        <summary className="kk-small">Metodologi dan pemeriksaan</summary>
+-        <ul role="list" className="kk-small">
+-          <li>
+-            Setiap kriteria diubah ke skala 0–100 oleh Data Hub (100 = kondisi terbaik di antara wilayah yang
+-            dihitung). Skor gabungan = jumlah dari skor kriteria × bobot yang dipakai.
+-          </li>
+-          <li>
+-            Bobot dikirim sebagai bilangan bulat yang totalnya tepat 10.000 (= 100%). Bila ada kriteria tanpa
+-            data, Data Hub menskalakan ulang bobot sisanya ke 10.000.
+-          </li>
+-          <li>
+-            Diperiksa di peramban: total bobot, kesesuaian bobot efektif, rentang skor 0–100, setiap skor
+-            gabungan sama dengan jumlah berbobot komponennya (selisih terbesar{' '}
+-            {integrity.maxScoreError.toFixed(3)}), urutan peringkat, dan tidak ada data kosong yang dihitung
+-            sebagai nol.
+-          </li>
+-          {checks && (
+-            <li>
+-              Arah skor dibandingkan dengan nilai sumber:{' '}
+-              {checks
+-                .map(
+-                  ({ indicatorId, verdict }) =>
+-                    `${labelOf(indicatorId)} — ${verdict.status === 'consistent' ? `sesuai (${String(verdict.checked)} wilayah)` : verdict.status === 'unverifiable' ? `belum dapat diperiksa: ${verdict.reason}` : 'tidak sesuai'}`,
+-                )
+-                .join('; ')}
+-              .
+-            </li>
+-          )}
+-        </ul>
+-        {checkFailed && (
+-          <p className="kk-small">
+-            Nilai sumber untuk memeriksa arah skor gagal dimuat.{' '}
+-            <Button variant="secondary" onClick={onRetryCheck}>
+-              Periksa lagi
+-            </Button>
+-          </p>
+-        )}
+-      </details>
+-    </section>
+-  );
+-}
+-
+-type Order = 'best' | 'hardest';
+-
+-function RankingList({
+-  result,
+-  integrity,
+-  options,
+-  previous,
+-  onShown,
+-}: {
+-  readonly result: ExploratoryCompositeResultDTO;
+-  readonly integrity: CompositeIntegrity;
+-  readonly options: readonly IndicatorOption[];
+-  /** The result shown before this one, to describe rank moves. */
+-  readonly previous: ExploratoryCompositeResultDTO | null;
+-  readonly onShown: (result: ExploratoryCompositeResultDTO) => void;
+-}) {
+-  const [shown, setShown] = useState(PAGE_SIZE);
+-  const [order, setOrder] = useState<Order>('best');
+-  const [query, setQuery] = useState('');
+-  const [openId, setOpenId] = useState<string | null>(null);
+-  const searchId = useId();
+-
+-  // Rank movement against the result shown before this one (same scope only).
+-  const moves = rankMovement(previous, result);
+-  useEffect(() => {
+-    onShown(result);
+-  }, [result, onShown]);
+-
+-  const scored = result.items.filter((item) => item.rankPosition !== null);
+-  const ordered = order === 'best' ? scored : [...scored].reverse();
+-  const needle = query.trim().toLowerCase();
+-  const matching = needle
+-    ? ordered.filter((item) => item.regionDisplayName.toLowerCase().includes(needle))
+-    : ordered;
+-  const rows = matching.slice(0, shown);
+-
+-  return (
+-    <section className={styles.results} aria-label="Daftar peringkat">
+-      <div className={styles.resultControls}>
+-        <div className={styles.orderToggle} role="group" aria-label="Urutan tampilan">
+-          {(['best', 'hardest'] as const).map((value) => (
+-            <button
+-              key={value}
+-              type="button"
+-              className={styles.preset}
+-              aria-pressed={order === value}
+-              onClick={() => {
+-                setOrder(value);
+-                setShown(PAGE_SIZE);
+-              }}
+-            >
+-              {value === 'best' ? 'Kondisi terbaik dulu' : 'Kondisi paling berat dulu'}
+-            </button>
+-          ))}
+-        </div>
+-        <label htmlFor={searchId} className="kk-small">
+-          Cari wilayah dalam peringkat
+-        </label>
+-        <input
+-          id={searchId}
+-          type="search"
+-          className={styles.search}
+-          value={query}
+-          placeholder="Nama kabupaten/kota"
+-          onChange={(event) => {
+-            setQuery(event.target.value);
+-            setShown(PAGE_SIZE);
+-          }}
+-        />
+-      </div>
+-      <p className="kk-small" role="status">
+-        Menampilkan {rows.length} dari{' '}
+-        {needle ? `${String(matching.length)} hasil pencarian` : `${String(scored.length)} wilayah`}
+-        {result.dataMode === 'DEMO' ? ' · nama wilayah pada dataset DEMO bersifat sintetis' : ''}
+-      </p>
+-      {rows.length === 0 && (
+-        <p className="kk-body">Tidak ada wilayah dalam peringkat ini yang cocok dengan “{query}”.</p>
+-      )}
+-      <ol className={styles.ranking}>
+-        {rows.map((item) => (
+-          <RankRow
+-            key={item.regionId}
+-            item={item}
+-            move={moves.get(item.regionId) ?? null}
+-            open={openId === item.regionId}
+-            onToggle={() => {
+-              setOpenId((current) => (current === item.regionId ? null : item.regionId));
+-            }}
+-            weightsUsed={integrity.weightsUsed}
+-            breakdownVerified={integrity.ok}
+-            options={options}
+-          />
+-        ))}
+-      </ol>
+-      {shown < matching.length && (
+-        <Button
+-          variant="secondary"
+-          onClick={() => {
+-            setShown((current) => current + PAGE_SIZE);
+-          }}
+-        >
+-          Tampilkan {Math.min(PAGE_SIZE, matching.length - shown)} lagi
+-        </Button>
+-      )}
+-    </section>
+-  );
+-}
+-
+-function RankRow({
+-  item,
+-  move,
+-  open,
+-  onToggle,
+-  weightsUsed,
+-  breakdownVerified,
+-  options,
+-}: {
+-  readonly item: ExploratoryRegionRankDTO;
+-  readonly move: number | null;
+-  readonly open: boolean;
+-  readonly onToggle: () => void;
+-  readonly weightsUsed: Readonly<Record<string, number>>;
+-  readonly breakdownVerified: boolean;
+-  readonly options: readonly IndicatorOption[];
+-}) {
+-  const panelId = `rincian-${item.regionId}`;
+-  const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
+-  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
+-
+-  return (
+-    <li className={styles.rank}>
+-      <span className={`kk-number ${styles.position}`}>{item.rankPosition ?? '—'}</span>
+-      <span className={styles.name}>
+-        <span className="kk-body-strong">{item.regionDisplayName}</span>
+-        <span className={`kk-small ${styles.muted}`}>
+-          Kode {item.regionId}
+-          {move !== null && move !== 0 && (
+-            <span className={styles.move}>
+-              {' '}
+-              · {move > 0 ? `naik ${String(move)}` : `turun ${String(-move)}`} dari perhitungan sebelumnya
+-            </span>
+-          )}
+-        </span>
+-      </span>
+-      <span className={styles.scoreCell}>
+-        <span className="kk-body-strong">
+-          {score === null ? 'Tidak dapat dihitung' : formatDecimalId(String(score))}
+-        </span>
+-        {score !== null && (
+-          <span className={styles.scoreBar} aria-hidden="true">
+-            <span style={{ width: `${String(Math.max(0, Math.min(100, score)))}%` }} />
+-          </span>
+-        )}
+-      </span>
+-      <button
+-        type="button"
+-        className={styles.why}
+-        aria-expanded={open}
+-        aria-controls={panelId}
+-        onClick={onToggle}
+-      >
+-        {open ? 'Tutup rincian' : 'Mengapa skor ini?'}
+-      </button>
+-      {open && (
+-        <div id={panelId} className={styles.breakdown}>
+-          {breakdownVerified ? (
+-            <table>
+-              <caption className="kk-small">
+-                Sumbangan setiap kriteria ke skor {item.regionDisplayName}. Sumbangan = skor kriteria × bobot;
+-                jumlahnya bisa berbeda 0,01–0,02 dari skor gabungan karena pembulatan.
+-              </caption>
+-              <thead>
+-                <tr>
+-                  <th scope="col">Kriteria</th>
+-                  <th scope="col">Skor 0–100</th>
+-                  <th scope="col">Bobot</th>
+-                  <th scope="col">Sumbangan</th>
+-                </tr>
+-              </thead>
+-              <tbody>
+-                {contributions(item, weightsUsed).map((row) => (
+-                  <tr key={row.id}>
+-                    <th scope="row">{labelOf(row.id)}</th>
+-                    <td>{formatDecimalId(String(row.score))}</td>
+-                    <td>{percentLabel(row.weight)}</td>
+-                    <td>{formatDecimalId(row.points.toFixed(2))} poin</td>
+-                  </tr>
+-                ))}
+-              </tbody>
+-              <tfoot>
+-                <tr>
+-                  <th scope="row" colSpan={3}>
+-                    Skor gabungan
+-                  </th>
+-                  <td>{score === null ? '—' : formatDecimalId(String(score))}</td>
+-                </tr>
+-              </tfoot>
+-            </table>
+-          ) : (
+-            <p className="kk-small">
+-              Rincian tidak ditampilkan karena skor gabungan tidak cocok dengan komponennya.
+-            </p>
+-          )}
+-        </div>
+-      )}
+-    </li>
+-  );
+-}
+-
+-/** What a future Paspor Bukti will record for this result; shown now, nothing is stored yet. */
+-function EvidenceRecord({
+-  result,
+-  integrity,
+-  options,
+-}: {
+-  readonly result: ExploratoryCompositeResultDTO;
+-  readonly integrity: CompositeIntegrity;
+-  readonly options: readonly IndicatorOption[];
+-}) {
+-  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
+-  return (
+-    <details className={styles.method}>
+-      <summary className="kk-small">Catatan perhitungan (bahan Paspor Bukti)</summary>
+-      <dl className={`kk-small ${styles.record}`}>
+-        <div>
+-          <dt>Snapshot</dt>
+-          <dd>{result.snapshotId}</dd>
+-        </div>
+-        <div>
+-          <dt>Mode data</dt>
+-          <dd>{result.dataMode}</dd>
+-        </div>
+-        <div>
+-          <dt>Cakupan</dt>
+-          <dd>
+-            {result.filterProvinceId ? `Provinsi ${result.filterProvinceId}` : 'Seluruh Indonesia'} ·{' '}
+-            {result.items.length} wilayah dihitung
+-          </dd>
+-        </div>
+-        <div>
+-          <dt>Bobot dipakai</dt>
+-          <dd>
+-            {Object.entries(integrity.weightsUsed)
+-              .filter(([, bps]) => bps > 0)
+-              .map(([id, bps]) => `${labelOf(id)} ${percentLabel(bps)}`)
+-              .join(', ')}
+-          </dd>
+-        </div>
+-      </dl>
+-      <p className="kk-small">
+-        Paspor Bukti (segera hadir) akan menyimpan catatan ini bersama sumber dan batasannya. Hasil di halaman
+-        ini belum disimpan dan tidak memiliki ID permanen.
+-      </p>
+-    </details>
+-  );
+-}
+diff --git a/src/features/priority-lab/StatusPanel.tsx b/src/features/priority-lab/StatusPanel.tsx
+new file mode 100644
+index 0000000..7b1fee0
+--- /dev/null
++++ b/src/features/priority-lab/StatusPanel.tsx
+@@ -0,0 +1,63 @@
++import type { ReactNode } from 'react';
++import { Icon, type IconName } from '@/components/ui/Icon/Icon';
++import styles from './PriorityLab.module.css';
++
++/**
++ * ok: validated · loading: (re)calculating · warning: incomplete data, shown with a caveat ·
++ * blocked: integrity checks withheld the ranking · error: request failed · demo: simulated data.
++ */
++export type StatusTone = 'ok' | 'loading' | 'warning' | 'blocked' | 'error' | 'demo';
++
++const ICON: Record<Exclude<StatusTone, 'loading'>, IconName> = {
++  ok: 'check',
++  warning: 'warning',
++  blocked: 'close',
++  error: 'warning',
++  demo: 'test',
++};
++
++interface StatusPanelProps {
++  readonly tone: StatusTone;
++  readonly title: string;
++  /** One short sentence. */
++  readonly children?: ReactNode;
++  /** Technical facts, behind "Lihat alasan dan detail teknis". */
++  readonly details?: ReactNode;
++  readonly detailsLabel?: string;
++  /** Only when acting can help (a retry after a failed request). */
++  readonly action?: ReactNode;
++}
++
++/**
++ * The one place the Lab says how far the analysis is and whether it can be trusted: a heading, a
++ * sentence, an icon, and the technical facts on demand. The tone is also in the text and icon, never
++ * colour alone.
++ */
++export function StatusPanel({
++  tone,
++  title,
++  children,
++  details,
++  detailsLabel = 'Lihat alasan dan detail teknis',
++  action,
++}: StatusPanelProps) {
++  const urgent = tone === 'blocked' || tone === 'error';
++  return (
++    <div className={styles.status} data-tone={tone} role={urgent ? 'alert' : 'status'}>
++      <span className={styles.statusIcon} aria-hidden="true">
++        {tone === 'loading' ? <span className={styles.spinner} /> : <Icon name={ICON[tone]} size={20} />}
++      </span>
++      <div className={styles.statusBody}>
++        <p className={styles.statusTitle}>{title}</p>
++        {children && <p className={styles.statusText}>{children}</p>}
++        {details && (
++          <details className={styles.statusDetails}>
++            <summary>{detailsLabel}</summary>
++            <div className={styles.statusDetailsBody}>{details}</div>
++          </details>
++        )}
++        {action && <div className={styles.statusAction}>{action}</div>}
++      </div>
++    </div>
++  );
++}
+diff --git a/src/features/priority-lab/WeightControls.tsx b/src/features/priority-lab/WeightControls.tsx
+index 1652744..82b1dac 100644
+--- a/src/features/priority-lab/WeightControls.tsx
++++ b/src/features/priority-lab/WeightControls.tsx
+@@ -1,6 +1,5 @@
+-import { useState } from 'react';
+-import { Button } from '@/components/ui/Button/Button';
+-import { Chip } from '@/components/ui/Chip/Chip';
++import { useState, type CSSProperties } from 'react';
++import { Icon } from '@/components/ui/Icon/Icon';
+ import {
+   TOTAL_BASIS_POINTS,
+   redistributeWeights,
+@@ -13,159 +12,144 @@ import styles from './PriorityLab.module.css';
+ 
+ type Weights = WeightsBps<string>;
+ 
+-interface WeightControlsProps {
+-  readonly weights: Weights;
+-  readonly options: readonly IndicatorOption[];
+-  readonly onChange: (weights: Weights) => void;
+-  readonly onReset: () => void;
+-  readonly presets: readonly CompositePresetDTO[] | null;
+-  /** Why presets are not offered, when they are not. */
+-  readonly presetsNote: string | null;
+-}
+-
+ /** Same set of weights, ignoring order. */
+ function sameWeights(a: Weights, b: Readonly<Record<string, number>>): boolean {
+   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+   return [...keys].every((key) => (a[key] ?? 0) === (b[key] ?? 0));
+ }
+ 
+-/**
+- * The priority sliders. Moving one makes the others give way proportionally, so the total is always
+- * exactly 100 %; the note under the sliders says what moved. Presets from the Data Hub set all
+- * weights at once.
+- */
+-export function WeightControls({
+-  weights,
+-  options,
+-  onChange,
+-  onReset,
+-  presets,
+-  presetsNote,
+-}: WeightControlsProps) {
+-  const [lastChange, setLastChange] = useState<{ id: string; before: Weights } | null>(null);
+-  const ids = Object.keys(weights);
+-  const total = ids.reduce((sum, id) => sum + (weights[id] ?? 0), 0);
+-  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
+-  const activePreset = presets?.find((preset) => sameWeights(weights, preset.weightsBasisPoints)) ?? null;
+-
+-  const adjustments =
+-    lastChange === null
+-      ? []
+-      : ids
+-          .filter((id) => id !== lastChange.id && (lastChange.before[id] ?? 0) !== (weights[id] ?? 0))
+-          .map(
+-            (id) =>
+-              `${labelOf(id)} ${percentLabel(lastChange.before[id] ?? 0)} → ${percentLabel(weights[id] ?? 0)}`,
+-          );
++interface ScenarioPickerProps {
++  readonly weights: Weights;
++  readonly presets: readonly CompositePresetDTO[] | null;
++  /** Why presets are missing or incomplete, when they are. */
++  readonly note: string | null;
++  readonly onApply: (weights: Weights) => void;
++}
+ 
++/** Data Hub presets as one-tap starting points; the active one is pressed, otherwise "Bobot sendiri". */
++export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPickerProps) {
++  const active = presets?.find((preset) => sameWeights(weights, preset.weightsBasisPoints)) ?? null;
+   return (
+-    <div className={styles.weights}>
++    <section className={styles.configSection} aria-labelledby="lab-skenario">
++      <div className={styles.sectionHead}>
++        <h2 id="lab-skenario" className={styles.sectionTitle}>
++          Skenario
++        </h2>
++        <span className={styles.sectionMeta}>{active ? active.label : 'Bobot sendiri'}</span>
++      </div>
+       {presets && presets.length > 0 && (
+-        <div className={styles.presets} role="group" aria-label="Skenario siap pakai">
++        <div className={styles.chips} role="group" aria-label="Skenario siap pakai">
+           {presets.map((preset) => (
+             <button
+               key={preset.presetId}
+               type="button"
+-              className={styles.preset}
+-              aria-pressed={activePreset?.presetId === preset.presetId}
++              className={styles.chip}
++              aria-pressed={active?.presetId === preset.presetId}
+               title={preset.description ?? undefined}
+               onClick={() => {
+-                setLastChange(null);
+-                onChange({ ...preset.weightsBasisPoints });
++                onApply({ ...preset.weightsBasisPoints });
+               }}
+             >
+               {preset.label}
+             </button>
+           ))}
+-          {!activePreset && <Chip>Bobot sendiri</Chip>}
+         </div>
+       )}
+-      {presetsNote && <p className={`kk-small ${styles.muted}`}>{presetsNote}</p>}
++      {note && <p className={styles.hint}>{note}</p>}
++    </section>
++  );
++}
+ 
+-      <div className={styles.totalBar} aria-hidden="true">
+-        {ids.map((id, index) => (
+-          <span
+-            key={id}
+-            className={styles.segment}
+-            data-index={index % 6}
+-            style={{ width: `${String(((weights[id] ?? 0) / TOTAL_BASIS_POINTS) * 100)}%` }}
+-          />
+-        ))}
+-      </div>
+-      <p className="kk-body-strong" role="status">
+-        Total: {percentLabel(total)}
+-        {total === TOTAL_BASIS_POINTS ? ' — siap dihitung' : ' — harus tepat 100%'}
+-      </p>
++interface WeightSlidersProps {
++  readonly weights: Weights;
++  readonly options: readonly IndicatorOption[];
++  readonly onChange: (weights: Weights) => void;
++  readonly seriesOf: (id: string) => number;
++}
+ 
++/**
++ * One slider per criterion. Moving one makes the others give way proportionally, so the total is
++ * always exactly 100 %; a one-line note says what moved.
++ */
++export function WeightSliders({ weights, options, onChange, seriesOf }: WeightSlidersProps) {
++  const [lastChange, setLastChange] = useState<{ id: string; before: Weights } | null>(null);
++  const ids = Object.keys(weights);
++  const total = ids.reduce((sum, id) => sum + (weights[id] ?? 0), 0);
++  const labelOf = (id: string) => options.find((option) => option.id === id)?.label ?? id;
++
++  const adjusted =
++    lastChange === null
++      ? []
++      : ids.filter((id) => id !== lastChange.id && (lastChange.before[id] ?? 0) !== (weights[id] ?? 0));
++
++  return (
++    <section className={styles.configSection} aria-labelledby="lab-bobot-judul">
++      <div className={styles.sectionHead}>
++        <h2 id="lab-bobot-judul" className={styles.sectionTitle}>
++          Bobot kriteria
++        </h2>
++        <span className={styles.sectionMeta} role="status">
++          Total: {percentLabel(total)}
++          {total === TOTAL_BASIS_POINTS ? '' : ' — harus tepat 100%'}
++        </span>
++      </div>
+       {ids.length === 0 ? (
+-        <p className="kk-body">Pilih minimal satu kriteria untuk mulai menghitung peringkat.</p>
++        <p className={styles.hint}>Pilih minimal satu kriteria di bawah.</p>
+       ) : (
+         <ul role="list" className={styles.sliders}>
+           {ids.map((id) => {
+             const option = options.find((entry) => entry.id === id);
+             const reason = option ? unavailableReason(option) : 'Indikator tidak ada di katalog Data Hub.';
+-            const percent = (weights[id] ?? 0) / 100;
+             return (
+               <li key={id} className={styles.slider}>
+-                <label htmlFor={`bobot-${id}`} className="kk-body">
++                <span className={styles.swatch} data-series={seriesOf(id)} aria-hidden="true" />
++                <label htmlFor={`bobot-${id}`} className={styles.sliderLabel}>
+                   {/* Distinct from the criterion's checkbox, which has the indicator name alone. */}
+-                  <span className="visually-hidden">Bobot </span>
++                  <span className={styles.visuallyHidden}>Bobot </span>
+                   {labelOf(id)}
+                 </label>
++                <output htmlFor={`bobot-${id}`} className={styles.sliderValue}>
++                  {percentLabel(weights[id] ?? 0)}
++                </output>
++                <button
++                  type="button"
++                  className={styles.iconButton}
++                  aria-label={`Lepas kriteria ${labelOf(id)}`}
++                  title="Lepas kriteria"
++                  onClick={() => {
++                    setLastChange(null);
++                    onChange(removeCriterion(weights, id));
++                  }}
++                >
++                  <Icon name="close" size={14} />
++                </button>
+                 <input
+                   id={`bobot-${id}`}
+                   type="range"
+                   min={0}
+                   max={100}
+                   step={1}
+-                  value={percent}
++                  value={(weights[id] ?? 0) / 100}
+                   disabled={ids.length === 1}
++                  data-series={seriesOf(id)}
++                  style={{ '--fill': `${String((weights[id] ?? 0) / 100)}%` } as CSSProperties}
+                   aria-valuetext={percentLabel(weights[id] ?? 0)}
+                   onChange={(event) => {
+                     setLastChange({ id, before: weights });
+                     onChange(redistributeWeights(weights, id, Number(event.target.value) * 100));
+                   }}
+                 />
+-                <output htmlFor={`bobot-${id}`} className={`kk-body-strong ${styles.percent}`}>
+-                  {percentLabel(weights[id] ?? 0)}
+-                </output>
+-                <button
+-                  type="button"
+-                  className={styles.remove}
+-                  aria-label={`Lepas kriteria ${labelOf(id)}`}
+-                  onClick={() => {
+-                    setLastChange(null);
+-                    onChange(removeCriterion(weights, id));
+-                  }}
+-                >
+-                  Lepas
+-                </button>
+-                {reason && (
+-                  <p className={`kk-small ${styles.unavailable}`}>
+-                    {reason} Bobotnya akan dialihkan ke kriteria lain saat dihitung.
+-                  </p>
+-                )}
++                {reason && <p className={styles.sliderNote}>Belum ada data — bobotnya akan dialihkan.</p>}
+               </li>
+             );
+           })}
+         </ul>
+       )}
+-      {adjustments.length > 0 && (
+-        <p className={`kk-small ${styles.muted}`} aria-live="polite">
+-          Agar total tetap 100%, bobot lain ikut menyesuaikan: {adjustments.join('; ')}.
++      {adjusted.length > 0 && (
++        <p className={styles.hint} aria-live="polite">
++          Bobot lain ikut menyesuaikan agar total tetap 100%: {adjusted.map(labelOf).join(', ')}.
+         </p>
+       )}
+-      <div className={styles.footer}>
+-        <Button
+-          variant="secondary"
+-          onClick={() => {
+-            setLastChange(null);
+-            onReset();
+-          }}
+-        >
+-          Atur ulang bobot
+-        </Button>
+-      </div>
+-    </div>
++    </section>
+   );
+ }
+diff --git a/src/features/priority-lab/labModel.ts b/src/features/priority-lab/labModel.ts
+index d436bf9..469812d 100644
+--- a/src/features/priority-lab/labModel.ts
++++ b/src/features/priority-lab/labModel.ts
+@@ -192,3 +192,9 @@ export function rankMovement(
+   }
+   return moves;
+ }
++
++/** "Kota Surakarta (3372)" when the registry knows the code, else the code. */
++export function regionLabel(regionId: string, registry: readonly DataHubRegionDTO[]): string {
++  const region = registry.find((entry) => entry.regionId === regionId);
++  return region ? `${region.displayName} (${regionId})` : regionId;
++}
+diff --git a/tests/e2e/data-hub.spec.ts b/tests/e2e/data-hub.spec.ts
+index ad68390..b81e94b 100644
+--- a/tests/e2e/data-hub.spec.ts
++++ b/tests/e2e/data-hub.spec.ts
+@@ -72,8 +72,10 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
+     const mock = await mockDataHub(page);
+     await page.goto('/lab-prioritas');
+ 
+-    await expect(page.getByText('Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)')).toBeVisible();
+-    await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible();
++    await expect(page.getByText('Data simulasi (DEMO)')).toBeVisible();
++    await expect(
++      page.getByRole('region', { name: 'Daftar peringkat' }).getByText('Kabupaten Demo Lampung 11'),
++    ).toBeVisible();
+     expect(mock.compositeRequests[0]).toMatchObject({
+       weights: { dis_multihazard_index: 3500, soc_poverty_rate: 2500 },
+     });
+@@ -93,7 +95,9 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
+   test('blocks LIVE: no ranking appears', async ({ page }) => {
+     await mockDataHub(page);
+     await page.goto('/lab-prioritas');
+-    await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible();
++    await expect(
++      page.getByRole('region', { name: 'Daftar peringkat' }).getByText('Kabupaten Demo Lampung 11'),
++    ).toBeVisible();
+ 
+     await page.locator('label', { hasText: 'LIVE' }).click();
+ 
+diff --git a/tests/e2e/priority-lab.spec.ts b/tests/e2e/priority-lab.spec.ts
+index d0994ef..f29b95f 100644
+--- a/tests/e2e/priority-lab.spec.ts
++++ b/tests/e2e/priority-lab.spec.ts
+@@ -9,7 +9,7 @@ import { mockLiveLab, type CompositeKind } from './liveLabMock';
+ async function openLiveLab(page: Page, composite: CompositeKind = 'v2') {
+   const mock = await mockLiveLab(page, composite);
+   await page.goto('/lab-prioritas');
+-  await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible(); // DEMO first
++  await expect(results(page).getByText('Kabupaten Demo Lampung 11')).toBeVisible(); // DEMO first
+   await page.locator('label', { hasText: 'LIVE' }).click();
+   return mock;
+ }
+@@ -22,9 +22,9 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
+   }) => {
+     const mock = await openLiveLab(page);
+ 
+-    await expect(page.getByText('Data resmi LIVE · pratinjau, belum disimpan')).toBeVisible();
+-    await expect(page.getByText(/wilayah tidak masuk peringkat — lihat daftar/)).toBeVisible();
+-    await expect(results(page).getByText(/^Menampilkan 10 dari \d+ wilayah/)).toBeVisible();
++    await expect(page.getByText('Hasil siap dan sudah diperiksa')).toBeVisible();
++    await expect(page.getByText(/wilayah belum lengkap datanya dan tidak ikut/)).toBeVisible();
++    await expect(results(page).getByText(/^10 dari \d+ wilayah$/)).toBeVisible();
+     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
+     expect(mock.compositeRequests.at(-1)?.weights).toEqual({
+       soc_hdi: 3000,
+@@ -33,14 +33,18 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
+       hlt_stunting_prevalence: 2000,
+     });
+ 
+-    const firstBest = await results(page).locator('ol > li').first().innerText();
+-    await page.getByRole('button', { name: 'Kondisi paling berat dulu' }).click();
+-    await expect(results(page).locator('ol > li').first()).not.toHaveText(firstBest);
+-
+-    await page.getByRole('button', { name: 'Mengapa skor ini?' }).first().click();
++    // The selected region's breakdown is shown beside the ranking, and follows the selection.
+     const breakdown = page.getByRole('table', { name: /Sumbangan setiap kriteria/ });
+     await expect(breakdown).toBeVisible();
+     await expect(breakdown.getByRole('row')).toHaveCount(6);
++    await results(page).locator('ol button').nth(1).click();
++    await expect(
++      page.getByRole('table', { name: /Sumbangan setiap kriteria ke skor Kota Tangerang Selatan/ }),
++    ).toBeVisible();
++
++    const firstBest = await results(page).locator('ol > li').first().innerText();
++    await page.getByRole('button', { name: 'Kondisi paling berat dulu' }).click();
++    await expect(results(page).locator('ol > li').first()).not.toHaveText(firstBest);
+   });
+ 
+   test('a preset with an indicator without data shows where its weight went', async ({ page }) => {
+@@ -48,10 +52,9 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
+     await expect(results(page)).toBeVisible();
+ 
+     await page.getByRole('button', { name: 'Risiko bencana & sekolah' }).click();
+-    await expect(page.getByText(/1 kriteria belum punya data, jadi bobotnya dialihkan/)).toBeVisible();
+-    const table = page.getByRole('table', { name: /Bobot pilihan Anda/ });
+-    await expect(table.getByText('Tidak dipakai (tanpa data)')).toBeVisible();
+-    await expect(table.getByText('43,75%')).toBeVisible();
++    await expect(page.getByText(/belum punya data, jadi bobotnya dibagi ke kriteria lain/)).toBeVisible();
++    await expect(page.getByText('20% → tidak dipakai')).toBeVisible();
++    await expect(page.getByText('35% → 43,75%')).toBeVisible();
+   });
+ 
+   test('dragging a slider settles to one request with weights summing to exactly 10 000', async ({
+@@ -78,14 +81,19 @@ test.describe('Lab Prioritas in LIVE (MOCKED guide v2 contract)', () => {
+     await expect(results(page)).toBeVisible();
+     await page.getByLabel('Cakupan wilayah').selectOption('33');
+     await expect.poll(() => mock.compositeRequests.at(-1)?.filter_province_id).toBe('33');
+-    await expect(page.getByText(/di provinsi 33/)).toBeVisible();
++    await expect(page.getByText(/wilayah di Provinsi 33 dihitung/)).toBeVisible();
+   });
+ 
+   test('withholds the deployed v1 composite and names a counterexample', async ({ page }) => {
+     await openLiveLab(page, 'v1');
+-    await expect(page.getByText('Peringkat ditahan: hasil perhitungan tidak konsisten')).toBeVisible();
+-    await expect(page.getByText(/dihitung sebagai 0/)).toBeVisible();
+-    await expect(page.getByText(/3372/)).toBeVisible();
++    await expect(page.getByText('Peringkat belum dapat ditampilkan')).toBeVisible();
++    await expect(page.getByText(/Sebagian data wilayah belum lengkap/)).toBeVisible();
++    // Short by default; the facts are one click away.
++    await expect(page.getByText(/dihitung sebagai 0/).first()).toBeHidden();
++    await page.getByText('Lihat alasan dan detail teknis').click();
++    await expect(page.getByText(/dihitung sebagai 0/).first()).toBeVisible();
++    await expect(page.getByText(/Kota Surakarta \(3372\)/).first()).toBeVisible();
++    await expect(page.getByText('Pembagian bobot')).toBeVisible();
+     await expect(results(page)).toHaveCount(0);
+   });
+ 
+-- 
+2.43.0
+
