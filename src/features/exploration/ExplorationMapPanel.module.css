@@ -59,20 +59,20 @@
 }
 
 /*
- * The map fills its column beside the side panel. It keeps one size whether the panel is open or
- * collapsed on desktop; on phones it takes about half the screen and the sheet covers the rest.
+ * The map fills its column. A host that lays the map out (Jelajahi) sets --explore-map-height, and
+ * with --explore-map-aspect: auto, the map is then exactly that tall at any width, so folding a side panel only widens it. Without
+ * it (Peta Utama) the map keeps a 3:2 shape, and about half the screen on phones.
  */
 .workspace .map {
-  height: auto;
-  min-height: 360px;
-  max-height: calc(100vh - 150px);
-  aspect-ratio: 3 / 2;
+  height: var(--explore-map-height, auto);
+  min-height: 340px;
+  max-height: var(--explore-map-height, calc(100vh - 150px));
+  aspect-ratio: var(--explore-map-aspect, 3 / 2);
 }
 
 @media (width < 960px) {
   .workspace .map {
-    height: 52vh;
-    min-height: 340px;
+    height: var(--explore-map-height, 52vh);
   }
 }
 

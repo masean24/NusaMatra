@@ -3,16 +3,16 @@ import { ExploreWorkspace, IndicatorPanel, useRegionBrowserParams } from '@/feat
 import { FeaturePageFrame, type FeatureShell } from '@/features/feature-shell';
 
 /**
- * Jelajahi (Figma 29:34): the map with its contextual panel for the chosen region, and the
- * indicator catalog below for anyone who wants to read definitions on their own.
+ * Jelajahi (Figma 29:34): a map-first workspace. The data mode sits in the map's toolbar, the map
+ * and its contextual panel fill the first viewport, and the indicator catalog follows below for
+ * anyone who wants to read definitions on their own.
  */
 export function ExplorePage({ shell }: { readonly shell: FeatureShell }) {
   const { selectedCode } = useRegionBrowserParams();
 
   return (
-    <FeaturePageFrame shell={shell} wide>
-      <DataHubBanner />
-      <ExploreWorkspace />
+    <FeaturePageFrame shell={shell} workspace>
+      <ExploreWorkspace toolbar={<DataHubBanner compact />} />
       <IndicatorPanel regionId={selectedCode} />
     </FeaturePageFrame>
   );

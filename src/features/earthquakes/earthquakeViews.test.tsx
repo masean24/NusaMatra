@@ -104,7 +104,7 @@ describe('EarthquakeLayerControl', () => {
     const toggle = screen.getByRole('switch', { name: 'Gempa BMKG' });
     expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect(toggle).toBeDisabled();
-    expect(screen.getByText(/Hanya tersedia pada data LIVE/)).toBeInTheDocument();
+    expect(screen.getByText(/Hanya untuk data LIVE/)).toBeInTheDocument();
     await userEvent.click(toggle);
     expect(onToggle).not.toHaveBeenCalled();
   });

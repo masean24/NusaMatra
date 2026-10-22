@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DataHubErrorMessage } from '@/features/data-hub';
@@ -17,7 +18,9 @@ interface EarthquakeLayerControlProps {
 
 /**
  * Switch for the "Gempa BMKG" layer, its status in words, and a list of the same events as buttons:
- * the keyboard and screen-reader way to reach what the map shows as dots.
+ * the keyboard and screen-reader way to reach what the map shows as dots. It sits in the map's
+ * toolbar, so the list, headed by how to read the dots, folds into a disclosure that opens over the map; why data
+ * is stale or withheld, and failures, are always shown in full.
  */
 export function EarthquakeLayerControl({
   enabled,
@@ -27,6 +30,7 @@ export function EarthquakeLayerControl({
   selectedId,
   onSelect,
 }: EarthquakeLayerControlProps) {
+  const listRef = useRef<HTMLDetailsElement>(null);
   const { assessment, feed } = state;
   const shown = enabled && feed && assessment && assessment.display !== 'WITHHELD' ? feed.events : [];
 
@@ -48,8 +52,40 @@ export function EarthquakeLayerControl({
           </span>
           Gempa BMKG
         </button>
-        {!available && <span className="kk-small">Hanya tersedia pada data LIVE (peta batas resmi).</span>}
+        {!available && <span className="kk-small">Hanya untuk data LIVE (peta batas resmi).</span>}
         {enabled && <LayerStatus state={state} count={shown.length} />}
+        {shown.length > 0 && (
+          <details ref={listRef} className={styles.disclosure}>
+            <summary className="kk-small">Daftar gempa ({shown.length})</summary>
+            <div className={styles.popover}>
+              <p className={`kk-small ${styles.legend}`}>
+                Ukuran titik mengikuti magnitudo, bukan luas wilayah terdampak. Warna dan ukuran tidak
+                menunjukkan kerusakan, risiko, atau potensi tsunami; ikuti keterangan resmi BMKG.
+              </p>
+              <ul role="list" className={styles.events}>
+                {shown.map((event) => (
+                  <li key={event.id}>
+                    <button
+                      type="button"
+                      className={styles.event}
+                      aria-pressed={event.id === selectedId}
+                      onClick={() => {
+                        onSelect(event.id);
+                        // The detail opens in the panel; fold the list so it does not cover the map.
+                        if (listRef.current) listRef.current.open = false;
+                      }}
+                    >
+                      <span className="kk-body-strong">{formatMagnitude(event.magnitude)}</span>
+                      <span className="kk-small">
+                        {event.area ?? 'Lokasi tidak disebutkan'} · {formatEventTime(event)}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        )}
       </div>
 
       {enabled && assessment && assessment.display !== 'OFFICIAL' && assessment.reasons.length > 0 && (
@@ -73,37 +109,6 @@ export function EarthquakeLayerControl({
       )}
       {enabled && state.status === 'error' && <DataHubErrorMessage error={state.lastError} />}
       {enabled && state.status === 'loading' && <StatusMessage kind="loading" title="Memuat gempa BMKG…" />}
-
-      {shown.length > 0 && (
-        <>
-          <p className={`kk-small ${styles.legend}`}>
-            Ukuran titik mengikuti magnitudo, bukan luas wilayah terdampak. Warna dan ukuran tidak menunjukkan
-            kerusakan, risiko, atau potensi tsunami; ikuti keterangan resmi BMKG.
-          </p>
-          <details className={styles.list}>
-            <summary className="kk-small">Daftar gempa ({shown.length})</summary>
-            <ul role="list">
-              {shown.map((event) => (
-                <li key={event.id}>
-                  <button
-                    type="button"
-                    className={styles.event}
-                    aria-pressed={event.id === selectedId}
-                    onClick={() => {
-                      onSelect(event.id);
-                    }}
-                  >
-                    <span className="kk-body-strong">{formatMagnitude(event.magnitude)}</span>
-                    <span className="kk-small">
-                      {event.area ?? 'Lokasi tidak disebutkan'} · {formatEventTime(event)}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </>
-      )}
     </section>
   );
 }

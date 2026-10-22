@@ -1596,21 +1596,26 @@ export const NusaMatra3DMap = forwardRef<
       for (const entry of entries) {
         const w = Math.max(1, entry.contentRect.width);
         const h = Math.max(1, entry.contentRect.height);
+        const eng = engineRef.current;
+        const fitBefore =
+          mode === 'explore' && eng?.exploreFrame
+            ? exploreFitDistance(camera, eng.exploreFrame.width, scene)
+            : null;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
-        const eng = engineRef.current;
-        if (mode === 'explore' && eng?.exploreFrame) {
+        if (mode === 'explore' && eng?.exploreFrame && fitBefore !== null) {
           // Refit to the new canvas shape, keeping the direction the user is looking from.
           const target = eng.controls ? eng.controls.target : new THREE.Vector3();
           if (eng.cameraTargetPos) {
             // A camera move is under way (start-up framing): retarget it for the new shape.
             eng.cameraTargetPos.copy(exploreDefaultPosition(eng, eng.controlsTargetPos ?? target));
           } else {
-            camera.position
-              .sub(target)
-              .setLength(exploreFitDistance(camera, eng.exploreFrame.width, scene))
-              .add(target);
+            // Scale the distance by how much the fitted distance changed, so a side panel folding
+            // keeps the user's zoom and target instead of snapping back to the whole frame.
+            const fitAfter = exploreFitDistance(camera, eng.exploreFrame.width, scene);
+            const offset = camera.position.clone().sub(target);
+            camera.position.copy(target).addScaledVector(offset, fitAfter / fitBefore);
           }
         }
         if (eng?.heroTerrain && !eng.cameraTargetPos) {

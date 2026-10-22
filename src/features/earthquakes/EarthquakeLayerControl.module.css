@@ -1,8 +1,10 @@
 .control {
+  position: relative;
   display: flex;
+  flex: 1 1 280px;
   flex-direction: column;
   gap: 8px;
-  width: 100%;
+  min-width: 0;
 }
 
 .row {
@@ -69,27 +71,61 @@
   align-items: center;
 }
 
-.reasons,
-.legend {
+.reasons {
   margin: 0;
   padding: 0;
   color: var(--c-text-muted);
   list-style: none;
 }
 
-.list ul {
+/* "Daftar gempa": a pill toggle whose content opens over the map below. */
+.disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.disclosure[open] > summary {
+  background: var(--c-surface-muted);
+}
+
+/* Anchored to the whole control (not the pill), so it never runs off a narrow screen. */
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: min(420px, 100%);
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-card);
+  background: var(--c-surface);
+  box-shadow: var(--c-surface-shadow);
+  color: var(--c-text);
+  backdrop-filter: var(--c-surface-blur, none);
+}
+
+.legend {
+  margin: 0 0 10px;
+  color: var(--c-text-muted);
+}
+
+.events {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 260px;
-  margin: 8px 0 0;
-  padding: 0 4px 0 0;
+  max-height: min(340px, 45dvh);
+  margin: 0;
+  padding: 0;
   overflow-y: auto;
   list-style: none;
-}
-
-.list summary {
-  cursor: pointer;
 }
 
 .event {

@@ -1,13 +1,31 @@
+/*
+ * Map-first: a toolbar row, then the map and the panel at one height that fits the first viewport
+ * under the floating navbar (about 70dvh), within sensible bounds. The map takes the rest of the
+ * width beside a 360-420px panel, and all of it but a 64px rail when the panel is folded.
+ */
 .workspace {
+  --explore-map-height: clamp(460px, calc(100dvh - 284px), 860px);
+  --explore-map-aspect: auto;
+
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 420px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) clamp(360px, 26vw, 420px);
+  gap: 12px 16px;
   align-items: start;
   width: 100%;
 }
 
 .workspace[data-panel='collapsed'] {
   grid-template-columns: minmax(0, 1fr) 64px;
+}
+
+/* Data mode, then the BMKG switch with its status; wraps rather than overflowing. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 10px 12px;
+  align-items: flex-start;
+  min-width: 0;
 }
 
 .mapColumn {
@@ -17,13 +35,13 @@
   min-width: 0;
 }
 
-/* Desktop: a column that stays in view beside the map and scrolls on its own. */
+/* Desktop: a column as tall as the map that stays in view beside it and scrolls on its own. */
 .panel {
   position: sticky;
-  top: 104px;
+  top: 96px;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 128px);
+  height: var(--explore-map-height);
   min-width: 0;
   overflow: hidden;
 }
@@ -98,10 +116,15 @@
   padding-inline: 0;
 }
 
-/* Phones: the same panel becomes a bottom sheet above the floating nav. */
+/*
+ * Tablets and phones: a side column would squeeze the map, so the same panel becomes a bottom sheet
+ * above the floating nav and the map takes the full width.
+ */
 @media (width < 960px) {
   .workspace,
   .workspace[data-panel='collapsed'] {
+    --explore-map-height: clamp(380px, calc(100dvh - 390px), 760px);
+
     grid-template-columns: minmax(0, 1fr);
     padding-bottom: 120px;
   }
@@ -109,6 +132,7 @@
   .panel {
     position: fixed;
     top: auto;
+    height: auto;
     right: 10px;
     bottom: calc(76px + env(safe-area-inset-bottom, 0px));
     left: 10px;
@@ -161,6 +185,13 @@
 
   .chevron[data-open] {
     transform: rotate(-90deg);
+  }
+}
+
+@media (width < 600px) {
+  .workspace,
+  .workspace[data-panel='collapsed'] {
+    --explore-map-height: clamp(340px, 58dvh, 560px);
   }
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 import { Icon } from '@/components/ui/Icon/Icon';
 import { Surface } from '@/components/ui/Surface/Surface';
 import { epicentreSymbolSize } from '@/domain/hazards';
@@ -28,13 +28,19 @@ const PHONE_QUERY = '(width < 960px)';
 /** Space kept above the map when it is brought into view, so the floating navbar does not cover it. */
 const NAVBAR_CLEARANCE_PX = 92;
 
+interface ExploreWorkspaceProps {
+  /** Controls the page puts in the map's toolbar before the BMKG switch (the data-mode bar). */
+  readonly toolbar?: ReactNode;
+}
+
 /**
- * Jelajahi: the map and its contextual panel side by side, so choosing a region shows its profile
- * in the same view. One panel element serves both layouts: a column beside the map on desktop and
- * a bottom sheet on phones (CSS only), so nothing is remounted when the layout or the selection
- * changes, and the WebGL canvas is never recreated.
+ * Jelajahi: a toolbar, then the map and its contextual panel side by side at one height, so
+ * choosing a region shows its profile in the same view. One panel element serves both layouts: a
+ * column beside the map on desktop and a bottom sheet below 960px (CSS only), so nothing is
+ * remounted when the layout or the selection changes, and the WebGL canvas is never recreated.
+ * Folding the panel widens the map; the engine keeps the camera's view through the resize.
  */
-export function ExploreWorkspace() {
+export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
   const { dataMode } = useDataHub();
   const { query, selectedCode, selectCode } = useRegionBrowserParams();
   const isPhone = useMediaQuery(PHONE_QUERY);
@@ -196,7 +202,8 @@ export function ExploreWorkspace() {
       data-panel={collapsed ? 'collapsed' : 'open'}
       data-selected={selectedCode ? true : undefined}
     >
-      <div ref={mapColumnRef} className={styles.mapColumn}>
+      <div className={styles.toolbar}>
+        {toolbar}
         <EarthquakeLayerControl
           enabled={quakeLayerOn}
           available={dataMode === 'LIVE'}
@@ -205,6 +212,9 @@ export function ExploreWorkspace() {
           selectedId={selectedQuake?.id ?? null}
           onSelect={handleQuakeSelect}
         />
+      </div>
+
+      <div ref={mapColumnRef} className={styles.mapColumn}>
         <ExplorationMapPanel cameraRef={cameraRef} onLiveSelect={handleMapSelect} overlay={overlay} />
         <BoundaryNotice />
       </div>
