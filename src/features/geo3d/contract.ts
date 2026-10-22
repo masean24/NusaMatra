@@ -64,4 +64,20 @@ export interface Explore3DMapProps extends GeoEngineBaseProps {
   readonly onRegionSelect: (selection: GeoRegionSelection) => void;
   readonly onRegionHover?: ((selection: GeoRegionSelection | null) => void) | undefined;
   readonly cameraRef?: Ref<GeoCameraHandle> | undefined;
+  /** Clickable points over the map (e.g. epicentres). Updating them never rebuilds the regions. */
+  readonly overlayPoints?: readonly GeoOverlayPoint[] | undefined;
+  readonly selectedOverlayId?: string | null | undefined;
+  readonly onOverlaySelect?: ((id: string) => void) | undefined;
+}
+
+/** A point drawn over the map. `size` is a symbol size in map units, never an area on the ground. */
+export interface GeoOverlayPoint {
+  readonly id: string;
+  readonly lon: number;
+  readonly lat: number;
+  readonly size: number;
+  /** Plain text for the hover label. */
+  readonly label: string;
+  /** New since the previous update: animated once. */
+  readonly isNew: boolean;
 }

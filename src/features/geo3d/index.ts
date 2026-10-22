@@ -5,6 +5,7 @@ export type {
   GeoCameraHandle,
   GeoDataMode,
   GeoDisplayMode,
+  GeoOverlayPoint,
   GeoRegionSelection,
   HeroDioramaProps,
   HeroHexMapProps,

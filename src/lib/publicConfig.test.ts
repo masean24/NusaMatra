@@ -6,7 +6,11 @@ describe('parsePublicConfig', () => {
     expect(parsePublicConfig({ VITE_DATA_MODE: 'live', VITE_API_BASE_URL: 'https://hub.example' })).toEqual({
       dataMode: 'LIVE',
       apiBaseUrl: 'https://hub.example',
+      earthquakePreview: false,
     });
+    expect(
+      parsePublicConfig({ VITE_DATA_MODE: 'demo', VITE_EARTHQUAKE_PREVIEW: '1' }).earthquakePreview,
+    ).toBe(true);
   });
 
   it('defaults to DEMO only in local development', () => {

@@ -14,6 +14,7 @@ import {
   toBackendRegionLevelQuery,
   validateAndBuildCompositeWeights,
 } from './domainMappers';
+import { mapEarthquakeFeed, type EarthquakeFeedDTO } from './earthquakes';
 import { DataHubHttpClient } from './httpClient';
 import type {
   AdaptedEnvelope,
@@ -284,6 +285,22 @@ export class NusaMatraDataHubRepository {
         dataMode: input.dataMode,
         signal: input.signal,
       },
+    );
+  }
+
+  /**
+   * BMKG earthquake epicentres (`GET /api/v1/earthquakes/geojson`). Not an envelope: a GeoJSON
+   * collection whose mode is read from the response header. Always revalidated with the server: the
+   * feed changes every minute, and older deployments marked it cacheable for an hour.
+   */
+  async getEarthquakeFeed(input: {
+    readonly dataMode: DataMode;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<EarthquakeFeedDTO> {
+    return this.client.get(
+      '/api/v1/earthquakes/geojson',
+      { parse: (raw, ctx) => mapEarthquakeFeed(raw, ctx, input.dataMode) },
+      { dataMode: input.dataMode, signal: input.signal, cache: 'no-cache' },
     );
   }
 
