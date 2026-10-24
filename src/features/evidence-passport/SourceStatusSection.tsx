@@ -1,8 +1,10 @@
 import type { EvidenceBase } from './evidenceTypes';
 import { formatBrowserTime, formatServerTime } from './formatTime';
-import { COMPLETENESS_CLAIM_NOTE, MANIFEST_CHECKSUM_LABEL, SNAPSHOT_MUTABILITY_NOTE } from './notices';
+import { COMPLETENESS_CLAIM_NOTE, MANIFEST_CHECKSUM_LABEL, snapshotIdentityNote } from './notices';
 import { ModeTag, Section } from './Section';
 import styles from './EvidencePassport.module.css';
+
+const formatPercent = (value: number) => `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
 
 /**
  * Where the data came from. Mode, snapshot and times are read from the Data Hub's responses, never
@@ -11,7 +13,7 @@ import styles from './EvidencePassport.module.css';
  */
 export function SourceStatusSection({ record }: { readonly record: Pick<EvidenceBase, 'source'> }) {
   const { source } = record;
-  const { snapshot } = source;
+  const { snapshot, reproducibility } = source;
   const completeness = snapshot?.completenessPct ?? null;
 
   return (
@@ -31,6 +33,22 @@ export function SourceStatusSection({ record }: { readonly record: Pick<Evidence
           <dd className={styles.code}>{source.snapshotId}</dd>
         </div>
         <div>
+          <dt>Reproduksibilitas data</dt>
+          <dd>
+            {reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
+              ? reproducibility.origin === 'LINK'
+                ? 'Dapat direproduksi: dikunci ke snapshot pada tautan.'
+                : 'Dapat direproduksi: dikunci ke snapshot aktif saat dibuka.'
+              : 'Tidak dapat direproduksi.'}
+          </dd>
+        </div>
+        <div>
+          <dt>Sidik isi data SHA-256 (menurut Data Hub)</dt>
+          <dd className={snapshot?.contentSha256 ? styles.code : undefined}>
+            {snapshot?.contentSha256 ?? 'tidak ada (snapshot tanpa sidik isi data)'}
+          </dd>
+        </div>
+        <div>
           <dt>Nama snapshot</dt>
           <dd>{snapshot?.label ?? 'belum tersedia'}</dd>
         </div>
@@ -44,11 +62,7 @@ export function SourceStatusSection({ record }: { readonly record: Pick<Evidence
         </div>
         <div>
           <dt>Kelengkapan indikator snapshot (menurut server)</dt>
-          <dd>
-            {completeness === null
-              ? 'belum tersedia'
-              : `${completeness.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`}
-          </dd>
+          <dd>{completeness === null ? 'belum tersedia' : formatPercent(completeness)}</dd>
         </div>
         <div>
           <dt>Indikator berdata (menurut /indicators/coverage)</dt>
@@ -60,6 +74,12 @@ export function SourceStatusSection({ record }: { readonly record: Pick<Evidence
                 : 'belum tersedia'}
           </dd>
         </div>
+        {source.observedCoverage?.regionCoveragePct != null && (
+          <div>
+            <dt>Wilayah yang punya observasi (bukan jumlah indikator)</dt>
+            <dd>{formatPercent(source.observedCoverage.regionCoveragePct)}</dd>
+          </div>
+        )}
         <div>
           <dt>Respons diterima peramban</dt>
           <dd>{formatBrowserTime(source.receivedByBrowserAt)}</dd>
@@ -68,12 +88,12 @@ export function SourceStatusSection({ record }: { readonly record: Pick<Evidence
           <dt>Konsistensi respons</dt>
           <dd>
             {source.consistent
-              ? 'Semua respons berasal dari mode dan snapshot yang sama.'
-              : 'Respons berasal dari mode atau snapshot yang berbeda. Perbandingan ditahan.'}
+              ? 'Semua respons berasal dari mode, snapshot, dan sidik isi data yang sama.'
+              : 'Respons berasal dari mode, snapshot, atau sidik isi data yang berbeda. Perbandingan ditahan.'}
           </dd>
         </div>
       </dl>
-      <p className={`kk-small ${styles.snapshotNote}`}>{SNAPSHOT_MUTABILITY_NOTE}</p>
+      <p className={`kk-small ${styles.snapshotNote}`}>{snapshotIdentityNote(reproducibility)}</p>
       {completeness !== null && source.observedCoverage !== null && (
         <p className={`kk-small ${styles.muted}`}>{COMPLETENESS_CLAIM_NOTE}</p>
       )}
@@ -92,9 +112,19 @@ export function SourceStatusSection({ record }: { readonly record: Pick<Evidence
         {snapshot?.reportedManifestChecksum && (
           <p className={`kk-small ${styles.code}`}>{snapshot.reportedManifestChecksum}</p>
         )}
+        {snapshot?.contentSha256 && (
+          <p className={`kk-small ${styles.muted}`}>
+            Sidik isi data dihitung Data Hub dengan spesifikasi{' '}
+            {snapshot.contentHashSpec ?? 'yang tidak disebut'}
+            {snapshot.methodologyVersion ? `, metodologi ${snapshot.methodologyVersion}` : ''}; peramban tidak
+            menghitungnya ulang.
+            {snapshot.observationCount !== null &&
+              ` Snapshot memuat ${snapshot.observationCount.toLocaleString('id-ID')} observasi, ${String(snapshot.availableIndicatorCount ?? '?')} dari ${String(snapshot.indicatorCount ?? '?')} indikator berdata, ${String(snapshot.regionCount ?? '?')} wilayah, dan ${String(snapshot.datasetCount ?? '?')} dataset (menurut Data Hub).`}
+          </p>
+        )}
         <p className={`kk-small ${styles.muted}`}>
-          Data Hub belum menyediakan nomor laporan, tanda waktu pembuatan dari server, atau penguncian
-          snapshot per permintaan.
+          Data Hub tidak menyediakan nomor laporan atau tanda waktu pembuatan laporan dari server; Paspor ini
+          tidak diarsipkan di mana pun.
         </p>
       </details>
     </Section>

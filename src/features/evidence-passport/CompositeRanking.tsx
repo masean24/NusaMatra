@@ -76,7 +76,24 @@ function ComponentLine({
       <strong>{component.label}</strong>: skor {component.scoreText} · bobot wilayah{' '}
       {bpsLabel(component.weightBps)}
       {differs && requestedBps !== undefined && ` (diminta ${bpsLabel(requestedBps)})`}
+      <ObservationSource component={component} />
     </li>
+  );
+}
+
+/**
+ * The observation's own source, shown only where it differs from the indicator's catalog dataset (for
+ * example a province-level value standing in for a kabupaten/kota one). Every row keeps it in the JSON.
+ */
+function ObservationSource({ component }: { readonly component: RegionComponent }) {
+  const { observationDatasetId, sourceRecordRef, catalogDatasetId } = component;
+  if (!observationDatasetId || observationDatasetId === catalogDatasetId) return null;
+  return (
+    <>
+      {' · sumber observasi: '}
+      <span className={styles.code}>{observationDatasetId}</span>
+      {sourceRecordRef && ` (${sourceRecordRef})`}
+    </>
   );
 }
 

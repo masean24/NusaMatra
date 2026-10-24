@@ -13,6 +13,7 @@ import type {
 import type { CompositeIssueCode } from '@/domain/prioritization';
 import type { EvidenceClass } from './evidenceClass';
 import type { EvidenceBase, IndicatorSourceInfo } from './evidenceTypes';
+import type { SnapshotPinning } from './snapshotResolution';
 
 /** A published score that does not follow its raw value (a known inconsistency, not missing evidence). */
 export interface DirectionAnomalyView {
@@ -38,6 +39,8 @@ export interface CompositeDirectionReview {
 /** The Data Hub's answers for one Lab passport, as the adapter decoded them. */
 export interface RawCompositeSources {
   readonly requestedMode: DataMode;
+  /** v2.2: the snapshot every request was pinned to, or why none was. */
+  readonly pinning: SnapshotPinning;
   /** Required: without it there is nothing to record. */
   readonly composite: AdaptedEnvelope<ExploratoryCompositeResultDTO>;
   /** `null` = could not be loaded; then the preset verdict is unknown, which is not "rankable". */
@@ -87,6 +90,14 @@ export interface RegionComponent {
   /** This region's own weight in basis points; `null` = the criterion is not part of its score. */
   readonly weightBps: number | null;
   readonly flag: string | null;
+  /**
+   * v2.2 observation-level provenance from `/indicators/{id}/values` (LIVE only): the dataset and the
+   * source row of THIS region's value. `null` = not sent, or the values could not be loaded.
+   */
+  readonly observationDatasetId: string | null;
+  readonly sourceRecordRef: string | null;
+  /** The indicator's catalog dataset, to show when an observation comes from another one. */
+  readonly catalogDatasetId: string | null;
   readonly evidenceClass: EvidenceClass | null;
 }
 

@@ -19,6 +19,35 @@ import { InvalidLink } from './PassportMessages';
 import { useCompositeSources, useEvidenceSources } from './useEvidenceSources';
 import type { SourcesState } from './useSourceLoader';
 
+/** Why a pinned passport could not be made, by error code; `null` for any other failure. */
+function snapshotFailureCopy(code: string): { readonly title: string; readonly body: string } | null {
+  switch (code) {
+    case 'SNAPSHOT_NOT_FOUND':
+      return {
+        title: 'Snapshot pada tautan tidak tersedia',
+        body: 'Data Hub tidak lagi menyimpan snapshot yang disebut tautan ini (snapshot lama dapat hilang setelah pembaruan server).',
+      };
+    case 'SNAPSHOT_NOT_REPRODUCIBLE':
+      return {
+        title: 'Snapshot pada tautan tidak dapat direproduksi',
+        body: 'Data Hub menyatakan snapshot pada tautan ini tidak dapat direproduksi, dan snapshot itu bukan lagi snapshot aktif.',
+      };
+    case 'SNAPSHOT_MODE_MISMATCH':
+      return {
+        title: 'Snapshot pada tautan berasal dari mode lain',
+        body: 'Snapshot pada tautan ini milik mode data yang berbeda (DEMO/LIVE).',
+      };
+    case 'SNAPSHOT_MISMATCH':
+    case 'SNAPSHOT_DIGEST_MISMATCH':
+      return {
+        title: 'Respons tidak berasal dari snapshot yang dikunci',
+        body: 'Salah satu respons Data Hub membawa ID snapshot atau sidik isi data (SHA-256) yang berbeda dari snapshot yang dikunci, jadi tidak dipakai.',
+      };
+    default:
+      return null;
+  }
+}
+
 function LoadFailure({
   error,
   mode,
@@ -42,6 +71,14 @@ function LoadFailure({
       >
         Data Hub tidak memberi jawaban LIVE yang dapat dibaca. Paspor tidak dibuat dari data DEMO sebagai
         pengganti.
+      </StatusMessage>
+    );
+  }
+  const snapshotFailure = error instanceof ApiError ? snapshotFailureCopy(error.code) : null;
+  if (snapshotFailure) {
+    return (
+      <StatusMessage kind="error" title={snapshotFailure.title} action={retry}>
+        {snapshotFailure.body} Paspor tidak beralih diam-diam ke snapshot terbaru.
       </StatusMessage>
     );
   }
@@ -99,7 +136,7 @@ function useRequestedMode(query: { readonly mode?: DataMode | null | undefined }
 /** Region and comparison passports: fetch, assemble in the browser, render. */
 function LoadedPassport({ query }: { readonly query: RegionEvidenceQuery | ComparisonEvidenceQuery }) {
   const mode = useRequestedMode(query);
-  const { state, retry } = useEvidenceSources(regionIdsOf(query), mode, true);
+  const { state, retry } = useEvidenceSources(regionIdsOf(query), mode, query.snapshotId, true);
   const record = useMemo(
     () => (state.status === 'ready' ? buildEvidenceRecord(query, state.sources) : null),
     [state, query],
@@ -110,7 +147,13 @@ function LoadedPassport({ query }: { readonly query: RegionEvidenceQuery | Compa
 /** Lab passports: the same composite query Lab Prioritas makes, then the shared integrity check. */
 function LoadedLabPassport({ query }: { readonly query: LabEvidenceQuery }) {
   const mode = useRequestedMode(query);
-  const { state, retry } = useCompositeSources(query.weights, query.provinceId ?? null, mode, true);
+  const { state, retry } = useCompositeSources(
+    query.weights,
+    query.provinceId ?? null,
+    mode,
+    query.snapshotId,
+    true,
+  );
   const record = useMemo(
     () => (state.status === 'ready' ? buildCompositeRecord(query, state.sources) : null),
     [state, query],

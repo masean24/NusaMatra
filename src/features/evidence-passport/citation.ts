@@ -1,6 +1,6 @@
 import type { EvidenceBase, EvidenceSourceSummary } from './evidenceTypes';
 import { formatBrowserTime } from './formatTime';
-import { BROWSER_ASSEMBLED_LABEL, BROWSER_ASSEMBLED_NOTICE, SNAPSHOT_MUTABILITY_NOTE } from './notices';
+import { BROWSER_ASSEMBLED_LABEL, BROWSER_ASSEMBLED_NOTICE, snapshotIdentityNote } from './notices';
 
 function describeSource(source: EvidenceSourceSummary): string {
   const name = source.agencyCode ?? 'sumber belum tersedia';
@@ -24,7 +24,7 @@ export function buildCitation(
     record.sources.length > 0 ? record.sources.map(describeSource).join('; ') : 'sumber belum tersedia';
   return [
     `Nusa Matra, Paspor Bukti: ${record.title}.`,
-    `Mode data: ${mode}. Snapshot Data Hub: ${source.snapshotId}. ${SNAPSHOT_MUTABILITY_NOTE}`,
+    `Mode data: ${mode}. Snapshot Data Hub: ${source.snapshotId}. ${snapshotIdentityNote(source.reproducibility)}`,
     `Sumber data: ${sources}.`,
     ...details,
     `Diterima peramban: ${formatBrowserTime(source.receivedByBrowserAt)}.`,

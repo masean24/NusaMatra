@@ -9,6 +9,10 @@ export interface HttpResponseContext {
   readonly dataFallback: string | null;
   readonly serverMode: string | null;
   readonly clientReceivedAt: string;
+  /** v2.2 `X-NusaMatra-Snapshot`; must agree with `meta.snapshot_id` when both are sent. */
+  readonly snapshotHeader?: string | null;
+  /** v2.2 `X-NusaMatra-Content-SHA256`; must agree with `meta.content_sha256` when both are sent. */
+  readonly contentSha256Header?: string | null;
 }
 
 export interface RuntimeDecoder<T> {
@@ -135,6 +139,8 @@ export class DataHubHttpClient {
       serverMode:
         readHeader(response.headers, 'x-nusamatra-mode') ?? readHeader(response.headers, 'x-data-mode'),
       clientReceivedAt: new Date().toISOString(),
+      snapshotHeader: readHeader(response.headers, 'x-nusamatra-snapshot'),
+      contentSha256Header: readHeader(response.headers, 'x-nusamatra-content-sha256'),
     };
 
     const rawText = await readResponseTextSafely(response, context);

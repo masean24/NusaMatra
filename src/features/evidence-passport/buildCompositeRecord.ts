@@ -113,6 +113,8 @@ interface Lookups {
   readonly globalWeights: Readonly<Record<string, number>>;
   readonly tierThreshold: number | null;
   readonly focusRegionId: string | null;
+  /** LIVE: published values per weighted indicator, for observation-level provenance (v2.2). */
+  readonly indicatorValues: RawCompositeSources['indicatorValues'];
 }
 
 function rowOf(item: ExploratoryRegionRankDTO, lookups: Lookups): CompositeRegionRow {
@@ -122,6 +124,7 @@ function rowOf(item: ExploratoryRegionRankDTO, lookups: Lookups): CompositeRegio
       const raw = item.componentScoresDecimal[id] ?? null;
       const flag = item.qualityFlags?.[id] ?? null;
       const catalogItem = lookups.catalogById.get(id);
+      const observation = lookups.indicatorValues?.[id]?.data.valuesByRegion[item.regionId] ?? null;
       return {
         indicatorId: id,
         label: catalogItem?.labelId ?? id,
@@ -131,6 +134,9 @@ function rowOf(item: ExploratoryRegionRankDTO, lookups: Lookups): CompositeRegio
         hasScore: raw !== null,
         weightBps: item.effectiveWeightsRegion?.[id] ?? null,
         flag,
+        observationDatasetId: observation?.datasetId ?? null,
+        sourceRecordRef: observation?.sourceRecordRef ?? null,
+        catalogDatasetId: catalogItem?.provenance.datasetId ?? null,
         evidenceClass:
           raw === null
             ? null
@@ -256,7 +262,9 @@ export function buildCompositeRecord(
       ...(raw.presets ? [raw.presets.meta] : []),
       ...(raw.catalog ? [raw.catalog.meta] : []),
       ...(raw.datasets ? [raw.datasets.meta] : []),
+      ...Object.values(raw.indicatorValues ?? {}).flatMap((envelope) => (envelope ? [envelope.meta] : [])),
     ],
+    raw.pinning,
     raw.snapshots,
     raw.coverage,
   );
@@ -339,6 +347,7 @@ export function buildCompositeRecord(
     globalWeights: result.effectiveWeightsBasisPoints ?? result.weightsBasisPoints,
     tierThreshold: result.minCoveragePct,
     focusRegionId: query.focusRegionId ?? null,
+    indicatorValues: raw.indicatorValues,
   };
   // National ranks reached by an anomaly outside the filter are left out, never recomputed.
   const listed = direction.nationalRankWithheld
@@ -385,7 +394,7 @@ export function buildCompositeRecord(
       ...(raw.presets ? [] : ['daftar skenario (preset)']),
       ...(raw.catalog ? [] : ['katalog indikator']),
       ...(raw.datasets ? [] : ['daftar dataset']),
-      ...(raw.snapshots ? [] : ['daftar snapshot']),
+      ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar snapshot']),
       ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : ['cakupan indikator (/indicators/coverage)']),
       ...(query.provinceId && !raw.regions ? ['daftar wilayah (nama provinsi)'] : []),
     ],

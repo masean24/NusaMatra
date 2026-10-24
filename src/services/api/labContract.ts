@@ -18,12 +18,29 @@ export interface IndicatorCoverageEntryDTO {
   readonly coveragePct: number | null;
 }
 
+/**
+ * v2.2 INDICATOR counts. `completenessPct` = indicators with data / framework size (29/33 = 87.9);
+ * `availableDataPct` = indicators marked available that really hold data (29/29 = 100). Neither is a
+ * region count: region coverage is `IndicatorCoverageDTO.regionCoveragePct`.
+ */
+export interface IndicatorCountsDTO {
+  readonly totalIndicators: number;
+  readonly availableIndicators: number;
+  readonly unavailableIndicators: number;
+  readonly completenessPct: number | null;
+  readonly availableDataPct: number | null;
+}
+
 export interface IndicatorCoverageDTO {
   readonly snapshotId: string;
   readonly totalIndicators: number;
   /** Regions in the snapshot's registry, when the Data Hub states it. */
   readonly totalRegions: number | null;
   readonly byIndicator: Readonly<Record<string, IndicatorCoverageEntryDTO>>;
+  /** v2.2 indicator counts as the Data Hub states them; `null` = not reported (v2.1). */
+  readonly indicatorCounts: IndicatorCountsDTO | null;
+  /** v2.2 share (0-100) of REGIONS with at least one observation; `null` = not reported. */
+  readonly regionCoveragePct: number | null;
 }
 
 /**
@@ -112,11 +129,45 @@ export function mapIndicatorCoverageData(rawData: unknown, meta: AdaptedResponse
     };
   }
   const coverageMeta = isRecord(rawData.coverage) ? rawData.coverage : null;
+  const totalIndicators = count(rawData.total_indicators) ?? Object.keys(byIndicator).length;
   return {
     snapshotId: text(rawData.snapshot_id) ?? meta.snapshotId,
-    totalIndicators: count(rawData.total_indicators) ?? Object.keys(byIndicator).length,
+    totalIndicators,
     totalRegions: count(rawData.total_regions) ?? count(coverageMeta?.total_regions) ?? null,
     byIndicator,
+    indicatorCounts: indicatorCountsOf(rawData, byIndicator, totalIndicators, meta),
+    regionCoveragePct: percent(rawData.region_coverage_pct),
+  };
+}
+
+const percent = (value: unknown): number | null => {
+  const number = finite(value);
+  return number !== null && number >= 0 && number <= 100 ? number : null;
+};
+
+/** v2.2 counts, checked against the per-indicator entries: a count the entries contradict is refused. */
+function indicatorCountsOf(
+  rawData: Record<string, unknown>,
+  byIndicator: Readonly<Record<string, IndicatorCoverageEntryDTO>>,
+  totalIndicators: number,
+  meta: AdaptedResponseMeta,
+): IndicatorCountsDTO | null {
+  const available = count(rawData.available_indicators_count);
+  if (available === null) return null;
+  const counted = Object.values(byIndicator).filter((entry) => entry.available).length;
+  const unavailable = count(rawData.empty_indicators_count) ?? totalIndicators - available;
+  if (available !== counted || available + unavailable !== totalIndicators) {
+    throw malformed(
+      meta,
+      `Coverage counts (${String(available)} available, ${String(unavailable)} empty of ${String(totalIndicators)}) contradict the ${String(counted)} available entries`,
+    );
+  }
+  return {
+    totalIndicators,
+    availableIndicators: available,
+    unavailableIndicators: unavailable,
+    completenessPct: percent(rawData.indicator_completeness_pct),
+    availableDataPct: percent(rawData.available_indicator_data_pct),
   };
 }
 

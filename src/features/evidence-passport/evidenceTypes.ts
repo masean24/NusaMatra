@@ -8,6 +8,7 @@ import type {
   RegionProfileDTO,
 } from '@/services/api';
 import type { EvidenceClass } from './evidenceClass';
+import type { SnapshotPinning } from './snapshotResolution';
 
 /**
  * Everything the Data Hub answered for one passport, exactly as the adapter decoded it. The builders
@@ -16,6 +17,8 @@ import type { EvidenceClass } from './evidenceClass';
 export interface RawEvidenceSources {
   /** The mode the requests were made in. The mode SHOWN comes from the envelopes. */
   readonly requestedMode: DataMode;
+  /** v2.2: the snapshot every request was pinned to, or why none was. */
+  readonly pinning: SnapshotPinning;
   /** One profile per region asked for, in the order asked. */
   readonly profiles: readonly AdaptedEnvelope<RegionProfileDTO>[];
   /** `null` = the request failed, which the record reports instead of guessing. */
@@ -48,6 +51,36 @@ export interface SnapshotDetail {
    * NOT a content digest: it stayed identical while the data behind the same snapshot id changed.
    */
   readonly reportedManifestChecksum: string | null;
+  /** v2.2 digest of the snapshot content, as the Data Hub states it; never recomputed here. */
+  readonly contentSha256: string | null;
+  readonly contentHashSpec: string | null;
+  readonly isImmutable: boolean;
+  readonly isReproducible: boolean;
+  readonly methodologyVersion: string | null;
+  /** v2.2 counts from the snapshot detail; `null` = not stated (or no detail was loaded). */
+  readonly observationCount: number | null;
+  readonly indicatorCount: number | null;
+  readonly availableIndicatorCount: number | null;
+  readonly regionCount: number | null;
+  readonly datasetCount: number | null;
+  readonly referencePeriods: readonly number[];
+  readonly supersedes: string | null;
+  readonly immutabilityNote: string | null;
+}
+
+/**
+ * Whether the DATA behind this record can be fetched again unchanged: all responses pinned to one
+ * snapshot that the Data Hub calls immutable and reproducible, with one digest. This is about the data
+ * snapshot only; the record itself is assembled in the browser and archived nowhere.
+ */
+export interface Reproducibility {
+  readonly status: 'REPRODUCIBLE_SNAPSHOT' | 'NOT_REPRODUCIBLE';
+  readonly pinnedSnapshotId: string | null;
+  readonly contentSha256: string | null;
+  /** `LINK`: pinned to the snapshot the link named. `ACTIVE`: to the active snapshot at opening. */
+  readonly origin: 'LINK' | 'ACTIVE' | null;
+  /** Plain Indonesian; for NOT_REPRODUCIBLE, the reason. */
+  readonly statement: string;
 }
 
 /**
@@ -57,6 +90,8 @@ export interface SnapshotDetail {
 export interface ObservedCoverage {
   readonly availableIndicators: number;
   readonly totalIndicators: number;
+  /** v2.2 share of REGIONS with observations (a different fact from the indicator count); `null` = not sent. */
+  readonly regionCoveragePct: number | null;
 }
 
 /** Where the data came from, read from the response envelopes and `/snapshots`, never from the link. */
@@ -68,8 +103,9 @@ export interface SourceStatus {
   readonly observedCoverage: ObservedCoverage | null;
   /** When the browser decoded the latest response (the only timestamp this record can claim). */
   readonly receivedByBrowserAt: string | null;
-  /** False when the responses disagree on mode or snapshot; the record then refuses to compare. */
+  /** False when the responses disagree on mode, snapshot or digest; the record then refuses to compare. */
   readonly consistent: boolean;
+  readonly reproducibility: Reproducibility;
 }
 
 export interface EvidenceRegion {
@@ -205,6 +241,8 @@ export interface FetchedResponse {
   /** Mode and snapshot id exactly as the envelope stated them. */
   readonly mode: DataMode;
   readonly snapshotId: string;
+  /** v2.2 `meta.content_sha256` exactly as sent; `null` = not sent. */
+  readonly contentSha256: string | null;
   readonly boundaryVersion: string | null;
   /** When the browser decoded this response (browser clock). */
   readonly receivedByBrowserAt: string;

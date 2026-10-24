@@ -5,8 +5,10 @@ import type {
   AdaptedResponseMeta,
   DataHubDatasetDTO,
   DataHubIndicatorDTO,
+  DataHubSnapshotDTO,
   RegionProfileDTO,
   RegionProfileIndicatorValueDTO,
+  SnapshotDetailDTO,
 } from '@/services/api';
 import { classifyEvidence, type EvidenceClass } from './evidenceClass';
 import type {
@@ -21,12 +23,15 @@ import type {
   MissingIndicator,
   RawEvidenceSources,
   RegionCoverage,
+  Reproducibility,
   SnapshotDetail,
   SourceStatus,
 } from './evidenceTypes';
 import type { ComparisonEvidenceQuery, RegionEvidenceQuery } from './evidenceQuery';
 import { fetchedForRegions } from './fetchLog';
 import { buildLimitations } from './limitations';
+import { NOT_PINNED_CONSEQUENCE, REPRODUCIBLE_SNAPSHOT_STATEMENT } from './notices';
+import type { SnapshotPinning } from './snapshotResolution';
 
 /** The adapter fills these in when the Data Hub names no dataset or agency; they are not real names. */
 export const UNKNOWN_DATASET = 'unknown_dataset';
@@ -38,9 +43,8 @@ type SupportedQuery = RegionEvidenceQuery | ComparisonEvidenceQuery;
 // Source status and link context
 // ---------------------------------------------------------------------------------------------
 
-function toSnapshotDetail(
-  entry: NonNullable<RawEvidenceSources['snapshots']>['data'][number],
-): SnapshotDetail {
+function toSnapshotDetail(entry: DataHubSnapshotDTO | SnapshotDetailDTO): SnapshotDetail {
+  const detail = 'observationCount' in entry ? entry : null;
   return {
     label: entry.label,
     createdAt: entry.createdAt || null,
@@ -51,25 +55,85 @@ function toSnapshotDetail(
     // kept it unchanged while the data under the same snapshot id changed.
     reportedManifestChecksum:
       entry.checksumSyntaxValid && !entry.isChecksumPlaceholder ? entry.rawManifestChecksum : null,
+    contentSha256: entry.contentSha256,
+    contentHashSpec: detail?.contentHashSpec ?? null,
+    isImmutable: entry.isImmutable,
+    isReproducible: entry.isReproducible,
+    methodologyVersion: detail?.methodologyVersion ?? null,
+    observationCount: detail?.observationCount ?? null,
+    indicatorCount: detail?.indicatorCount ?? null,
+    availableIndicatorCount: detail?.availableIndicatorCount ?? null,
+    regionCount: detail?.regionCount ?? null,
+    datasetCount: detail?.datasetCount ?? null,
+    referencePeriods: detail?.referencePeriods ?? [],
+    supersedes: detail?.supersedes ?? null,
+    immutabilityNote: detail?.immutabilityNote ?? null,
+  };
+}
+
+/** Pinned and every response agreeing on id and digest: the data can be fetched again unchanged. */
+function reproducibilityOf(
+  pinning: SnapshotPinning,
+  consistent: boolean,
+  digests: readonly (string | null)[],
+): Reproducibility {
+  if (pinning.status === 'UNPINNED') {
+    return {
+      status: 'NOT_REPRODUCIBLE',
+      pinnedSnapshotId: null,
+      contentSha256: null,
+      origin: null,
+      statement: `${pinning.reason} ${NOT_PINNED_CONSEQUENCE}`,
+    };
+  }
+  const { pin, origin, detail } = pinning;
+  if (!consistent || !detail.data.isImmutable || digests.some((digest) => digest !== pin.contentSha256)) {
+    return {
+      status: 'NOT_REPRODUCIBLE',
+      pinnedSnapshotId: pin.snapshotId,
+      contentSha256: pin.contentSha256,
+      origin,
+      statement: `Snapshot ${pin.snapshotId} tidak dinyatakan immutable, atau respons tidak sepakat soal sidik isinya. ${NOT_PINNED_CONSEQUENCE}`,
+    };
+  }
+  return {
+    status: 'REPRODUCIBLE_SNAPSHOT',
+    pinnedSnapshotId: pin.snapshotId,
+    contentSha256: pin.contentSha256,
+    origin,
+    statement: REPRODUCIBLE_SNAPSHOT_STATEMENT,
   };
 }
 
 /**
- * Mode and snapshot are read from the responses; the record is consistent only when all agree.
- * The first envelope is the record's own data; the others are supporting and must match it.
+ * Mode, snapshot and digest are read from the responses; the record is consistent only when all
+ * agree. The first envelope is the record's own data; the others are supporting and must match it.
+ * When pinned, the snapshot detail describes the snapshot; otherwise the list entry does (and the
+ * list, which always describes the active snapshot, is then checked like any other response).
  */
 export function sourceStatusOf(
   metas: readonly AdaptedResponseMeta[],
+  pinning: SnapshotPinning,
   snapshots: RawEvidenceSources['snapshots'],
   coverage: RawEvidenceSources['coverage'],
 ): SourceStatus {
   const first = metas[0];
   if (!first) throw new Error('A passport needs at least one Data Hub response.');
-  const all = [...metas, ...(snapshots ? [snapshots.meta] : []), ...(coverage ? [coverage.meta] : [])];
-  const { dataMode, snapshotId } = first;
-  const consistent = all.every((meta) => meta.dataMode === dataMode && meta.snapshotId === snapshotId);
+  const pinned = pinning.status === 'PINNED';
+  const all = [
+    ...metas,
+    ...(pinned ? [pinning.detail.meta] : snapshots ? [snapshots.meta] : []),
+    ...(coverage ? [coverage.meta] : []),
+  ];
+  const { dataMode, snapshotId, contentSha256 } = first;
+  const consistent = all.every(
+    (meta) =>
+      meta.dataMode === dataMode && meta.snapshotId === snapshotId && meta.contentSha256 === contentSha256,
+  );
   const received = all.map((meta) => meta.clientReceivedAt).sort();
-  const snapshotEntry = snapshots?.data.find((entry) => entry.snapshotId === snapshotId);
+  const snapshotEntry = pinned
+    ? pinning.detail.data
+    : snapshots?.data.find((entry) => entry.snapshotId === snapshotId);
 
   return {
     dataMode,
@@ -80,10 +144,16 @@ export function sourceStatusOf(
           availableIndicators: Object.values(coverage.data.byIndicator).filter((entry) => entry.available)
             .length,
           totalIndicators: coverage.data.totalIndicators,
+          regionCoveragePct: coverage.data.regionCoveragePct,
         }
       : null,
     receivedByBrowserAt: received.length > 0 ? (received[received.length - 1] ?? null) : null,
     consistent,
+    reproducibility: reproducibilityOf(
+      pinning,
+      consistent,
+      all.map((meta) => meta.contentSha256),
+    ),
   };
 }
 
@@ -94,6 +164,7 @@ export function buildSourceStatus(raw: RawEvidenceSources): SourceStatus {
       ...(raw.catalog ? [raw.catalog.meta] : []),
       ...(raw.datasets ? [raw.datasets.meta] : []),
     ],
+    raw.pinning,
     raw.snapshots,
     raw.coverage,
   );
@@ -105,7 +176,7 @@ export function buildSourceStatus(raw: RawEvidenceSources): SourceStatus {
  */
 export function assessLinkContext(
   link: { readonly mode?: string | null | undefined; readonly snapshotId?: string | null | undefined },
-  source: Pick<SourceStatus, 'dataMode' | 'snapshotId'>,
+  source: Pick<SourceStatus, 'dataMode' | 'snapshotId'> & Partial<Pick<SourceStatus, 'reproducibility'>>,
 ): LinkWarning[] {
   const warnings: LinkWarning[] = [];
   if (link.mode && link.mode.toUpperCase() !== source.dataMode) {
@@ -116,11 +187,13 @@ export function assessLinkContext(
     });
   }
   if (!link.snapshotId) {
+    const pinned = source.reproducibility?.status === 'REPRODUCIBLE_SNAPSHOT';
     warnings.push({
       code: 'SNAPSHOT_NOT_PINNED',
       severity: 'info',
-      message:
-        'Tautan tidak mencantumkan snapshot, jadi tidak dapat diperiksa apakah data ini sama dengan yang dilihat pembuat tautan.',
+      message: pinned
+        ? `Tautan yang dibuka tidak mencantumkan snapshot, jadi Paspor ini dikunci ke snapshot aktif saat dibuka (${source.snapshotId}). Belum dapat diperiksa apakah itu data yang dilihat pembuat tautan; tautan untuk disalin dan dibagikan sudah mencantumkan snapshot ini.`
+        : 'Tautan tidak mencantumkan snapshot, jadi tidak dapat diperiksa apakah data ini sama dengan yang dilihat pembuat tautan.',
     });
   } else if (link.snapshotId !== source.snapshotId) {
     warnings.push({
@@ -487,7 +560,7 @@ export function buildEvidenceRecord(query: SupportedQuery, raw: RawEvidenceSourc
   const unavailableSources = [
     ...(raw.catalog ? [] : ['katalog indikator']),
     ...(raw.datasets ? [] : ['daftar dataset']),
-    ...(raw.snapshots ? [] : ['daftar snapshot']),
+    ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar snapshot']),
     ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : ['cakupan indikator (/indicators/coverage)']),
   ];
 

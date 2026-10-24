@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { renderWithDataHub, requestedUrls } from '@/test/dataHubFixtures';
+import { fixtureJson, renderWithDataHub, requestedUrls } from '@/test/dataHubFixtures';
 import jatengCapture from '@/services/api/__fixtures__/live-v2.1/composite_jateng_kemiskinan_stunting.json';
 import capture3T from '@/services/api/__fixtures__/live-v2.1/composite_national_pendidikan_3t.json';
 import {
@@ -16,6 +16,7 @@ import {
   COMPOSITE_PATH,
   capturedNationalKms,
   withCapturedWater,
+  withStatus,
 } from './evidenceTestKit';
 import { EvidencePassport } from './EvidencePassport';
 import { passportHref } from './evidenceQuery';
@@ -23,7 +24,7 @@ import type { DataMode } from '@/services/api';
 
 const SNAPSHOT = '2026.10.0-official-live';
 
-const jatengUrl = (focusRegionId?: string, snapshotId: string | null = SNAPSHOT) =>
+const jatengUrl = (focusRegionId?: string, snapshotId: string | null = null) =>
   passportHref({
     kind: 'lab',
     mode: 'LIVE',
@@ -36,7 +37,7 @@ const sumutUrl = (focusRegionId?: string) =>
   passportHref({
     kind: 'lab',
     mode: 'LIVE',
-    snapshotId: SNAPSHOT,
+    snapshotId: null,
     weights: SUMUT_WEIGHTS,
     provinceId: '12',
     focusRegionId: focusRegionId ?? null,
@@ -45,7 +46,7 @@ const url3T = (focusRegionId?: string) =>
   passportHref({
     kind: 'lab',
     mode: 'LIVE',
-    snapshotId: SNAPSHOT,
+    snapshotId: null,
     weights: PENDIDIKAN_3T_WEIGHTS,
     focusRegionId: focusRegionId ?? null,
   });
@@ -152,12 +153,19 @@ describe('Paspor Bukti for Lab, CAPTURED LIVE Jawa Tengah (kemiskinan + stunting
     expect(links.every((link) => link.getAttribute('href')?.startsWith('https://'))).toBe(true);
   });
 
-  it('warns when the snapshot in the link is not the snapshot received', async () => {
-    renderPassport(jatengUrl('3372', '2026.09.0-older'), capturedJateng());
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('2026.09.0-older');
-    expect(alert).toHaveTextContent(SNAPSHOT);
-    expect(alert).toHaveTextContent('tidak sama dengan tautan');
+  it('refuses a link to a snapshot the Data Hub no longer has, without falling back to the latest', async () => {
+    const fetchImpl = hubFetch({
+      ...capturedJateng(),
+      // CAPTURED shape: production answered exactly this 404 for an unknown snapshot (2026-10-24).
+      '/api/v1/snapshots/2026.09.0-older': withStatus(404, fixtureJson('live-v2.2/snapshot_404')),
+    });
+    renderWithDataHub(<EvidencePassport />, { fetchImpl, path: jatengUrl('3372', '2026.09.0-older') });
+    expect(await screen.findByText('Snapshot pada tautan tidak tersedia')).toBeVisible();
+    expect(screen.getByText(/tidak beralih diam-diam ke snapshot terbaru/)).toBeVisible();
+    expect(screen.queryByRole('article', { name: /^Bukti hasil Lab/ })).not.toBeInTheDocument();
+    expect(requestedUrls(fetchImpl).map((url) => url.pathname)).toEqual([
+      '/api/v1/snapshots/2026.09.0-older',
+    ]);
   });
 
   it('fetches in the mode of the link and posts the weights of the link', async () => {
@@ -259,7 +267,7 @@ describe('Paspor Bukti for Lab, CAPTURED national composite + CAPTURED water val
     const url = passportHref({
       kind: 'lab',
       mode: 'LIVE',
-      snapshotId: SNAPSHOT,
+      snapshotId: null,
       weights: JATENG_WEIGHTS,
       focusRegionId: null,
     });

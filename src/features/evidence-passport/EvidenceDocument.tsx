@@ -1,6 +1,7 @@
 import { useLocation } from 'react-router';
 import { buildCitation } from './citation';
 import { EvidenceActions } from './EvidenceActions';
+import { shareablePassportPath } from './evidenceQuery';
 import { EvidenceHeader } from './EvidenceHeader';
 import { buildExportPayload, exportFilename, serializeExport } from './exportRecord';
 import type { EvidenceRecord } from './evidenceTypes';
@@ -18,8 +19,9 @@ const KIND_LABEL: Readonly<Record<EvidenceRecord['kind'], string>> = {
 
 /** One finished record, read top to bottom: what it is, where it came from, the evidence, the limits. */
 export function EvidenceDocument({ record }: { readonly record: EvidenceRecord }) {
-  const { pathname, search } = useLocation();
-  const link = `${window.location.origin}${pathname}${search}`;
+  const { search } = useLocation();
+  // Names the pinned snapshot, so the copied, shared or exported link reopens the same data.
+  const link = `${window.location.origin}${shareablePassportPath(search, record.source)}`;
 
   return (
     <article className={styles.document} aria-label={record.title}>

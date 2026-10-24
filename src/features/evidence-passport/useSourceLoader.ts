@@ -11,10 +11,16 @@ export type SourcesState<T> =
 
 type Settled<T> = Extract<SourcesState<T>, { status: 'ready' | 'error' }>;
 
-/** A supporting request that failed is a stated gap (`null`), unless it was cancelled with the page. */
+/** Snapshot integrity failures: never a gap, because the response came from other data than the record. */
+const SNAPSHOT_FAILURES = new Set(['SNAPSHOT_NOT_FOUND', 'SNAPSHOT_MISMATCH', 'SNAPSHOT_DIGEST_MISMATCH']);
+
+/**
+ * A supporting request that failed is a stated gap (`null`), unless it was cancelled with the page or
+ * answered from another snapshot than the pinned one: that fails the whole passport.
+ */
 export function supporting<T>(request: Promise<T>): Promise<T | null> {
   return request.catch((error: unknown) => {
-    if (error instanceof ApiError && error.isAborted) throw error;
+    if (error instanceof ApiError && (error.isAborted || SNAPSHOT_FAILURES.has(error.code))) throw error;
     return null;
   });
 }

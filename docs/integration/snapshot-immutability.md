@@ -1,5 +1,7 @@
 # Snapshot immutability: evidence and backend requirements
 
+> **Update 2026-10-24:** Data Hub v2.2 serves content-addressed, immutable snapshots with `content_sha256`, and the Evidence Passport now pins every request to one. Historical retention across deployments is still not guaranteed: the legacy id now returns 404. See [`backend-v2.2-integration.md`](./backend-v2.2-integration.md).
+
 Status: **open, backend action required.** Recorded by the frontend Team Lead on 2026-10-23 (UTC) from
 read-only requests to `https://api.orangkeren.me/api/v1` (`X-Data-Mode: LIVE`, `?mode=live`). Related:
 [`backend-v2.1-issues.md`](./backend-v2.1-issues.md) items 1 and 4.

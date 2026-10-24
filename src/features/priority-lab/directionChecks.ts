@@ -36,6 +36,10 @@ function referenceOf(values: IndicatorValuesMapDTO): Record<string, ReferenceVal
 }
 
 const UNAVAILABLE: DirectionVerdict = { status: 'unverifiable', reason: 'Nilai sumber tidak tersedia.' };
+const OTHER_SNAPSHOT: DirectionVerdict = {
+  status: 'unverifiable',
+  reason: 'Nilai sumber berasal dari snapshot lain daripada peringkat ini.',
+};
 
 /**
  * Checks, per weighted indicator, that the ranking's component scores follow the indicator's direction
@@ -52,6 +56,10 @@ export function checkRankingDirections(
   return indicatorIds.map((indicatorId) => {
     const values = valuesOf(indicatorId);
     if (!values) return { indicatorId, verdict: UNAVAILABLE, nationalVerdict: null };
+    // Values from another snapshot (a deploy between two requests) say nothing about this ranking.
+    if (values.snapshotId !== result.snapshotId) {
+      return { indicatorId, verdict: OTHER_SNAPSHOT, nationalVerdict: null };
+    }
     const polarity = polarityOf(indicatorId);
     const reference = referenceOf(values);
     const components = Object.fromEntries(

@@ -1,4 +1,5 @@
 import type { DataMode } from '@/services/api';
+import type { SourceStatus } from './evidenceTypes';
 
 /** Route of the Paspor Bukti page. */
 export const PASSPORT_PATH = '/paspor-bukti';
@@ -112,6 +113,23 @@ export function passportHref(query: EvidenceQuery): string {
     params.set(PARAM.indicators, [...new Set(query.indicatorIds)].join(','));
   }
   return `${PASSPORT_PATH}?${params.toString()}`;
+}
+
+/**
+ * The address to copy, share and export for a record. When the record was pinned to a snapshot, the
+ * address names that snapshot (and its mode), so opening it again asks for the same data, even when
+ * the page itself was opened without one. Otherwise the address as opened.
+ */
+export function shareablePassportPath(
+  search: string,
+  source: Pick<SourceStatus, 'dataMode' | 'reproducibility'>,
+): string {
+  const parsed = parseEvidenceQuery(new URLSearchParams(search));
+  const { status, pinnedSnapshotId } = source.reproducibility;
+  if (status !== 'REPRODUCIBLE_SNAPSHOT' || !pinnedSnapshotId || !parsed.ok) {
+    return `${PASSPORT_PATH}${search}`;
+  }
+  return passportHref({ ...parsed.query, mode: source.dataMode, snapshotId: pinnedSnapshotId });
 }
 
 export type ParsedEvidenceQuery =

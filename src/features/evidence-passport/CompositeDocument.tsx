@@ -5,6 +5,7 @@ import { InsufficientSection, RankingSection } from './CompositeRanking';
 import { CriteriaSection, FocusSection, IntegritySection, ScopeSection } from './CompositeSections';
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import { EvidenceActions } from './EvidenceActions';
+import { shareablePassportPath } from './evidenceQuery';
 import { scopeLabel } from './scopeLabel';
 import { EvidenceHeader } from './EvidenceHeader';
 import { buildExportPayload, exportFilename, serializeExport } from './exportRecord';
@@ -29,8 +30,9 @@ function citationDetails(record: CompositeEvidenceRecord): string[] {
 
 /** A Lab result recorded as evidence. The ranking tables exist only when the ranking is shown. */
 export function CompositeDocument({ record }: { readonly record: CompositeEvidenceRecord }) {
-  const { pathname, search } = useLocation();
-  const link = `${window.location.origin}${pathname}${search}`;
+  const { search } = useLocation();
+  // Names the pinned snapshot, so the copied, shared or exported link reopens the same data.
+  const link = `${window.location.origin}${shareablePassportPath(search, record.source)}`;
 
   return (
     <article className={styles.document} aria-label={record.title}>

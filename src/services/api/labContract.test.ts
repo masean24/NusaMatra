@@ -20,6 +20,10 @@ const meta: AdaptedResponseMeta = {
   snapshotId: '2026.10.0-official-live',
   boundaryVersion: null,
   totalCount: null,
+  contentSha256: null,
+  snapshotImmutable: null,
+  snapshotReproducible: null,
+  methodologyVersion: null,
 };
 
 describe('mapIndicatorCoverageData (captured production coverage, 2026-10-23)', () => {

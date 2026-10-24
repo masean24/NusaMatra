@@ -19,7 +19,16 @@ export type ApiErrorCode =
   | 'SERVICE_UNAVAILABLE'
   | 'NETWORK_ERROR'
   | 'REQUEST_ABORTED'
-  | 'HTTP_ERROR';
+  | 'HTTP_ERROR'
+  // v2.2 snapshot pinning. The first three come from the Data Hub; the last two are raised here when
+  // a response does not carry the snapshot or digest it was pinned to (it is never used then).
+  | 'SNAPSHOT_NOT_FOUND'
+  | 'SNAPSHOT_MODE_MISMATCH'
+  | 'SNAPSHOT_PARAM_CONFLICT'
+  | 'SNAPSHOT_MISMATCH'
+  | 'SNAPSHOT_DIGEST_MISMATCH'
+  // Raised by Paspor Bukti: a linked snapshot that is neither reproducible nor still active.
+  | 'SNAPSHOT_NOT_REPRODUCIBLE';
 
 export interface ApiErrorMetadata {
   readonly serverMessage?: string | null;

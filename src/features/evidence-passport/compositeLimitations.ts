@@ -1,6 +1,6 @@
 import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import type { CompositeEvidenceRecord } from './compositeTypes';
-import { SNAPSHOT_MUTABILITY_NOTE } from './notices';
+import { snapshotIdentityNote } from './notices';
 
 const percent = (value: number) => `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
 
@@ -20,7 +20,7 @@ export function buildCompositeLimitations(record: Omit<CompositeEvidenceRecord, 
     );
   }
 
-  notes.push(SNAPSHOT_MUTABILITY_NOTE);
+  notes.push(snapshotIdentityNote(record.source.reproducibility));
 
   if (record.withheldReason === 'INTEGRITY') {
     notes.push(

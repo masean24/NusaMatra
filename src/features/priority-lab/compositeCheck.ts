@@ -42,6 +42,8 @@ export function integrityInputFromResult(
     minCoveragePct: result.minCoveragePct,
     minComponents: result.minComponents,
     declaredRankable,
+    responseRankable: result.rankable,
+    notRankableReason: result.notRankableReason,
     rows: result.items.map((item) => ({
       regionId: item.regionId,
       rankPosition: item.rankPosition,

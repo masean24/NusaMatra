@@ -3,12 +3,21 @@
  * responses CAPTURED FROM PRODUCTION on 2026-10-23 (src/services/api/__fixtures__/live-v2.1, unmodified).
  * Tests that tamper with a capture say so and do it in memory ("synthetic, derived from ...").
  */
-import { assessCompositeIntegrity, checkComponentDirection, classifyCoverage } from '@/domain/prioritization';
+import {
+  assessCompositeIntegrity,
+  assessDirectionImpact,
+  checkComponentDirection,
+  classifyCoverage,
+} from '@/domain/prioritization';
 import {
   mapCompositeQueryData,
+  mapIndicatorValuesData,
   type AdaptedResponseMeta,
   type ExploratoryCompositeResultDTO,
 } from '@/services/api';
+import nationalKms22 from '@/services/api/__fixtures__/live-v2.2/composite_national_kms.json';
+import nonRankable22 from '@/services/api/__fixtures__/live-v2.2/composite_nonrankable.json';
+import valuesWater22 from '@/services/api/__fixtures__/live-v2.2/values_water.json';
 import jateng from '@/services/api/__fixtures__/live-v2.1/composite_jateng_kemiskinan_stunting.json';
 import nationalEdu from '@/services/api/__fixtures__/live-v2.1/composite_national_pendidikan_3t.json';
 import nationalHdi from '@/services/api/__fixtures__/live-v2.1/composite_national_hdi.json';
@@ -18,6 +27,7 @@ import valuesHdi from '@/services/api/__fixtures__/live-v2.1/values_soc_hdi.json
 import valuesPoverty from '@/services/api/__fixtures__/live-v2.1/values_soc_poverty_rate.json';
 import valuesWater from '@/services/api/__fixtures__/live-v2.1/values_inf_safe_water_pct.json';
 import { integrityInputFromResult } from './compositeCheck';
+import { checkRankingDirections, impactRowsOf } from './directionChecks';
 
 const META: AdaptedResponseMeta = {
   serverRequestId: null,
@@ -28,6 +38,10 @@ const META: AdaptedResponseMeta = {
   snapshotId: '2026.10.0-official-live',
   boundaryVersion: null,
   totalCount: null,
+  contentSha256: null,
+  snapshotImmutable: null,
+  snapshotReproducible: null,
+  methodologyVersion: null,
 };
 
 const KMS_WEIGHTS = {
@@ -544,5 +558,89 @@ describe('composite integrity stays active for imputed observations (synthetic t
       (row['component_scores'] as Record<string, number | null>)['inf_safe_water_pct'] = null;
     });
     expect(blocking(assessment)).toContain('MISSING_COMPONENT');
+  });
+});
+
+// ---------------------------------------------------------------------------------------------
+// Data Hub v2.2, CAPTURED FROM PRODUCTION 2026-10-24 (src/services/api/__fixtures__/live-v2.2).
+// ---------------------------------------------------------------------------------------------
+
+describe('v2.2 captures: the P0 guard stays in place and lets the corrected data through', () => {
+  const META_22: AdaptedResponseMeta = {
+    ...META,
+    snapshotId: '2026.10.0-live-62354dfad392d985',
+    contentSha256: '62354dfad392d985168450ac670b6c647ab097e800ee023768d5858387a984b5',
+    snapshotImmutable: true,
+    snapshotReproducible: true,
+    methodologyVersion: 'v2.2-minmax-full-range',
+  };
+  const result = mapCompositeQueryData(nationalKms22.data, META_22, null);
+  const integrity = assess(result, null, KMS_WEIGHTS);
+
+  it('national kemiskinan + stunting passes the integrity check, with Lanny Jaya at 80.18, rank 3', () => {
+    expect(blocking(integrity)).toEqual([]);
+    expect(integrity.ok).toBe(true);
+    const lanny = result.items.find((item) => item.regionId === '9507');
+    expect(lanny).toMatchObject({ compositeScoreDecimal: '80.18', rankPosition: 3 });
+  });
+
+  it('the corrected water score of Lanny Jaya (32.89 -> 78.89, IMPUTED_PROVINCE) no longer withholds the ranking', () => {
+    const water = mapIndicatorValuesData(valuesWater22.data, META_22);
+    const checks = checkRankingDirections(
+      result,
+      ['inf_safe_water_pct'],
+      () => 'positive',
+      () => water,
+    );
+    expect(checks[0]?.verdict.status).toBe('consistent');
+    expect(checks[0]?.nationalVerdict?.status).toBe('consistent');
+    expect(
+      assessDirectionImpact({
+        checks,
+        rows: impactRowsOf(result),
+        weightsUsed: integrity.weightsUsed,
+        filterProvinceId: null,
+      }),
+    ).toEqual({ status: 'clear' });
+  });
+
+  it('the same guard still withholds the ranking on the v2.1 capture (raw 32.89 published as 100)', () => {
+    const old = map(nationalKms);
+    const water = mapIndicatorValuesData(valuesWater.data, META);
+    const checks = checkRankingDirections(
+      old,
+      ['inf_safe_water_pct'],
+      () => 'positive',
+      () => water,
+    );
+    const impact = assessDirectionImpact({
+      checks,
+      rows: impactRowsOf(old),
+      weightsUsed: assess(old, null, KMS_WEIGHTS).weightsUsed,
+      filterProvinceId: null,
+    });
+    expect(impact.status).toBe('ranking_withheld');
+  });
+
+  it('values from another snapshot than the ranking are not used as evidence either way', () => {
+    const water = mapIndicatorValuesData(valuesWater.data, META); // v2.1 snapshot id
+    const [check] = checkRankingDirections(
+      result,
+      ['inf_safe_water_pct'],
+      () => 'positive',
+      () => water,
+    );
+    expect(check?.verdict).toMatchObject({ status: 'unverifiable' });
+  });
+
+  it('a composite the Data Hub declares not rankable is blocked, quoting its reason', () => {
+    const nonRankable = mapCompositeQueryData(nonRankable22.data, META_22, null);
+    const verdict = assess(nonRankable, null, {
+      dis_multihazard_index: 5000,
+      edu_school_travel_time_p90: 5000,
+    });
+    expect(blocking(verdict)).toContain('COMPOSITE_NOT_RANKABLE');
+    const issue = verdict.issues.find((item) => item.code === 'COMPOSITE_NOT_RANKABLE');
+    expect(issue?.message).toContain('national weight coverage 50.0% is below the 70% threshold');
   });
 });

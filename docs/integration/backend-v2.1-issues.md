@@ -21,6 +21,8 @@ Setiap butir memuat: endpoint, isi permintaan, waktu (UTC), yang teramati, yang 
 
 ## 2. Skor ternormalisasi satu nilai `IMPUTED_PROVINCE` tidak diturunkan dari nilai mentah yang ditampilkan (cacat normalisasi backend)
 
+> **Status 2026-10-24:** diperbaiki di Data Hub v2.2. Snapshot produksi `2026.10.0-live-62354dfad392d985` memberi 78,89. Komposit Lanny Jaya kini 80,18, peringkat 3. Guard di bawah TETAP terpasang dan kini meloloskan data ini; capture v2.1 tetap ditahan dalam tes. Lihat [`backend-v2.2-integration.md`](./backend-v2.2-integration.md).
+
 - Indikator: `inf_safe_water_pct` (Persentase Rumah Tangga Akses Air Minum Layak, polaritas `positive`, tahun 2025, BPS `bps_susenas_sakernas_2025`). Wilayah: Kabupaten Lanny Jaya (`9507`, Provinsi Papua Pegunungan).
 - Endpoint dan waktu: `GET /api/v1/indicators/inf_safe_water_pct/values?mode=live`, `X-Data-Mode: LIVE`. Rekaman 2026-10-23T15:19:09Z (`__fixtures__/live-v2.1/values_inf_safe_water_pct.json`) dan **dibaca ulang 2026-10-23T20:41:12Z: persis sama, masih terjadi**. Juga `GET /api/v1/regions/9507?mode=live` pada 20:41:13Z.
 - Teramati (`raw` → `norm`, `rank`, `flag`), diurutkan menurut nilai mentah:
@@ -60,6 +62,8 @@ Setiap butir memuat: endpoint, isi permintaan, waktu (UTC), yang teramati, yang 
 - Mitigasi frontend: syarat minimal 70% ketersediaan bobot permintaan untuk skenario kustom adalah KEBIJAKAN PRODUK Nusa Matra (`FRONTEND_MIN_REQUESTED_WEIGHT_PCT`), diberi label demikian pada antarmuka dan bukan atas nama Data Hub.
 
 ## 4. Isi dataset berubah tanpa perubahan `snapshot_id`
+
+> **Status 2026-10-24:** v2.2 memakai ID snapshot berbasis isi (`…-live-<16 hex digest>`) dengan `content_sha256`, dan Paspor kini menguncinya. Retensi snapshot lama belum terjamin: ID lama kini 404. Lihat [`backend-v2.2-integration.md`](./backend-v2.2-integration.md).
 
 - Endpoint: `GET /api/v1/indicators/composite-presets?mode=live`, `X-Data-Mode: LIVE`; dan `GET /api/v1/indicators/coverage?mode=live`.
 - 2026-10-23T15:17–15:19Z: `snapshot_id: 2026.10.0-official-live`; 25 dari 33 indikator punya data; `pendidikan_daerah_3t` `rankable: false` (45%, dua indikator kosong).

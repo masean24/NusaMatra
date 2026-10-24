@@ -142,6 +142,10 @@ export interface CompositeIntegrityInput {
   readonly insufficientRows?: readonly InsufficientRowInput[];
   /** The Data Hub's verdict for the preset these weights equal, if they equal one. `false` blocks. */
   readonly declaredRankable?: boolean | null;
+  /** v2.2: the composite response's own `rankable`. `false` blocks; `null`/absent = not reported. */
+  readonly responseRankable?: boolean | null;
+  /** v2.2 `not_rankable_reason`, quoted verbatim when the response is not rankable. */
+  readonly notRankableReason?: string | null;
   /**
    * Frontend product policy (see `FRONTEND_MIN_REQUESTED_WEIGHT_PCT`); defaults to it, `null` switches
    * the policy off.
@@ -178,6 +182,7 @@ export type CompositeIssueCode =
   | 'INSUFFICIENT_NOT_JUSTIFIED'
   | 'REQUESTED_WEIGHT_AVAILABILITY_LOW'
   | 'PRESET_NOT_RANKABLE'
+  | 'COMPOSITE_NOT_RANKABLE'
   | 'PARTIAL_COVERAGE'
   | 'IMPUTED_PROVINCE_DATA';
 
@@ -340,6 +345,14 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
     block(
       'PRESET_NOT_RANKABLE',
       'Data Hub menandai skenario ini tidak dapat diperingkat (rankable = false) karena sebagian besar kriterianya belum punya data. Hasil peringkat ditahan, meskipun server tetap mengembalikannya.',
+      1,
+    );
+  }
+  if (input.responseRankable === false) {
+    const reason = input.notRankableReason ? ` Alasan dari Data Hub: "${input.notRankableReason}".` : '';
+    block(
+      'COMPOSITE_NOT_RANKABLE',
+      `Data Hub menyatakan kombinasi bobot ini tidak dapat diperingkat (rankable = false) dan tidak mengirim peringkat apa pun.${reason}`,
       1,
     );
   }

@@ -7,3 +7,4 @@ export * from './domainMappers';
 export * from './repositories';
 export * from './earthquakes';
 export * from './labContract';
+export * from './snapshotPinning';

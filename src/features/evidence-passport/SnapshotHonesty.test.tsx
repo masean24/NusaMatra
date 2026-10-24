@@ -29,7 +29,7 @@ const labUrl = (provinceId: string | null = '33') =>
   passportHref({
     kind: 'lab',
     mode: 'LIVE',
-    snapshotId: SNAPSHOT,
+    snapshotId: null, // v2.1 captures: their snapshot id is no longer resolvable (see CompositePassport.test)
     weights: JATENG_WEIGHTS,
     provinceId,
     focusRegionId: provinceId ? '3372' : null,
@@ -116,8 +116,8 @@ describe('snapshot id is not proof that data is the same', () => {
     };
     expect(fieldNotes.snapshotId).toBe(SNAPSHOT_MUTABILITY_NOTE);
     expect(reproducibility.pinnedInputs).toBe(false);
-    expect(reproducibility.statement).toContain('dipublikasikan ulang dengan isi berbeda');
-    expect(reproducibility.statement).toContain('tidak mengunci masukan');
+    expect(reproducibility.statement).toContain('tidak dikunci ke snapshot yang dapat direproduksi');
+    expect(reproducibility.statement).toContain('tidak menjamin hasil yang sama');
   });
 
   it('says in the print header and in the JSON notice that it is browser-assembled, not an official archive', async () => {
@@ -174,7 +174,11 @@ describe('snapshot completeness is shown as the server claims it, beside what /i
       observedCoverage: { availableIndicators: number; totalIndicators: number };
     };
     expect(source.snapshot.completenessPct).toBe(51.6);
-    expect(source.observedCoverage).toEqual({ availableIndicators: 25, totalIndicators: 33 });
+    expect(source.observedCoverage).toEqual({
+      availableIndicators: 25,
+      totalIndicators: 33,
+      regionCoveragePct: null,
+    });
     expect((json.fieldNotes as Record<string, string>)['source.snapshot.completenessPct']).toContain(
       'Menurut server',
     );
@@ -332,10 +336,17 @@ describe('the JSON preserves what was fetched and invents no identity', () => {
       }
     };
     walk(json);
-    const suspicious = [...keys].filter((key) =>
-      /report.?id|laporan|digest|hash|sha|signature|generatedAt|issuedAt/i.test(key),
+    // `contentSha256` / `contentHashSpec` are copied from Data Hub responses (v2.2). These v2.1
+    // captures carry none, so every such value must be null: nothing is made up in the browser.
+    const SERVER_COPIED = new Set(['contentSha256', 'contentHashSpec']);
+    const suspicious = [...keys].filter(
+      (key) =>
+        !SERVER_COPIED.has(key) &&
+        /report.?id|laporan|digest|hash|sha|signature|generatedAt|issuedAt/i.test(key),
     );
     expect(suspicious).toEqual([]);
+    expect(text).not.toMatch(/"contentSha256": "/);
+    expect(text).not.toMatch(/"contentHashSpec": "/);
     expect(Object.keys(json).sort()).toEqual(
       ['fieldNotes', 'link', 'notice', 'record', 'reproducibility', 'schema'].sort(),
     );

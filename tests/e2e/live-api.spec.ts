@@ -8,7 +8,9 @@ import { openRegionPanel } from './jelajahiHelpers';
  */
 test.skip(!process.env['NUSAMATRA_LIVE_E2E'], 'needs the public Data Hub; set NUSAMATRA_LIVE_E2E=1');
 
-const LIVE_SNAPSHOT = '2026.10.0-official-live';
+// v2.2 snapshot ids are content-addressed (`<release>-live-<first 16 hex of content_sha256>`) and change
+// with the data, so the id is matched by that documented shape, never by one value.
+const LIVE_SNAPSHOT = /\d{4}\.\d{2}\.\d+-live-[0-9a-f]{16}/;
 
 test.describe('LIVE against the deployed Data Hub', () => {
   test('Jelajahi: finds a real regency, shows official indicators with agency and year, and BIG boundaries', async ({
@@ -152,7 +154,7 @@ test.describe('LIVE against the deployed Data Hub', () => {
 
     // Counts follow the live snapshot, so assert the shape of the summary, not its numbers.
     await expect(page.getByText(/Dari \d+ indikator wilayah, \d+ dapat dibandingkan/)).toBeVisible();
-    await expect(page.getByText(`Snapshot ${LIVE_SNAPSHOT} · mode LIVE`)).toBeVisible();
+    await expect(page.getByText(new RegExp(`Snapshot ${LIVE_SNAPSHOT.source} · mode LIVE`))).toBeVisible();
     const imputed = page.getByRole('row', { name: /Pengguna Listrik/ });
     await expect(imputed.getByText('Tidak dibandingkan')).toBeVisible();
     await expect(imputed.getByText('Imputasi provinsi, bukan observasi kab/kota').first()).toBeVisible();
@@ -177,5 +179,31 @@ test.describe('LIVE against the deployed Data Hub', () => {
       await expect(page.getByText(/peringkat 1 adalah prioritas tertinggi/)).toBeVisible();
     }
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
+  });
+
+  test('Paspor Bukti: a Lab passport is pinned to the active reproducible snapshot and states its digest', async ({
+    page,
+  }) => {
+    // The kemiskinan + stunting scenario, national, focused on Lanny Jaya (9507); no snapshot in the link.
+    await page.goto(
+      '/paspor-bukti?jenis=lab&mode=live&bobot=hlt_stunting_prevalence:3000,inf_safe_sanitation_pct:2000,inf_safe_water_pct:2000,soc_poverty_rate:3000&kode=9507',
+    );
+    const passport = page.getByRole('article', { name: /^Bukti hasil Lab/ });
+    await expect(passport).toBeVisible({ timeout: 30_000 });
+    const status = passport.getByRole('region', { name: /Status sumber data/ });
+    await expect(status).toContainText('Dapat direproduksi: dikunci ke snapshot aktif saat dibuka.');
+    await expect(status).toContainText(LIVE_SNAPSHOT);
+    await expect(status).toContainText(/[0-9a-f]{64}/);
+    await expect(passport).toContainText('Dirangkai di peramban, bukan arsip/sertifikat resmi.');
+    // Whatever the current data, a ranking is either shown with its checks or withheld with a reason.
+    await expect(passport.getByText(/Kabupaten Demo/)).toHaveCount(0);
+  });
+
+  test('Paspor Bukti: a link to a snapshot the Data Hub does not have fails instead of showing newer data', async ({
+    page,
+  }) => {
+    await page.goto('/paspor-bukti?jenis=wilayah&mode=live&snap=2026.10.0-official-live&kode=1101');
+    await expect(page.getByText('Snapshot pada tautan tidak tersedia')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('article', { name: /^Bukti / })).toHaveCount(0);
   });
 });

@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { fixtureResponse, renderWithDataHub, requestedUrls } from '@/test/dataHubFixtures';
+import { fixtureJson, fixtureResponse, renderWithDataHub, requestedUrls } from '@/test/dataHubFixtures';
 import {
   capturedDemoBodies,
   capturedLiveBodies,
@@ -8,13 +8,15 @@ import {
   indicatorOf,
   profileIn,
   relabelledProfile,
+  withStatus,
 } from './evidenceTestKit';
 import { EXPORT_SCHEMA } from './exportRecord';
 import { BROWSER_ASSEMBLED_LABEL } from './notices';
 import { EvidencePassport } from './EvidencePassport';
 import type { DataMode } from '@/services/api';
 
-const LIVE_URL = '/paspor-bukti?jenis=wilayah&mode=live&snap=2026.10.0-official-live&kode=1101';
+// The LIVE captures predate snapshot pinning; their snapshot id is not resolvable any more, so no `snap`.
+const LIVE_URL = '/paspor-bukti?jenis=wilayah&mode=live&kode=1101';
 const DEMO_URL = '/paspor-bukti?jenis=wilayah&mode=demo&snap=2026.10.0-wia-demo&kode=3201';
 
 /** The record itself; the region cards inside it are articles too. */
@@ -76,19 +78,22 @@ describe('Paspor Bukti for a region, CAPTURED LIVE responses', () => {
     );
   });
 
-  it('warns that the record is not the one in the link when the snapshot has changed', async () => {
-    renderPassport(
-      '/paspor-bukti?jenis=wilayah&mode=live&snap=2026.09.0-older&kode=1101',
-      capturedLiveBodies(),
-    );
-    const alert = await screen.findByRole('alert');
-    expect(alert).toHaveTextContent('2026.09.0-older');
-    expect(alert).toHaveTextContent('2026.10.0-official-live');
-    expect(alert).toHaveTextContent('tidak sama dengan tautan');
-    // The page still reports what it actually received, not what the link said.
-    expect(
-      within(screen.getByRole('region', { name: /Status sumber data/ })).getByText('2026.10.0-official-live'),
-    ).toBeVisible();
+  it('refuses a link to a snapshot the Data Hub no longer has instead of showing newer data', async () => {
+    const fetchImpl = hubFetch({
+      ...capturedLiveBodies(),
+      // CAPTURED: production's 404 for an unknown snapshot (2026-10-24).
+      '/api/v1/snapshots/2026.09.0-older': withStatus(404, fixtureJson('live-v2.2/snapshot_404')),
+    });
+    renderWithDataHub(<EvidencePassport />, {
+      fetchImpl,
+      path: '/paspor-bukti?jenis=wilayah&mode=live&snap=2026.09.0-older&kode=1101',
+    });
+    expect(await screen.findByText('Snapshot pada tautan tidak tersedia')).toBeVisible();
+    expect(screen.queryByRole('article', { name: /^Bukti / })).not.toBeInTheDocument();
+    // Nothing but the snapshot lookup was asked for: no region data from another snapshot.
+    expect(requestedUrls(fetchImpl).map((url) => url.pathname)).toEqual([
+      '/api/v1/snapshots/2026.09.0-older',
+    ]);
   });
 
   it('fetches in the mode of the link, not the app-wide mode', async () => {

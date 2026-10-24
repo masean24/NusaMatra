@@ -1,5 +1,5 @@
 import type { EvidenceRecord } from './evidenceTypes';
-import { SNAPSHOT_MUTABILITY_NOTE } from './notices';
+import { snapshotIdentityNote } from './notices';
 
 /**
  * The caveats a reader needs next to the numbers, derived from the record itself so none is boilerplate
@@ -21,7 +21,7 @@ export function buildLimitations(record: Omit<EvidenceRecord, 'limitations'>): s
     );
   }
 
-  notes.push(SNAPSHOT_MUTABILITY_NOTE);
+  notes.push(snapshotIdentityNote(record.source.reproducibility));
 
   for (const coverage of record.coverage) {
     const name = nameOf(coverage.regionId);

@@ -111,6 +111,22 @@ export interface AdaptedResponseMeta {
   readonly snapshotId: string;
   readonly boundaryVersion: string | null;
   readonly totalCount: number | null;
+  /**
+   * v2.2 `content_sha256`: the Data Hub's own digest of the snapshot content (64 hex). Reported by the
+   * server and never recomputed in the browser. `null` = not sent (DEMO, legacy snapshots, v2.1).
+   */
+  readonly contentSha256: string | null;
+  /** v2.2 `snapshot_immutable`; `null` = not reported. */
+  readonly snapshotImmutable: boolean | null;
+  /** v2.2 `snapshot_reproducible`; `null` = not reported. */
+  readonly snapshotReproducible: boolean | null;
+  readonly methodologyVersion: string | null;
+}
+
+/** The snapshot a request is pinned to (`?snapshot=`), with the digest every response must repeat. */
+export interface SnapshotPin {
+  readonly snapshotId: string;
+  readonly contentSha256: string;
 }
 
 export interface AdaptedEnvelope<TData> {
@@ -223,6 +239,10 @@ export interface RegionIndicatorMeasurementDTO {
   readonly qualityFlag: string | null;
   readonly isDemoExample: boolean;
   readonly origin: Origin;
+  /** v2.2: dataset of THIS observation (may differ from the indicator's catalog dataset); `null` = not sent. */
+  readonly datasetId: string | null;
+  /** v2.2: the source row this observation came from, as the Data Hub names it; `null` = not sent. */
+  readonly sourceRecordRef: string | null;
 }
 
 export interface IndicatorValuesMapDTO {
@@ -344,6 +364,19 @@ export interface ExploratoryCompositeResultDTO {
   readonly items: readonly ExploratoryRegionRankDTO[];
   /** Regions the Data Hub declined to rank. Empty when none, or when the response does not report them (v1). */
   readonly insufficient: readonly InsufficientRegionDTO[];
+  /**
+   * v2.2 `rankable`: the Data Hub's own verdict that this weight set may be ranked at all. `false` comes
+   * with no regions and a `notRankableReason`; `null` = not reported (v2.1 and older).
+   */
+  readonly rankable: boolean | null;
+  /** v2.2 `not_rankable_reason`, verbatim (English, from the Data Hub); `null` when rankable or not sent. */
+  readonly notRankableReason: string | null;
+  /** v2.2: share (0-100) of the REQUESTED weight on indicators with national observations. */
+  readonly nationalCoveragePct: number | null;
+  /** v2.2: requested basis points that fall on indicators with national observations. */
+  readonly availableWeightBasisPoints: number | null;
+  /** v2.2: weighted indicators with national observations; `null` = not reported. */
+  readonly availableIndicatorIds: readonly string[] | null;
 }
 
 export interface BoundaryGeometryStatusDTO {
@@ -407,6 +440,29 @@ export interface DataHubSnapshotDTO {
   readonly isChecksumPlaceholder: boolean;
   readonly notes: string | null;
   readonly indicatorCompletenessPct: number | null;
+  /** v2.2: digest of the snapshot content (64 hex) as the server states it; `null` = not sent. */
+  readonly contentSha256: string | null;
+  /** v2.2 `is_immutable` / `is_reproducible`; `false` when not stated (never assumed true). */
+  readonly isImmutable: boolean;
+  readonly isReproducible: boolean;
+}
+
+/** v2.2 `GET /api/v1/snapshots/{id}`: the full metadata of one snapshot, as the server states it. */
+export interface SnapshotDetailDTO extends DataHubSnapshotDTO {
+  /** Catalog, region, dataset and scoring metadata only; NOT a digest of the observations. */
+  readonly metadataChecksum: string | null;
+  readonly contentHashSpec: string | null;
+  readonly methodologyVersion: string | null;
+  readonly referencePeriods: readonly number[];
+  readonly supersedes: string | null;
+  readonly observationCount: number | null;
+  readonly indicatorCount: number | null;
+  readonly availableIndicatorCount: number | null;
+  readonly availableIndicatorDataPct: number | null;
+  readonly regionCount: number | null;
+  readonly regionCoveragePct: number | null;
+  readonly datasetCount: number | null;
+  readonly immutabilityNote: string | null;
 }
 
 export interface DataHubDatasetDTO {

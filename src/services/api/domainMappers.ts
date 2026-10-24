@@ -16,6 +16,7 @@ import type {
   DataHubSnapshotDTO,
   DataMode,
   DecimalString,
+  SnapshotDetailDTO,
   ExploratoryCompositeResultDTO,
   ExploratoryRegionRankDTO,
   InsufficientRegionDTO,
@@ -128,6 +129,23 @@ export function mapEnvelope<TDomain>(
     });
   }
 
+  const metaDigest = readDigest(raw.meta.content_sha256, 'meta.content_sha256', context);
+  // Production v2.2 leaves meta.content_sha256 null on /datasets while its header carries the digest
+  // (captured 2026-10-24). Either is the server's own statement; the header fills a missing meta.
+  const contentSha256 =
+    metaDigest ?? readDigest(context.contentSha256Header, 'X-NusaMatra-Content-SHA256', context);
+  // v2.2 repeats the identity in headers. Both are the server's word; when they disagree neither is.
+  if (context.snapshotHeader && context.snapshotHeader !== snapshotId) {
+    throw new ApiError(502, 'SNAPSHOT_MISMATCH', context.requestId, 'network.unavailable', {
+      serverMessage: `Header snapshot ${context.snapshotHeader} differs from meta.snapshot_id ${snapshotId}`,
+    });
+  }
+  if (contentSha256 && context.contentSha256Header && context.contentSha256Header !== contentSha256) {
+    throw new ApiError(502, 'SNAPSHOT_DIGEST_MISMATCH', context.requestId, 'network.unavailable', {
+      serverMessage: 'Header X-NusaMatra-Content-SHA256 differs from meta.content_sha256',
+    });
+  }
+
   const adaptedMeta: AdaptedResponseMeta = {
     serverRequestId: context.requestId,
     apiVersion: 'v1',
@@ -137,6 +155,10 @@ export function mapEnvelope<TDomain>(
     snapshotId,
     boundaryVersion: readString(raw.meta.boundary_version),
     totalCount: readIntegerOrNull(raw.meta.total_count),
+    contentSha256,
+    snapshotImmutable: readBooleanOrNull(raw.meta.snapshot_immutable),
+    snapshotReproducible: readBooleanOrNull(raw.meta.snapshot_reproducible),
+    methodologyVersion: readString(raw.meta.methodology_version),
   };
 
   const mappedData = transformData(raw.data, adaptedMeta);
@@ -643,6 +665,8 @@ export function mapIndicatorValuesData(rawData: unknown, meta: AdaptedResponseMe
       qualityFlag,
       isDemoExample,
       origin,
+      datasetId: readString(rawCell.dataset_id),
+      sourceRecordRef: readString(rawCell.source_record_ref),
     };
 
     valuesByRegion[regionId] = measurement;
@@ -652,8 +676,9 @@ export function mapIndicatorValuesData(rawData: unknown, meta: AdaptedResponseMe
       publisherName: isDemoExample
         ? `${indicator.provenance.agencyCode} (Simulasi DEMO — bukan observasi resmi)`
         : indicator.provenance.agencyCode,
-      datasetId: indicator.provenance.datasetId,
-      datasetEditionId: `${indicator.provenance.datasetId}:${meta.snapshotId}`,
+      // v2.2 names the dataset of each observation; it wins over the indicator's catalog dataset.
+      datasetId: measurement.datasetId ?? indicator.provenance.datasetId,
+      datasetEditionId: `${measurement.datasetId ?? indicator.provenance.datasetId}:${meta.snapshotId}`,
       publicSourceUrl: indicator.provenance.officialPortalUrl,
       licenseLabel: isDemoExample ? 'DEMO_EXAMPLE' : null,
       retrievedAt: null,
@@ -935,6 +960,13 @@ export function mapCompositeQueryData(
   }
   const insufficient = (insufficientRaw ?? []).map((row: unknown) => mapInsufficientRegion(row, meta));
 
+  // v2.2: a weight set the Data Hub declares not rankable carries no ranking. Rows beside that verdict
+  // contradict it; the response is refused rather than shown either way.
+  const rankable = optionalStrict(rawData.rankable, readBooleanOrNull, meta, 'rankable');
+  if (rankable === false && (items.length > 0 || insufficient.length > 0)) {
+    throw malformedComposite(meta, 'Composite is rankable = false but still lists regions');
+  }
+
   return {
     runId: null,
     isExploratoryPreview: true,
@@ -960,6 +992,26 @@ export function mapCompositeQueryData(
     filterProvinceId,
     items,
     insufficient,
+    rankable,
+    notRankableReason: optionalStrict(rawData.not_rankable_reason, readString, meta, 'not_rankable_reason'),
+    nationalCoveragePct: optionalStrict(
+      rawData.national_coverage_pct,
+      readPercent,
+      meta,
+      'national_coverage_pct',
+    ),
+    availableWeightBasisPoints: optionalStrict(
+      rawData.available_weight_basis_points,
+      readNonNegativeInteger,
+      meta,
+      'available_weight_basis_points',
+    ),
+    availableIndicatorIds: optionalStrict(
+      rawData.available_indicators,
+      readStringList,
+      meta,
+      'available_indicators',
+    ),
   };
 }
 
@@ -1121,8 +1173,68 @@ export function mapSnapshotsData(rawData: unknown, meta: AdaptedResponseMeta): r
       isChecksumPlaceholder: !isValidHexSha256,
       notes: readString(item.notes),
       indicatorCompletenessPct: readFiniteNumberOrNull(item.indicator_completeness_pct),
+      contentSha256: readDigest(item.content_sha256, `snapshot ${snapshotId} content_sha256`, {
+        requestId: meta.serverRequestId,
+      }),
+      isImmutable: item.is_immutable === true,
+      isReproducible: item.is_reproducible === true,
     };
   });
+}
+
+/**
+ * Maps `GET /api/v1/snapshots/{id}` (v2.2). The entry must be the snapshot asked for and agree with
+ * the envelope on its digest; a reproducible snapshot without a digest is a contradiction and refused.
+ */
+export function mapSnapshotDetailData(
+  rawData: unknown,
+  meta: AdaptedResponseMeta,
+  requestedSnapshotId: string,
+): SnapshotDetailDTO {
+  const [base] = mapSnapshotsData([rawData], meta);
+  if (!base || !isRecord(rawData)) {
+    throw new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: 'Snapshot detail is not an object',
+    });
+  }
+  if (base.snapshotId !== requestedSnapshotId) {
+    throw new ApiError(502, 'SNAPSHOT_MISMATCH', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: `Asked for snapshot ${requestedSnapshotId}, received ${base.snapshotId}`,
+    });
+  }
+  if (meta.contentSha256 !== null && base.contentSha256 !== meta.contentSha256) {
+    throw new ApiError(502, 'SNAPSHOT_DIGEST_MISMATCH', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: 'Snapshot detail content_sha256 differs from its envelope',
+    });
+  }
+  if (base.isReproducible && base.contentSha256 === null) {
+    throw new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: 'A reproducible snapshot must state its content_sha256',
+    });
+  }
+  const periods = rawData.reference_periods;
+  return {
+    ...base,
+    // DEMO sends a "d3m0…" placeholder here: shown as absent, not as a checksum.
+    metadataChecksum:
+      typeof rawData.metadata_checksum === 'string' && VALID_SHA256_HEX_REGEX.test(rawData.metadata_checksum)
+        ? rawData.metadata_checksum.toLowerCase()
+        : null,
+    contentHashSpec: readString(rawData.content_hash_spec),
+    methodologyVersion: readString(rawData.methodology_version),
+    referencePeriods: Array.isArray(periods)
+      ? periods.filter((year): year is number => typeof year === 'number' && Number.isInteger(year))
+      : [],
+    supersedes: readString(rawData.supersedes),
+    observationCount: readIntegerOrNull(rawData.observation_count),
+    indicatorCount: readIntegerOrNull(rawData.indicator_count),
+    availableIndicatorCount: readIntegerOrNull(rawData.available_indicator_count),
+    availableIndicatorDataPct: readFiniteNumberOrNull(rawData.available_indicator_data_pct),
+    regionCount: readIntegerOrNull(rawData.region_count),
+    regionCoveragePct: readFiniteNumberOrNull(rawData.region_coverage_pct),
+    datasetCount: readIntegerOrNull(rawData.dataset_count),
+    immutabilityNote: readString(rawData.immutability_note),
+  };
 }
 
 /**
@@ -1277,4 +1389,17 @@ function readFiniteNumberOrNull(value: unknown): number | null {
 
 function readIntegerOrNull(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) ? value : null;
+}
+
+function readBooleanOrNull(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
+}
+
+/** A SHA-256 digest field: absent/null = not sent; anything but 64 hex is a contract error, not a gap. */
+function readDigest(value: unknown, label: string, context: Pick<HttpResponseContext, 'requestId'>) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string' && VALID_SHA256_HEX_REGEX.test(value)) return value.toLowerCase();
+  throw new ApiError(500, 'MALFORMED_ENVELOPE', context.requestId, 'network.unavailable', {
+    serverMessage: `${label} is not a 64-character hex SHA-256`,
+  });
 }

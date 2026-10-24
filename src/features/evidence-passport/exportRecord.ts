@@ -6,7 +6,9 @@ import {
   COMPLETENESS_CLAIM_NOTE,
   MANIFEST_CHECKSUM_LABEL,
   NOT_PINNED_STATEMENT,
+  PINNED_STATEMENT,
   SNAPSHOT_MUTABILITY_NOTE,
+  snapshotIdentityNote,
 } from './notices';
 
 /** Name of the file format, so a reader (or a later importer) can tell what they hold. */
@@ -24,7 +26,8 @@ export interface ExportPayload {
     readonly 'source.snapshot.completenessPct': string;
     readonly fetched: string;
   };
-  readonly reproducibility: { readonly pinnedInputs: false; readonly statement: string };
+  /** `pinnedInputs` is true only for a REPRODUCIBLE_SNAPSHOT record (see `source.reproducibility`). */
+  readonly reproducibility: { readonly pinnedInputs: boolean; readonly statement: string };
   /** The page address the record was opened from; context only. */
   readonly link: string;
   readonly record: EvidenceRecord | CompositeEvidenceRecord;
@@ -35,17 +38,20 @@ export function buildExportPayload(
   record: EvidenceRecord | CompositeEvidenceRecord,
   link: string,
 ): ExportPayload {
+  const pinned = record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT';
   return {
     schema: EXPORT_SCHEMA,
     notice: `${BROWSER_ASSEMBLED_LABEL} ${BROWSER_ASSEMBLED_NOTICE}`,
     fieldNotes: {
-      snapshotId: SNAPSHOT_MUTABILITY_NOTE,
+      snapshotId: pinned ? snapshotIdentityNote(record.source.reproducibility) : SNAPSHOT_MUTABILITY_NOTE,
       'source.snapshot.reportedManifestChecksum': MANIFEST_CHECKSUM_LABEL,
       'source.snapshot.completenessPct': `Menurut server. ${COMPLETENESS_CLAIM_NOTE}`,
       fetched:
-        'Permintaan yang dikirim peramban (tanpa host atau kredensial) dan respons yang diterima; waktu terima memakai jam peramban. Tidak ada ID laporan, hash isi, atau tanda waktu server yang ditambahkan.',
+        'Permintaan yang dikirim peramban (tanpa host atau kredensial) dan respons yang diterima; waktu terima memakai jam peramban. "contentSha256" disalin dari respons Data Hub; tidak ada ID laporan, hash, atau tanda waktu server yang dibuat peramban.',
     },
-    reproducibility: { pinnedInputs: false, statement: NOT_PINNED_STATEMENT },
+    reproducibility: pinned
+      ? { pinnedInputs: true, statement: PINNED_STATEMENT }
+      : { pinnedInputs: false, statement: NOT_PINNED_STATEMENT },
     link,
     record,
   };
