@@ -117,16 +117,96 @@ tr[data-blocked] th[scope='row'] {
   background: color-mix(in srgb, var(--nm-accent) 12%, transparent);
 }
 
+/* Both regions report their own loading or error state. */
+.slotStates {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+
+.context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.passport {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.catalogError {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+/* A flag that means "not a direct kabupaten/kota measurement" must read as a caution, not as muted text. */
+.cautionFlag {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
 @media (width <= 720px) {
-  .pickers {
+  .pickers,
+  .slotStates {
     grid-template-columns: 1fr;
   }
 
-  /* The table scrolls sideways inside its frame; the indicator name stays in view. */
-  .table tbody th[scope='row'] {
-    position: sticky;
-    left: 0;
-    min-width: 150px;
-    background: var(--c-surface);
+  .result {
+    padding: 16px;
+  }
+
+  /*
+   * Card view: each indicator becomes a stacked card (name, A, B, difference) instead of a wide
+   * table, so the difference is never off-screen. Cells are labelled from data-label.
+   */
+  .table,
+  .table tbody,
+  .table tr,
+  .table td,
+  .table tbody th {
+    display: block;
+    min-width: 0;
+  }
+
+  .table {
+    min-width: 0;
+  }
+
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .table tbody tr {
+    padding: 4px 0 12px;
+    border-top: 1px solid var(--c-input-border);
+  }
+
+  .table td,
+  .table tbody th {
+    border-top: 0;
+    padding: 6px 4px;
+  }
+
+  .table td[data-label]::before {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--c-text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    content: attr(data-label);
+  }
+
+  .table tbody tr:has(th[colspan]) {
+    padding: 0;
+    border-top: 0;
   }
 }

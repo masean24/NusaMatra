@@ -43,17 +43,53 @@ describe('assessComparison', () => {
     expect(result.blockers.map((blocker) => blocker.code)).toEqual(['IMPUTED_VALUE']);
   });
 
-  it('warns on different years but still compares', () => {
+  it('blocks different years: no difference, and the message names both years', () => {
     const result = assessComparison(measured({ referenceYear: 2021 }), measured({ referenceYear: 2023 }));
-    expect(result.allowed).toBe(true);
-    expect(result.warnings.map((warning) => warning.code)).toEqual(['YEAR_MISMATCH']);
-    expect(result.warnings[0]?.message).toMatch(/2021 dan 2023/);
+    expect(result.allowed).toBe(false);
+    expect(result.difference).toBeNull();
+    expect(result.blockers.map((blocker) => blocker.code)).toEqual(['YEAR_MISMATCH']);
+    expect(result.blockers[0]?.message).toMatch(/2021 dan 2023/);
   });
 
-  it('warns when a year is unknown', () => {
+  it('blocks when a year is unknown', () => {
     const result = assessComparison(measured({ referenceYear: null }), measured());
-    expect(result.allowed).toBe(true);
-    expect(result.warnings.map((warning) => warning.code)).toEqual(['YEAR_UNKNOWN']);
+    expect(result.allowed).toBe(false);
+    expect(result.blockers.map((blocker) => blocker.code)).toEqual(['YEAR_UNKNOWN']);
+  });
+
+  it('blocks two unknown sources instead of treating the same placeholder as one dataset', () => {
+    const unknown = { datasetId: 'unknown_dataset', provenanceKnown: false };
+    const result = assessComparison(measured(unknown), measured(unknown));
+    expect(result.allowed).toBe(false);
+    expect(result.blockers.map((blocker) => blocker.code)).toEqual(['UNKNOWN_PROVENANCE']);
+  });
+
+  it('reports only "missing" when one region has no entry for the indicator', () => {
+    const absent = {
+      value: null,
+      unit: 'percent (%)',
+      referenceYear: null,
+      datasetId: '',
+      qualityFlag: null,
+    };
+    const result = assessComparison(measured(), { ...absent, present: false });
+    expect(result.blockers.map((blocker) => blocker.code)).toEqual(['MISSING_VALUE']);
+  });
+
+  it('is symmetric when the regions are swapped', () => {
+    const forward = assessComparison(measured({ value: 12 }), measured({ value: 4 }));
+    const swapped = assessComparison(measured({ value: 4 }), measured({ value: 12 }));
+    expect(forward.difference).toEqual({ absolute: -8, ratio: 3, higher: 'A' });
+    expect(swapped.difference).toEqual({ absolute: 8, ratio: 3, higher: 'B' });
+  });
+
+  it('treats a measured 0 as a value: 0 vs 0 is equal, 0 vs null is blocked', () => {
+    expect(assessComparison(measured({ value: 0 }), measured({ value: 0 })).difference).toEqual({
+      absolute: 0,
+      ratio: null,
+      higher: 'EQUAL',
+    });
+    expect(assessComparison(measured({ value: 0 }), measured({ value: null })).allowed).toBe(false);
   });
 
   it('gives no ratio when a value is 0 (a ratio to zero is meaningless) but keeps the absolute gap', () => {

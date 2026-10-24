@@ -14,10 +14,12 @@ interface RegionPickerProps {
   readonly slot: string;
   readonly selectedCode: string | null;
   readonly onSelect: (code: string | null) => void;
+  /** The region already chosen in the other slot; it is not offered again. */
+  readonly excludeCode?: string | null;
 }
 
 /** Picks one Data Hub region by searching the real region list; the choice lives in the page URL. */
-export function RegionPicker({ slot, selectedCode, onSelect }: RegionPickerProps) {
+export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null }: RegionPickerProps) {
   const [query, setQuery] = useState('');
   const debounced = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
   const isSearching = selectedCode === null && debounced.length > 0;
@@ -51,12 +53,20 @@ export function RegionPicker({ slot, selectedCode, onSelect }: RegionPickerProps
           />
           {isSearching && (
             <ResourceView state={results.state} onRetry={results.retry} loadingTitle="Mencari wilayah…">
-              {(envelope) =>
-                envelope.data.length === 0 ? (
-                  <p className="kk-small">Tidak ada wilayah yang cocok dengan “{debounced}”.</p>
+              {(envelope) => {
+                const candidates = envelope.data.filter(
+                  (region) =>
+                    (region.adminLevel === 'REGENCY' || region.adminLevel === 'CITY') &&
+                    region.regionId !== excludeCode,
+                );
+                return candidates.length === 0 ? (
+                  <p className="kk-small" role="status">
+                    Tidak ada kabupaten/kota yang cocok dengan “{debounced}”
+                    {excludeCode ? ` (wilayah yang sudah dipilih di slot lain tidak ditawarkan lagi)` : ''}.
+                  </p>
                 ) : (
-                  <ul role="list" className={styles.suggestions}>
-                    {envelope.data.slice(0, MAX_SUGGESTIONS).map((region) => (
+                  <ul role="list" className={styles.suggestions} aria-label={`Hasil pencarian ${slot}`}>
+                    {candidates.slice(0, MAX_SUGGESTIONS).map((region) => (
                       <li key={region.regionId}>
                         <button
                           type="button"
@@ -77,8 +87,8 @@ export function RegionPicker({ slot, selectedCode, onSelect }: RegionPickerProps
                       </li>
                     ))}
                   </ul>
-                )
-              }
+                );
+              }}
             </ResourceView>
           )}
         </>

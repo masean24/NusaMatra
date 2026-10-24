@@ -63,7 +63,6 @@ export function readComparison(input: ComparisonReadingInput): ComparisonReading
       'Arah baik atau buruk indikator ini belum ditetapkan, jadi tidak ada pihak yang dinilai lebih baik.',
     );
   }
-  for (const warning of assessment.warnings) parts.push(`${warning.message} Bandingkan dengan hati-hati.`);
 
   return { verdict, sentence: parts.join(' ') };
 }

@@ -110,10 +110,9 @@ describe('readComparison', () => {
     expect(reading?.sentence).toContain('tidak ada pihak yang dinilai lebih baik');
   });
 
-  it('adds the year limitation and gives nothing for a blocked pair', () => {
-    expect(read(measured(5, { referenceYear: 2021 }), measured(3), 'positive')?.sentence).toContain(
-      'Tahun data berbeda (2021 dan 2025). Bandingkan dengan hati-hati.',
-    );
+  it('gives no reading for a blocked pair: different years, unknown year or province-imputed', () => {
+    expect(read(measured(5, { referenceYear: 2021 }), measured(3), 'positive')).toBeNull();
+    expect(read(measured(5, { referenceYear: null }), measured(3), 'positive')).toBeNull();
     expect(read(measured(5, { qualityFlag: 'IMPUTED_PROVINCE' }), measured(3), 'positive')).toBeNull();
   });
 });
