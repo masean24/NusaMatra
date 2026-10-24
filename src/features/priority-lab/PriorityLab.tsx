@@ -158,6 +158,7 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
         provinceId={provinceId}
         registry={regions ?? []}
         options={options}
+        presets={presets.state.status === 'success' ? presets.state.data.data.presets : null}
         labelOf={labelOf}
         seriesOf={seriesOf}
       />
@@ -174,7 +175,12 @@ function presetsNote(state: ResourceState<{ readonly data: CompositePresetsDTO }
   if (presets.length > 0) notes.push('Titik awal dari Data Hub, bukan rekomendasi resmi.');
   if (rejectedCount > 0) {
     notes.push(
-      `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobotnya tidak tepat 100%.`,
+      `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobot atau keterangan ketersediaannya tidak sesuai kontrak.`,
+    );
+  }
+  if (presets.some((preset) => preset.availability?.rankable === false)) {
+    notes.push(
+      'Skenario bertanda “belum dapat diperingkat” tetap bisa dipilih untuk melihat bobotnya, tetapi peringkatnya tidak ditampilkan.',
     );
   }
   return notes.length > 0 ? notes.join(' ') : null;

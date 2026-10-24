@@ -26,12 +26,36 @@ export interface IndicatorCoverageDTO {
   readonly byIndicator: Readonly<Record<string, IndicatorCoverageEntryDTO>>;
 }
 
+/**
+ * NATIONAL availability of a preset's indicators in the mode (`availability`). This says how much of
+ * the PRESET'S WEIGHT sits on indicators that hold data at all. It is a different thing from the
+ * per-region `coverage_pct` of a composite row, which says how much of the (already renormalized)
+ * weight one region has values for. The two must never be mixed up in code or in wording.
+ */
+export interface PresetAvailabilityDTO {
+  readonly availableIndicators: readonly string[];
+  /** Weighted indicators with no data in this mode; their weight is renormalized over the others. */
+  readonly unavailableIndicators: readonly string[];
+  /** Share (0-100) of regions with a value, per indicator, as the Data Hub reports it. */
+  readonly indicatorCoveragePct: Readonly<Record<string, number>>;
+  /** The preset weights renormalized over the available indicators: integer bps summing to 10 000. */
+  readonly effectiveWeightsBasisPoints: Readonly<Record<string, number>>;
+  /** Share (0-100) of the preset's weight that sits on indicators with national data (`coverage_weight_pct`). */
+  readonly requestedWeightAvailabilityPct: number;
+  /** The Data Hub's own verdict on whether the preset can be ranked in this mode. */
+  readonly rankable: boolean;
+}
+
 export interface CompositePresetDTO {
   readonly presetId: string;
   readonly label: string;
   readonly description: string | null;
+  readonly category: string | null;
+  readonly targetFocus: string | null;
   /** Integer basis points summing to exactly 10 000. */
   readonly weightsBasisPoints: Readonly<Record<string, number>>;
+  /** `null` = the Data Hub did not report availability for this preset (it is then unverified, not "rankable"). */
+  readonly availability: PresetAvailabilityDTO | null;
 }
 
 export interface CompositePresetsDTO {
@@ -114,13 +138,102 @@ function toPreset(raw: unknown): CompositePresetDTO | null {
   }
   const total = Object.values(weights).reduce((sum, bps) => sum + bps, 0);
   if (total !== TOTAL_BASIS_POINTS) return null;
-  return { presetId, label, description: text(raw.description), weightsBasisPoints: weights };
+
+  // `availability` absent = not reported (kept as null, never read as rankable). Present but wrong =
+  // the whole preset is rejected: a verdict on rankability that contradicts itself cannot be trusted.
+  let availability: PresetAvailabilityDTO | null = null;
+  if (raw.availability !== undefined && raw.availability !== null) {
+    availability = toAvailability(raw.availability, weights);
+    if (!availability) return null;
+  }
+  return {
+    presetId,
+    label,
+    description: text(raw.description),
+    category: text(raw.category),
+    targetFocus: text(raw.target_focus),
+    weightsBasisPoints: weights,
+    availability,
+  };
+}
+
+const stringList = (value: unknown): string[] | null =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : null;
+
+/** Tolerance for the percentage the Data Hub reports (one decimal) against the one derived from the weights. */
+const WEIGHT_PCT_TOLERANCE = 0.1;
+
+/**
+ * Reads `availability` and checks it against the preset's own weights: the available and unavailable
+ * indicators must be exactly the weighted ones, `coverage_weight_pct` must equal the weight share of
+ * the available ones, and `effective_weights` must be those weights scaled to exactly 10 000 (within
+ * 1 bp of integer rounding). Anything else returns null.
+ */
+function toAvailability(
+  raw: unknown,
+  weights: Readonly<Record<string, number>>,
+): PresetAvailabilityDTO | null {
+  if (!isRecord(raw) || typeof raw.rankable !== 'boolean') return null;
+  const available = stringList(raw.available_indicators);
+  const unavailable = stringList(raw.unavailable_indicators);
+  const weightPct = finite(raw.coverage_weight_pct);
+  if (!available || !unavailable || weightPct === null || weightPct < 0 || weightPct > 100) return null;
+  if (!isRecord(raw.effective_weights) || !isRecord(raw.indicator_coverage_pct)) return null;
+
+  const weighted = Object.keys(weights);
+  const listed = [...available, ...unavailable];
+  if (
+    new Set(listed).size !== listed.length ||
+    listed.length !== weighted.length ||
+    !weighted.every((id) => listed.includes(id))
+  ) {
+    return null;
+  }
+
+  const availableBps = available.reduce((sum, id) => sum + (weights[id] ?? 0), 0);
+  if (Math.abs((availableBps * 100) / TOTAL_BASIS_POINTS - weightPct) > WEIGHT_PCT_TOLERANCE) return null;
+
+  const effective: Record<string, number> = {};
+  for (const [id, value] of Object.entries(raw.effective_weights)) {
+    const bps = count(value);
+    if (bps === null || bps > TOTAL_BASIS_POINTS) return null;
+    effective[id] = bps;
+  }
+  if (available.length === 0) {
+    if (Object.keys(effective).length > 0 || raw.rankable) return null;
+  } else {
+    const effectiveTotal = Object.values(effective).reduce((sum, bps) => sum + bps, 0);
+    if (effectiveTotal !== TOTAL_BASIS_POINTS) return null;
+    const sameIds =
+      Object.keys(effective).length === available.length && available.every((id) => id in effective);
+    const proportional = available.every(
+      (id) => Math.abs((effective[id] ?? 0) - ((weights[id] ?? 0) * TOTAL_BASIS_POINTS) / availableBps) <= 1,
+    );
+    if (!sameIds || !proportional) return null;
+  }
+
+  const indicatorCoveragePct: Record<string, number> = {};
+  for (const [id, value] of Object.entries(raw.indicator_coverage_pct)) {
+    const pct = finite(value);
+    if (pct === null || pct < 0 || pct > 100) return null;
+    indicatorCoveragePct[id] = pct;
+  }
+  return {
+    availableIndicators: available,
+    unavailableIndicators: unavailable,
+    indicatorCoveragePct,
+    effectiveWeightsBasisPoints: effective,
+    requestedWeightAvailabilityPct: weightPct,
+    rankable: raw.rankable,
+  };
 }
 
 /**
  * The guide names this endpoint but does not show its payload, so the accepted shape is stated here:
  * a list (as `data` or `data.presets`) of `{ id | preset_id, name | label | title, description?,
- * weights | weights_basis_points }`. Anything else is rejected and counted.
+ * weights | weights_basis_points, availability? }`. Anything else is rejected and counted. Production
+ * (captured 2026-10-23) sends `data` as a direct array with `preset_id`, `title`, `category`,
+ * `target_focus`, `weights` and `availability`.
  */
 export function mapCompositePresetsData(rawData: unknown, meta: AdaptedResponseMeta): CompositePresetsDTO {
   const list = Array.isArray(rawData)

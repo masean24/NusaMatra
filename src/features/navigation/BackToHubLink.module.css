@@ -40,3 +40,9 @@
     background: var(--nm-land-2);
   }
 }
+
+@media print {
+  .link {
+    display: none;
+  }
+}

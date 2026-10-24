@@ -1,0 +1,489 @@
+/*
+ * Paspor Bukti. Colours come only from the semantic tokens, so Normal and Kaca both work without any
+ * branching. Everything that carries meaning (mode, class of evidence) is also text, and every tag
+ * has a border so it survives printing, where background colours are usually dropped.
+ */
+.document {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  min-width: 0;
+  /* Long identifiers and addresses wrap instead of widening the page. */
+  overflow-wrap: break-word;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.headerTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.question {
+  color: var(--c-text-muted);
+  max-width: 70ch;
+}
+
+.notice {
+  padding: 14px 16px;
+  border: 1.5px dashed currentcolor;
+  border-radius: var(--nm-radius-control);
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+  max-width: 80ch;
+}
+
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding: 20px;
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1.5px solid currentcolor;
+  border-radius: var(--nm-radius-chip);
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.tagWarn {
+  border-color: var(--nm-priority-5);
+  background: var(--nm-priority-2);
+  color: var(--nm-text);
+}
+
+.snapshotNote {
+  padding: 8px 12px;
+  border-left: 4px solid currentcolor;
+  font-weight: 500;
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+.code {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.facts > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.facts dt {
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.linkWarnings {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linkWarning {
+  padding: 12px 14px;
+  border: 1.5px solid currentcolor;
+  border-radius: var(--nm-radius-control);
+  background: var(--c-surface);
+  color: var(--c-text);
+}
+
+.linkWarning[data-severity='warning'] {
+  border-color: var(--nm-priority-5);
+  border-width: 2px;
+}
+
+.regionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+}
+
+.regionCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--c-input-border);
+  border-radius: var(--nm-radius-control);
+  min-width: 0;
+}
+
+.list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.missingList {
+  columns: 2 280px;
+  column-gap: 24px;
+}
+
+.missingList li {
+  break-inside: avoid;
+  margin-bottom: 6px;
+}
+
+/*
+ * Wide tables scroll inside their own box; the page itself never scrolls sideways. The box is
+ * positioned so the visually hidden text inside it (`.srOnly`, absolutely positioned) is placed
+ * inside the box. Without that, such text sits at its static position far to the right, outside
+ * every clipping ancestor, and widens the whole page.
+ */
+.tableScroll {
+  position: relative;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tableScroll:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table caption {
+  padding-bottom: 8px;
+  text-align: left;
+  font-weight: 500;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--c-input-border);
+  vertical-align: top;
+}
+
+.table thead th {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  white-space: nowrap;
+}
+
+.table tbody th {
+  font-weight: 500;
+}
+
+.cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  min-width: 0;
+}
+
+.value {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.value[data-missing] {
+  color: var(--c-text-muted);
+  font-style: italic;
+}
+
+.link {
+  color: var(--c-text-strong-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.actions {
+  display: grid;
+  gap: 10px;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fallbackField {
+  width: 100%;
+  min-height: 140px;
+  padding: 12px;
+  border: 1.5px solid var(--c-input-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--c-input-bg);
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.details > summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.details > summary:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.invalid {
+  display: grid;
+  gap: 14px;
+}
+
+.printHeader {
+  display: none;
+}
+
+/*
+ * Print. The record must print as a plain, readable document: dark text on white, no glass, no
+ * shadows, nothing interactive, and the mode and snapshot repeated at the top of every page.
+ * Page chrome (navigation, footer) is hidden by the app shell's own print rules.
+ */
+@media print {
+  .document {
+    --c-text: #000;
+    --c-text-muted: #333;
+    --c-surface: #fff;
+    --c-surface-muted: #fff;
+    --c-surface-border: #000;
+    --c-input-border: #777;
+    --c-text-strong-accent: #000;
+
+    display: block;
+    /* Never wider than the page: a flex/grid parent would otherwise size this box by its widest table. */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    color: #000;
+    background: #fff;
+    font-size: 11pt;
+  }
+
+  /*
+   * Printed tables wrap instead of clipping. The scroll box does not clip in print (overflow
+   * visible below), so a nowrap cell would set the table's min-content and push every box wider than
+   * the sheet. Cells therefore wrap (words stay whole; only a string too long for its cell, such as an
+   * address or an id, is broken) and nothing may exceed the printable width.
+   */
+  .document * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .document .table th,
+  .document .table td,
+  .document .tag,
+  .document .tagWarn,
+  .document .numeric,
+  .document .value {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .document .link,
+  .document .code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .document .table th,
+  .document .table td {
+    padding: 3pt 4pt;
+  }
+
+  .document .tag,
+  .document .tagWarn {
+    padding: 1pt 3pt;
+    font-size: 7.5pt;
+  }
+
+  .document .wideTable {
+    font-size: 8.5pt;
+  }
+
+  .document > * + * {
+    margin-top: 12pt;
+  }
+
+  .noPrint {
+    display: none !important;
+  }
+
+  .section,
+  .notice,
+  .linkWarning,
+  .regionCard {
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: #000 !important;
+    break-inside: auto;
+  }
+
+  .section {
+    padding: 8pt 10pt;
+  }
+
+  .tag,
+  .tagWarn {
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+  }
+
+  .tableScroll {
+    overflow: visible;
+  }
+
+  .table {
+    width: 100%;
+    min-width: 0;
+    font-size: 9.5pt;
+  }
+
+  .table thead {
+    display: table-header-group;
+  }
+
+  .table tr {
+    break-inside: avoid;
+  }
+
+  .link {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  /* Print the address after the link text so a paper copy still shows where it points. */
+  .link[href^='http']::after {
+    content: ' <' attr(href) '>';
+    font-size: 8pt;
+    overflow-wrap: anywhere;
+  }
+
+  /*
+   * First line of the printout. It is in the normal flow: a fixed element placed in the page margin
+   * is drawn over the content in Chromium's PDF output. The line repeated on every page comes from
+   * the page margin boxes written by `PrintRunningHeader`.
+   */
+  .printHeader {
+    display: block;
+    margin: 0 0 8pt;
+    padding: 0 0 4pt;
+    border-bottom: 1px solid #000;
+    color: #000;
+    font-size: 9pt;
+    font-weight: 600;
+  }
+}
+
+@page {
+  margin: 20mm 14mm 16mm;
+}
+
+/* Composite (Lab) passport */
+.wideTable {
+  min-width: 980px;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.criteriaList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The row of the region the reader came for: a thick edge as well as a tint, never colour alone. */
+.focusRow th,
+.focusRow td {
+  background: var(--c-surface-muted);
+  border-top: 3px solid currentcolor;
+  border-bottom: 3px solid currentcolor;
+}
+
+@media print {
+  .wideTable {
+    min-width: 0;
+  }
+
+  .focusRow th,
+  .focusRow td {
+    background: #fff;
+  }
+}

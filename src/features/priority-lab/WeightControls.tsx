@@ -51,6 +51,17 @@ export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPick
               }}
             >
               {preset.label}
+              {preset.availability && !preset.availability.rankable && (
+                <span className={styles.chipNote}>
+                  Belum dapat diperingkat · data nasional {preset.availability.requestedWeightAvailabilityPct}
+                  % bobot
+                </span>
+              )}
+              {preset.availability?.rankable && preset.availability.requestedWeightAvailabilityPct < 100 && (
+                <span className={styles.chipNote}>
+                  Data nasional {preset.availability.requestedWeightAvailabilityPct}% bobot, sisanya dialihkan
+                </span>
+              )}
             </button>
           ))}
         </div>

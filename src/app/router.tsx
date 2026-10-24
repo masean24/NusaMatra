@@ -5,6 +5,7 @@ import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
 import { AccessibilityPage } from './pages/AccessibilityPage';
 import { ComparisonPage } from './pages/ComparisonPage';
+import { EvidencePassportPage } from './pages/EvidencePassportPage';
 import { ExplorePage } from './pages/ExplorePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PriorityLabPage } from './pages/PriorityLabPage';
@@ -14,6 +15,7 @@ const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement
   '/jelajahi': (shell) => <ExplorePage shell={shell} />,
   '/bandingkan': (shell) => <ComparisonPage shell={shell} />,
   '/lab-prioritas': (shell) => <PriorityLabPage shell={shell} />,
+  '/paspor-bukti': (shell) => <EvidencePassportPage shell={shell} />,
 };
 
 function pageFor(shell: FeatureShell): ReactElement {

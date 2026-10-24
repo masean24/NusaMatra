@@ -37,11 +37,15 @@ export function AppLayout() {
       <a href="#konten-utama" className={styles.skipLink}>
         Lewati ke konten utama
       </a>
-      <FloatingNavbar />
+      <div className={styles.screenOnly}>
+        <FloatingNavbar />
+      </div>
       <main id="konten-utama" ref={mainRef} tabIndex={-1} className={styles.main}>
         <Outlet />
       </main>
-      <SiteFooter />
+      <div className={styles.screenOnly}>
+        <SiteFooter />
+      </div>
       <ScrollRestoration getKey={(location) => location.pathname} />
     </>
   );

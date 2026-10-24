@@ -1,9 +1,17 @@
-import type { CompositeIntegrity, CompositeIssue } from '@/domain/prioritization';
+import { ButtonLink } from '@/components/ui/Button/Button';
+import {
+  FRONTEND_MIN_REQUESTED_WEIGHT_PCT,
+  type CompositeIntegrity,
+  type CompositeIssue,
+} from '@/domain/prioritization';
+import { passportHref } from '@/features/evidence-passport';
 import type { DataHubRegionDTO, ExploratoryCompositeResultDTO } from '@/services/api';
 import {
   compareWeights,
   directionLabel,
+  directionVerdictText,
   excludedRegions,
+  indicatorCoverageText,
   percentLabel,
   regionLabel,
   type IndicatorOption,
@@ -42,13 +50,29 @@ interface LabDetailsProps {
   readonly integrity: CompositeIntegrity | null;
   readonly registry: readonly DataHubRegionDTO[];
   readonly checks: readonly DirectionCheck[] | null;
+  /** The weights the calculation was REQUESTED with (integer bp, total 10 000): what a Paspor Bukti reproduces. */
+  readonly requestedWeights: Readonly<Record<string, number>>;
+  /**
+   * The result passed every check (integrity, and in LIVE the direction check) and is not withheld, so a
+   * Paspor Bukti may be made from it. False for a blocked, non-rankable or still-unchecked result.
+   */
+  readonly passportAllowed: boolean;
 }
 
 /**
  * Everything a careful reader may want to verify, closed by default: sources, the weights actually
  * used, who is left out and why, what was checked, and the record a Paspor Bukti will keep.
  */
-export function LabDetails({ options, chosenIds, result, integrity, registry, checks }: LabDetailsProps) {
+export function LabDetails({
+  options,
+  chosenIds,
+  result,
+  integrity,
+  registry,
+  checks,
+  requestedWeights,
+  passportAllowed,
+}: LabDetailsProps) {
   const optionOf = (id: string) => options.find((option) => option.id === id);
   const labelOf = (id: string) => optionOf(id)?.label ?? id;
   const excluded = result ? excludedRegions(registry, result) : [];
@@ -72,9 +96,9 @@ export function LabDetails({ options, chosenIds, result, integrity, registry, ch
                     {option?.agency ?? 'Sumber tidak disebutkan'}
                     {option?.referenceYear != null && ` · ${String(option.referenceYear)}`}
                     {option && ` · ${option.unit} · ${directionLabel(option.polarity)}`}
-                    {option?.coverageCount != null &&
-                      option.totalRegions != null &&
-                      ` · data untuk ${String(option.coverageCount)} dari ${String(option.totalRegions)} wilayah`}
+                    {option &&
+                      indicatorCoverageText(option) !== null &&
+                      ` · data untuk ${indicatorCoverageText(option) ?? ''}`}
                   </span>
                 </li>
               );
@@ -95,7 +119,7 @@ export function LabDetails({ options, chosenIds, result, integrity, registry, ch
                 <tr>
                   <th scope="col">Kriteria</th>
                   <th scope="col">Pilihan Anda</th>
-                  <th scope="col">Dipakai</th>
+                  <th scope="col">Dipakai (bobot global)</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,8 +141,8 @@ export function LabDetails({ options, chosenIds, result, integrity, registry, ch
               {excluded.length} wilayah tidak ikut dihitung
             </h3>
             <p className={styles.muted}>
-              Data Hub tidak menyertakannya, biasanya karena salah satu kriteria terpilih belum punya data
-              untuk wilayah itu. Wilayah ini tidak diberi skor, bukan diberi skor nol.
+              Wilayah ini tidak tercantum di peringkat maupun di daftar “data belum cukup” dari Data Hub.
+              Mereka tidak diberi skor, bukan diberi skor nol.
             </p>
             <ul role="list" className={styles.excludedList}>
               {excluded.map((region) => (
@@ -134,28 +158,39 @@ export function LabDetails({ options, chosenIds, result, integrity, registry, ch
           </h3>
           <ul role="list" className={styles.methodList}>
             <li>
-              Data Hub mengubah setiap kriteria ke skala 0–100 (100 = kondisi terbaik di antara wilayah yang
-              dihitung). Skor gabungan = jumlah skor kriteria × bobot.
+              Data Hub mengubah setiap kriteria ke skala kebutuhan 0–100 (100 = kebutuhan tertinggi di antara
+              wilayah yang dihitung; nilai mentah yang lebih baik memberi skor lebih rendah). Skor gabungan =
+              jumlah skor kriteria × bobot wilayah itu. Peringkat 1 = prioritas tertinggi; peringkat dan
+              peringkat nasional dipakai apa adanya dari Data Hub, termasuk peringkat yang sama untuk skor
+              yang sama.
             </li>
             <li>
               Bobot dikirim sebagai bilangan bulat dengan total tepat 10.000 (= 100%). Kriteria tanpa data
-              tidak dihitung; bobotnya dibagi ke kriteria lain.
+              nasional tidak dihitung; bobotnya dibagi ke kriteria lain. Tiap wilayah punya bobot sendiri
+              (total 10.000) atas kriteria yang datanya ada; wilayah berdata sebagian diberi tanda.
+            </li>
+            <li>
+              Dua ukuran cakupan yang berbeda: <strong>ketersediaan data nasional</strong> atas bobot pilihan
+              Anda{' '}
+              {integrity?.requestedWeightAvailabilityPct == null
+                ? '(tidak dilaporkan)'
+                : `(${integrity.requestedWeightAvailabilityPct.toFixed(0)}%)`}{' '}
+              dan <strong>cakupan per wilayah</strong> (bagian bobot yang punya data di wilayah itu). Syarat
+              minimal {String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT)}% ketersediaan nasional adalah kebijakan
+              antarmuka Nusa Matra, bukan aturan Data Hub.
             </li>
             {integrity && (
               <li>
-                Diperiksa di peramban: total bobot, bobot yang dipakai, rentang 0–100, setiap skor sama dengan
-                jumlah komponennya (selisih terbesar {integrity.maxScoreError.toFixed(3)}), urutan peringkat,
-                dan tidak ada data kosong yang dihitung nol.
+                Diperiksa di peramban: total bobot, bobot yang dipakai, arah skor, rentang 0–100, setiap skor
+                sama dengan jumlah komponennya menurut bobot wilayahnya (selisih terbesar{' '}
+                {integrity.maxScoreError.toFixed(3)}, batas pembulatan 0,01 + 0,005 per komponen), urutan
+                peringkat dan peringkat nasional, ambang cakupan, dan tidak ada data kosong yang dihitung nol.
               </li>
             )}
             {checks?.map(({ indicatorId, verdict }) => (
               <li key={indicatorId}>
                 Arah skor {labelOf(indicatorId)}:{' '}
-                {verdict.status === 'consistent'
-                  ? `sesuai data sumber (${String(verdict.checked)} wilayah)`
-                  : verdict.status === 'unverifiable'
-                    ? `belum dapat diperiksa — ${verdict.reason}`
-                    : `tidak sesuai — ${verdict.reason}`}
+                {directionVerdictText(verdict, (regionId) => regionLabel(regionId, registry))}
               </li>
             ))}
           </ul>
@@ -186,6 +221,24 @@ export function LabDetails({ options, chosenIds, result, integrity, registry, ch
                 </dd>
               </div>
               <div>
+                <dt>Arah skor</dt>
+                <dd>
+                  {result.scoreDirection === 'higher_is_need'
+                    ? 'Skor tinggi = kebutuhan intervensi tinggi (peringkat 1 = prioritas tertinggi)'
+                    : 'Tidak dinyatakan Data Hub'}
+                </dd>
+              </div>
+              <div>
+                <dt>Layak nasional</dt>
+                <dd>
+                  {result.totalEligibleNational === null
+                    ? 'Tidak dilaporkan'
+                    : `${String(result.totalEligibleNational)} wilayah (di Data Hub); ${String(result.items.length)} diperingkat di tampilan ini`}
+                  {result.insufficient.length > 0 &&
+                    ` · ${String(result.insufficient.length)} data belum cukup`}
+                </dd>
+              </div>
+              <div>
                 <dt>Bobot dipakai</dt>
                 <dd>
                   {Object.entries(integrity.weightsUsed)
@@ -195,10 +248,24 @@ export function LabDetails({ options, chosenIds, result, integrity, registry, ch
                 </dd>
               </div>
             </dl>
-            <p className={styles.muted}>
-              Paspor Bukti (segera hadir) akan menyimpan catatan ini. Hasil di halaman ini belum disimpan dan
-              belum punya ID permanen.
-            </p>
+            {passportAllowed ? (
+              <p className={styles.passportCta}>
+                <ButtonLink
+                  variant="secondary"
+                  to={passportHref({
+                    kind: 'lab',
+                    weights: requestedWeights,
+                    provinceId: result.filterProvinceId,
+                    mode: result.dataMode,
+                    snapshotId: result.snapshotId,
+                  })}
+                >
+                  Buat Paspor Bukti
+                </ButtonLink>
+              </p>
+            ) : (
+              <p className={styles.muted}>Paspor Bukti tidak dibuat karena peringkat ditahan.</p>
+            )}
           </section>
         )}
       </div>

@@ -18,6 +18,7 @@ import type {
   DecimalString,
   ExploratoryCompositeResultDTO,
   ExploratoryRegionRankDTO,
+  InsufficientRegionDTO,
   GeoAnchorPointDTO,
   IndicatorCatalogDTO,
   IndicatorSummaryStatsDTO,
@@ -746,9 +747,14 @@ export function validateAndBuildCompositeWeights(
 }
 
 /**
- * Maps `POST /api/v1/indicators/composite-query` (`composite_valid.json`).
+ * Maps `POST /api/v1/indicators/composite-query` (Data Hub v2.1; `composite_valid.json` is the older DEMO v0.1 shape).
  * Explicitly marks `runId: null`, `isExploratoryPreview: true`, and
  * `weightedContributionsAvailable: false` (ARGON_RUNTIME_CONTRACT.md Blocker #5).
+ *
+ * v2.1 fields are optional on the wire so that an older response still decodes (as `null`, "not
+ * reported"); a field that IS present but has the wrong type rejects the whole response, because a
+ * ranking built on a misread field is worse than none. This mapper reads and structurally validates;
+ * the arithmetic and cross-field contradictions are judged by `assessCompositeIntegrity`.
  */
 function readBasisPointRecord(value: unknown): Record<string, number> | null {
   if (!isRecord(value)) return null;
@@ -758,6 +764,105 @@ function readBasisPointRecord(value: unknown): Record<string, number> | null {
     if (parsed !== null) weights[indicatorId] = parsed;
   }
   return weights;
+}
+
+function malformedComposite(meta: AdaptedResponseMeta, message: string): ApiError {
+  return new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
+    serverMessage: message,
+  });
+}
+
+/** Absent / null = not reported; present with the wrong type = malformed. */
+function optionalStrict<T>(
+  value: unknown,
+  read: (value: unknown) => T | null,
+  meta: AdaptedResponseMeta,
+  label: string,
+): T | null {
+  if (value === undefined || value === null) return null;
+  const parsed = read(value);
+  if (parsed === null) throw malformedComposite(meta, `Composite field "${label}" has an invalid value`);
+  return parsed;
+}
+
+const readStringList = (value: unknown): string[] | null =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : null;
+
+const readStringMap = (value: unknown): Record<string, string> | null => {
+  if (!isRecord(value)) return null;
+  const entries = Object.entries(value);
+  return entries.every(([, flag]) => typeof flag === 'string')
+    ? (Object.fromEntries(entries) as Record<string, string>)
+    : null;
+};
+
+/** Integer basis points only; any other member makes the whole record invalid (nothing is skipped). */
+const readStrictBasisPoints = (value: unknown): Record<string, number> | null => {
+  if (!isRecord(value)) return null;
+  const weights: Record<string, number> = {};
+  for (const [id, bps] of Object.entries(value)) {
+    const parsed = readIntegerOrNull(bps);
+    if (parsed === null || parsed < 0) return null;
+    weights[id] = parsed;
+  }
+  return weights;
+};
+
+const readNonNegativeInteger = (value: unknown): number | null => {
+  const parsed = readIntegerOrNull(value);
+  return parsed !== null && parsed >= 0 ? parsed : null;
+};
+
+const readPercent = (value: unknown): number | null => {
+  const parsed = readFiniteNumberOrNull(value);
+  return parsed !== null && parsed >= 0 && parsed <= 100 ? parsed : null;
+};
+
+/** A missing component is `null`; a genuine 0 stays `"0"`. Never coerced. */
+function readComponentScores(value: unknown): Record<string, DecimalString | null> {
+  const scores: Record<string, DecimalString | null> = {};
+  if (isRecord(value)) {
+    for (const [indicatorId, score] of Object.entries(value)) {
+      scores[indicatorId] = parseOptionalDecimalString(score);
+    }
+  }
+  return scores;
+}
+
+function rejectSyntheticNameInLive(meta: AdaptedResponseMeta, regionName: string | null): void {
+  if (meta.dataMode === 'LIVE' && regionName && SYNTHETIC_DEMO_NAME_REGEX.test(regionName)) {
+    throw new ApiError(409, 'MODE_MISMATCH', meta.serverRequestId, 'data.live_unavailable', {
+      serverMessage: 'Synthetic DEMO ranking in LIVE payload',
+    });
+  }
+}
+
+function mapInsufficientRegion(row: unknown, meta: AdaptedResponseMeta): InsufficientRegionDTO {
+  if (!isRecord(row)) throw malformedComposite(meta, 'insufficient_data row is not an object');
+  const regionId = readString(row.region_id);
+  const regionNameId = readString(row.region_name);
+  const reason = readString(row.reason);
+  if (!regionId || !regionNameId || !reason) {
+    throw malformedComposite(meta, 'insufficient_data row is missing region_id, region_name or reason');
+  }
+  rejectSyntheticNameInLive(meta, regionNameId);
+  // A region listed here was NOT ranked. A rank or score on it would contradict that; refuse it.
+  if (row.rank != null || row.composite_score != null) {
+    throw malformedComposite(meta, `insufficient_data row ${regionId} carries a rank or a score`);
+  }
+  return {
+    regionId,
+    regionNameId,
+    regionDisplayName: regionNameId,
+    coveragePct: optionalStrict(row.coverage_pct, readPercent, meta, 'insufficient_data.coverage_pct'),
+    componentsUsed:
+      optionalStrict(row.components_used, readStringList, meta, 'insufficient_data.components_used') ?? [],
+    missingIndicators:
+      optionalStrict(row.missing_indicators, readStringList, meta, 'insufficient_data.missing_indicators') ??
+      [],
+    componentScoresDecimal: readComponentScores(row.component_scores),
+    reason,
+  };
 }
 
 export function mapCompositeQueryData(
@@ -789,11 +894,7 @@ export function mapCompositeQueryData(
 
     const regionId = readString(row.region_id);
     const regionNameId = readString(row.region_name);
-    if (meta.dataMode === 'LIVE' && regionNameId && SYNTHETIC_DEMO_NAME_REGEX.test(regionNameId)) {
-      throw new ApiError(409, 'MODE_MISMATCH', meta.serverRequestId, 'data.live_unavailable', {
-        serverMessage: 'Synthetic DEMO ranking in LIVE payload',
-      });
-    }
+    rejectSyntheticNameInLive(meta, regionNameId);
     const rankPosition = readIntegerOrNull(row.rank);
 
     if (!regionId || !regionNameId) {
@@ -807,22 +908,32 @@ export function mapCompositeQueryData(
       throw new Error('Composite result must block both rank and score together');
     }
 
-    const componentScoresDecimal: Record<string, DecimalString | null> = {};
-    if (isRecord(row.component_scores)) {
-      for (const [indId, compVal] of Object.entries(row.component_scores)) {
-        componentScoresDecimal[indId] = parseOptionalDecimalString(compVal);
-      }
-    }
-
     return {
       regionId,
       regionNameId,
       regionDisplayName: regionNameId,
       compositeScoreDecimal,
       rankPosition,
-      componentScoresDecimal,
+      nationalRank: optionalStrict(row.national_rank, readNonNegativeInteger, meta, 'national_rank'),
+      coveragePct: optionalStrict(row.coverage_pct, readPercent, meta, 'coverage_pct'),
+      componentsUsed: optionalStrict(row.components_used, readStringList, meta, 'components_used'),
+      missingIndicators: optionalStrict(row.missing_indicators, readStringList, meta, 'missing_indicators'),
+      effectiveWeightsRegion: optionalStrict(
+        row.effective_weights_region,
+        readStrictBasisPoints,
+        meta,
+        'effective_weights_region',
+      ),
+      qualityFlags: optionalStrict(row.quality_flags, readStringMap, meta, 'quality_flags'),
+      componentScoresDecimal: readComponentScores(row.component_scores),
     };
   });
+
+  const insufficientRaw = rawData.insufficient_data;
+  if (insufficientRaw !== undefined && insufficientRaw !== null && !Array.isArray(insufficientRaw)) {
+    throw malformedComposite(meta, 'Composite field "insufficient_data" must be a list');
+  }
+  const insufficient = (insufficientRaw ?? []).map((row: unknown) => mapInsufficientRegion(row, meta));
 
   return {
     runId: null,
@@ -832,12 +943,23 @@ export function mapCompositeQueryData(
     dataMode: meta.dataMode,
     snapshotId: meta.snapshotId,
     totalRegions,
+    scoreDirection: optionalStrict(rawData.score_direction, readString, meta, 'score_direction'),
+    totalEligibleNational: optionalStrict(
+      rawData.total_eligible_national,
+      readNonNegativeInteger,
+      meta,
+      'total_eligible_national',
+    ),
+    totalExcluded: optionalStrict(rawData.total_excluded, readNonNegativeInteger, meta, 'total_excluded'),
+    minCoveragePct: optionalStrict(rawData.min_coverage_pct, readPercent, meta, 'min_coverage_pct'),
+    minComponents: optionalStrict(rawData.min_components, readNonNegativeInteger, meta, 'min_components'),
     weightsBasisPoints,
     renormalized: typeof rawData.renormalized === 'boolean' ? rawData.renormalized : null,
     unavailableIndicatorIds,
     effectiveWeightsBasisPoints: readBasisPointRecord(rawData.effective_weights),
     filterProvinceId,
     items,
+    insufficient,
   };
 }
 

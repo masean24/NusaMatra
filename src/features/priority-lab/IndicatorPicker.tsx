@@ -1,5 +1,5 @@
 import { categoryLabel } from '@/features/data-hub';
-import { directionLabel, unavailableReason, type IndicatorOption } from './labModel';
+import { directionLabel, indicatorCoverageText, unavailableReason, type IndicatorOption } from './labModel';
 import styles from './PriorityLab.module.css';
 
 interface IndicatorPickerProps {
@@ -67,9 +67,8 @@ export function IndicatorPicker({ options, selected, onToggle, maxSelected }: In
                               {option.agency ?? 'Sumber tidak disebutkan'}
                               {option.referenceYear !== null && ` · ${String(option.referenceYear)}`} ·{' '}
                               {option.unit} · {directionLabel(option.polarity)}
-                              {option.coverageCount !== null &&
-                                option.totalRegions !== null &&
-                                ` · ${String(option.coverageCount)} dari ${String(option.totalRegions)} wilayah`}
+                              {indicatorCoverageText(option) !== null &&
+                                ` · ${indicatorCoverageText(option) ?? ''}`}
                             </>
                           )}
                         </span>

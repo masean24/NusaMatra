@@ -238,18 +238,69 @@ export interface WeightedCriterionInput {
   readonly basisPoints: number;
 }
 
+/**
+ * Per-region quality flag as the Data Hub reports it for one component (`quality_flags[indicator]`).
+ * Kept as the raw vocabulary string: `VERIFIED`, `IMPUTED_PROVINCE` (value estimated at province level,
+ * NOT a kabupaten/kota measurement) and, in DEMO, `DEMO_EXAMPLE`. Unknown values are passed through,
+ * never translated into a better-sounding one.
+ */
+export type ComponentQualityFlag = string;
+
 export interface ExploratoryRegionRankDTO {
   readonly regionId: string;
   /** This is a literal backend label rather than a translation key. */
   readonly regionNameId: string;
   readonly regionDisplayName: string;
   readonly compositeScoreDecimal: DecimalString | null;
-  readonly rankPosition: number | null;
   /**
-   * Normalized 0-100 score per criterion returned by FastAPI v0.1.0.
+   * Rank within the RETURNED list (filter-scoped), exactly as the Data Hub sent it: rank 1 is the
+   * highest intervention need (`score_direction: higher_is_need`); equal scores share a rank
+   * (1, 1, 3). Never recomputed by the frontend.
+   */
+  readonly rankPosition: number | null;
+  /** Position among all nationally eligible regions (Guide v2.1 `national_rank`); `null` = not reported. */
+  readonly nationalRank: number | null;
+  /**
+   * Share (0-100) of the nationally available effective weight this region has data for
+   * (`coverage_pct`). PER-REGION data completeness. Not the same as the share of the user's REQUESTED
+   * weight that has national data (see `requestedWeightAvailabilityPct` in the integrity assessment).
+   * `null` = not reported.
+   */
+  readonly coveragePct: number | null;
+  /** Indicators this region's score is built from (`components_used`); `null` = not reported (v1). */
+  readonly componentsUsed: readonly string[] | null;
+  /** Nationally available indicators this region has no value for (`missing_indicators`); `null` = not reported. */
+  readonly missingIndicators: readonly string[] | null;
+  /**
+   * Weights, in basis points summing to 10 000, over `componentsUsed` only (`effective_weights_region`).
+   * The score is reconstructed with THESE, never with the global effective weights. `null` = not reported (v1).
+   */
+  readonly effectiveWeightsRegion: Readonly<Record<string, number>> | null;
+  /** Quality flag per used component (`quality_flags`); `null` = not reported (v1). */
+  readonly qualityFlags: Readonly<Record<string, ComponentQualityFlag>> | null;
+  /**
+   * Normalized 0-100 score per criterion; higher = higher need. `null` = no observation (missing),
+   * a genuine `"0"` is a valid observed value.
    * WARNING: These are unweighted component scores, NOT weighted contributions summing to compositeScore.
    */
   readonly componentScoresDecimal: Readonly<Record<string, DecimalString | null>>;
+}
+
+/**
+ * A region the Data Hub could not rank (`insufficient_data[]`): coverage below the threshold or fewer
+ * than the minimum components. It has no score and no rank, and must never be given one.
+ */
+export interface InsufficientRegionDTO {
+  readonly regionId: string;
+  readonly regionNameId: string;
+  readonly regionDisplayName: string;
+  /** Per-region coverage (0-100) that fell short; `null` = not reported. */
+  readonly coveragePct: number | null;
+  readonly componentsUsed: readonly string[];
+  readonly missingIndicators: readonly string[];
+  readonly componentScoresDecimal: Readonly<Record<string, DecimalString | null>>;
+  /** Backend reason code, e.g. `COVERAGE_BELOW_THRESHOLD`. */
+  readonly reason: string;
 }
 
 export interface ExploratoryCompositeResultDTO {
@@ -261,7 +312,21 @@ export interface ExploratoryCompositeResultDTO {
   readonly contributions: null;
   readonly dataMode: DataMode;
   readonly snapshotId: string;
+  /** Count of regions in `items` as the Data Hub states it (`total_regions`); filter-scoped, NOT 514. */
   readonly totalRegions: number;
+  /**
+   * What a higher score means (`score_direction`). The only accepted value is `higher_is_need`:
+   * higher = higher intervention priority, rank 1 = highest need. `null` = not reported (v1 response).
+   */
+  readonly scoreDirection: string | null;
+  /** Nationally eligible regions for this weight set (`total_eligible_national`); `null` = not reported. */
+  readonly totalEligibleNational: number | null;
+  /** Regions left out as insufficient data (`total_excluded`); `null` = not reported. */
+  readonly totalExcluded: number | null;
+  /** Backend per-region coverage threshold, in percent (`min_coverage_pct`); `null` = not reported. */
+  readonly minCoveragePct: number | null;
+  /** Backend minimum observed components per region (`min_components`); `null` = not reported. */
+  readonly minComponents: number | null;
   /** The weights the request sent, as the Data Hub echoes them (`weights_basis_points`). */
   readonly weightsBasisPoints: Readonly<Record<string, number>>;
   /**
@@ -269,13 +334,16 @@ export interface ExploratoryCompositeResultDTO {
    * others (`renormalized`). `null` when the response does not say (v1 responses).
    */
   readonly renormalized: boolean | null;
-  /** Guide v2: weighted indicators left out because the mode holds no data for them. */
+  /** Guide v2: weighted indicators left out because the mode holds no data for them (NATIONAL availability). */
   readonly unavailableIndicatorIds: readonly string[] | null;
-  /** Guide v2: the weights actually used (`effective_weights`); `null` when not reported. */
+  /** Guide v2: the GLOBAL weights actually used (`effective_weights`); `null` when not reported. Per-region weights are on each item. */
   readonly effectiveWeightsBasisPoints: Readonly<Record<string, number>> | null;
   /** The province the request was limited to, if any. */
   readonly filterProvinceId: string | null;
+  /** Ranked regions, in the order the Data Hub returned them. */
   readonly items: readonly ExploratoryRegionRankDTO[];
+  /** Regions the Data Hub declined to rank. Empty when none, or when the response does not report them (v1). */
+  readonly insufficient: readonly InsufficientRegionDTO[];
 }
 
 export interface BoundaryGeometryStatusDTO {
@@ -515,13 +583,38 @@ export interface WireCompositeRegionRow {
   region_name: string;
   composite_score: number | string;
   rank: number;
+  national_rank?: number | null;
+  coverage_pct?: number | null;
+  components_used?: string[] | null;
+  missing_indicators?: string[] | null;
+  effective_weights_region?: Record<string, number> | null;
+  quality_flags?: Record<string, string> | null;
   component_scores?: Record<string, number | string | null> | null;
+}
+
+export interface WireInsufficientRegionRow {
+  region_id: string;
+  region_name: string;
+  coverage_pct?: number | null;
+  components_used?: string[] | null;
+  missing_indicators?: string[] | null;
+  component_scores?: Record<string, number | string | null> | null;
+  reason: string;
 }
 
 export interface WireCompositeQueryData {
   total_regions: number;
+  total_eligible_national?: number | null;
+  total_excluded?: number | null;
+  score_direction?: string | null;
+  min_coverage_pct?: number | null;
+  min_components?: number | null;
   weights_basis_points: Record<string, number>;
+  unavailable_indicators?: string[] | null;
+  effective_weights?: Record<string, number> | null;
+  renormalized?: boolean | null;
   regions: WireCompositeRegionRow[];
+  insufficient_data?: WireInsufficientRegionRow[] | null;
 }
 
 export interface WireBoundaryGeometryStatus {

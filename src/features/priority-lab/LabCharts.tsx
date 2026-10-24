@@ -1,6 +1,7 @@
+import { classifyCoverage } from '@/domain/prioritization';
 import { formatDecimalId } from '@/features/data-hub';
 import type { ExploratoryRegionRankDTO } from '@/services/api';
-import { contributions, percentLabel } from './labModel';
+import { contributions, imputedCriteria, percentLabel, qualityFlagLabel } from './labModel';
 import styles from './PriorityLab.module.css';
 
 /** Six series colours (theme tokens); a criterion keeps its colour across the three charts. */
@@ -92,15 +93,23 @@ interface RankingChartProps {
   readonly onSelect: (regionId: string) => void;
   /** Rank change since the previous result (positive = up). */
   readonly moves: ReadonlyMap<string, number>;
+  /** The Data Hub's per-region coverage threshold, to tell a complete region from a partial one. */
+  readonly minCoveragePct: number | null;
 }
 
-/** Horizontal bars, one row per region; each row selects the region for the breakdown below. */
-export function RankingChart({ rows, selectedId, onSelect, moves }: RankingChartProps) {
+/**
+ * Horizontal bars, one row per region; each row selects the region for the breakdown below. The rank is
+ * the Data Hub's own (1 = highest need; equal scores share a rank). A region built from only some of the
+ * criteria, or using a province-level estimate, says so in words on its row.
+ */
+export function RankingChart({ rows, selectedId, onSelect, moves, minCoveragePct }: RankingChartProps) {
   return (
     <ol className={styles.rankChart}>
       {rows.map((item) => {
         const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
         const move = moves.get(item.regionId) ?? 0;
+        const partial = classifyCoverage(item.coveragePct, minCoveragePct) === 'partial';
+        const imputed = imputedCriteria(item).length > 0;
         return (
           <li key={item.regionId}>
             <button
@@ -117,6 +126,23 @@ export function RankingChart({ rows, selectedId, onSelect, moves }: RankingChart
                 {move !== 0 && (
                   <span className={styles.rankMove}>
                     {move > 0 ? ` ▲ naik ${String(move)}` : ` ▼ turun ${String(-move)}`}
+                  </span>
+                )}
+                {(partial ||
+                  imputed ||
+                  (item.nationalRank !== null && item.nationalRank !== item.rankPosition)) && (
+                  <span className={styles.rankBadges}>
+                    {partial && (
+                      <span className={`${styles.badge} ${styles.badgeWarn}`}>
+                        Data sebagian · {formatDecimalId(String(item.coveragePct))}% bobot
+                      </span>
+                    )}
+                    {imputed && (
+                      <span className={`${styles.badge} ${styles.badgeWarn}`}>Estimasi tingkat provinsi</span>
+                    )}
+                    {item.nationalRank !== null && item.nationalRank !== item.rankPosition && (
+                      <span className={styles.badge}>Peringkat nasional {item.nationalRank}</span>
+                    )}
                   </span>
                 )}
               </span>
@@ -145,6 +171,8 @@ interface ContributionChartProps extends SeriesProps {
  */
 export function ContributionChart({ item, weightsUsed, labelOf, seriesOf }: ContributionChartProps) {
   const rows = contributions(item, weightsUsed);
+  const omitted = item.missingIndicators ?? [];
+  const partial = omitted.length > 0 && item.coveragePct !== null && item.coveragePct < 100;
   const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
 
   return (
@@ -171,7 +199,7 @@ export function ContributionChart({ item, weightsUsed, labelOf, seriesOf }: Cont
           <tr>
             <th scope="col">Kriteria</th>
             <th scope="col">Skor 0–100</th>
-            <th scope="col">Bobot</th>
+            <th scope="col">Bobot wilayah ini</th>
             <th scope="col">Sumbangan</th>
           </tr>
         </thead>
@@ -181,10 +209,26 @@ export function ContributionChart({ item, weightsUsed, labelOf, seriesOf }: Cont
               <th scope="row">
                 <span className={styles.swatch} data-series={seriesOf(row.id)} aria-hidden="true" />
                 {labelOf(row.id)}
+                {row.quality !== null && row.quality !== 'VERIFIED' && (
+                  <span className={`${styles.badge} ${styles.badgeWarn}`}>
+                    {qualityFlagLabel(row.quality)}
+                  </span>
+                )}
               </th>
               <td data-label="Skor">{formatDecimalId(String(row.score))}</td>
               <td data-label="Bobot">{percentLabel(row.weight)}</td>
               <td data-label="Sumbangan">{formatDecimalId(row.points.toFixed(2))}</td>
+            </tr>
+          ))}
+          {omitted.map((id) => (
+            <tr key={id}>
+              <th scope="row">
+                <span className={styles.swatch} data-series={seriesOf(id)} aria-hidden="true" />
+                {labelOf(id)}
+              </th>
+              <td data-label="Skor" colSpan={3}>
+                Data tidak tersedia untuk wilayah ini — tidak dihitung, bukan dihitung sebagai 0
+              </td>
             </tr>
           ))}
         </tbody>
@@ -198,7 +242,11 @@ export function ContributionChart({ item, weightsUsed, labelOf, seriesOf }: Cont
         </tfoot>
       </table>
       <p className={styles.chartNote}>
-        Sumbangan = skor kriteria × bobot. Jumlahnya bisa selisih 0,01–0,02 karena pembulatan.
+        Sumbangan = skor kriteria × bobot wilayah ini. Jumlahnya bisa selisih 0,01–0,03 karena pembulatan.
+        {partial &&
+          ` Wilayah ini dihitung dari sebagian kriteria saja (cakupan ${formatDecimalId(String(item.coveragePct))}%): bobot kriteria yang datanya kosong dialihkan ke kriteria lain.`}
+        {imputedCriteria(item).length > 0 &&
+          ' Sedikitnya satu nilai berasal dari estimasi tingkat provinsi, bukan pengukuran kabupaten/kota.'}
       </p>
     </figure>
   );

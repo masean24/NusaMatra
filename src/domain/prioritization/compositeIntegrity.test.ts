@@ -3,6 +3,9 @@ import liveComposite from '../../services/api/__fixtures__/live/composite.json';
 import liveRegistry from '../../services/api/__fixtures__/live/registry_ids.json';
 import {
   assessCompositeIntegrity,
+  classifyCoverage,
+  requestedWeightAvailabilityPct,
+  scoreToleranceFor,
   type CompositeIntegrityInput,
   type CompositeRowInput,
 } from './compositeIntegrity';
@@ -95,7 +98,9 @@ describe('assessCompositeIntegrity', () => {
       ['REGISTRY_COUNT_MISMATCH', 'disclose'],
     ]);
     expect(result.issues[0]?.count).toBe(27);
-    expect(result.issues[0]?.message).toMatch(/27 dari 514 wilayah tidak masuk peringkat/);
+    expect(result.issues[0]?.message).toMatch(
+      /27 dari 514 wilayah tidak tercantum di peringkat maupun di daftar data belum cukup/,
+    );
   });
 
   it('blocks a ranking with more regions than the registry', () => {
@@ -308,5 +313,126 @@ describe('assessCompositeIntegrity with guide v2 renormalisation', () => {
     });
     expect(thirds.d).toBe(0);
     expect(result.issues).toEqual([]);
+  });
+});
+
+describe('v2.1 helpers', () => {
+  it('derives the score tolerance from rounding: 0.01 + 0.005 per component', () => {
+    expect(scoreToleranceFor(4)).toBeCloseTo(0.03, 10);
+    expect(scoreToleranceFor(2)).toBeCloseTo(0.02, 10);
+    // The captured production responses (2026-10-23) never exceed 0.005, well inside every bound.
+    expect(scoreToleranceFor(2)).toBeGreaterThan(0.005);
+  });
+
+  it('classifies a region by its own coverage', () => {
+    expect(classifyCoverage(100, 70)).toBe('complete');
+    expect(classifyCoverage(70, 70)).toBe('partial');
+    expect(classifyCoverage(99.9, 70)).toBe('partial');
+    expect(classifyCoverage(69.9, 70)).toBe('insufficient');
+    expect(classifyCoverage(null, 70)).toBe('unreported');
+  });
+
+  it('measures national availability of the REQUESTED weight, apart from any region coverage', () => {
+    const weights = { a: 3000, b: 2500, c: 2500, d: 2000 };
+    expect(requestedWeightAvailabilityPct(weights, [])).toBe(100);
+    expect(requestedWeightAvailabilityPct(weights, ['b', 'c'])).toBe(50);
+    expect(requestedWeightAvailabilityPct({ a: 0 }, [])).toBeNull();
+  });
+});
+
+describe('assessCompositeIntegrity: contract v2.1 gates on a minimal ranking', () => {
+  const weights = { a: 5000, b: 5000 };
+  const row: CompositeRowInput = {
+    regionId: '3201',
+    rankPosition: 1,
+    compositeScore: 50,
+    componentScores: { a: 40, b: 60 },
+    nationalRank: 1,
+    coveragePct: 100,
+    componentsUsed: ['a', 'b'],
+    missingIndicators: [],
+    effectiveWeightsRegion: { a: 5000, b: 5000 },
+  };
+  const base = (overrides: Partial<CompositeIntegrityInput> = {}): CompositeIntegrityInput => ({
+    weightsBasisPoints: weights,
+    reportedTotalRegions: 1,
+    rows: [row],
+    scoreDirection: 'higher_is_need',
+    totalEligibleNational: 1,
+    totalExcluded: 0,
+    minCoveragePct: 70,
+    minComponents: 2,
+    insufficientRows: [],
+    dataMode: 'LIVE',
+    ...overrides,
+  });
+  const codesOf = (input: CompositeIntegrityInput) =>
+    assessCompositeIntegrity(input).issues.map((i) => i.code);
+
+  it('accepts a consistent v2.1 ranking', () => {
+    expect(assessCompositeIntegrity(base()).issues).toEqual([]);
+  });
+
+  it('blocks a score direction other than higher_is_need, and a missing one in LIVE but only discloses it in DEMO', () => {
+    expect(codesOf(base({ scoreDirection: 'higher_is_better' }))).toContain('SCORE_DIRECTION_MISMATCH');
+    const legacyRow = { ...row, effectiveWeightsRegion: null };
+    const live = assessCompositeIntegrity(base({ scoreDirection: null, rows: [legacyRow] }));
+    expect(live.ok).toBe(false);
+    expect(live.issues.map((i) => i.code)).toContain('SCORE_DIRECTION_UNREPORTED');
+    const demo = assessCompositeIntegrity(
+      base({ scoreDirection: null, dataMode: 'DEMO', rows: [legacyRow] }),
+    );
+    expect(demo.ok).toBe(true);
+    expect(demo.issues.find((i) => i.code === 'SCORE_DIRECTION_UNREPORTED')?.severity).toBe('disclose');
+  });
+
+  it('blocks a scenario the Data Hub marks rankable = false, whatever the scores look like', () => {
+    expect(assessCompositeIntegrity(base({ declaredRankable: false })).ok).toBe(false);
+    expect(codesOf(base({ declaredRankable: false }))).toEqual(['PRESET_NOT_RANKABLE']);
+    expect(codesOf(base({ declaredRankable: true }))).toEqual([]);
+    expect(codesOf(base({ declaredRankable: null }))).toEqual([]);
+  });
+
+  it('applies the 70 % requested-weight policy as a labelled frontend rule, switchable off', () => {
+    const gated: CompositeIntegrityInput = {
+      ...base(),
+      weightsBasisPoints: { a: 1500, b: 1500, c: 7000 },
+      unavailableIndicatorIds: ['c'],
+      effectiveWeightsBasisPoints: { a: 5000, b: 5000 },
+    };
+    const result = assessCompositeIntegrity(gated);
+    expect(result.requestedWeightAvailabilityPct).toBeCloseTo(30, 10);
+    const issue = result.issues.find((i) => i.code === 'REQUESTED_WEIGHT_AVAILABILITY_LOW');
+    expect(issue?.severity).toBe('block');
+    expect(issue?.message).toContain('Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub)');
+    const off = assessCompositeIntegrity({ ...gated, minRequestedWeightPct: null });
+    expect(off.issues.map((i) => i.code)).not.toContain('REQUESTED_WEIGHT_AVAILABILITY_LOW');
+  });
+
+  it('takes a genuine zero component as data, and a null component as missing', () => {
+    const zero: CompositeRowInput = { ...row, compositeScore: 30, componentScores: { a: 0, b: 60 } };
+    expect(assessCompositeIntegrity(base({ rows: [zero] })).issues).toEqual([]);
+    const missing: CompositeRowInput = { ...row, compositeScore: 30, componentScores: { a: null, b: 60 } };
+    expect(codesOf(base({ rows: [missing] }))).toContain('MISSING_COMPONENT');
+  });
+
+  it('blocks an insufficient-data region that meets the thresholds (unjustified exclusion)', () => {
+    const justified = { regionId: '3202', coveragePct: 50, componentsUsed: ['a'] };
+    expect(codesOf(base({ insufficientRows: [justified], totalExcluded: 1 }))).toEqual([]);
+    const unjustified = { regionId: '3202', coveragePct: 100, componentsUsed: ['a', 'b'] };
+    expect(codesOf(base({ insufficientRows: [unjustified], totalExcluded: 1 }))).toContain(
+      'INSUFFICIENT_NOT_JUSTIFIED',
+    );
+  });
+
+  it('keeps legacy rows (no region weights, no direction) on the old global-weights check', () => {
+    const legacy: CompositeRowInput = {
+      regionId: '3201',
+      rankPosition: 1,
+      compositeScore: 50,
+      componentScores: { a: 40, b: 60 },
+    };
+    const input = { weightsBasisPoints: weights, reportedTotalRegions: 1, rows: [legacy] };
+    expect(assessCompositeIntegrity(input).issues).toEqual([]);
   });
 });

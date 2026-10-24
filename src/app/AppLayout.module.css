@@ -17,6 +17,18 @@
   outline-color: var(--nm-accent);
 }
 
+/* Site chrome around the page; it adds no box of its own and is left off printed pages. */
+.screenOnly {
+  display: contents;
+}
+
+@media print {
+  .screenOnly,
+  .skipLink {
+    display: none;
+  }
+}
+
 .main {
   display: block;
   /* Soft background lights may spill past the 1440px page column; they must never widen the page. */

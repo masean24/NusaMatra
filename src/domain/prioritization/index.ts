@@ -10,7 +10,15 @@ export {
 export type { WeightsBps, WeightsValidation } from './weights';
 export { computeWeightedScore, rankRegions } from './scoring';
 export type { NormalizedValues, RankedRegion, Ranking, ScoreResult, ScoringRegion } from './scoring';
-export { assessCompositeIntegrity, SCORE_TOLERANCE } from './compositeIntegrity';
+export {
+  assessCompositeIntegrity,
+  classifyCoverage,
+  EXPECTED_SCORE_DIRECTION,
+  FRONTEND_MIN_REQUESTED_WEIGHT_PCT,
+  requestedWeightAvailabilityPct,
+  SCORE_TOLERANCE,
+  scoreToleranceFor,
+} from './compositeIntegrity';
 export type {
   CompositeIntegrity,
   CompositeIntegrityInput,
@@ -18,6 +26,8 @@ export type {
   CompositeIssueCode,
   CompositeIssueSeverity,
   CompositeRowInput,
+  CoverageTier,
+  InsufficientRowInput,
 } from './compositeIntegrity';
 export { checkComponentDirection } from './componentDirection';
 export type { DirectionCheckInput, DirectionVerdict, ReferenceValue } from './componentDirection';
