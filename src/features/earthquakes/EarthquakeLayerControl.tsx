@@ -3,6 +3,8 @@ import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DataHubErrorMessage } from '@/features/data-hub';
 import { formatEventTime, formatMagnitude } from './format';
+import { OriginBadge } from './OriginBadge';
+import { describeLastSuccess } from './originText';
 import type { EarthquakeFeedState } from './useEarthquakeFeed';
 import styles from './EarthquakeLayerControl.module.css';
 
@@ -107,15 +109,25 @@ export function EarthquakeLayerControl({
           Pembaruan terakhir gagal; yang tampil adalah data sebelumnya. Akan dicoba lagi otomatis.
         </p>
       )}
-      {enabled && state.status === 'error' && <DataHubErrorMessage error={state.lastError} />}
+      {enabled && feed && assessment && assessment.display !== 'WITHHELD' && (
+        <p className={`kk-small ${styles.reasons}`}>
+          {describeLastSuccess(feed.lastSuccessAt)}
+          {feed.rejectedCount > 0
+            ? ` · ${String(feed.rejectedCount)} entri ditolak karena tidak lolos validasi`
+            : ''}
+        </p>
+      )}
+      {enabled && state.status === 'error' && (
+        <DataHubErrorMessage error={state.lastError} onRetry={state.retry} />
+      )}
       {enabled && state.status === 'loading' && <StatusMessage kind="loading" title="Memuat gempa BMKG…" />}
     </section>
   );
 }
 
 function LayerStatus({ state, count }: { readonly state: EarthquakeFeedState; readonly count: number }) {
-  const { assessment } = state;
-  if (!assessment) return null;
+  const { assessment, feed } = state;
+  if (!assessment || !feed) return null;
   if (assessment.display === 'WITHHELD')
     return <Chip tone="warning">Gempa ditahan: asal data belum jelas</Chip>;
   const age =
@@ -129,6 +141,7 @@ function LayerStatus({ state, count }: { readonly state: EarthquakeFeedState; re
       ) : (
         <Chip>Data BMKG</Chip>
       )}
+      <OriginBadge origin={feed.origin} />
       {assessment.isStale && <Chip tone="warning">Mungkin usang</Chip>}
       <span>
         {count} gempa{age ? ` · ${age}` : ''}

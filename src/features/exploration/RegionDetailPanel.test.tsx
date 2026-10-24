@@ -50,6 +50,8 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
     renderLive(liveFetch(), { fallbackName: 'Kabupaten Aceh Selatan' });
     // The name is there before the profile arrives.
     expect(screen.getByRole('heading', { name: 'Kabupaten Aceh Selatan' })).toBeInTheDocument();
+    // No evidence link while the profile is still loading.
+    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
 
     expect(await screen.findByText('Data resmi LIVE')).toBeInTheDocument();
     expect(screen.getByText(/Provinsi Aceh/)).toBeInTheDocument();
@@ -153,10 +155,13 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
 
     const evidence = within(screen.getByRole('region', { name: 'Bukti dan sumber' }));
     expect(evidence.getByRole('link', { name: 'BNPB' })).toBeInTheDocument();
-    expect(evidence.getByRole('link', { name: 'Paspor Bukti (sedang dikembangkan)' })).toHaveAttribute(
-      'href',
-      '/paspor-bukti',
-    );
+    const link = evidence.getByRole('link', { name: 'Buka Paspor Bukti' });
+    const href = new URL(link.getAttribute('href') ?? '', 'https://x.test');
+    expect(href.pathname).toBe('/paspor-bukti');
+    expect(href.searchParams.get('jenis')).toBe('wilayah');
+    expect(href.searchParams.get('kode')).toBe('1101');
+    expect(href.searchParams.get('mode')).toBe('live');
+    expect(href.searchParams.get('snap')).toBe('2026.10.0-official-live');
     expect(evidence.getByText(/Data Hub belum menerbitkan dokumen metodologi/)).toBeInTheDocument();
   });
 
@@ -223,15 +228,52 @@ describe('RegionDetailPanel in DEMO', () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it('words a missing region as an error with a way to retry', async () => {
+  it('words an unknown code as "not found" with a way back, not as a failure to retry', async () => {
     const fetchImpl = createFixtureFetch({
-      '/api/v1/regions/9999': () => jsonResponse({ detail: 'Not Found' }, 404),
+      '/api/v1/regions/9999': () => jsonResponse({ detail: "Region '9999' not found." }, 404),
+      '/api/v1/indicators': () => fixtureResponse('indicators'),
+    });
+    const onClose = vi.fn();
+    renderWithDataHub(<RegionDetailPanel regionId="9999" onClose={onClose} />, {
+      fetchImpl,
+      dataMode: 'LIVE',
+    });
+
+    expect(await screen.findByText('Wilayah tidak ditemukan')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Kode 9999 tidak ada pada snapshot data ini/)).toBeInTheDocument();
+    expect(screen.queryByText(/memuat provinsi dan indikator/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Coba lagi' })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Pilih wilayah lain' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('still words other failures as an error with a way to retry', async () => {
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/regions/9999': () => jsonResponse({ detail: 'boom' }, 500),
       '/api/v1/indicators': () => fixtureResponse('indicators'),
     });
     renderWithDataHub(<RegionDetailPanel regionId="9999" fallbackName="Wilayah uji" />, { fetchImpl });
 
     expect(screen.getByRole('heading', { name: 'Wilayah uji' })).toBeInTheDocument();
     expect(await screen.findByText('Data belum dapat dimuat')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Coba lagi' })).toBeInTheDocument();
+  });
+
+  it('refuses to show another region’s numbers under the requested code', async () => {
+    const detail = structuredClone(fixtureJson('live/region_detail_1101')) as {
+      data: { region: { region_id: string } };
+    };
+    detail.data.region.region_id = '1102';
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/regions/1101': () => jsonResponse(detail),
+      '/api/v1/indicators': () => jsonResponse(fixtureJson('live/indicators')),
+    });
+    renderWithDataHub(<RegionDetailPanel regionId="1101" />, { fetchImpl, dataMode: 'LIVE' });
+
+    expect(await screen.findByText('Data wilayah tidak cocok')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Semua indikator/)).not.toBeInTheDocument();
   });
 });

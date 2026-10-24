@@ -88,3 +88,21 @@
   gap: 14px;
   min-width: 0;
 }
+
+.province {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.province select {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-control, 12px);
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+  font: inherit;
+}

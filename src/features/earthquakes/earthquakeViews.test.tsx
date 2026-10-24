@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { renderWithDataHub } from '@/test/dataHubFixtures';
 import type { FeedAssessment } from '@/domain/hazards';
 import type { EarthquakeEventDTO, EarthquakeFeedDTO } from '@/services/api';
 import { EarthquakeDetail } from './EarthquakeDetail';
@@ -54,6 +55,11 @@ describe('EarthquakeDetail', () => {
     );
   });
 
+  it('shows the origin of the feed in the detail', () => {
+    render(<EarthquakeDetail event={event} assessment={official} origin="BMKG_LIVE" onClose={vi.fn()} />);
+    expect(screen.getByText('Asal: langsung dari BMKG')).toBeInTheDocument();
+  });
+
   it('labels an unverified preview and stale data', () => {
     render(
       <EarthquakeDetail
@@ -86,6 +92,7 @@ const state = (assessment: FeedAssessment): EarthquakeFeedState => ({
   assessment,
   lastError: null,
   newIds: new Set(),
+  retry: vi.fn(),
 });
 
 describe('EarthquakeLayerControl', () => {
@@ -96,7 +103,14 @@ describe('EarthquakeLayerControl', () => {
         enabled={false}
         available={false}
         onToggle={onToggle}
-        state={{ status: 'idle', feed: null, assessment: null, lastError: null, newIds: new Set() }}
+        state={{
+          status: 'idle',
+          feed: null,
+          assessment: null,
+          lastError: null,
+          newIds: new Set(),
+          retry: vi.fn(),
+        }}
         selectedId={null}
         onSelect={vi.fn()}
       />,
@@ -149,5 +163,81 @@ describe('EarthquakeLayerControl', () => {
     await userEvent.click(screen.getByText('Daftar gempa (1)'));
     await userEvent.click(screen.getByRole('button', { name: /Magnitudo 5,1/ }));
     expect(onSelect).toHaveBeenCalledWith('bmkg-1');
+  });
+
+  it('names the declared origin and the last successful fetch, and never calls stale data fresh', () => {
+    const cached: EarthquakeFeedState = {
+      ...state({ display: 'OFFICIAL', isStale: true, ageMinutes: 45, reasons: ['Data terlalu lama.'] }),
+      feed: { ...feed, origin: 'BMKG_CACHE', rejectedCount: 2 },
+    };
+    render(
+      <EarthquakeLayerControl
+        enabled
+        available
+        onToggle={vi.fn()}
+        state={cached}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Asal: cache Data Hub (dari BMKG)')).toBeInTheDocument();
+    expect(screen.getByText('Mungkin usang')).toBeInTheDocument();
+    expect(screen.getByText('Data terlalu lama.')).toBeInTheDocument();
+    expect(screen.getByText(/Terakhir diambil dari BMKG .* WIB/)).toBeInTheDocument();
+    expect(screen.getByText(/2 entri ditolak/)).toBeInTheDocument();
+  });
+
+  it('labels bmkg_live and an undeclared preview differently', () => {
+    const live: EarthquakeFeedState = {
+      ...state({ display: 'OFFICIAL', isStale: false, ageMinutes: 1, reasons: [] }),
+      feed: { ...feed, origin: 'BMKG_LIVE' },
+    };
+    const { rerender } = render(
+      <EarthquakeLayerControl
+        enabled
+        available
+        onToggle={vi.fn()}
+        state={live}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Asal: langsung dari BMKG')).toBeInTheDocument();
+    rerender(
+      <EarthquakeLayerControl
+        enabled
+        available
+        onToggle={vi.fn()}
+        state={state({ display: 'PREVIEW_UNVERIFIED', isStale: false, ageMinutes: 1, reasons: [] })}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('Asal: tidak dinyatakan Data Hub')).toBeInTheDocument();
+    expect(screen.getByText('Pratinjau: asal data belum terverifikasi')).toBeInTheDocument();
+  });
+
+  it('offers a retry when the first request failed', async () => {
+    const retry = vi.fn();
+    renderWithDataHub(
+      <EarthquakeLayerControl
+        enabled
+        available
+        onToggle={vi.fn()}
+        state={{
+          status: 'error',
+          feed: null,
+          assessment: null,
+          lastError: new Error('x'),
+          newIds: new Set(),
+          retry,
+        }}
+        selectedId={null}
+        onSelect={vi.fn()}
+      />,
+      { fetchImpl: null, dataMode: 'LIVE' },
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Coba lagi' }));
+    expect(retry).toHaveBeenCalledTimes(1);
   });
 });

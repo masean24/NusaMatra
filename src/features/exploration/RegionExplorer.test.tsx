@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import {
   createFixtureFetch,
   fixtureResponse,
+  jsonResponse,
   renderWithDataHub,
   requestedUrls,
 } from '@/test/dataHubFixtures';
@@ -77,6 +78,66 @@ describe('RegionExplorer against the captured Data Hub responses', () => {
   it('says so when no Data Hub address is configured', () => {
     renderWithDataHub(<RegionExplorer />, { fetchImpl: null });
     expect(screen.getByText('Data Hub belum dihubungkan')).toBeInTheDocument();
+  });
+});
+
+describe('RegionExplorer in LIVE mode with a successful answer', () => {
+  const liveRegion = (id: string, name: string, province: string, level: string) => ({
+    region_id: id,
+    parent_region_id: id.slice(0, 2),
+    province_name: province,
+    level,
+    name,
+    short_name: name,
+    codes: { kemendagri: id, bps: id, kemendikdasmen: null },
+    island_group: province,
+    area_km2: 0,
+    anchor_point: null,
+    bbox: null,
+  });
+  const envelope = (data: unknown[]) => ({
+    status: 'success',
+    meta: {
+      snapshot_id: '2026.10.0-official-live',
+      mode: 'LIVE',
+      boundary_version: 'BIG-Kepmendagri-300.2.2-2430-2025',
+      total_count: data.length,
+      coverage: null,
+      data_origin: null,
+      last_success_at: null,
+      is_stale: null,
+    },
+    data,
+  });
+
+  it('does not blame a DEMO dataset when a LIVE search finds nothing', async () => {
+    const fetchImpl = createFixtureFetch({ '/api/v1/regions': () => jsonResponse(envelope([])) });
+    renderWithDataHub(<RegionExplorer />, { fetchImpl, dataMode: 'LIVE', path: '/jelajahi?cari=zzz' });
+
+    expect(await screen.findByText('Tidak ada kabupaten/kota yang cocok')).toBeInTheDocument();
+    expect(screen.queryByText(/DEMO/)).not.toBeInTheDocument();
+  });
+
+  it('narrows the list to one province without changing any region’s code or name', async () => {
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/regions': () =>
+        jsonResponse(
+          envelope([
+            liveRegion('3201', 'Kabupaten Bogor', 'Provinsi Jawa Barat', 'kabupaten'),
+            liveRegion('3271', 'Kota Bogor', 'Provinsi Jawa Barat', 'kota'),
+            liveRegion('1101', 'Kabupaten Aceh Selatan', 'Aceh', 'kabupaten'),
+          ]),
+        ),
+    });
+    renderWithDataHub(<RegionExplorer />, { fetchImpl, dataMode: 'LIVE' });
+    expect(await screen.findByText('Menampilkan 3 dari 3 wilayah')).toBeInTheDocument();
+
+    await userEvent.selectOptions(screen.getByLabelText('Provinsi'), 'Provinsi Jawa Barat');
+
+    expect(screen.getByText('Menampilkan 2 dari 2 wilayah')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Kota Bogor.*kode 3271/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Kabupaten Bogor.*kode 3201/ })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Aceh Selatan/ })).not.toBeInTheDocument();
   });
 });
 

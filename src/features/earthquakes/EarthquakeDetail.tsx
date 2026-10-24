@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import type { FeedAssessment } from '@/domain/hazards';
-import type { EarthquakeEventDTO } from '@/services/api';
+import type { EarthquakeEventDTO, EarthquakeOrigin } from '@/services/api';
+import { OriginBadge } from './OriginBadge';
 import { formatDepth, formatEpicentre, formatEventTime, formatMagnitude } from './format';
 import styles from './EarthquakeDetail.module.css';
 
@@ -11,11 +12,13 @@ const BMKG_PORTAL = 'https://data.bmkg.go.id/gempabumi/';
 interface EarthquakeDetailProps {
   readonly event: EarthquakeEventDTO;
   readonly assessment: FeedAssessment;
+  /** Where the Data Hub says the feed came from; omitted only when the caller does not know. */
+  readonly origin?: EarthquakeOrigin | undefined;
   readonly onClose: () => void;
 }
 
 /** One BMKG event in the side panel. Every string from the feed is rendered as text by React. */
-export function EarthquakeDetail({ event, assessment, onClose }: EarthquakeDetailProps) {
+export function EarthquakeDetail({ event, assessment, origin, onClose }: EarthquakeDetailProps) {
   const [shakemapFailed, setShakemapFailed] = useState(false);
 
   return (
@@ -34,6 +37,7 @@ export function EarthquakeDetail({ event, assessment, onClose }: EarthquakeDetai
         ) : (
           <Chip>Data BMKG</Chip>
         )}
+        {origin && <OriginBadge origin={origin} />}
         {assessment.isStale && <Chip tone="warning">Mungkin usang</Chip>}
       </p>
 

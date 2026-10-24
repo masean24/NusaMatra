@@ -1,6 +1,7 @@
 import { act, screen } from '@testing-library/react';
+import { useState } from 'react';
 import { createFixtureFetch, fixtureJson, jsonResponse, renderWithDataHub } from '@/test/dataHubFixtures';
-import { POLL_INTERVAL_MS, useEarthquakeFeed } from './useEarthquakeFeed';
+import { POLL_INTERVAL_MS, REASSESS_INTERVAL_MS, useEarthquakeFeed } from './useEarthquakeFeed';
 
 interface WireFeed {
   features: { id: string; properties: { id: string } }[];
@@ -9,10 +10,15 @@ interface WireFeed {
 function Probe({ enabled }: { readonly enabled: boolean }) {
   const state = useEarthquakeFeed(enabled);
   return (
-    <p data-testid="probe">
-      {state.status}|{state.feed?.events.length ?? 0}|{state.assessment?.display ?? '-'}|
-      {[...state.newIds].join(',')}|{state.lastError ? 'error' : 'ok'}
-    </p>
+    <>
+      <button type="button" onClick={state.retry}>
+        retry
+      </button>
+      <p data-testid="probe" data-stale={state.assessment?.isStale ? 'yes' : 'no'}>
+        {state.status}|{state.feed?.events.length ?? 0}|{state.assessment?.display ?? '-'}|
+        {[...state.newIds].join(',')}|{state.lastError ? 'error' : 'ok'}
+      </p>
+    </>
   );
 }
 
@@ -157,5 +163,88 @@ describe('useEarthquakeFeed', () => {
       await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);
     });
     expect(probe()).toMatch(/^ready\|28\|.*\|error$/);
+  });
+
+  it('turns stale as time passes while refreshes keep failing, instead of staying labelled fresh', async () => {
+    const declared = structuredClone(fixtureJson('live/earthquakes_geojson')) as WireFeed & {
+      metadata: Record<string, unknown>;
+    };
+    let call = 0;
+    Object.assign(declared.metadata, {
+      data_origin: 'bmkg_live',
+      last_success_at: new Date(Date.now()).toISOString(),
+      is_stale: false,
+      cache_ttl_seconds: 60,
+    });
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/earthquakes/geojson': () => {
+        call += 1;
+        return call === 1 ? feedResponse(declared) : jsonResponse({ detail: 'x' }, 502);
+      },
+    });
+    renderWithDataHub(<Probe enabled />, { fetchImpl, dataMode: 'LIVE' });
+    await flush();
+    expect(screen.getByTestId('probe').dataset.stale).toBe('no');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS * 6 + REASSESS_INTERVAL_MS);
+    });
+    expect(probe()).toMatch(/^ready[|]28[|]OFFICIAL[|].*[|]error$/);
+    expect(screen.getByTestId('probe').dataset.stale).toBe('yes');
+  });
+
+  it('forgets the previous feed when the layer is switched off and on again', async () => {
+    function Toggle() {
+      const [on, setOn] = useState(true);
+      return (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              setOn((value) => !value);
+            }}
+          >
+            toggle
+          </button>
+          <Probe enabled={on} />
+        </>
+      );
+    }
+    let call = 0;
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/earthquakes/geojson': () => {
+        call += 1;
+        // The second activation's request never answers, so what is shown before it is the question.
+        return call === 1
+          ? feedResponse(fixtureJson('live/earthquakes_geojson'))
+          : new Promise<Response>(() => undefined);
+      },
+    });
+    renderWithDataHub(<Toggle />, { fetchImpl, dataMode: 'LIVE' });
+    await flush();
+    expect(probe()).toContain('ready');
+    await act(async () => {
+      screen.getByRole('button', { name: 'toggle' }).click();
+      await Promise.resolve();
+    });
+    expect(probe()).toContain('idle');
+    // On again: the first thing seen is "loading", not the earlier events with an earlier verdict.
+    act(() => {
+      screen.getByRole('button', { name: 'toggle' }).click();
+    });
+    expect(probe()).toContain('loading');
+  });
+
+  it('retry asks again at once', async () => {
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/earthquakes/geojson': () => jsonResponse({ code: 'UPSTREAM_UNAVAILABLE' }, 503),
+    });
+    renderWithDataHub(<Probe enabled />, { fetchImpl, dataMode: 'LIVE' });
+    await flush();
+    expect(probe()).toContain('error');
+    await act(async () => {
+      screen.getByRole('button', { name: 'retry' }).click();
+      await Promise.resolve();
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 });

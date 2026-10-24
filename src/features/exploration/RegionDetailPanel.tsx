@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { ConditionBadge, type ConditionTone } from '@/components/ui/ConditionBadge/ConditionBadge';
@@ -13,7 +14,8 @@ import {
   useDataHub,
   useDataHubResource,
 } from '@/features/data-hub';
-import type { RegionProfileDTO } from '@/services/api';
+import { passportHref } from '@/features/evidence-passport';
+import { ApiError, type RegionProfileDTO } from '@/services/api';
 import { buildRegionInsight, type EvidenceSource, type InsightIndicator } from './regionInsight';
 import styles from './RegionDetailPanel.module.css';
 
@@ -63,7 +65,7 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
     <div className={styles.panel}>
       <header className={styles.header}>
         <div className={styles.headline}>
-          <h2 className="kk-h3" aria-live="polite">
+          <h2 className="kk-h3" aria-live="polite" tabIndex={-1} data-panel-heading>
             {name}
           </h2>
           {onClose && (
@@ -73,7 +75,11 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
           )}
         </div>
         <p className={`kk-small ${styles.muted}`}>
-          {profile ? describeRegion(profile) : `Kode ${regionId} · memuat provinsi dan indikator…`}
+          {profile
+            ? describeRegion(profile)
+            : detail.state.status === 'loading'
+              ? `Kode ${regionId} · memuat provinsi dan indikator…`
+              : `Kode ${regionId}`}
         </p>
         <DataStatus
           dataMode={dataMode}
@@ -81,16 +87,52 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
         />
       </header>
 
-      <ResourceView state={detail.state} onRetry={detail.retry} loadingTitle="Memuat indikator wilayah…">
-        {(envelope) => (
-          <ProfileBody
-            profile={envelope.data}
-            catalog={catalog.state.status === 'success' ? catalog.state.data.data : null}
-          />
-        )}
-      </ResourceView>
+      {isNotFound(detail.state) ? (
+        <StatusMessage
+          kind="unavailable"
+          title="Wilayah tidak ditemukan"
+          action={
+            onClose && (
+              <Button variant="secondary" onClick={onClose}>
+                Pilih wilayah lain
+              </Button>
+            )
+          }
+        >
+          Kode {regionId} tidak ada pada snapshot data ini. Tautan mungkin berasal dari mode data lain atau
+          dari kode yang keliru.
+        </StatusMessage>
+      ) : (
+        <ResourceView state={detail.state} onRetry={detail.retry} loadingTitle="Memuat indikator wilayah…">
+          {(envelope) =>
+            // Never show another region's numbers under this region's name.
+            envelope.data.region.regionId === regionId ? (
+              <ProfileBody
+                profile={envelope.data}
+                // Mode and snapshot are those of the response being shown, not of the URL or app state.
+                passportTo={passportHref({
+                  kind: 'wilayah',
+                  regionId: envelope.data.region.regionId,
+                  mode: envelope.meta.dataMode,
+                  snapshotId: envelope.meta.snapshotId,
+                })}
+                catalog={catalog.state.status === 'success' ? catalog.state.data.data : null}
+              />
+            ) : (
+              <StatusMessage kind="error" title="Data wilayah tidak cocok">
+                Data Hub menjawab untuk kode {envelope.data.region.regionId}, bukan {regionId}, jadi profil
+                tidak ditampilkan.
+              </StatusMessage>
+            )
+          }
+        </ResourceView>
+      )}
     </div>
   );
+}
+
+function isNotFound(state: { readonly status: string; readonly error?: unknown }): boolean {
+  return state.status === 'error' && state.error instanceof ApiError && state.error.status === 404;
 }
 
 function describeRegion(profile: RegionProfileDTO): string {
@@ -133,9 +175,12 @@ function DataStatus({
 
 function ProfileBody({
   profile,
+  passportTo,
   catalog,
 }: {
   readonly profile: RegionProfileDTO;
+  /** Link to the Paspor Bukti of exactly this loaded profile. */
+  readonly passportTo: string;
   readonly catalog: Parameters<typeof buildRegionInsight>[1];
 }) {
   const insight = buildRegionInsight(profile, catalog);
@@ -218,8 +263,8 @@ function ProfileBody({
           Data Hub belum menerbitkan dokumen metodologi per indikator; rumus turunan tertera pada rincian
           indikator bila ada. Nilai asli selalu ditampilkan apa adanya, terpisah dari skor ternormalisasi.
         </p>
-        <Link to="/paspor-bukti" className={styles.link}>
-          Paspor Bukti (sedang dikembangkan)
+        <Link to={passportTo} className={styles.link}>
+          Buka Paspor Bukti
         </Link>
       </section>
     </>

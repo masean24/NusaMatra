@@ -28,11 +28,25 @@ const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: str
   },
 };
 
-const LIVE_LOADING_STATUS = {
-  kind: 'loading',
-  title: 'Menyiapkan peta 3D…',
-  children: 'Membangun batas wilayah resmi dari BIG.',
-} as const;
+/** LIVE shows no illustration behind the status, so its copy must not mention one. */
+const LIVE_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
+  loading: {
+    kind: 'loading',
+    title: 'Menyiapkan peta 3D…',
+    children: 'Membangun batas wilayah resmi dari BIG.',
+  },
+  failed: {
+    kind: 'unavailable',
+    title: 'Peta 3D tidak dapat ditampilkan',
+    children:
+      'Perangkat atau browser ini tidak dapat menjalankan peta 3D. Pilih wilayah lewat daftar di panel.',
+  },
+  absent: {
+    kind: 'info',
+    title: 'Peta 3D belum tersedia',
+    children: 'Pilih wilayah lewat daftar di panel.',
+  },
+};
 
 interface Explore3DMapSlotProps {
   readonly geography: Explore3DMapProps['geography'];
@@ -90,10 +104,7 @@ export function Explore3DMapSlot({
             // Official geometry is on its way: no illustration that could pass for the map, just a quiet
             // skeleton of the same size, so nothing jumps when the map appears.
             <div className={`${styles.placeholder} ${styles.skeleton}`}>
-              <StatusMessage
-                className={styles.status}
-                {...(state === 'loading' ? LIVE_LOADING_STATUS : PLACEHOLDER_STATUS[state])}
-              />
+              <StatusMessage className={styles.status} {...LIVE_STATUS[state]} />
             </div>
           ) : (
             <div className={styles.placeholder}>

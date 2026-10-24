@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Surface } from '@/components/ui/Surface/Surface';
 import { TextField } from '@/components/ui/TextField/TextField';
-import { ResourceView, adminLevelLabel, useDataHubResource } from '@/features/data-hub';
+import { ResourceView, adminLevelLabel, useDataHub, useDataHubResource } from '@/features/data-hub';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { AdminLevel } from '@/services/api';
 import { useRegionBrowserParams } from './regionCode';
@@ -29,6 +29,7 @@ interface RegionExplorerProps {
 
 /** Jelajahi's region search: debounced, abortable and driven by the real Data Hub region list. */
 export function RegionExplorer({ bare = false, onSelect }: RegionExplorerProps) {
+  const { dataMode } = useDataHub();
   const { query, selectedCode, setQuery, selectCode } = useRegionBrowserParams();
   const choose =
     onSelect ??
@@ -52,7 +53,10 @@ export function RegionExplorer({ bare = false, onSelect }: RegionExplorerProps) 
 
   // Showing more is tied to the search it was asked for; a new search starts at one page again.
   const [expanded, setExpanded] = useState<{ readonly key: string; readonly count: number } | null>(null);
-  const visibleCount = expanded?.key === searchKey ? expanded.count : PAGE_SIZE;
+  // Province narrowing is made on the list already received (it names every region's province).
+  const [province, setProvince] = useState('');
+  const pageKey = `${searchKey}|${province}`;
+  const visibleCount = expanded?.key === pageKey ? expanded.count : PAGE_SIZE;
 
   return (
     <Frame {...frameProps}>
@@ -87,17 +91,30 @@ export function RegionExplorer({ bare = false, onSelect }: RegionExplorerProps) 
 
       <ResourceView state={regions.state} onRetry={regions.retry} loadingTitle="Mencari wilayah…">
         {(envelope) => {
-          const items = envelope.data;
+          const allItems = envelope.data;
+          const provinces = [
+            ...new Set(allItems.map((region) => region.provinceName).filter((name) => name !== null)),
+          ].sort((a, b) => a.localeCompare(b, 'id'));
+          const activeProvince = provinces.includes(province) ? province : '';
+          const items = activeProvince
+            ? allItems.filter((region) => region.provinceName === activeProvince)
+            : allItems;
           // The kabupaten/kota split is made on this side, so only the unfiltered list can use the
           // server's total; a filtered list is counted as received.
           const total =
-            level === 'ALL' ? Math.max(envelope.meta.totalCount ?? 0, items.length) : items.length;
+            level === 'ALL' && !activeProvince
+              ? Math.max(envelope.meta.totalCount ?? 0, items.length)
+              : items.length;
 
           if (items.length === 0) {
             return (
               <StatusMessage
                 kind="empty"
-                title="Tidak ada wilayah yang cocok pada dataset DEMO saat ini"
+                title={
+                  dataMode === 'LIVE'
+                    ? 'Tidak ada kabupaten/kota yang cocok'
+                    : 'Tidak ada wilayah yang cocok pada dataset DEMO saat ini'
+                }
                 action={
                   query ? (
                     <Button
@@ -111,14 +128,33 @@ export function RegionExplorer({ bare = false, onSelect }: RegionExplorerProps) 
                   ) : undefined
                 }
               >
-                Nama wilayah pada dataset DEMO bersifat sintetis (misalnya “Kabupaten Demo Jabar 1”), jadi
-                nama kabupaten/kota yang sebenarnya tidak akan ditemukan.
+                {dataMode === 'LIVE'
+                  ? 'Periksa ejaan atau coba sebagian nama, misalnya “Bogor”; ubah juga filter jenis wilayah bila perlu.'
+                  : 'Nama wilayah pada dataset DEMO bersifat sintetis (misalnya “Kabupaten Demo Jabar 1”), jadi nama kabupaten/kota yang sebenarnya tidak akan ditemukan.'}
               </StatusMessage>
             );
           }
 
           return (
             <>
+              {provinces.length > 1 && (
+                <label className={styles.province}>
+                  <span className="kk-small">Provinsi</span>
+                  <select
+                    value={activeProvince}
+                    onChange={(event) => {
+                      setProvince(event.target.value);
+                    }}
+                  >
+                    <option value="">Semua provinsi</option>
+                    {provinces.map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               <div className={styles.summary}>
                 <p className="kk-small" role="status">
                   Menampilkan {Math.min(visibleCount, items.length)} dari {total} wilayah
@@ -151,7 +187,7 @@ export function RegionExplorer({ bare = false, onSelect }: RegionExplorerProps) 
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setExpanded({ key: searchKey, count: visibleCount + PAGE_SIZE });
+                    setExpanded({ key: pageKey, count: visibleCount + PAGE_SIZE });
                   }}
                 >
                   Tampilkan {Math.min(PAGE_SIZE, items.length - visibleCount)} lagi

@@ -93,9 +93,35 @@ export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
     };
   }, [selectedCode, panelState, reducedMotion]);
 
+  // BMKG earthquake layer: off by default, LIVE only, its selection separate from the region's.
+  const [quakeLayerOn, setQuakeLayerOn] = useState(false);
+  const [selectedQuakeId, setSelectedQuakeId] = useState<string | null>(null);
+
+  // Keyboard users lose their place when the control they used is replaced by the profile (or the
+  // profile by the search), so focus is handed on explicitly. Only after their own action: a link
+  // that opens with a region already selected must not pull focus.
+  const panelBodyRef = useRef<HTMLDivElement>(null);
+  const pendingFocus = useRef<'profile' | 'search' | null>(null);
+  useEffect(() => {
+    const target = pendingFocus.current;
+    if (!target) return;
+    const body = panelBodyRef.current;
+    if (!body) return;
+    if (target === 'profile' && !selectedCode) return;
+    if (target === 'search' && selectedCode) return;
+    pendingFocus.current = null;
+    const element =
+      target === 'profile'
+        ? body.querySelector<HTMLElement>('[data-panel-heading]')
+        : body.querySelector<HTMLElement>('input[type="search"]');
+    element?.focus({ preventScroll: true });
+  }, [selectedCode]);
+
+  // Picking a region shows its profile, so an earthquake detail left open must not cover it.
   const handleMapSelect = useCallback(
     (code: string, name: string) => {
       remember(code, name);
+      setSelectedQuakeId(null);
       setPanelState(isPhone ? 'peek' : 'open');
       keepMapAboveSheet();
     },
@@ -105,6 +131,8 @@ export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
   const handleListSelect = useCallback(
     (code: string, name: string) => {
       remember(code, name);
+      setSelectedQuakeId(null);
+      pendingFocus.current = 'profile';
       selectCode(code);
       setPanelState(isPhone ? 'peek' : 'open');
       keepMapAboveSheet();
@@ -112,15 +140,13 @@ export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
     },
     [remember, selectCode, dataMode, isPhone, keepMapAboveSheet],
   );
-
-  // BMKG earthquake layer: off by default, LIVE only, its selection separate from the region's.
-  const [quakeLayerOn, setQuakeLayerOn] = useState(false);
-  const [selectedQuakeId, setSelectedQuakeId] = useState<string | null>(null);
   const quakes = useEarthquakeFeed(quakeLayerOn);
+  // Only the verdict's `display` matters here. The assessment object is re-made as time passes, and
+  // depending on it would hand the map a new points list (and re-seed the overlay) on every tick.
+  const quakeDisplay = quakes.assessment?.display ?? null;
   const quakeEvents = useMemo(
-    () =>
-      quakes.feed && quakes.assessment && quakes.assessment.display !== 'WITHHELD' ? quakes.feed.events : [],
-    [quakes.feed, quakes.assessment],
+    () => (quakes.feed && quakeDisplay !== null && quakeDisplay !== 'WITHHELD' ? quakes.feed.events : []),
+    [quakes.feed, quakeDisplay],
   );
   const selectedQuake = quakeEvents.find((event) => event.id === selectedQuakeId) ?? null;
 
@@ -219,7 +245,13 @@ export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
         <BoundaryNotice />
       </div>
 
-      <Surface radius="card" className={styles.panel} aria-label="Informasi wilayah" data-state={shown}>
+      <Surface
+        as="aside"
+        radius="card"
+        className={styles.panel}
+        aria-label="Informasi wilayah"
+        data-state={shown}
+      >
         <button
           type="button"
           className={styles.bar}
@@ -247,12 +279,13 @@ export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
           </span>
         </button>
 
-        <div id="panel-wilayah" className={styles.body} hidden={collapsed}>
+        <div id="panel-wilayah" ref={panelBodyRef} className={styles.body} hidden={collapsed}>
           {selectedQuake && quakes.assessment ? (
             // An earthquake is shown over the region profile; closing it brings the profile back.
             <EarthquakeDetail
               event={selectedQuake}
               assessment={quakes.assessment}
+              origin={quakes.feed?.origin}
               onClose={() => {
                 setSelectedQuakeId(null);
               }}
@@ -262,6 +295,7 @@ export function ExploreWorkspace({ toolbar }: ExploreWorkspaceProps = {}) {
               regionId={selectedCode}
               fallbackName={knownNames[selectedCode] ?? null}
               onClose={() => {
+                pendingFocus.current = 'search';
                 selectCode(null);
               }}
             />
