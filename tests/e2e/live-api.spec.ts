@@ -150,10 +150,16 @@ test.describe('LIVE against the deployed Data Hub', () => {
     await page.goto('/bandingkan?a=1101&b=3171');
     await page.locator('label', { hasText: 'LIVE' }).click();
 
-    await expect(page.getByText(/Dari 16 indikator, 14 dapat dibandingkan/)).toBeVisible();
+    // Counts follow the live snapshot, so assert the shape of the summary, not its numbers.
+    await expect(page.getByText(/Dari \d+ indikator wilayah, \d+ dapat dibandingkan/)).toBeVisible();
+    await expect(page.getByText(`Snapshot ${LIVE_SNAPSHOT} · mode LIVE`)).toBeVisible();
     const imputed = page.getByRole('row', { name: /Pengguna Listrik/ });
     await expect(imputed.getByText('Tidak dibandingkan')).toBeVisible();
-    await expect(imputed.getByText(/diimputasi dari nilai provinsi/)).toBeVisible();
+    await expect(imputed.getByText('Imputasi provinsi, bukan observasi kab/kota').first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Buat Paspor Bukti' })).toHaveAttribute(
+      'href',
+      /^\/paspor-bukti\?jenis=bandingkan&mode=live&snap=[^&]+&a=1101&b=3171$/,
+    );
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
   });
 
@@ -163,11 +169,13 @@ test.describe('LIVE against the deployed Data Hub', () => {
     await page.goto('/lab-prioritas');
     await page.locator('label', { hasText: 'LIVE' }).click();
 
-    await expect(page.getByText('Pratinjau Eksploratif LIVE (Tanpa Run ID Imutabel)')).toBeVisible();
-    const withheld = page.getByText('Peringkat ditahan: hasil komposit tidak konsisten');
-    const ranking = page.getByText(/^Menampilkan \d+ dari \d+ wilayah/);
-    await expect(withheld.or(ranking)).toBeVisible();
+    // Either the checked ranking or an explained hold; the detailed invariants live in priority-lab.spec.ts.
+    const ready = page.getByText('Hasil siap dan sudah diperiksa');
+    const withheld = page.getByText(/Hasil ditahan agar tidak menyesatkan/);
+    await expect(ready.or(withheld)).toBeVisible({ timeout: 30_000 });
+    if (await ready.isVisible()) {
+      await expect(page.getByText(/peringkat 1 adalah prioritas tertinggi/)).toBeVisible();
+    }
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
-    await expect(page.getByText(/bukan wilayah dengan prioritas intervensi tertinggi/)).toBeVisible();
   });
 });
