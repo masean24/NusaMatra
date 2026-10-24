@@ -17,6 +17,7 @@ import composite3T from '@/services/api/__fixtures__/live-v2.1/composite_nationa
 import coverageV21 from '@/services/api/__fixtures__/live-v2.1/indicators_coverage.json';
 import compositePresets from '@/services/api/__fixtures__/live-v2.1/composite_presets.json';
 import compositeSumut from '@/services/api/__fixtures__/live-v2.1/composite_sumut_bencana.json';
+import valuesWater from '@/services/api/__fixtures__/live-v2.1/values_inf_safe_water_pct.json';
 import type { RawCompositeSources } from './compositeTypes';
 import type { RawEvidenceSources } from './evidenceTypes';
 
@@ -191,6 +192,15 @@ export const capturedNationalKms = (): Record<string, unknown> =>
 export const capturedNationalHdi = (): Record<string, unknown> =>
   capturedCompositeBodies(compositeNationalHdi);
 
+/**
+ * Adds the CAPTURED production values of `inf_safe_water_pct` (2026-10-23), where Lanny Jaya (9507,
+ * IMPUTED_PROVINCE) has raw 32.89 but published score 100. Other weighted indicators stay unloaded.
+ */
+export const withCapturedWater = (bodies: Record<string, unknown>): Record<string, unknown> => ({
+  ...bodies,
+  '/api/v1/indicators/inf_safe_water_pct/values': structuredClone(valuesWater),
+});
+
 /** The mapped composite response the page decodes, for builder-level tests. */
 export async function loadCompositeSources(
   bodies: HubBodies,
@@ -214,7 +224,35 @@ export async function loadCompositeSources(
       ? repository.searchRegions({ dataMode: mode, query: '' })
       : Promise.resolve(null),
   ]);
-  return { requestedMode: mode, composite, presets, catalog, datasets, snapshots, coverage, regions };
+  const indicatorValues =
+    mode === 'LIVE'
+      ? Object.fromEntries(
+          await Promise.all(
+            Object.keys(weights)
+              .filter((id) => (weights[id] ?? 0) > 0)
+              .map(
+                async (indicatorId) =>
+                  [
+                    indicatorId,
+                    `/api/v1/indicators/${indicatorId}/values` in bodies
+                      ? await repository.getIndicatorValues({ dataMode: mode, indicatorId })
+                      : null,
+                  ] as const,
+              ),
+          ),
+        )
+      : null;
+  return {
+    requestedMode: mode,
+    composite,
+    presets,
+    catalog,
+    datasets,
+    snapshots,
+    coverage,
+    regions,
+    indicatorValues,
+  };
 }
 
 export const DEMO_COMPOSITE_WEIGHTS = {

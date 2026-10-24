@@ -163,7 +163,8 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
  */
 const API = 'https://api.orangkeren.me/api/v1';
 const READY = 'Hasil siap dan sudah diperiksa';
-const WITHHELD = 'Peringkat belum dapat ditampilkan';
+// Withheld by a blocking check, or by a known direction anomaly in the source scores it ranks.
+const WITHHELD = /Peringkat belum dapat ditampilkan|Peringkat ditahan: skor sumber tidak konsisten/;
 const PASSPORT_LINK = 'Buat Paspor Bukti';
 const SERVER_TIMEOUT = 90_000;
 

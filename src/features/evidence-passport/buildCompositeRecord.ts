@@ -1,13 +1,20 @@
 import { describeUnit } from '@/domain/indicators';
 import {
   assessCompositeIntegrity,
+  assessDirectionImpact,
   classifyCoverage,
   EXPECTED_SCORE_DIRECTION,
   type CompositeIssue,
   type CompositeIssueCode,
 } from '@/domain/prioritization';
 import { formatDecimalId, publicHttpUrl } from '@/features/data-hub';
-import { declaredRankable, integrityInputFromResult, matchingPreset } from '@/features/priority-lab';
+import {
+  checkRankingDirections,
+  declaredRankable,
+  impactRowsOf,
+  integrityInputFromResult,
+  matchingPreset,
+} from '@/features/priority-lab';
 import type {
   DataHubDatasetDTO,
   DataHubIndicatorDTO,
@@ -254,15 +261,53 @@ export function buildCompositeRecord(
     raw.coverage,
   );
 
+  const catalogItems = raw.catalog?.data.items ?? [];
+  const catalogById = new Map(catalogItems.map((item) => [item.indicatorId, item]));
+
+  // LIVE: the same direction check as Lab Prioritas. Nothing is recalculated or corrected here.
+  const live = raw.requestedMode === 'LIVE';
+  const weightedIds = Object.keys(integrity.weightsUsed)
+    .filter((id) => (integrity.weightsUsed[id] ?? 0) > 0)
+    .sort();
+  const checks =
+    live && integrity.ok
+      ? checkRankingDirections(
+          result,
+          weightedIds,
+          (indicatorId) => catalogById.get(indicatorId)?.polarity ?? '',
+          (indicatorId) => raw.indicatorValues?.[indicatorId]?.data ?? null,
+        )
+      : [];
+  const impact =
+    checks.length > 0
+      ? assessDirectionImpact({
+          checks,
+          rows: impactRowsOf(result),
+          weightsUsed: integrity.weightsUsed,
+          filterProvinceId: result.filterProvinceId,
+        })
+      : ({ status: 'clear' } as const);
+  const inconsistentIds = checks
+    .filter((check) => check.verdict.status === 'inconsistent')
+    .map((check) => check.indicatorId);
+  const direction: CompositeEvidenceRecord['direction'] = {
+    checked: live,
+    anomalies: impact.status === 'clear' ? [] : impact.anomalies,
+    inconsistentIndicatorIds: inconsistentIds,
+    nationalRankWithheld: impact.status === 'national_rank_withheld',
+    notFullyVerifiedIndicatorIds: checks
+      .filter(({ verdict }) => ['partial', 'unverified', 'unverifiable'].includes(verdict.status))
+      .map((check) => check.indicatorId),
+  };
+
   const withheldReason: CompositeEvidenceRecord['withheldReason'] = !integrity.ok
     ? 'INTEGRITY'
     : !source.consistent
       ? 'MIXED_SOURCES'
-      : null;
+      : inconsistentIds.length > 0 || impact.status === 'ranking_withheld'
+        ? 'DIRECTION_ANOMALY'
+        : null;
   const withheld = withheldReason !== null;
-
-  const catalogItems = raw.catalog?.data.items ?? [];
-  const catalogById = new Map(catalogItems.map((item) => [item.indicatorId, item]));
   const datasetsById = new Map((raw.datasets?.data ?? []).map((dataset) => [dataset.datasetId, dataset]));
   const unavailable = new Set(result.unavailableIndicatorIds ?? []);
   const indicatorIds = Object.entries(result.weightsBasisPoints)
@@ -295,7 +340,11 @@ export function buildCompositeRecord(
     tierThreshold: result.minCoveragePct,
     focusRegionId: query.focusRegionId ?? null,
   };
-  const rows = withheld ? [] : result.items.map((item) => rowOf(item, lookups));
+  // National ranks reached by an anomaly outside the filter are left out, never recomputed.
+  const listed = direction.nationalRankWithheld
+    ? result.items.map((item) => ({ ...item, nationalRank: null }))
+    : result.items;
+  const rows = withheld ? [] : listed.map((item) => rowOf(item, lookups));
   const insufficient = withheld
     ? []
     : result.insufficient.map((region) => insufficientRowOf(region, lookups));
@@ -365,6 +414,7 @@ export function buildCompositeRecord(
     },
     ranking: withheld ? ('WITHHELD' as const) : ('SHOWN' as const),
     withheldReason,
+    direction,
     serverRankedCount: result.items.length,
     rows,
     insufficient,

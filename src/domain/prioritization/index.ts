@@ -31,3 +31,11 @@ export type {
 } from './compositeIntegrity';
 export { checkComponentDirection } from './componentDirection';
 export type { DirectionCheckInput, DirectionVerdict, ReferenceValue } from './componentDirection';
+export { assessDirectionImpact } from './directionImpact';
+export type {
+  DirectionAnomaly,
+  DirectionImpact,
+  DirectionImpactCheck,
+  DirectionImpactInput,
+  DirectionImpactRow,
+} from './directionImpact';

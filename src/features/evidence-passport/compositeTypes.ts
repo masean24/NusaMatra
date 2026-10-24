@@ -8,10 +8,32 @@ import type {
   ExploratoryCompositeResultDTO,
   IndicatorCatalogDTO,
   IndicatorCoverageDTO,
+  IndicatorValuesMapDTO,
 } from '@/services/api';
 import type { CompositeIssueCode } from '@/domain/prioritization';
 import type { EvidenceClass } from './evidenceClass';
 import type { EvidenceBase, IndicatorSourceInfo } from './evidenceTypes';
+
+/** A published score that does not follow its raw value (a known inconsistency, not missing evidence). */
+export interface DirectionAnomalyView {
+  readonly indicatorId: string;
+  readonly regionId: string;
+  readonly raw: number;
+  readonly score: number;
+}
+
+export interface CompositeDirectionReview {
+  /** False in DEMO: nothing was checked against a source. */
+  readonly checked: boolean;
+  /** Known inconsistencies the ranking can reach. */
+  readonly anomalies: readonly DirectionAnomalyView[];
+  /** Indicators whose independent observations go against the indicator's direction. */
+  readonly inconsistentIndicatorIds: readonly string[];
+  /** National ranks are left out: an affected region outside the province filter is ranked with them. */
+  readonly nationalRankWithheld: boolean;
+  /** Indicators whose direction could not be fully verified (insufficient evidence or values not loaded). */
+  readonly notFullyVerifiedIndicatorIds: readonly string[];
+}
 
 /** The Data Hub's answers for one Lab passport, as the adapter decoded them. */
 export interface RawCompositeSources {
@@ -27,6 +49,12 @@ export interface RawCompositeSources {
   readonly coverage: AdaptedEnvelope<IndicatorCoverageDTO> | null;
   /** The region registry, asked for only to name a province filter; `null` = not asked or not loaded. */
   readonly regions: AdaptedEnvelope<readonly DataHubRegionDTO[]> | null;
+  /**
+   * LIVE only: the published values of each weighted indicator, to check the ranking's component scores
+   * against their raw values (the same rule as Lab Prioritas). `null` = DEMO or not asked; an entry
+   * `null` = that indicator could not be loaded, so its direction is not verified.
+   */
+  readonly indicatorValues: Readonly<Record<string, AdaptedEnvelope<IndicatorValuesMapDTO> | null>> | null;
 }
 
 /** Who made a rule: the Data Hub, or Nusa Matra's own interface policy. Never blurred. */
@@ -163,7 +191,9 @@ export interface CompositeEvidenceRecord extends EvidenceBase {
   /** `WITHHELD` = the ranking is not shown and no region rows are included. */
   readonly ranking: 'SHOWN' | 'WITHHELD';
   /** Why the ranking is withheld; `null` when it is shown. */
-  readonly withheldReason: 'INTEGRITY' | 'MIXED_SOURCES' | null;
+  readonly withheldReason: 'INTEGRITY' | 'MIXED_SOURCES' | 'DIRECTION_ANOMALY' | null;
+  /** The direction check against the source (LIVE): what it found, never a correction. */
+  readonly direction: CompositeDirectionReview;
   /** How many ranked regions the Data Hub sent, whether or not they are shown here. */
   readonly serverRankedCount: number;
   readonly rows: readonly CompositeRegionRow[];

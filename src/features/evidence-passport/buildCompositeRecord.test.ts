@@ -1,3 +1,4 @@
+import valuesPoverty from '@/services/api/__fixtures__/live-v2.1/values_soc_poverty_rate.json';
 import { buildCompositeRecord } from './buildCompositeRecord';
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import {
@@ -12,6 +13,7 @@ import {
   DEMO_COMPOSITE_WEIGHTS,
   capturedDemoComposite,
   loadCompositeSources,
+  withCapturedWater,
 } from './evidenceTestKit';
 import type { LabEvidenceQuery } from './evidenceQuery';
 
@@ -203,6 +205,65 @@ describe('buildCompositeRecord, ranking withheld', () => {
   });
 });
 
+describe('buildCompositeRecord, direction checked against CAPTURED source values', () => {
+  it('national: withholds the ranking reached by Lanny Jaya, keeps its source facts, and corrects nothing', async () => {
+    const record = await build(withCapturedWater(capturedNationalKms()), NATIONAL_WEIGHTS);
+    expect(record).toMatchObject({ ranking: 'WITHHELD', withheldReason: 'DIRECTION_ANOMALY' });
+    expect(record.rows).toEqual([]);
+    expect(record.direction).toMatchObject({
+      checked: true,
+      anomalies: [{ indicatorId: 'inf_safe_water_pct', regionId: '9507', raw: 32.89, score: 100 }],
+      nationalRankWithheld: false,
+    });
+    // As for every withheld result, no region rows; the server's count, the criteria and their sources stay.
+    expect(record.serverRankedCount).toBeGreaterThan(500);
+    expect(record.insufficient).toEqual([]);
+    expect(record.indicators.map((indicator) => indicator.indicatorId)).toContain('inf_safe_water_pct');
+    const limits = record.limitations.join('\n');
+    expect(limits).toContain('Peringkat ditahan');
+    expect(limits).toContain('nilai mentah 32.89, skor terpublikasi 100');
+    expect(limits).toContain('tidak mengoreksi atau menghitung ulang');
+  });
+
+  it('Jawa Tengah: shows the provincial ranking as sent, leaves out every national rank, and says why', async () => {
+    const plain = await build(capturedJateng(), JATENG_WEIGHTS, { provinceId: '33' });
+    const record = await build(withCapturedWater(capturedJateng()), JATENG_WEIGHTS, { provinceId: '33' });
+    expect(record).toMatchObject({ ranking: 'SHOWN', withheldReason: null });
+    expect(record.direction.nationalRankWithheld).toBe(true);
+    // Same rows, same ranks and scores; only the national rank is withheld, never recomputed.
+    expect(record.rows.map((row) => [row.regionId, row.rank, row.scoreRaw])).toEqual(
+      plain.rows.map((row) => [row.regionId, row.rank, row.scoreRaw]),
+    );
+    expect(record.rows.every((row) => row.nationalRank === null)).toBe(true);
+    expect(plain.rows.some((row) => row.nationalRank !== null)).toBe(true);
+    expect(record.limitations.join('\n')).toContain('Peringkat nasional tidak dicantumkan');
+  });
+
+  it('SYNTHETIC: verified observations against the catalog direction withhold the ranking as before', async () => {
+    // The captured catalog with soc_poverty_rate declared positive, and the captured poverty values.
+    const bodies = capturedNationalKms();
+    const catalog = bodies['/api/v1/indicators'] as {
+      data: Record<string, { indicator_id: string; polarity: string }[]>;
+    };
+    for (const item of Object.values(catalog.data).flat()) {
+      if (item.indicator_id === 'soc_poverty_rate') item.polarity = 'positive';
+    }
+    bodies['/api/v1/indicators/soc_poverty_rate/values'] = structuredClone(valuesPoverty);
+    const record = await build(bodies, NATIONAL_WEIGHTS);
+    expect(record).toMatchObject({ ranking: 'WITHHELD', withheldReason: 'DIRECTION_ANOMALY' });
+    expect(record.direction.inconsistentIndicatorIds).toEqual(['soc_poverty_rate']);
+    expect(record.rows).toEqual([]);
+  });
+
+  it('marks a ranking whose weighted directions could not be checked as not fully verified', async () => {
+    // No values are loaded for any criterion: insufficient evidence, shown with a limitation, not withheld.
+    const record = await build(capturedJateng(), JATENG_WEIGHTS, { provinceId: '33' });
+    expect(record.ranking).toBe('SHOWN');
+    expect(record.direction.notFullyVerifiedIndicatorIds).toEqual(Object.keys(JATENG_WEIGHTS).sort());
+    expect(record.limitations.join('\n')).toContain('bukan sebagai hasil yang terverifikasi penuh');
+  });
+});
+
 describe('buildCompositeRecord, link context and DEMO', () => {
   it('warns when the snapshot in the link differs from the one received', async () => {
     const record = await build(capturedJateng(), JATENG_WEIGHTS, { provinceId: '33', snapshotId: 'old' });
@@ -217,6 +278,9 @@ describe('buildCompositeRecord, link context and DEMO', () => {
       raw,
     );
     expect(record.source).toMatchObject({ dataMode: 'DEMO', snapshotId: '2026.10.0-wia-demo' });
+    // DEMO is never checked against LIVE source values.
+    expect(raw.indicatorValues).toBeNull();
+    expect(record.direction).toMatchObject({ checked: false, anomalies: [], nationalRankWithheld: false });
     expect(record.limitations[0]).toContain('data simulasi (DEMO)');
     // v0.1 has no direction, region weights or coverage: they stay unreported, never invented.
     expect(record.scope.scoreDirection).toBeNull();

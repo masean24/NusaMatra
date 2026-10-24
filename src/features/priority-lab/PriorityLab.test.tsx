@@ -399,7 +399,14 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     const ranking = await rankingRegion();
     const list = within(ranking).getByRole('list');
     expect(within(list).getAllByRole('button')[0]).toHaveTextContent(/^1.*Kabupaten Wonosobo.*35,06/);
-    expect(within(list).getAllByRole('button')[0]).toHaveTextContent('Peringkat nasional 80');
+    // The captured national rank (80) is computed with Lanny Jaya, whose water score is inconsistent:
+    // it is left out, never recomputed; the provincial order does not use Lanny Jaya and stays.
+    expect(within(list).getAllByRole('button')[0]).not.toHaveTextContent('Peringkat nasional');
+    expect(
+      screen.getByText(
+        /Peringkat nasional tidak ditampilkan: skor sumber Kabupaten Lanny Jaya \(9507\) \(di luar daftar ini\) tidak konsisten/,
+      ),
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/4 wilayah dihitung dari sebagian kriteria saja/).length).toBeGreaterThan(0);
 
     fireEvent.click(within(ranking).getByRole('button', { name: 'Prioritas terendah dulu' }));
@@ -446,7 +453,11 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
   });
 
   it('national ties keep the server rank (captured 145, 145, 145) and an observed zero is shown as data; an imputed value is flagged', async () => {
-    renderLive();
+    // SYNTHETIC: the water values cannot be loaded, so its direction is unverified (insufficient
+    // evidence, a warning) instead of the known inconsistency that withholds this scenario.
+    renderLive({
+      '/api/v1/indicators/inf_safe_water_pct/values': () => jsonResponse({ detail: 'unavailable' }, 503),
+    });
     await screen.findByText('Hasil siap dan sudah diperiksa');
     fireEvent.click(screen.getByRole('button', { name: /Pengentasan Kemiskinan Ekstrem & Stunting/ }));
     await screen.findByText(/^513 wilayah dihitung dari data resmi LIVE/);
@@ -687,25 +698,79 @@ describe('Paspor Bukti link in the calculation notes', () => {
   });
 });
 
-describe('Direction not fully verified is shown, never silent (captured national composite + captured water values)', () => {
-  it('names the imputed region whose score does not follow its raw value, in the status line and the technical details', async () => {
+describe('A known direction anomaly withholds the ranking it reaches (captured national composite + captured water values)', () => {
+  it('withholds the national ranking whose weighted water score for Lanny Jaya does not follow its raw value, and names it', async () => {
     renderLive();
     await screen.findByText('Hasil siap dan sudah diperiksa');
     fireEvent.click(screen.getByRole('button', { name: /Pengentasan Kemiskinan Ekstrem & Stunting/ }));
-    await screen.findByText(/^513 wilayah dihitung dari data resmi LIVE/);
 
+    expect(await screen.findByText('Peringkat ditahan: skor sumber tidak konsisten')).toBeInTheDocument();
     expect(
       screen.getByText(
-        /Arah skor belum terverifikasi penuh terhadap data sumber untuk:.*Persentase Rumah Tangga Akses Air Minum Layak/,
+        /Skor Persentase Rumah Tangga Akses Air Minum Layak untuk Kabupaten Lanny Jaya \(9507\) di Data Hub tidak sesuai/,
       ),
     ).toBeInTheDocument();
-    // The ranking itself is still shown (non-blocking), with the unverified line in the technical details.
-    expect(screen.getByRole('region', { name: 'Daftar peringkat' })).toBeInTheDocument();
     expect(
-      screen.getAllByText(
-        /BELUM TERVERIFIKASI PENUH.*Kabupaten Lanny Jaya \(9507\): nilai mentah 32.89 → skor 100/,
-      ).length,
-    ).toBeGreaterThan(0);
+      screen.getByText(/nilai mentah 32,89, skor terpublikasi 100\. Frontend tidak mengoreksi skor ini\./),
+    ).toBeInTheDocument();
+    // Withheld: no ranking, no chart, no passport; nothing removed and renumbered in its place.
+    expect(screen.queryByRole('region', { name: 'Daftar peringkat' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Buat Paspor Bukti' })).not.toBeInTheDocument();
+    expect(screen.getByText('Paspor Bukti tidak dibuat karena peringkat ditahan.')).toBeInTheDocument();
+  });
+
+  it('shows the same scenario again once water carries no weight: an unaffected scenario is not blocked', async () => {
+    const { bodies } = renderLive();
+    await screen.findByText('Hasil siap dan sudah diperiksa');
+    fireEvent.click(screen.getByRole('button', { name: /Pengentasan Kemiskinan Ekstrem & Stunting/ }));
+    await screen.findByText('Peringkat ditahan: skor sumber tidak konsisten');
+    openPicker();
+    fireEvent.click(screen.getByRole('checkbox', { name: /Persentase Rumah Tangga Akses Air Minum Layak/ }));
+
+    await waitFor(() => {
+      expect(bodies.at(-1)?.weights.inf_safe_water_pct).toBeUndefined();
+    });
+    expect(await screen.findByRole('region', { name: 'Daftar peringkat' })).toBeInTheDocument();
+    expect(screen.queryByText('Peringkat ditahan: skor sumber tidak konsisten')).not.toBeInTheDocument();
+  });
+
+  it('keeps only a warning when the water values cannot be loaded (insufficient evidence, not a known inconsistency)', async () => {
+    // SYNTHETIC: the values endpoint fails; nothing is known to be wrong, so nothing is withheld.
+    renderLive({
+      '/api/v1/indicators/inf_safe_water_pct/values': () => jsonResponse({ detail: 'unavailable' }, 503),
+    });
+    await screen.findByText('Hasil siap dan sudah diperiksa');
+    fireEvent.click(screen.getByRole('button', { name: /Pengentasan Kemiskinan Ekstrem & Stunting/ }));
+    await screen.findByText(/^513 wilayah dihitung dari data resmi LIVE/);
+    expect(screen.getByText(/Pemeriksaan arah skor belum selesai/)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Daftar peringkat' })).toBeInTheDocument();
+    expect(screen.queryByText('Peringkat ditahan: skor sumber tidak konsisten')).not.toBeInTheDocument();
+  });
+
+  it('never fetches LIVE values for a DEMO ranking', async () => {
+    const { fetchImpl } = labFetch();
+    renderWithDataHub(<PriorityLab />, { fetchImpl });
+    await screen.findByText('Data simulasi (DEMO)');
+    expect(requestedUrls(fetchImpl).some((url) => url.pathname.endsWith('/values'))).toBe(false);
+    expect(screen.queryByText('Peringkat ditahan: skor sumber tidak konsisten')).not.toBeInTheDocument();
+  });
+});
+
+describe('A province filter keeps its own ranking when the anomaly lies outside it (captured Jateng + captured water values)', () => {
+  it('shows the provincial ranking, withholds only the national ranks, and still reports the verified checks', async () => {
+    renderLive();
+    await screen.findByText('Hasil siap dan sudah diperiksa');
+    fireEvent.click(screen.getByRole('button', { name: /Pengentasan Kemiskinan Ekstrem & Stunting/ }));
+    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+    await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/);
+
+    expect(screen.getByRole('region', { name: 'Daftar peringkat' })).toBeInTheDocument();
+    expect(screen.queryByText(/Peringkat nasional \d/)).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Peringkat nasional tidak ditampilkan: skor sumber Kabupaten Lanny Jaya \(9507\)/),
+    ).toBeInTheDocument();
+    // The passport stays available for this scenario; it carries the same national-rank limitation.
+    expect(screen.getByRole('link', { name: 'Buat Paspor Bukti' })).toBeInTheDocument();
     // Poverty has verified raw values: it is checked and consistent.
     expect(
       screen.getByText(/Arah skor Persentase Penduduk Miskin \(P0\): sesuai data sumber \(\d+ wilayah\)/),

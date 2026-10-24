@@ -78,7 +78,35 @@ export function useCompositeSources(
           ? Promise.resolve(null)
           : supporting(repository.searchRegions({ dataMode: mode, query: '', signal })),
       ]);
-      return { requestedMode: mode, composite, presets, catalog, datasets, snapshots, coverage, regions };
+      // LIVE: the published values of every weighted indicator, for the direction check (as in Lab).
+      const weighted = Object.keys(weights).filter((id) => (weights[id] ?? 0) > 0);
+      const indicatorValues =
+        mode === 'LIVE'
+          ? Object.fromEntries(
+              await Promise.all(
+                weighted.map(
+                  async (indicatorId) =>
+                    [
+                      indicatorId,
+                      await supporting(
+                        repository.getIndicatorValues({ dataMode: mode, indicatorId, signal }),
+                      ),
+                    ] as const,
+                ),
+              ),
+            )
+          : null;
+      return {
+        requestedMode: mode,
+        composite,
+        presets,
+        catalog,
+        datasets,
+        snapshots,
+        coverage,
+        regions,
+        indicatorValues,
+      };
     },
     enabled,
   );

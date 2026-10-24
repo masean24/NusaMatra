@@ -139,7 +139,9 @@ export function IntegritySection({ record }: { readonly record: CompositeEvidenc
           <p className="kk-small">
             {record.withheldReason === 'MIXED_SOURCES'
               ? 'Respons Data Hub berasal dari mode atau snapshot yang berbeda.'
-              : `Pemeriksaan konsistensi di peramban menemukan ${String(blockers.length)} masalah yang memblokir. Hasil ini tidak boleh dibaca sebagai peringkat yang sah.`}
+              : record.withheldReason === 'DIRECTION_ANOMALY'
+                ? 'Skor sumber Data Hub untuk kriteria yang dipakai tidak sesuai dengan nilai mentahnya. Hasil ini tidak boleh dibaca sebagai peringkat yang sah (lihat "Keterbatasan").'
+                : `Pemeriksaan konsistensi di peramban menemukan ${String(blockers.length)} masalah yang memblokir. Hasil ini tidak boleh dibaca sebagai peringkat yang sah.`}
           </p>
         </div>
       ) : (

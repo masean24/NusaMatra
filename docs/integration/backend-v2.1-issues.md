@@ -44,8 +44,13 @@ Setiap butir memuat: endpoint, isi permintaan, waktu (UTC), yang teramati, yang 
   - Nilai `IMPUTED_PROVINCE` ikut diuji dengan meletakkannya di antara pengamatan independen terdekat. Yang cocok dihitung sebagai terverifikasi (tercatat `imputedChecked`). Hanya nilai estimasi yang **tidak cocok** disisihkan, dan itu disebut dengan nama wilayah, nilai mentah, dan skornya (status `partial`, "BELUM TERVERIFIKASI PENUH") di baris status dan rincian teknis. Tidak ada yang lolos diam-diam.
   - Indikator yang tidak punya cukup pengamatan independen (kurang dari dua yang bukan estimasi) berstatus `unverified`, bukan `consistent`.
   - Rekomputasi skor gabungan dan seluruh pemeriksaan integritas (bobot wilayah, komponen, cakupan, peringkat) tetap berlaku penuh untuk komponen estimasi; skor komponen dibandingkan dengan skor terpublikasi untuk semua wilayah.
-  - Status `partial` dan `unverified` tidak memblokir peringkat (ditampilkan dengan nada peringatan). Apakah cacat ini harus memblokir peringkat nasional yang memuat `9507` adalah keputusan pemilik.
-- Tes: `compositeCheck.test.ts` (data produksi asli), `componentDirection.test.ts` (sintetis kecil), `PriorityLab.test.tsx`.
+  - **Sejak 2026-10-24 (P0 integritas peringkat), status `partial` adalah inkonsistensi yang diketahui dan gagal tertutup** (`assessDirectionImpact`, `src/domain/prioritization/directionImpact.ts`), tanpa ambang top-N dan tanpa mengoreksi, menghapus, atau menomori ulang apa pun:
+    - wilayah anomali ada di daftar peringkat dan indikatornya berbobot efektif > 0 untuk wilayah itu (`effective_weights_region`; bila tidak dilaporkan, bobot skenario) → **seluruh peringkat ditahan** di Lab dan Paspor (`withheldReason: 'DIRECTION_ANOMALY'`), tanpa tautan Paspor;
+    - daftar dibatasi provinsi dan wilayah anomali berada di luar daftar → urutan provinsi tetap ditampilkan (skornya tidak memakai wilayah itu), tetapi **`national_rank` tidak ditampilkan**, karena peringkat nasional dihitung bersama wilayah itu. Pemeriksaan ini memakai skor terpublikasi seluruh wilayah (verdict nasional);
+    - indikator itu berbobot 0, atau skenario tidak memakainya → tidak terpengaruh, peringkat tampil normal.
+  - `unverified`/`unverifiable` (bukti tidak cukup, atau nilai sumber gagal dimuat) tetap peringatan, bukan penahanan; Paspor mencatatnya sebagai "belum terverifikasi penuh". `inconsistent` (pengamatan VERIFIED/DERIVED di luar urutan) tetap memblokir seperti sebelumnya. DEMO tidak pernah memuat nilai LIVE untuk pemeriksaan ini.
+  - Ketergantungan backend: penahanan berakhir hanya bila Data Hub memperbaiki skor `9507` (atau menampilkan nilai yang dipakai untuk menormalisasi). Frontend tidak menghitung ulang skor komposit.
+- Tes: `compositeCheck.test.ts` (data produksi asli), `componentDirection.test.ts` (sintetis kecil), `directionImpact.test.ts`, `PriorityLab.test.tsx`, `buildCompositeRecord.test.ts`, `CompositePassport.test.tsx`.
 
 ## 3. Ambang `rankable` tidak terdokumentasi; ada dua ukuran "cakupan"
 

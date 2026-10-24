@@ -14,6 +14,8 @@ import {
   capturedDemoComposite,
   hubFetch,
   COMPOSITE_PATH,
+  capturedNationalKms,
+  withCapturedWater,
 } from './evidenceTestKit';
 import { EvidencePassport } from './EvidencePassport';
 import { passportHref } from './evidenceQuery';
@@ -249,6 +251,30 @@ describe('Paspor Bukti for Lab, CAPTURED LIVE Pendidikan 3T (not rankable)', () 
     expect(screen.getByRole('region', { name: /Wilayah yang Anda buka/ })).toHaveTextContent(
       'Peringkat ditahan',
     );
+  });
+});
+
+describe('Paspor Bukti for Lab, CAPTURED national composite + CAPTURED water values (direction anomaly)', () => {
+  it('withholds the ranking reached by Lanny Jaya, names it in plain words, and keeps the disclaimer', async () => {
+    const url = passportHref({
+      kind: 'lab',
+      mode: 'LIVE',
+      snapshotId: SNAPSHOT,
+      weights: JATENG_WEIGHTS,
+      focusRegionId: null,
+    });
+    renderPassport(url, withCapturedWater(capturedNationalKms()), 'LIVE');
+    const article = await findDocument();
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Peringkat ditahan');
+    expect(within(article).queryByRole('table', { name: /^Peringkat \d+ wilayah/ })).not.toBeInTheDocument();
+    const check = within(article).getByRole('region', { name: /Pemeriksaan hasil/ });
+    expect(check).toHaveTextContent('tidak sesuai dengan nilai mentahnya');
+    expect(article).not.toHaveTextContent(/lolos/i);
+    const limits = within(article).getByRole('region', { name: /Batasan dan catatan/ });
+    expect(limits).toHaveTextContent('wilayah 9507 (nilai mentah 32.89, skor terpublikasi 100)');
+    expect(limits).toHaveTextContent('IMPUTED_PROVINCE');
+    expect(article).toHaveTextContent('Dirangkai di peramban, bukan arsip/sertifikat resmi.');
   });
 });
 

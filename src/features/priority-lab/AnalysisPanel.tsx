@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/Button/Button';
 import {
   FRONTEND_MIN_REQUESTED_WEIGHT_PCT,
   assessCompositeIntegrity,
+  assessDirectionImpact,
   type CompositeIntegrity,
+  type DirectionImpact,
 } from '@/domain/prioritization';
 import { formatDecimalId, isLiveBlockedError, useDataHub, useDataHubResource } from '@/features/data-hub';
 import {
@@ -28,6 +30,7 @@ import {
   type IndicatorOption,
 } from './labModel';
 import { StatusPanel } from './StatusPanel';
+import { impactRowsOf } from './directionChecks';
 import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
 import styles from './PriorityLab.module.css';
 
@@ -101,10 +104,21 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
   const wrongDirection = checks?.filter((check) => check.verdict.status === 'inconsistent') ?? [];
   // Directions that could not be fully verified against the source: shown, never passed silently.
   const unverifiedDirection = checks?.filter((check) => isDirectionUnverified(check.verdict)) ?? [];
+  // A KNOWN inconsistency (a published score that does not follow its raw value) that the ranking can
+  // reach fails closed: the whole list when a listed region uses it, national ranks when it is elsewhere.
+  const impact: DirectionImpact =
+    live && checks && result
+      ? assessDirectionImpact({
+          checks,
+          rows: impactRowsOf(result),
+          weightsUsed: integrity?.weightsUsed ?? {},
+          filterProvinceId: result.filterProvinceId,
+        })
+      : NO_IMPACT;
 
   const blocked = live && integrity !== null && !integrity.ok;
   const checking = live && integrity?.ok === true && direction.state.status === 'loading';
-  const directionBlocked = live && wrongDirection.length > 0;
+  const directionBlocked = live && (wrongDirection.length > 0 || impact.status === 'ranking_withheld');
   const validated = result !== null && integrity !== null && !blocked && !checking && !directionBlocked;
   const current = !isSettling && ranking.state.status === 'success';
   // A Paspor Bukti is only offered for a ranking that is actually shown: every check passed (in LIVE
@@ -113,7 +127,19 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
     current &&
     validated &&
     integrity.ok &&
-    (!live || (direction.state.status === 'success' && wrongDirection.length === 0));
+    (!live ||
+      (direction.state.status === 'success' &&
+        wrongDirection.length === 0 &&
+        impact.status !== 'ranking_withheld'));
+  // National ranks reached by an anomaly outside the filter are not shown (stated in the status line).
+  const nationalRankWithheld = impact.status === 'national_rank_withheld';
+  const shownResult = useMemo(
+    () =>
+      result && nationalRankWithheld
+        ? { ...result, items: result.items.map((item) => ({ ...item, nationalRank: null })) }
+        : result,
+    [result, nationalRankWithheld],
+  );
 
   // Rank moves are described against the result shown before (same scope only).
   const [history, setHistory] = useState<ShownHistory>({ current: null, previous: null });
@@ -143,15 +169,16 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
         checking={checking}
         activePreset={activePreset}
         wrongDirection={wrongDirection}
+        impact={impact}
         unverifiedDirection={unverifiedDirection}
         directionFailed={live && direction.state.status === 'error'}
         onRetryDirection={direction.retry}
         labelOf={labelOf}
       />
 
-      {current && validated && (
+      {current && validated && shownResult && (
         <RankingWorkspace
-          result={result}
+          result={shownResult}
           integrity={integrity}
           previous={history.current === result ? history.previous : history.current}
           onShown={recordShown}
@@ -164,7 +191,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
         <LabDetails
           options={options}
           chosenIds={Object.keys(chosen)}
-          result={current ? result : null}
+          result={current ? shownResult : null}
           integrity={current ? integrity : null}
           registry={registry}
           checks={current ? checks : null}
@@ -187,6 +214,7 @@ interface AnalysisStatusProps {
   readonly checking: boolean;
   readonly activePreset: CompositePresetDTO | null;
   readonly wrongDirection: readonly DirectionCheck[];
+  readonly impact: DirectionImpact;
   readonly unverifiedDirection: readonly DirectionCheck[];
   readonly directionFailed: boolean;
   readonly onRetryDirection: () => void;
@@ -273,6 +301,22 @@ function AnalysisStatus(props: AnalysisStatusProps) {
       </StatusPanel>
     );
   }
+  if (live && props.impact.status === 'ranking_withheld') {
+    const { anomalies } = props.impact;
+    const criteria = [...new Set(anomalies.map(({ indicatorId }) => props.labelOf(indicatorId)))].join(', ');
+    const regions = [...new Set(anomalies.map(({ regionId }) => regionLabel(regionId, registry)))].join(', ');
+    return (
+      <StatusPanel
+        tone="blocked"
+        title="Peringkat ditahan: skor sumber tidak konsisten"
+        details={<AnomalyList anomalies={anomalies} labelOf={props.labelOf} registry={registry} />}
+      >
+        Skor {criteria} untuk {regions} di Data Hub tidak sesuai dengan nilai mentahnya (nilai estimasi
+        tingkat provinsi). Wilayah itu ada di daftar ini dengan bobot kriteria tersebut, jadi urutannya bisa
+        keliru. Tanpa kriteria itu, atau dengan cakupan provinsi lain, peringkat dapat ditampilkan.
+      </StatusPanel>
+    );
+  }
 
   const province = result.filterProvinceId
     ? (registry.find((region) => region.parentRegionId === result.filterProvinceId)?.provinceName ??
@@ -296,7 +340,15 @@ function AnalysisStatus(props: AnalysisStatusProps) {
   const imputed = integrity.issues.find((issue) => issue.code === 'IMPUTED_PROVINCE_DATA');
   return (
     <StatusPanel
-      tone={props.directionFailed || partial > 0 || imputed || unverified.length > 0 ? 'warning' : 'ok'}
+      tone={
+        props.directionFailed ||
+        partial > 0 ||
+        imputed ||
+        unverified.length > 0 ||
+        props.impact.status === 'national_rank_withheld'
+          ? 'warning'
+          : 'ok'
+      }
       title="Hasil siap dan sudah diperiksa"
       details={
         unverified.length > 0 ? (
@@ -326,6 +378,8 @@ function AnalysisStatus(props: AnalysisStatusProps) {
       {imputed &&
         ` ${String(imputed.count)} wilayah memakai estimasi tingkat provinsi untuk sebagian kriteria.`}
       {props.directionFailed && ' Pemeriksaan arah skor belum selesai.'}
+      {props.impact.status === 'national_rank_withheld' &&
+        ` Peringkat nasional tidak ditampilkan: skor sumber ${[...new Set(props.impact.anomalies.map(({ regionId }) => regionLabel(regionId, registry)))].join(', ')} (di luar daftar ini) tidak konsisten, dan peringkat nasional dihitung bersama wilayah itu.`}
       {unverified.length > 0 &&
         ` Arah skor belum terverifikasi penuh terhadap data sumber untuk: ${unverified.map(({ indicatorId }) => props.labelOf(indicatorId)).join(', ')}.`}
     </StatusPanel>
@@ -591,5 +645,30 @@ function InsufficientCard({
         ))}
       </ul>
     </section>
+  );
+}
+
+const NO_IMPACT: DirectionImpact = { status: 'clear' };
+
+/** The anomalies behind a withheld result, in plain numbers. */
+function AnomalyList({
+  anomalies,
+  labelOf,
+  registry,
+}: {
+  readonly anomalies: Extract<DirectionImpact, { anomalies: unknown }>['anomalies'];
+  readonly labelOf: (id: string) => string;
+  readonly registry: readonly DataHubRegionDTO[];
+}) {
+  return (
+    <ul role="list" className={styles.issueList}>
+      {anomalies.map(({ indicatorId, regionId, raw, score }) => (
+        <li key={`${indicatorId}|${regionId}`}>
+          {labelOf(indicatorId)} · {regionLabel(regionId, registry)}: nilai mentah{' '}
+          {formatDecimalId(String(raw))}, skor terpublikasi {formatDecimalId(String(score))}. Frontend tidak
+          mengoreksi skor ini.
+        </li>
+      ))}
+    </ul>
   );
 }

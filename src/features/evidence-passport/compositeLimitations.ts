@@ -11,6 +11,8 @@ const percent = (value: number) => `${value.toLocaleString('id-ID', { maximumFra
 export function buildCompositeLimitations(record: Omit<CompositeEvidenceRecord, 'limitations'>): string[] {
   const notes: string[] = [];
   const hasIssue = (code: string) => record.integrity.issues.some((issue) => issue.code === code);
+  const labelOf = (indicatorId: string) =>
+    record.indicators.find((indicator) => indicator.indicatorId === indicatorId)?.label ?? indicatorId;
 
   if (record.source.dataMode === 'DEMO') {
     notes.push(
@@ -24,6 +26,18 @@ export function buildCompositeLimitations(record: Omit<CompositeEvidenceRecord, 
     notes.push(
       'Peringkat ditahan: pemeriksaan konsistensi di peramban menemukan masalah yang memblokir (lihat "Pemeriksaan hasil"). Catatan ini tidak menyatakan hasil tersebut memenuhi pemeriksaan, dan tidak ada peringkat yang ditampilkan.',
     );
+  } else if (record.withheldReason === 'DIRECTION_ANOMALY') {
+    const named = record.direction.anomalies
+      .map(
+        ({ indicatorId, regionId, raw, score }) =>
+          `${labelOf(indicatorId)} untuk wilayah ${regionId} (nilai mentah ${String(raw)}, skor terpublikasi ${String(score)})`,
+      )
+      .join('; ');
+    notes.push(
+      named
+        ? `Peringkat ditahan: skor sumber ${named} tidak sesuai dengan nilai mentahnya (penanda kualitas IMPUTED_PROVINCE: estimasi tingkat provinsi), dan wilayah itu ikut dihitung dengan bobot kriteria tersebut. Paspor ini tidak mengoreksi atau menghitung ulang skor itu dan tidak menampilkan peringkat.`
+        : `Peringkat ditahan: skor komponen ${record.direction.inconsistentIndicatorIds.map(labelOf).join(', ')} bergerak berlawanan dengan arah indikatornya pada data sumber. Tidak ada peringkat yang ditampilkan.`,
+    );
   } else if (record.withheldReason === 'MIXED_SOURCES') {
     notes.push(
       'Peringkat ditahan karena respons Data Hub untuk catatan ini berasal dari mode atau snapshot yang berbeda.',
@@ -31,6 +45,17 @@ export function buildCompositeLimitations(record: Omit<CompositeEvidenceRecord, 
   } else {
     notes.push(
       `Pemeriksaan konsistensi di peramban tidak menemukan masalah yang memblokir (selisih terbesar antara skor dan jumlah komponennya ${record.integrity.maxScoreError.toFixed(3)}). Itu pemeriksaan konsistensi hasil Data Hub, bukan jaminan kebenaran data sumber.`,
+    );
+  }
+
+  if (record.ranking === 'SHOWN' && record.direction.nationalRankWithheld) {
+    notes.push(
+      `Peringkat nasional tidak dicantumkan: skor sumber ${record.direction.anomalies.map(({ indicatorId, regionId }) => `${labelOf(indicatorId)} untuk wilayah ${regionId}`).join('; ')} (di luar daftar ini) tidak sesuai dengan nilai mentahnya, dan peringkat nasional dihitung bersama wilayah itu. Peringkat di dalam daftar ini tidak memakai wilayah tersebut.`,
+    );
+  }
+  if (record.ranking === 'SHOWN' && record.direction.notFullyVerifiedIndicatorIds.length > 0) {
+    notes.push(
+      `Arah skor belum terverifikasi penuh terhadap data sumber untuk: ${record.direction.notFullyVerifiedIndicatorIds.map(labelOf).join(', ')}. Peringkat ditampilkan apa adanya dari Data Hub, bukan sebagai hasil yang terverifikasi penuh.`,
     );
   }
 
