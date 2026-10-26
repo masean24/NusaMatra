@@ -70,7 +70,8 @@ describe('HeroDioramaSlot', () => {
     const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
 
     expect(screen.getByTestId('engine')).toBeInTheDocument();
-    expect(received).toMatchObject({ displayMode: 'normal', dataMode: 'DEMO', reducedMotion: false });
+    // The hero is an illustration in the site's own mode, which is LIVE by default.
+    expect(received).toMatchObject({ displayMode: 'normal', dataMode: 'LIVE', reducedMotion: false });
     expect(container.querySelector('[data-engine="loading"]')).not.toBeNull();
     expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
 

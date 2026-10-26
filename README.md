@@ -16,26 +16,24 @@ Nusa Matra helps users explore Indonesian regions, understand regional indicator
 
 ## Document authority
 
-**Start with [`CLAUDE.md`](./CLAUDE.md).** Follow [`project_guidelines.md`](./project_guidelines.md) for product-wide engineering values. Use docs `01–13` for feature-specific implementation contracts.
+**Start with [`project_guidelines.md`](./project_guidelines.md)** for product-wide engineering values. Use docs `01–13` for feature-specific implementation contracts.
 
-| File                                                                         | Purpose                                                           |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| [`CLAUDE.md`](./CLAUDE.md)                                                   | Claude Code operating instructions and source-of-truth precedence |
-| [`project_guidelines.md`](./project_guidelines.md)                           | Branding, React, Clean Code and original animation requirements   |
-| [`docs/01-PRODUCT-REQUIREMENTS.md`](./docs/01-PRODUCT-REQUIREMENTS.md)       | Requirements, prioritization and non-goals                        |
-| [`docs/02-USER-FLOWS.md`](./docs/02-USER-FLOWS.md)                           | Navigation, interactions, states and user journeys                |
-| [`docs/03-UI-UX-DESIGN-SYSTEM.md`](./docs/03-UI-UX-DESIGN-SYSTEM.md)         | Figma nodes, colors, typography, UI components and responsive UX  |
-| [`docs/04-TECH-STACK-ARCHITECTURE.md`](./docs/04-TECH-STACK-ARCHITECTURE.md) | React architecture and provisional library choices                |
-| [`docs/05-DATA-SOURCES.md`](./docs/05-DATA-SOURCES.md)                       | Official Indonesian data providers, licensing and provenance      |
-| [`docs/06-DATA-MODEL.md`](./docs/06-DATA-MODEL.md)                           | Entity relationships, persistence and snapshot design             |
-| [`docs/07-DECISION-ENGINE.md`](./docs/07-DECISION-ENGINE.md)                 | Weights, normalization, ranking, explainability and sensitivity   |
-| [`docs/08-API-SPECIFICATION.md`](./docs/08-API-SPECIFICATION.md)             | Proposed Nusa Matra API endpoints and contracts                   |
-| [`docs/09-ANIMATION-GUIDELINES.md`](./docs/09-ANIMATION-GUIDELINES.md)       | Figma G1–G11, 3D-1–3D-4, theme transitions and performance        |
-| [`docs/10-TESTING-STRATEGY.md`](./docs/10-TESTING-STRATEGY.md)               | Test pyramid, fixtures, QA and continuous integration             |
-| [`docs/11-SECURITY-AND-PRIVACY.md`](./docs/11-SECURITY-AND-PRIVACY.md)       | Threat model, secrets, privacy, licensing and protection          |
-| [`docs/12-IMPLEMENTATION-ROADMAP.md`](./docs/12-IMPLEMENTATION-ROADMAP.md)   | Milestones, dependencies, releases and ownership                  |
-| [`docs/13-ACCEPTANCE-CRITERIA.md`](./docs/13-ACCEPTANCE-CRITERIA.md)         | Testable criteria, release gates and sign-off                     |
-| [`.env.example`](./.env.example)                                             | Non-secret public config template                                 |
+| File                                                                         | Purpose                                                          |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [`project_guidelines.md`](./project_guidelines.md)                           | Branding, React, Clean Code and original animation requirements  |
+| [`docs/01-PRODUCT-REQUIREMENTS.md`](./docs/01-PRODUCT-REQUIREMENTS.md)       | Requirements, prioritization and non-goals                       |
+| [`docs/02-USER-FLOWS.md`](./docs/02-USER-FLOWS.md)                           | Navigation, interactions, states and user journeys               |
+| [`docs/03-UI-UX-DESIGN-SYSTEM.md`](./docs/03-UI-UX-DESIGN-SYSTEM.md)         | Figma nodes, colors, typography, UI components and responsive UX |
+| [`docs/04-TECH-STACK-ARCHITECTURE.md`](./docs/04-TECH-STACK-ARCHITECTURE.md) | React architecture and provisional library choices               |
+| [`docs/05-DATA-SOURCES.md`](./docs/05-DATA-SOURCES.md)                       | Official Indonesian data providers, licensing and provenance     |
+| [`docs/06-DATA-MODEL.md`](./docs/06-DATA-MODEL.md)                           | Entity relationships, persistence and snapshot design            |
+| [`docs/07-DECISION-ENGINE.md`](./docs/07-DECISION-ENGINE.md)                 | Weights, normalization, ranking, explainability and sensitivity  |
+| [`docs/08-API-SPECIFICATION.md`](./docs/08-API-SPECIFICATION.md)             | Proposed Nusa Matra API endpoints and contracts                  |
+| [`docs/09-ANIMATION-GUIDELINES.md`](./docs/09-ANIMATION-GUIDELINES.md)       | Figma G1–G11, 3D-1–3D-4, theme transitions and performance       |
+| [`docs/10-TESTING-STRATEGY.md`](./docs/10-TESTING-STRATEGY.md)               | Test pyramid, fixtures, QA and continuous integration            |
+| [`docs/11-SECURITY-AND-PRIVACY.md`](./docs/11-SECURITY-AND-PRIVACY.md)       | Threat model, secrets, privacy, licensing and protection         |
+| [`docs/12-IMPLEMENTATION-ROADMAP.md`](./docs/12-IMPLEMENTATION-ROADMAP.md)   | Milestones, dependencies, releases and ownership                 |
+| [`docs/13-ACCEPTANCE-CRITERIA.md`](./docs/13-ACCEPTANCE-CRITERIA.md)         | Testable criteria, release gates and sign-off                    |
 
 ## Feature map
 
@@ -64,7 +62,7 @@ Nusa Matra helps users explore Indonesian regions, understand regional indicator
 
 ## Development approach
 
-1. Inspect existing repository and read `CLAUDE.md`.
+1. Inspect existing repository and read `project_guidelines.md`.
 2. Implement foundational design tokens, app shell and React primitives.
 3. Deliver DEMO-safe Landing, Jelajahi and Bandingkan vertical slices.
 4. Introduce verified-data ingestion only when source permissions and schemas are reviewed.
@@ -84,8 +82,7 @@ Requires Node.js 24 LTS (see `.nvmrc`) and npm.
 
 ```bash
 npm install
-cp .env.example .env.local   # optional; only public, non-secret values
-npm run dev                  # http://localhost:5173
+npm run dev                  # http://localhost:5173, LIVE data from the public Data Hub
 ```
 
 Quality gate:

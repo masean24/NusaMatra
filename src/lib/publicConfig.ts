@@ -1,6 +1,7 @@
 /**
  * Public, browser-visible configuration, validated once at start-up (docs/04 §8.2, §13.2).
- * Fail closed: an unknown data mode is a configuration error, never a silent guess at LIVE.
+ * Unset values take the published site's defaults (LIVE, the public Data Hub); an unknown data
+ * mode is a configuration error, never a silent guess.
  */
 export type DataMode = 'DEMO' | 'LIVE';
 
@@ -25,26 +26,29 @@ export class PublicConfigError extends Error {
 }
 
 interface RawEnv {
+  /** Vite's other variables (MODE, DEV, …) pass through untouched. */
+  readonly [name: string]: string | boolean | undefined;
   readonly VITE_DATA_MODE?: string | undefined;
   readonly VITE_API_BASE_URL?: string | undefined;
   readonly VITE_EARTHQUAKE_PREVIEW?: string | undefined;
   readonly VITE_DATA_MODE_SWITCH?: string | undefined;
-  readonly DEV?: boolean | undefined;
 }
 
+/**
+ * The published site's settings. The repository ships no .env file, so every build (local, CI,
+ * Coolify) uses these unless an environment variable overrides them. Both are public, not secrets.
+ */
+const DEFAULT_DATA_MODE = 'live';
+const DEFAULT_API_BASE_URL = 'https://api.orangkeren.me';
+
 export function parsePublicConfig(env: RawEnv): PublicConfig {
-  // Local development without a .env file defaults to DEMO; builds read .env.production.
-  const rawMode = (env.VITE_DATA_MODE ?? (env.DEV ? 'demo' : '')).trim().toLowerCase();
-  const apiBaseUrl = env.VITE_API_BASE_URL?.trim() || null;
+  const rawMode = (env.VITE_DATA_MODE?.trim() || DEFAULT_DATA_MODE).toLowerCase();
+  const apiBaseUrl = env.VITE_API_BASE_URL?.trim() || DEFAULT_API_BASE_URL;
   const earthquakePreview = env.VITE_EARTHQUAKE_PREVIEW?.trim() === '1';
   const modeSwitch = env.VITE_DATA_MODE_SWITCH?.trim() === '1';
 
   if (rawMode === 'demo') return { dataMode: 'DEMO', apiBaseUrl, earthquakePreview, modeSwitch };
-  if (rawMode === 'live') {
-    if (!apiBaseUrl)
-      throw new PublicConfigError('VITE_DATA_MODE=live requires VITE_API_BASE_URL (the Data Hub API).');
-    return { dataMode: 'LIVE', apiBaseUrl, earthquakePreview, modeSwitch };
-  }
+  if (rawMode === 'live') return { dataMode: 'LIVE', apiBaseUrl, earthquakePreview, modeSwitch };
   throw new PublicConfigError(`VITE_DATA_MODE must be "demo" or "live", got "${rawMode}".`);
 }
 
