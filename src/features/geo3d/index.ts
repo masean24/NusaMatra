@@ -5,6 +5,9 @@ export type {
   GeoCameraHandle,
   GeoDataMode,
   GeoDisplayMode,
+  GeoOverlayPoint,
   GeoRegionSelection,
   HeroDioramaProps,
+  HeroHexMapProps,
 } from './contract';
+export type { HeroMapOutcome } from './HeroDioramaSlot';

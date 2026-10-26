@@ -1,63 +1,741 @@
+/*
+ * Lab Prioritas surfaces. One translucent layer at most: in Kaca only the settings panel is glass;
+ * every card with content (status, charts, details) is opaque, so text never sits on glass over
+ * glass. All colours are local tokens, set once per display mode below.
+ */
 .lab {
+  --lab-panel-bg: var(--c-card);
+  --lab-panel-border: var(--c-card-border);
+  --lab-panel-shadow: var(--c-card-shadow);
+  --lab-panel-blur: var(--c-card-filter);
+  --lab-card-bg: var(--c-card);
+  --lab-card-border: var(--c-card-border);
+  --lab-card-shadow: var(--c-card-shadow);
+  --lab-ink: var(--c-text);
+  --lab-muted: #4f5666;
+  --lab-strong: var(--c-link);
+  --lab-track: var(--c-track);
+  --lab-bar: var(--c-bar);
+  --lab-input-bg: #ffffff;
+  --lab-input-border: #d3ccbb;
+  --lab-chip-bg: var(--c-chip);
+  --lab-chip-ink: var(--c-chip-ink);
+  --lab-chip-on-bg: var(--nm-sea);
+  --lab-chip-on-ink: #ffffff;
+  --lab-series-0: var(--c-series-1);
+  --lab-series-1: var(--c-series-2);
+  --lab-series-2: var(--c-series-3);
+  --lab-series-3: var(--c-series-4);
+  --lab-series-4: #9cb2ff;
+  --lab-series-5: #f2b48a;
+  --lab-ok-bg: var(--c-ok-bg);
+  --lab-ok-edge: var(--c-sel-line);
+  --lab-ok-icon: var(--c-ok-ink);
+  --lab-warn-bg: var(--c-warn);
+  --lab-warn-edge: #e8742a;
+  --lab-warn-icon: #a64a0b;
+  --lab-block-bg: #fdeeec;
+  --lab-block-edge: #c0362c;
+  --lab-block-icon: #a8241b;
+  --lab-block-title: #861c15;
+
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
   align-items: start;
   width: 100%;
+  color: var(--lab-ink);
 }
 
+:global([data-display-mode='glass']) .lab {
+  /* Kaca tinta cards: white text >= 4.5:1, also over the orange light. */
+  --lab-muted: rgb(255 255 255 / 84%);
+  --lab-input-bg: var(--c-input-bg);
+  --lab-input-border: var(--c-input-border);
+  --lab-chip-on-bg: var(--nm-surface);
+  --lab-chip-on-ink: #13286f;
+  --lab-series-4: #5c7fff;
+  --lab-warn-edge: #ffb27a;
+  --lab-warn-icon: #ffb27a;
+  --lab-block-bg: rgb(255 143 133 / 14%); /* a translucent red tint: withheld/error stays distinct */
+  --lab-block-edge: #ff8f85;
+  --lab-block-icon: #ff8f85;
+  --lab-block-title: #ffffff;
+}
+
+/* ---------------------------------------------------------------- surfaces */
+
 .panel {
+  border: 1px solid var(--lab-panel-border);
+  border-radius: var(--nm-radius-card);
+  background: var(--lab-panel-bg);
+  box-shadow: var(--lab-panel-shadow);
+  backdrop-filter: var(--lab-panel-blur);
+  -webkit-backdrop-filter: var(--lab-panel-blur);
+}
+
+.card {
+  min-width: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--lab-card-border);
+  border-radius: var(--nm-radius-card);
+  background: var(--lab-card-bg);
+  box-shadow: var(--lab-card-shadow);
+  backdrop-filter: var(--lab-panel-blur);
+  -webkit-backdrop-filter: var(--lab-panel-blur);
+}
+
+/* Glass only where it can stay legible: opaque without backdrop-filter or when asked to reduce it. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :global([data-display-mode='glass']) .lab {
+    --lab-panel-bg: #13286f;
+    --lab-card-bg: #13286f;
+  }
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.config {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  min-width: 0;
-  padding: 24px;
+  gap: 22px;
+  padding: 20px;
 }
+
+/* The analysis' parts are placed straight on the Lab grid. */
+.analysis,
+.results {
+  display: contents;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/*
+ * Alternative A, desktop: settings in a fixed-width column on the left, the ranking (with each
+ * region's breakdown opening inside its row) on the right; below the ranking, the unranked regions
+ * and the methodology side by side. The settings span the lower row too, so their height never
+ * pushes those cards down. In one column the DOM order is the reading order: status, top three,
+ * settings (collapsible), ranking, then the notes.
+ */
+@media (width >= 1024px) {
+  .lab {
+    grid-template-columns: minmax(18.75rem, 21.25rem) minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .analysis > *,
+  .results > * {
+    grid-column: 2 / -1;
+  }
+
+  .analysis > .status {
+    grid-row: 1;
+    grid-column: 1 / -1;
+  }
+
+  .analysis > .config {
+    grid-row: 2 / span 2;
+    grid-column: 1;
+  }
+
+  .results > .rankingCard {
+    grid-row: 2;
+  }
+
+  .results > .insufficientCard {
+    grid-row: 3;
+    grid-column: 2;
+    align-self: start;
+  }
+
+  /* Each lower card is as tall as its own content, so opening one never stretches the other. */
+  .analysis > .details {
+    grid-row: 3;
+    grid-column: 3;
+    align-self: start;
+  }
+
+  .lab:not(:has(.insufficientCard)) .details {
+    grid-column: 2 / -1;
+  }
+}
+
+@media (width < 600px) {
+  .lab {
+    gap: 16px;
+  }
+
+  .config {
+    padding: 16px;
+  }
+
+  .card {
+    padding: 14px 16px;
+  }
+}
+
+/* ---------------------------------------------------------------- text */
 
 .muted {
   margin: 0;
-  color: var(--c-text-muted);
+  color: var(--lab-muted);
+  font-size: 0.875rem;
+}
+
+.hint {
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.code {
+  color: var(--lab-muted);
+  font-family: var(--nm-font-mono, ui-monospace, monospace);
+  font-size: 0.75rem;
+}
+
+.quietNote {
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: 0.875rem;
+}
+
+/* ---------------------------------------------------------------- settings */
+
+.configSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionHead {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip,
+.segmented button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--lab-input-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--lab-chip-bg);
+  color: var(--lab-chip-ink);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.chip[aria-pressed='true'],
+.segmented button[aria-pressed='true'] {
+  border-color: transparent;
+  background: var(--lab-chip-on-bg);
+  color: var(--lab-chip-on-ink);
+  font-weight: 600;
 }
 
 .sliders {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .slider {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 6px 12px;
+  grid-template-columns: 10px minmax(0, 1fr) auto 32px;
+  gap: 4px 8px;
   align-items: center;
 }
 
+.sliderLabel {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+.sliderValue {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom range: the filled part takes the criterion's colour (--fill is set inline). */
 .slider input[type='range'] {
-  grid-column: 1;
+  grid-column: 2 / -1;
   width: 100%;
-  accent-color: var(--nm-accent);
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
 }
 
-.percent {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  min-width: 3.5ch;
-  text-align: right;
+.slider input[type='range']::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: var(--nm-radius-pill);
+  background: linear-gradient(
+    to right,
+    var(--series, var(--lab-bar)) var(--fill, 0%),
+    var(--lab-track) var(--fill, 0%)
+  );
 }
 
-.footer {
+.slider input[type='range']::-moz-range-track {
+  height: 6px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--lab-track);
+}
+
+.slider input[type='range']::-moz-range-progress {
+  height: 6px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--series, var(--lab-bar));
+}
+
+.slider input[type='range']::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  margin-top: -7px;
+  border: 2px solid var(--series, var(--lab-bar));
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(18 24 38 / 30%);
+  appearance: none;
+}
+
+.slider input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--series, var(--lab-bar));
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgb(18 24 38 / 30%);
+}
+
+.slider input[type='range']:focus-visible {
+  outline: none;
+}
+
+.slider input[type='range']:focus-visible::-webkit-slider-thumb {
+  outline: 3px solid var(--lab-bar);
+  outline-offset: 2px;
+}
+
+.slider input[type='range']:focus-visible::-moz-range-thumb {
+  outline: 3px solid var(--lab-bar);
+  outline-offset: 2px;
+}
+
+.slider input[type='range']:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sliderNote {
+  grid-column: 2 / -1;
+  margin: 0;
+  color: var(--lab-warn-icon);
+  font-size: 0.8125rem;
+}
+
+.iconButton {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--lab-muted);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--lab-chip-bg);
+}
+
+.input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--lab-input-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--lab-input-bg);
+  color: var(--lab-ink);
+  font: inherit;
+}
+
+.input::placeholder {
+  color: var(--lab-muted);
+}
+
+/* Criteria picker: a disclosure, so the sliders stay the first thing in the panel. */
+.picker {
+  border-top: 1px solid var(--lab-panel-border);
+  padding-top: 12px;
+}
+
+.picker > summary,
+.details > summary,
+.statusDetails > summary {
+  list-style: none;
+}
+
+.picker > summary::-webkit-details-marker,
+.details > summary::-webkit-details-marker,
+.statusDetails > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A chevron, so the closed sections read as openable. */
+.picker > summary::before,
+.details > summary::before,
+.statusDetails > summary::before {
+  content: '';
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(-45deg);
+  transition: transform var(--nm-duration-feedback) ease;
+}
+
+.picker[open] > summary::before,
+.details[open] > summary::before,
+.statusDetails[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.picker > summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
+  gap: 2px 10px;
+  align-items: baseline;
+  align-content: center;
+  min-height: 44px;
+  cursor: pointer;
 }
 
-.footer p {
+.category {
+  margin: 12px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.category legend {
+  margin-bottom: 6px;
+  color: var(--lab-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 6px 4px;
+}
+
+.option input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--lab-bar);
+}
+
+.option[data-disabled] label {
+  color: var(--lab-muted);
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.optionText label {
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- status */
+
+.status {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 18px;
+  border: 1px solid var(--lab-card-border);
+  border-left: 4px solid var(--lab-ok-edge);
+  border-radius: 16px;
+  background: var(--lab-ok-bg);
+  box-shadow: var(--lab-card-shadow);
+}
+
+.status[data-tone='loading'] {
+  border-left-color: var(--lab-bar);
+  background: var(--lab-card-bg);
+}
+
+.status[data-tone='warning'],
+.status[data-tone='demo'] {
+  border-left-color: var(--lab-warn-edge);
+  background: var(--lab-warn-bg);
+}
+
+.status[data-tone='blocked'],
+.status[data-tone='error'] {
+  border-left-color: var(--lab-block-edge);
+  background: var(--lab-block-bg);
+}
+
+.statusIcon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lab-card-bg);
+  color: var(--lab-ok-icon);
+}
+
+.status[data-tone='warning'] .statusIcon,
+.status[data-tone='demo'] .statusIcon {
+  color: var(--lab-warn-icon);
+}
+
+.status[data-tone='blocked'] .statusIcon,
+.status[data-tone='error'] .statusIcon {
+  color: var(--lab-block-icon);
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--lab-track);
+  border-top-color: var(--lab-bar);
+  border-radius: 50%;
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.statusBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.statusTitle {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.status[data-tone='blocked'] .statusTitle,
+.status[data-tone='error'] .statusTitle {
+  color: var(--lab-block-title);
+}
+
+.statusText {
+  margin: 0;
+  color: var(--lab-ink);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.statusDetails summary {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 36px;
+  align-content: center;
+  color: var(--lab-strong);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.statusDetailsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.statusDetailsBody p {
   margin: 0;
 }
 
-.titleRow {
+.statusAction {
+  margin-top: 6px;
+}
+
+.issueList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------- charts */
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+
+.chartTitle,
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.cardLead {
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: 0.875rem;
+}
+
+.chartNote {
+  margin: 0;
+  color: var(--lab-muted);
+  font-size: 0.8125rem;
+}
+
+.stack,
+.contributionTrack {
+  display: flex;
+  height: 14px;
+  overflow: hidden;
+  border-radius: var(--nm-radius-pill);
+  background: var(--lab-track);
+}
+
+.contributionTrack {
+  height: 18px;
+}
+
+.stackPart {
+  flex-basis: 0;
+  height: 100%;
+  transition:
+    flex-grow var(--nm-duration-feedback) ease,
+    width var(--nm-duration-feedback) ease;
+}
+
+.contributionTrack .stackPart {
+  flex: none;
+}
+
+.stackPart + .stackPart {
+  box-shadow: inset 2px 0 0 var(--lab-card-bg);
+}
+
+/* A criterion's colour, everywhere it appears: swatches, chart segments, slider fill. */
+.lab [data-series='0'] {
+  --series: var(--lab-series-0);
+}
+.lab [data-series='1'] {
+  --series: var(--lab-series-1);
+}
+.lab [data-series='2'] {
+  --series: var(--lab-series-2);
+}
+.lab [data-series='3'] {
+  --series: var(--lab-series-3);
+}
+.lab [data-series='4'] {
+  --series: var(--lab-series-4);
+}
+.lab [data-series='5'] {
+  --series: var(--lab-series-5);
+}
+
+.swatch,
+.stackPart {
+  background: var(--series, var(--lab-bar));
+}
+
+.swatch {
+  display: inline-block;
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------------- ranking */
+
+.rankingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rankingHead {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 12px;
@@ -65,55 +743,720 @@
   justify-content: space-between;
 }
 
-.ranking {
+.searchRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.rankChart {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rankRow {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1.4fr) minmax(80px, 1fr) 3.5rem 12px;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rankRow:hover {
+  background: var(--lab-chip-bg);
+}
+
+.rankChart > li[data-open] {
+  border: 1px solid var(--c-sel-line);
+  border-radius: 14px;
+  background: var(--c-sel);
+}
+
+.rankChart > li[data-open] > .rankRow:hover {
+  background: transparent;
+}
+
+.chevron {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(45deg);
+  opacity: 0.8;
+  transition: transform var(--nm-duration-feedback) ease;
+}
+
+.rankRow[aria-expanded='true'] .chevron {
+  transform: rotate(-135deg);
+}
+
+/* The breakdown under an open row: a quiet inset panel, faded in. */
+.rankDetail {
+  margin: 0 10px 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--lab-card-border);
+  border-radius: 12px;
+  background: var(--c-soft);
+  animation: detail-in 220ms var(--nm-ease-calm);
+}
+
+@keyframes detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rankDetail {
+    animation: none;
+  }
+
+  .chevron {
+    transition: none;
+  }
+}
+
+.rankNumber {
+  color: var(--lab-muted);
+  font-family: var(--nm-font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.rankName {
+  min-width: 0;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+.rankMove {
+  color: var(--lab-muted);
+  font-size: 0.75rem;
+}
+
+.rankTrack {
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--nm-radius-pill);
+  background: var(--lab-track);
+}
+
+.rankTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lab-bar);
+  transition: width var(--nm-duration-feedback) ease;
+}
+
+.rankScore {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+@media (width < 600px) {
+  .rankRow {
+    grid-template-columns: 1.6rem minmax(0, 1fr) 3rem 12px;
+    row-gap: 4px;
+  }
+
+  .rankTrack {
+    grid-column: 2 / -1;
+    grid-row: 2;
+  }
+
+  .searchRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------- tables */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table th,
+.table td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--lab-card-border);
+  font-weight: 400;
+  text-align: left;
+}
+
+.table thead th,
+.table tfoot th,
+.table tfoot td {
+  color: var(--lab-muted);
+  font-weight: 600;
+}
+
+.table tfoot th,
+.table tfoot td {
+  color: var(--lab-ink);
+  border-bottom: 0;
+}
+
+.table td {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/*
+ * The explanation card is a container: its width, not the viewport's, decides the table layout. It is
+ * narrow both on phones and in the 360px column of the wide desktop grid.
+ */
+.whyDetail {
+  container-type: inline-size;
+}
+
+/* Narrow card: one block per criterion — its full name, then score, weight and contribution side by side. */
+@container (width < 440px) {
+  /* Hidden visually only: screen readers keep the column headers. */
+  .contributionTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .contributionTable tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 1px solid var(--lab-card-border);
+  }
+
+  .contributionTable tbody th {
+    grid-column: 1 / -1;
+    padding-bottom: 2px;
+    border-bottom: 0;
+  }
+
+  .contributionTable tbody td {
+    border-bottom: 0;
+    text-align: left;
+  }
+
+  .contributionTable tbody td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--lab-muted);
+    font-size: 0.75rem;
+  }
+
+  /* An omitted criterion's note spans the row instead of squeezing into the score column. */
+  .contributionTable tbody td[colspan] {
+    grid-column: 1 / -1;
+    white-space: normal;
+  }
+
+  .contributionTable tbody td[colspan]::before {
+    content: none;
+  }
+}
+
+@media (width < 600px) {
+  .segmented {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .segmented button {
+    padding: 8px 10px;
+    font-size: 0.8125rem;
+  }
+}
+
+/* ---------------------------------------------------------------- details */
+
+.detailsHeading {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.sourceList,
+.methodList {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 
-.rank {
-  display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
-  gap: 4px 12px;
-  align-items: center;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: var(--c-surface-muted);
+.methodList {
+  padding-left: 1.1em;
+  list-style: disc;
 }
 
-.position {
-  text-align: center;
-}
-
-.name {
+.sourceList li {
   display: flex;
   flex-direction: column;
+}
+
+.sourceName {
+  font-weight: 600;
+}
+
+.excludedList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2px 12px;
+  max-height: 200px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  font-size: 0.8125rem;
+}
+
+.record {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.record div {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 8px;
+}
+
+.record dt {
+  color: var(--lab-muted);
+}
+
+.record dd {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2400ms;
+  }
+
+  .stackPart,
+  .rankTrack span,
+  .chip,
+  .segmented button {
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------- coverage, quality and scope badges */
+
+.rankBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.badge {
+  padding: 1px 8px;
+  border: 1px solid var(--lab-input-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--lab-chip-bg);
+  color: var(--lab-ink);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.badgeWarn {
+  border-color: var(--lab-warn-edge);
+  background: var(--lab-warn-bg);
+  color: var(--lab-ink);
+}
+
+.filterRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 0.875rem;
+}
+
+.filterRow .hint {
+  grid-column: 1 / -1;
+}
+
+.insufficientList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.insufficientList li {
+  display: grid;
+  gap: 2px;
+}
+
+.passportCta {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------- redesign pieces */
+
+/* Numbered steps in the settings column: an orange disc before each step title. */
+.stepNumber {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* The active scenario: selection tint plus a 3px orange bar on the inner left edge. */
+
+.totalChip {
+  padding: 3px 10px;
+  border-radius: var(--nm-radius-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.totalChip[data-tone='ok'] {
+  background: var(--c-ok-bg);
+  color: var(--c-ok-ink);
+}
+
+.totalChip[data-tone='warn'] {
+  border: 1px solid var(--c-warn-line);
+  background: var(--c-warn);
+  color: var(--c-warn-ink);
+}
+
+.configActions {
+  display: grid;
+  gap: 8px;
+}
+
+.statusStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0 0 0 auto;
+}
+
+.statusStats > div {
+  display: grid;
+  gap: 2px;
+  min-width: 96px;
+}
+
+.statusStats dt {
+  color: var(--lab-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.statusStats dd {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.statusStats a {
+  color: inherit;
+}
+
+.staleBanner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--c-warn-line);
+  border-radius: 14px;
+  background: var(--c-warn);
+  color: var(--c-warn-ink);
+}
+
+.staleBanner p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* The icon sits inside the field, wherever the row wraps the count. */
+.searchField {
+  display: block;
+  position: relative;
   min-width: 0;
 }
 
-.components {
-  grid-column: 2 / span 2;
+.searchField .input {
+  width: 100%;
 }
 
-.components summary {
-  color: var(--c-text-muted);
-  cursor: pointer;
+.searchRow {
+  position: relative;
 }
 
-.componentList {
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  translate: 0 -50%;
+  pointer-events: none;
+}
+
+.searchInput {
+  padding-left: 36px;
+}
+
+.whyActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.whyActions > a {
+  min-height: 40px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.coverageTrack {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--nm-radius-pill);
+  background: var(--lab-track);
+}
+
+.coverageTrack span {
+  display: block;
+  height: 100%;
+  background: var(--nm-accent);
+}
+
+.details {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+}
+
+/*
+ * Safari (iPad) may shrink the open accordions of a column flex box to the card's grid-row height
+ * and let their text spill over the cards around it; they keep their full height instead.
+ */
+.details > * {
+  flex-shrink: 0;
+}
+
+.accordion {
+  border-top: 1px solid var(--lab-card-border);
+}
+
+.accordion > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+
+.accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion > summary::after {
+  content: '+';
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.accordion[open] > summary::after {
+  content: '–';
+}
+
+.accordionBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 14px;
+}
+
+/* Mockup: the order toggle is one pill track with the active option in orange. */
+.segmented {
   gap: 2px;
-  margin: 6px 0 0;
+  padding: 3px;
+  border: 1px solid var(--lab-card-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-soft);
+}
+
+.segmented button {
+  border-color: transparent;
+  background: transparent;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}
+
+/* Score and its rank chip on one line. */
+
+/* Accordions as bordered rows with a chevron. */
+.accordion {
+  border: 1px solid var(--lab-card-border);
+  border-radius: 14px;
+  padding: 0 16px;
+}
+
+.details {
+  gap: 10px;
+}
+
+.accordion > summary::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(45deg);
+  transition: transform var(--nm-duration-feedback) ease;
+}
+
+.accordion[open] > summary::after {
+  content: '';
+  transform: rotate(-135deg);
+}
+
+/* Unranked regions: long criterion names wrap inside the card instead of widening it. */
+.insufficientList li {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--lab-card-border);
+}
+
+.insufficientList .badge {
+  white-space: normal;
+}
+
+/* One column: the top three of a valid ranking, so results show before the settings. */
+.topSummary {
+  display: grid;
+  gap: 8px;
+}
+
+.topList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-@media (width < 960px) {
-  .lab {
-    grid-template-columns: minmax(0, 1fr);
+.topList li {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.9375rem;
+}
+
+/* One column: the settings fold behind a button so the ranking is not below every slider. */
+.configToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.configToggle[aria-expanded='true'] .chevron {
+  transform: rotate(-135deg);
+}
+
+.configBody {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Desktop: the ranking sits beside the settings, so no summary and no fold. */
+@media (width >= 1024px) {
+  .topSummary,
+  .configToggle {
+    display: none;
   }
+}
+
+@media (width < 1024px) {
+  .config[data-collapsed] > .configBody {
+    display: none;
+  }
+
+  .config > .panelTitle {
+    display: none;
+  }
+}
+
+/* The message keeps its width; the counts wrap below it on narrow screens. */
+.status {
+  flex-wrap: wrap;
+}
+
+.statusBody {
+  flex: 1 1 280px;
+  min-width: 0;
 }

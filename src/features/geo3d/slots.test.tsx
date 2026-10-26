@@ -2,9 +2,11 @@ import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useEffect, useImperativeHandle, type ReactNode } from 'react';
 import { createMemoryRouter, RouterProvider, useSearchParams } from 'react-router';
+import { DataHubProvider } from '@/features/data-hub';
 import { ExplorationMapPanel } from '@/features/exploration';
 import { DisplayModeProvider } from '@/features/theme';
-import type { Explore3DMapProps, GeoCameraHandle, HeroDioramaProps } from './contract';
+import { setMediaQueryMatches } from '@/test/browserMocks';
+import type { Explore3DMapProps, GeoCameraHandle, HeroHexMapProps } from './contract';
 import { geoEngineRegistry } from './engineRegistry';
 import { HeroDioramaSlot } from './HeroDioramaSlot';
 
@@ -14,6 +16,7 @@ const realRegistry = { ...geoEngineRegistry };
 
 beforeEach(() => {
   // jsdom has no WebGL: tests swap in fake engines (or none) instead of loading three.js.
+  registry.HeroHexMap = null;
   registry.HeroDiorama = null;
   registry.Explore3DMap = null;
 });
@@ -26,7 +29,9 @@ function withProviders(ui: ReactNode, path = '/') {
   const router = createMemoryRouter([{ path: '*', element: ui }], { initialEntries: [path] });
   return render(
     <DisplayModeProvider>
-      <RouterProvider router={router} />
+      <DataHubProvider repository={null} initialDataMode="DEMO">
+        <RouterProvider router={router} />
+      </DataHubProvider>
     </DisplayModeProvider>,
   );
 }
@@ -39,51 +44,110 @@ describe('engine registry', () => {
 });
 
 describe('HeroDioramaSlot', () => {
-  it('shows the static Figma illustration while no engine is available', () => {
-    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Ilustrasi diorama." />);
-    expect(container.querySelector('img')).toHaveAttribute(
-      'src',
-      expect.stringContaining('diorama-nusantara'),
-    );
+  const oldIllustration = (container: HTMLElement) =>
+    container.querySelector('img[src*="diorama-nusantara"]');
+
+  it('shows the hexagon poster, never the old illustration, while no engine is available', () => {
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta hexagon." />);
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
     expect(container.querySelector('[data-engine="absent"]')).not.toBeNull();
-    expect(screen.getByText('Ilustrasi diorama.')).toBeInTheDocument();
+    expect(screen.getByText('Peta hexagon.')).toBeInTheDocument();
+    expect(screen.getByText(/data simulasi/)).toBeInTheDocument();
   });
 
-  it('passes host state to the engine and keeps the placeholder until it is ready', () => {
-    let received: HeroDioramaProps | null = null;
-    registry.HeroDiorama = function FakeHeroDiorama(props: HeroDioramaProps) {
+  it('follows the active theme on the poster', () => {
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
+    expect(container.querySelector('[data-hex-poster]')).toHaveAttribute('data-display-mode', 'normal');
+  });
+
+  it('passes host state to the engine and keeps the poster until it is ready', () => {
+    let received: HeroHexMapProps | null = null;
+    registry.HeroHexMap = function FakeHexMap(props: HeroHexMapProps) {
       received = props;
       return <div data-testid="engine" />;
     };
-    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Diorama." />);
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
 
     expect(screen.getByTestId('engine')).toBeInTheDocument();
     expect(received).toMatchObject({ displayMode: 'normal', dataMode: 'DEMO', reducedMotion: false });
     expect(container.querySelector('[data-engine="loading"]')).not.toBeNull();
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
 
     act(() => {
       received?.onReady?.();
     });
     expect(container.querySelector('[data-engine="ready"]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
+  });
+
+  it('runs the hexagon map and reports when its entrance has settled', () => {
+    let hex: HeroHexMapProps | null = null;
+    registry.HeroHexMap = function FakeHexMap(props: HeroHexMapProps) {
+      hex = props;
+      return <div data-testid="hex" />;
+    };
+    const outcome = vi.fn();
+    withProviders(<HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />);
+
+    expect(screen.getByTestId('hex')).toBeInTheDocument();
+    expect(outcome).not.toHaveBeenCalled();
+    act(() => {
+      hex?.onEntranceSettled?.();
+    });
+    expect(outcome).toHaveBeenCalledWith('settled');
+  });
+
+  it('keeps the hexagon poster when the hexagon map reports an error, and never mounts the relief map', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const reliefMounted = vi.fn();
+    registry.HeroHexMap = function FailingHexMap(props: HeroHexMapProps) {
+      useEffect(() => {
+        props.onError?.(new Error('WebGL tidak tersedia'));
+      }, [props]);
+      return null;
+    };
+    registry.HeroDiorama = function FakeRelief() {
+      reliefMounted();
+      return <div data-testid="relief" />;
+    };
+    const outcome = vi.fn();
+    const { container } = withProviders(
+      <HeroDioramaSlot scene="hero" description="Peta." onHeroMapOutcome={outcome} />,
+    );
+
+    expect(container.querySelector('[data-engine="failed"]')).not.toBeNull();
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
+    expect(reliefMounted).not.toHaveBeenCalled();
+    expect(outcome).toHaveBeenCalledWith('unavailable');
+  });
+
+  it('keeps the hexagon poster when the engine throws while rendering', () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    registry.HeroHexMap = function BrokenEngine(): never {
+      throw new Error('WebGL context lost');
+    };
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
+    expect(container.querySelector('[data-engine="failed"]')).not.toBeNull();
+  });
+
+  it('shows the same poster on phones (no separate still image)', () => {
+    setMediaQueryMatches('(width < 768px)', true);
+    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Peta." />);
+    expect(container.querySelector('[data-hex-poster]')).not.toBeNull();
+    expect(oldIllustration(container)).toBeNull();
   });
 
   it('never mounts the engine for the story scene, which it does not support', () => {
-    registry.HeroDiorama = function FakeHeroDiorama() {
+    registry.HeroHexMap = function FakeHexMap() {
       return <div data-testid="engine" />;
     };
     withProviders(<HeroDioramaSlot scene="story" description="Cerita." />);
     expect(screen.queryByTestId('engine')).toBeNull();
-  });
-
-  it('keeps the placeholder when the engine throws', () => {
-    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    registry.HeroDiorama = function BrokenEngine(): never {
-      throw new Error('WebGL context lost');
-    };
-    const { container } = withProviders(<HeroDioramaSlot scene="hero" description="Ilustrasi." />);
-    expect(container.querySelector('img')).toBeInTheDocument();
-    expect(container.querySelector('[data-engine="failed"]')).not.toBeNull();
   });
 });
 
@@ -107,7 +171,7 @@ describe('Explore3DMapSlot in the exploration panel', () => {
   }
 
   it('asks for the DEMO illustration (no invented geography) and keeps the selection in the URL', () => {
-    const camera: GeoCameraHandle = { focusRegion: vi.fn(), resetView: vi.fn() };
+    const camera: GeoCameraHandle = { focusRegion: vi.fn(), resetView: vi.fn(), zoomBy: vi.fn() };
     const calls = installFakeMap(camera);
     withProviders(
       <>
@@ -138,7 +202,7 @@ describe('Explore3DMapSlot in the exploration panel', () => {
   });
 
   it('offers a keyboard alternative that selects and focuses a region', async () => {
-    const camera: GeoCameraHandle = { focusRegion: vi.fn(), resetView: vi.fn() };
+    const camera: GeoCameraHandle = { focusRegion: vi.fn(), resetView: vi.fn(), zoomBy: vi.fn() };
     installFakeMap(camera);
     withProviders(<ExplorationMapPanel />, '/jelajahi');
 

@@ -27,5 +27,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    // The component tests drive both data modes, so they see the DEMO/LIVE switch visitors do not.
+    env: { VITE_DATA_MODE_SWITCH: '1' },
   },
 });

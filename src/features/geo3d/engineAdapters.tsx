@@ -57,6 +57,10 @@ export function Explore3DMapAdapter({
   onRegionSelect,
   onRegionHover,
   cameraRef,
+  overlayPoints,
+  selectedOverlayId,
+  onOverlaySelect,
+  viewInsetLeft,
 }: Explore3DMapProps) {
   const engineRef = useRef<NusaMatra3DMapHandle>(null);
 
@@ -70,6 +74,9 @@ export function Explore3DMapAdapter({
       resetView: () => {
         engineRef.current?.resetCamera();
       },
+      zoomBy: (factor: number) => {
+        engineRef.current?.zoomBy(factor);
+      },
     }),
     [],
   );
@@ -81,6 +88,8 @@ export function Explore3DMapAdapter({
       dataMode={dataMode}
       reducedMotion={reducedMotion}
       geography={geography ?? undefined}
+      // The homepage map's latitude/longitude grid, so the surface reads as a map.
+      showGraticule
       selectedRegionId={selectedRegionId}
       onSelectRegion={(region) => {
         onRegionSelect(toSelection(region));
@@ -92,6 +101,10 @@ export function Explore3DMapAdapter({
             },
           }
         : {})}
+      {...(overlayPoints ? { overlayPoints } : {})}
+      {...(selectedOverlayId !== undefined ? { selectedOverlayId } : {})}
+      {...(onOverlaySelect ? { onSelectOverlay: onOverlaySelect } : {})}
+      {...(viewInsetLeft !== undefined ? { viewInsetLeft } : {})}
       {...(className ? { className } : {})}
       {...(onReady ? { onReady } : {})}
       {...(onError ? { onError } : {})}

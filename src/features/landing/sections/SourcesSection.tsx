@@ -3,13 +3,27 @@ import { Reveal } from '@/features/motion';
 import styles from './SourcesSection.module.css';
 
 /**
- * Figma 41:406. These are *planned* sources: none is connected in this prototype, and the
- * status line says so on every card. Integration happens in the separate Data Hub.
+ * Figma 41:406. Status as served by the LIVE Data Hub v2.2 dataset list (captured 2026-10-24,
+ * src/services/api/__fixtures__/live-v2.2/datasets.json): BNPB (IRBI, DIBI) and BPS (SDGs,
+ * Susenas) are ingested; DJPK is not. Static copy, so it names the mode and points to the
+ * per-page snapshot instead of claiming freshness or completeness.
  */
-const PLANNED_SOURCES = [
-  { name: 'BNPB · InaRISK', description: 'Indeks dan kelas risiko bencana per kabupaten/kota.' },
-  { name: 'Badan Pusat Statistik', description: 'Kemiskinan, kependudukan, dan layanan dasar.' },
-  { name: 'DJPK Kemenkeu', description: 'Anggaran dan realisasi APBD.' },
+const SOURCES = [
+  {
+    name: 'BNPB · InaRISK',
+    description: 'Indeks dan kelas risiko bencana per kabupaten/kota.',
+    status: 'Terhubung lewat Data Hub (mode LIVE)',
+  },
+  {
+    name: 'Badan Pusat Statistik',
+    description: 'Kemiskinan, kependudukan, dan layanan dasar.',
+    status: 'Terhubung lewat Data Hub (mode LIVE)',
+  },
+  {
+    name: 'DJPK Kemenkeu',
+    description: 'Anggaran dan realisasi APBD.',
+    status: 'Direncanakan · belum terhubung',
+  },
 ] as const;
 
 /* G10: three source cards rise one after another, 90ms apart. */
@@ -24,7 +38,7 @@ export function SourcesSection() {
         </h2>
       </Reveal>
       <ul role="list" className={styles.cards}>
-        {PLANNED_SOURCES.map((source, index) => (
+        {SOURCES.map((source, index) => (
           <li key={source.name} className={styles.cell}>
             <Reveal
               distance={24}
@@ -35,12 +49,16 @@ export function SourcesSection() {
               <Surface as="article" radius="source" className={styles.card}>
                 <h3 className="kk-h3">{source.name}</h3>
                 <p className={`kk-small ${styles.description}`}>{source.description}</p>
-                <p className={`kk-caption ${styles.status}`}>Direncanakan · belum terhubung di prototipe</p>
+                <p className={`kk-caption ${styles.status}`}>{source.status}</p>
               </Surface>
             </Reveal>
           </li>
         ))}
       </ul>
+      <p className={`kk-small ${styles.note}`}>
+        Belum semua indikator punya data. Ketersediaan tiap indikator, tahunnya, dan snapshot data yang
+        dipakai ditampilkan di Jelajahi dan Lab Prioritas.
+      </p>
     </section>
   );
 }

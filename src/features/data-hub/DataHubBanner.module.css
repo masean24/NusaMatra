@@ -25,3 +25,26 @@
 .note {
   margin: 0;
 }
+
+/* In a toolbar (Jelajahi): as wide as its content, slimmer padding. */
+.banner[data-compact] {
+  flex: 0 1 auto;
+  gap: 6px;
+  width: auto;
+  padding: 6px 14px 6px 6px;
+}
+
+.noteDisclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--c-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.noteDisclosure > .note {
+  max-width: 48ch;
+  margin-top: 6px;
+}

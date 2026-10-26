@@ -1,4 +1,5 @@
-import { useId, type MouseEvent } from 'react';
+import { useId, useState, type MouseEvent } from 'react';
+import type { DisplayMode } from './displayModePreference';
 import { Icon } from '@/components/ui/Icon/Icon';
 import { useDisplayMode } from './DisplayModeContext';
 import styles from './DisplayModeSwitch.module.css';
@@ -14,8 +15,15 @@ export function DisplayModeSwitch({ size = 'regular', className }: DisplayModeSw
   const { mode, glassAvailable, isTransitioning, toggleMode } = useDisplayMode();
   const hintId = useId();
   const isGlass = mode === 'glass';
+  // The knob moves on click; the theme itself follows once the liquid covers the screen.
+  const [target, setTarget] = useState<DisplayMode | null>(null);
+  const [squishing, setSquishing] = useState(false);
+  const shown = isTransitioning && target ? target : mode;
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    if (isTransitioning || !glassAvailable) return;
+    setTarget(isGlass ? 'normal' : 'glass');
+    setSquishing(true);
     toggleMode(event.currentTarget.getBoundingClientRect());
   };
 
@@ -31,9 +39,17 @@ export function DisplayModeSwitch({ size = 'regular', className }: DisplayModeSw
         disabled={!glassAvailable}
         onClick={handleClick}
         className={[styles.switch, styles[size], className].filter(Boolean).join(' ')}
-        data-selected={mode}
+        data-selected={shown}
       >
-        <span className={styles.knob} aria-hidden="true" />
+        {/* Stretch-and-bounce only after a click (data-squish), never on page load. */}
+        <span
+          className={styles.knob}
+          data-squish={squishing ? shown : undefined}
+          onAnimationEnd={() => {
+            setSquishing(false);
+          }}
+          aria-hidden="true"
+        />
         <span className={styles.segment} data-segment="normal">
           <Icon name="sun" size={18} />
           <span className={styles.label}>Normal</span>

@@ -42,7 +42,7 @@
 
 @media (hover: hover) and (pointer: fine) {
   .option:not([data-selected]):hover {
-    background: var(--c-nav-hover-liquid);
+    background: var(--c-nav-hover-fill);
     color: var(--c-nav-hover-text);
   }
 }

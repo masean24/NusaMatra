@@ -87,7 +87,7 @@ describe.each<[LiveBehaviour, string]>([
     await waitFor(() => {
       expect(
         screen.getAllByText('Tidak ada data LIVE untuk ditampilkan di sini.').length,
-      ).toBeGreaterThanOrEqual(4);
+      ).toBeGreaterThanOrEqual(3);
     });
 
     expect(primaryMessages(container)).toHaveLength(1);

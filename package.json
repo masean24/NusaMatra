@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:hex": "node scripts/geo/build-hex-indonesia.mjs 0.4 hex-indonesia.json && node scripts/geo/build-hex-indonesia.mjs 0.7 hex-indonesia-compact.json",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "lint": "eslint . --max-warnings=0",
@@ -20,6 +21,7 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
     "@fontsource-variable/lexend": "5.3.0",
     "@react-three/fiber": "9.8.2",
     "motion": "14.0.0",
@@ -34,6 +36,7 @@
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.8",
+    "@turf/turf": "^7.4.0",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",

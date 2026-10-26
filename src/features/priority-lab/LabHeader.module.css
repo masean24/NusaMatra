@@ -1,0 +1,137 @@
+.header {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.breadcrumb li + li::before {
+  content: '/';
+  margin-right: 8px;
+  color: var(--c-text-muted);
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb [aria-current='page'] {
+  color: var(--c-text-muted);
+}
+
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.titleText {
+  display: grid;
+  flex: 1 1 420px;
+  gap: 6px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 1.4rem + 2vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.lead {
+  max-width: 44em;
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--c-card-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-chip);
+  color: var(--c-chip-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip[data-tone='demo'] {
+  border-color: var(--c-warn-line);
+  background: var(--c-warn);
+  color: var(--c-warn-ink);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+}
+
+.modeControl {
+  position: relative;
+  font-size: 0.8125rem;
+}
+
+.modeControl > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  color: var(--c-link);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.modeControl > summary::-webkit-details-marker {
+  display: none;
+}
+
+.modePanel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: var(--nm-z-popover);
+  padding: 10px;
+  border: 1px solid var(--c-card-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--nm-surface);
+  color: var(--nm-text);
+  box-shadow: var(--nm-shadow-normal);
+}

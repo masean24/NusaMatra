@@ -17,7 +17,10 @@ export function describeBoundaryReadiness(boundaries: BoundaryCollectionDTO): Bo
   if (geometryStatus.canExtrudePolygons) {
     return {
       hasPolygons: true,
-      detail: `Data Hub mengirim poligon batas untuk ${String(features.length)} wilayah. Peta 3D belum memakainya sampai data tersebut diverifikasi.`,
+      detail:
+        `Poligon batas ${String(features.length)} kabupaten/kota dari ${geometryStatus.source}` +
+        (geometryStatus.boundaryVersion ? `, edisi ${geometryStatus.boundaryVersion}` : '') +
+        '. Bentuk disederhanakan untuk tampilan web; bukan untuk pengukuran luas atau keperluan hukum.',
     };
   }
 

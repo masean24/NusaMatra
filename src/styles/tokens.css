@@ -25,8 +25,33 @@
   /* aksen/* */
   --nm-accent: #ff8a3d;
   --nm-accent-hover: #ff7420;
+  /* Text on solid orange: dark ink, about 7.5:1 on --nm-accent and 6.6:1 on its hover (WCAG AA). */
   --nm-accent-text: #121826;
   --nm-peach: #ffd9bf; /* "Matra" in the logotype on dark/sea surfaces; also prioritas/2 */
+
+  /*
+   * Kaca page ("Tinta dan kobalt"): ink to cobalt, with one soft cobalt light top left for the glass
+   * cards to refract. Calm on purpose: orange stays the action colour and never lights the page.
+   * Nothing brighter than --nm-sea-shallow.
+   */
+  --nm-sea-ink: #14268a;
+  --nm-kaca-page-gradient:
+    radial-gradient(
+      45% 55% at 12% 14%,
+      color-mix(in srgb, var(--nm-sea-shallow) 35%, transparent) 0,
+      transparent 72%
+    ),
+    linear-gradient(160deg, var(--nm-text) 0%, var(--nm-sea-ink) 55%, var(--nm-sea-deep) 100%);
+
+  /*
+   * Semantic condition colours (indicator verdicts). Restrained and always used as filled pills with
+   * text AND an icon, never as bare colour: the soft backgrounds are opaque so contrast holds on the
+   * translucent Kaca surfaces too (jade 5.7:1 and coral 4.6:1 on their soft fills, WCAG AA).
+   */
+  --nm-positive: #176b52;
+  --nm-positive-soft: #e7f5ee;
+  --nm-negative: #b5474d;
+  --nm-negative-soft: #fcebec;
 
   /* prioritas/* */
   --nm-priority-1: #fbfaf6;
@@ -44,12 +69,22 @@
 
   /* Typography — Lexend, KK/* text styles */
   --nm-font-sans: 'Lexend Variable', 'Lexend', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Identifiers, digests and citations (token sheet "Lexend + JetBrains Mono"). */
+  --nm-font-mono:
+    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
   /* Effects — KK/Bayangan normal, KK/Kaca panel, navbar drop shadows */
   --nm-shadow-normal: 0 10px 28px -6px #121e5a1f;
   --nm-shadow-glass: 0 8px 32px 0 #121e5a40;
   --nm-shadow-nav-normal: 0 10px 14px #121e5a1f;
-  --nm-shadow-nav-glass: 0 8px 16px #121e5a40;
+  --nm-shadow-nav-glass: 0 6px 18px #121e5a26;
+  /*
+   * Liquid-glass lighting, an engineering addition to Figma's drop shadows. Inset layers follow the
+   * rounded silhouette. Light comes from the top-left: bright rim and soft glow there, a faint
+   * bounce on the opposite edge and a little shade along the bottom for thickness.
+   */
+  --nm-glass-lighting: inset 1px 1px 0 0 #ffffff26, inset -1px -1px 0 0 #ffffff0d;
+  --nm-glass-stroke-soft: #ffffff1a; /* hairline under the directional rim, not a uniform white outline */
   --nm-shadow-knob: 0 3px 8px 0 #121e5a33;
   --nm-blur-panel: 8px; /* the landing panels use 8px; KK/Kaca panel style is 16px */
   --nm-blur-strong: 16px;
@@ -66,8 +101,13 @@
   --nm-radius-band: 36px;
   --nm-radius-pill: 999px;
 
-  /* Layout — 1440 reference frame: 88px text margin, 64px band margin, 1312px band width */
-  --nm-page-max: 1440px;
+  /*
+   * Layout — 1440 reference frame: 88px text margin, 64px band margin, 1312px band width.
+   * The page column is the 1440px frame on laptops and grows on larger monitors (72vw + 396px: about
+   * 1780px at 1920, 2240px at 2560), so pages fill a large screen instead of floating in wide empty
+   * margins. It stops at 2576px (a 2400px text column), so 4K and ultrawide screens stay readable.
+   */
+  --nm-page-max: clamp(1440px, 72vw + 396px, 2576px);
   --nm-gutter: clamp(16px, 6.1vw, 88px);
   --nm-band-gutter: clamp(12px, 4.45vw, 64px);
 
@@ -106,6 +146,15 @@
   --nm-duration-feedback: 140ms;
   --nm-duration-reveal: 700ms;
   --nm-duration-knob: 420ms;
+
+  /*
+   * Mobile bottom tab bar (below 1024px): 6px padding around 52px items plus the 1px border, floating
+   * 12px above the bottom edge or the device's home indicator, whichever is larger. Anything fixed to
+   * the bottom of the screen (the Jelajahi sheet) sits above --nm-tabbar-clearance.
+   */
+  --nm-tabbar-height: 66px;
+  --nm-tabbar-offset: max(12px, env(safe-area-inset-bottom, 0px));
+  --nm-tabbar-clearance: calc(var(--nm-tabbar-height) + var(--nm-tabbar-offset) + 8px);
 
   /* Stacking order (docs/03 §5.4) */
   --nm-z-content: 1;

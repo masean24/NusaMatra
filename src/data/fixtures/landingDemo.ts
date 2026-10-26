@@ -105,11 +105,11 @@ export const DEMO_HERO_CARDS: readonly {
   },
 ];
 
-/** Sample Paspor Bukti preview (Figma 41:324). The identifier is an example, not a real report. */
+/** Sample Paspor Bukti preview (Figma 41:324). The identifier says CONTOH: no report has this number. */
 export const DEMO_PASSPORT_PREVIEW = {
-  id: 'NM-2026-0412',
+  id: 'CONTOH-0412',
   rows: [
-    { label: 'Sumber', value: 'BNPB InaRISK, BPS (direncanakan)' },
+    { label: 'Sumber', value: 'BNPB InaRISK, BPS' },
     { label: 'Tahun', value: '2023 · 2021' },
     { label: 'Asumsi', value: 'Banjir 45% · Sosial 35% · Layanan 20%' },
   ],

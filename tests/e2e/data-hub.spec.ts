@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { openDataInfo } from './dataInfo';
 import { mockDataHub } from './dataHubMocks';
+import { openRegionPanel } from './jelajahiHelpers';
 
 test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('searches, opens a region, and shows its profile and indicator value with DEMO labels', async ({
@@ -7,6 +9,8 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   }) => {
     await mockDataHub(page);
     await page.goto('/jelajahi');
+    await openDataInfo(page);
+    await openRegionPanel(page);
 
     await expect(page.getByText('Menampilkan 30 dari 514 wilayah')).toBeVisible();
     await expect(page.getByText('Simulasi — bukan data atau rekomendasi resmi.')).toBeVisible();
@@ -24,6 +28,7 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('answers a search for "bogor" honestly instead of inventing Kabupaten Bogor', async ({ page }) => {
     await mockDataHub(page);
     await page.goto('/jelajahi?cari=bogor');
+    await openRegionPanel(page);
 
     await expect(page.getByText('Tidak ada wilayah yang cocok pada dataset DEMO saat ini')).toBeVisible();
     await expect(page.getByText('Kabupaten Bogor')).toHaveCount(0);
@@ -32,23 +37,28 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('keeps the map illustrative and says why the Point-only boundaries are not used', async ({ page }) => {
     await mockDataHub(page);
     await page.goto('/jelajahi');
+    await openDataInfo(page);
 
     await expect(
       page.getByText('Geometri Ilustratif DEMO (Batas Poligon Resmi Belum Tersedia)'),
     ).toBeVisible();
+    // The explanation sits in a disclosure next to the label over the map.
+    await page.getByText('Tentang batas wilayah').click();
     await expect(page.getByText(/hanya mengirim geometri Point/)).toBeVisible();
   });
 
   test('blocks LIVE on HTTP 503: no data, no fallback, and DEMO again only on request', async ({ page }) => {
     const mock = await mockDataHub(page);
     await page.goto('/jelajahi');
+    await openDataInfo(page);
+    await openRegionPanel(page);
     await expect(page.getByText('Menampilkan 30 dari 514 wilayah')).toBeVisible();
 
     await page.locator('label', { hasText: 'LIVE' }).click();
 
     await expect(page.getByText('LIVE Belum Tersedia', { exact: true })).toHaveCount(1);
-    // Search, boundary notice and indicators each asked and failed: three quiet notes, one message.
-    await expect(page.getByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toHaveCount(3);
+    // Search, map, boundary notice and indicators each asked and failed: four quiet notes, one message.
+    await expect(page.getByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toHaveCount(4);
     await expect(page.locator('[data-kind="unavailable"], [data-kind="error"]')).toHaveCount(1);
     await expect(page.getByText(/Tidak ada fallback otomatis ke data DEMO/).first()).toBeVisible();
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
@@ -68,28 +78,39 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
     const mock = await mockDataHub(page);
     await page.goto('/lab-prioritas');
 
-    await expect(page.getByText('Pratinjau Simulasi DEMO (Tanpa Run ID Imutabel)')).toBeVisible();
-    await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible();
+    await expect(page.getByText('Data simulasi (DEMO)')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Peringkat wilayah' }).getByText('Kabupaten Demo Lampung 11'),
+    ).toBeVisible();
     expect(mock.compositeRequests[0]).toMatchObject({
       weights: { dis_multihazard_index: 3500, soc_poverty_rate: 2500 },
     });
 
-    const slider = page.getByLabel('Persentase Penduduk Miskin (P0)');
+    // One column: the settings start folded behind "Atur prioritas".
+    await page.getByRole('complementary', { name: 'Pengaturan' }).waitFor();
+    const settings = page.getByRole('button', { name: 'Atur prioritas' });
+    if ((await settings.isVisible()) && (await settings.getAttribute('aria-expanded')) === 'false')
+      await settings.click();
+    const slider = page.getByLabel('Bobot Persentase Penduduk Miskin (P0)');
     await slider.focus();
     for (let step = 0; step < 10; step += 1) await slider.press('ArrowRight');
 
-    await expect(page.getByText(/^Total: 100%/)).toBeVisible();
-    await expect.poll(() => mock.compositeRequests.length).toBeGreaterThan(1);
-    const latest = mock.compositeRequests.at(-1) as { weights: Record<string, number> };
-    expect(Object.values(latest.weights).reduce((sum, bps) => sum + bps, 0)).toBe(10000);
-    expect(latest.weights['soc_poverty_rate']).toBe(3500);
+    await expect(page.getByText(/^Total 100%/)).toBeVisible();
+    await page.getByRole('button', { name: 'Hitung ulang peringkat' }).click();
+    const latestWeights = () =>
+      (mock.compositeRequests.at(-1) as { weights: Record<string, number> } | undefined)?.weights ?? {};
+    await expect.poll(() => latestWeights()['soc_poverty_rate']).toBe(3500);
+    expect(Object.values(latestWeights()).reduce((sum, bps) => sum + bps, 0)).toBe(10000);
   });
 
   test('blocks LIVE: no ranking appears', async ({ page }) => {
     await mockDataHub(page);
     await page.goto('/lab-prioritas');
-    await expect(page.getByText('Kabupaten Demo Lampung 11')).toBeVisible();
+    await expect(
+      page.getByRole('region', { name: 'Peringkat wilayah' }).getByText('Kabupaten Demo Lampung 11'),
+    ).toBeVisible();
 
+    await page.getByText('Ganti data').click();
     await page.locator('label', { hasText: 'LIVE' }).click();
 
     await expect(page.getByText('LIVE Belum Tersedia', { exact: true })).toHaveCount(1);

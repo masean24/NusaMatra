@@ -16,8 +16,10 @@ import type {
   DataHubSnapshotDTO,
   DataMode,
   DecimalString,
+  SnapshotDetailDTO,
   ExploratoryCompositeResultDTO,
   ExploratoryRegionRankDTO,
+  InsufficientRegionDTO,
   GeoAnchorPointDTO,
   IndicatorCatalogDTO,
   IndicatorSummaryStatsDTO,
@@ -127,6 +129,23 @@ export function mapEnvelope<TDomain>(
     });
   }
 
+  const metaDigest = readDigest(raw.meta.content_sha256, 'meta.content_sha256', context);
+  // Production v2.2 leaves meta.content_sha256 null on /datasets while its header carries the digest
+  // (captured 2026-10-24). Either is the server's own statement; the header fills a missing meta.
+  const contentSha256 =
+    metaDigest ?? readDigest(context.contentSha256Header, 'X-NusaMatra-Content-SHA256', context);
+  // v2.2 repeats the identity in headers. Both are the server's word; when they disagree neither is.
+  if (context.snapshotHeader && context.snapshotHeader !== snapshotId) {
+    throw new ApiError(502, 'SNAPSHOT_MISMATCH', context.requestId, 'network.unavailable', {
+      serverMessage: `Header snapshot ${context.snapshotHeader} differs from meta.snapshot_id ${snapshotId}`,
+    });
+  }
+  if (contentSha256 && context.contentSha256Header && context.contentSha256Header !== contentSha256) {
+    throw new ApiError(502, 'SNAPSHOT_DIGEST_MISMATCH', context.requestId, 'network.unavailable', {
+      serverMessage: 'Header X-NusaMatra-Content-SHA256 differs from meta.content_sha256',
+    });
+  }
+
   const adaptedMeta: AdaptedResponseMeta = {
     serverRequestId: context.requestId,
     apiVersion: 'v1',
@@ -136,6 +155,10 @@ export function mapEnvelope<TDomain>(
     snapshotId,
     boundaryVersion: readString(raw.meta.boundary_version),
     totalCount: readIntegerOrNull(raw.meta.total_count),
+    contentSha256,
+    snapshotImmutable: readBooleanOrNull(raw.meta.snapshot_immutable),
+    snapshotReproducible: readBooleanOrNull(raw.meta.snapshot_reproducible),
+    methodologyVersion: readString(raw.meta.methodology_version),
   };
 
   const mappedData = transformData(raw.data, adaptedMeta);
@@ -642,6 +665,8 @@ export function mapIndicatorValuesData(rawData: unknown, meta: AdaptedResponseMe
       qualityFlag,
       isDemoExample,
       origin,
+      datasetId: readString(rawCell.dataset_id),
+      sourceRecordRef: readString(rawCell.source_record_ref),
     };
 
     valuesByRegion[regionId] = measurement;
@@ -651,8 +676,9 @@ export function mapIndicatorValuesData(rawData: unknown, meta: AdaptedResponseMe
       publisherName: isDemoExample
         ? `${indicator.provenance.agencyCode} (Simulasi DEMO — bukan observasi resmi)`
         : indicator.provenance.agencyCode,
-      datasetId: indicator.provenance.datasetId,
-      datasetEditionId: `${indicator.provenance.datasetId}:${meta.snapshotId}`,
+      // v2.2 names the dataset of each observation; it wins over the indicator's catalog dataset.
+      datasetId: measurement.datasetId ?? indicator.provenance.datasetId,
+      datasetEditionId: `${measurement.datasetId ?? indicator.provenance.datasetId}:${meta.snapshotId}`,
       publicSourceUrl: indicator.provenance.officialPortalUrl,
       licenseLabel: isDemoExample ? 'DEMO_EXAMPLE' : null,
       retrievedAt: null,
@@ -746,13 +772,128 @@ export function validateAndBuildCompositeWeights(
 }
 
 /**
- * Maps `POST /api/v1/indicators/composite-query` (`composite_valid.json`).
+ * Maps `POST /api/v1/indicators/composite-query` (Data Hub v2.1; `composite_valid.json` is the older DEMO v0.1 shape).
  * Explicitly marks `runId: null`, `isExploratoryPreview: true`, and
  * `weightedContributionsAvailable: false` (ARGON_RUNTIME_CONTRACT.md Blocker #5).
+ *
+ * v2.1 fields are optional on the wire so that an older response still decodes (as `null`, "not
+ * reported"); a field that IS present but has the wrong type rejects the whole response, because a
+ * ranking built on a misread field is worse than none. This mapper reads and structurally validates;
+ * the arithmetic and cross-field contradictions are judged by `assessCompositeIntegrity`.
  */
+function readBasisPointRecord(value: unknown): Record<string, number> | null {
+  if (!isRecord(value)) return null;
+  const weights: Record<string, number> = {};
+  for (const [indicatorId, bps] of Object.entries(value)) {
+    const parsed = readIntegerOrNull(bps);
+    if (parsed !== null) weights[indicatorId] = parsed;
+  }
+  return weights;
+}
+
+function malformedComposite(meta: AdaptedResponseMeta, message: string): ApiError {
+  return new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
+    serverMessage: message,
+  });
+}
+
+/** Absent / null = not reported; present with the wrong type = malformed. */
+function optionalStrict<T>(
+  value: unknown,
+  read: (value: unknown) => T | null,
+  meta: AdaptedResponseMeta,
+  label: string,
+): T | null {
+  if (value === undefined || value === null) return null;
+  const parsed = read(value);
+  if (parsed === null) throw malformedComposite(meta, `Composite field "${label}" has an invalid value`);
+  return parsed;
+}
+
+const readStringList = (value: unknown): string[] | null =>
+  Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : null;
+
+const readStringMap = (value: unknown): Record<string, string> | null => {
+  if (!isRecord(value)) return null;
+  const entries = Object.entries(value);
+  return entries.every(([, flag]) => typeof flag === 'string')
+    ? (Object.fromEntries(entries) as Record<string, string>)
+    : null;
+};
+
+/** Integer basis points only; any other member makes the whole record invalid (nothing is skipped). */
+const readStrictBasisPoints = (value: unknown): Record<string, number> | null => {
+  if (!isRecord(value)) return null;
+  const weights: Record<string, number> = {};
+  for (const [id, bps] of Object.entries(value)) {
+    const parsed = readIntegerOrNull(bps);
+    if (parsed === null || parsed < 0) return null;
+    weights[id] = parsed;
+  }
+  return weights;
+};
+
+const readNonNegativeInteger = (value: unknown): number | null => {
+  const parsed = readIntegerOrNull(value);
+  return parsed !== null && parsed >= 0 ? parsed : null;
+};
+
+const readPercent = (value: unknown): number | null => {
+  const parsed = readFiniteNumberOrNull(value);
+  return parsed !== null && parsed >= 0 && parsed <= 100 ? parsed : null;
+};
+
+/** A missing component is `null`; a genuine 0 stays `"0"`. Never coerced. */
+function readComponentScores(value: unknown): Record<string, DecimalString | null> {
+  const scores: Record<string, DecimalString | null> = {};
+  if (isRecord(value)) {
+    for (const [indicatorId, score] of Object.entries(value)) {
+      scores[indicatorId] = parseOptionalDecimalString(score);
+    }
+  }
+  return scores;
+}
+
+function rejectSyntheticNameInLive(meta: AdaptedResponseMeta, regionName: string | null): void {
+  if (meta.dataMode === 'LIVE' && regionName && SYNTHETIC_DEMO_NAME_REGEX.test(regionName)) {
+    throw new ApiError(409, 'MODE_MISMATCH', meta.serverRequestId, 'data.live_unavailable', {
+      serverMessage: 'Synthetic DEMO ranking in LIVE payload',
+    });
+  }
+}
+
+function mapInsufficientRegion(row: unknown, meta: AdaptedResponseMeta): InsufficientRegionDTO {
+  if (!isRecord(row)) throw malformedComposite(meta, 'insufficient_data row is not an object');
+  const regionId = readString(row.region_id);
+  const regionNameId = readString(row.region_name);
+  const reason = readString(row.reason);
+  if (!regionId || !regionNameId || !reason) {
+    throw malformedComposite(meta, 'insufficient_data row is missing region_id, region_name or reason');
+  }
+  rejectSyntheticNameInLive(meta, regionNameId);
+  // A region listed here was NOT ranked. A rank or score on it would contradict that; refuse it.
+  if (row.rank != null || row.composite_score != null) {
+    throw malformedComposite(meta, `insufficient_data row ${regionId} carries a rank or a score`);
+  }
+  return {
+    regionId,
+    regionNameId,
+    regionDisplayName: regionNameId,
+    coveragePct: optionalStrict(row.coverage_pct, readPercent, meta, 'insufficient_data.coverage_pct'),
+    componentsUsed:
+      optionalStrict(row.components_used, readStringList, meta, 'insufficient_data.components_used') ?? [],
+    missingIndicators:
+      optionalStrict(row.missing_indicators, readStringList, meta, 'insufficient_data.missing_indicators') ??
+      [],
+    componentScoresDecimal: readComponentScores(row.component_scores),
+    reason,
+  };
+}
+
 export function mapCompositeQueryData(
   rawData: unknown,
   meta: AdaptedResponseMeta,
+  filterProvinceId: string | null = null,
 ): ExploratoryCompositeResultDTO {
   if (!isRecord(rawData) || !Array.isArray(rawData.regions)) {
     throw new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
@@ -762,15 +903,12 @@ export function mapCompositeQueryData(
 
   const totalRegions = readIntegerOrNull(rawData.total_regions) ?? rawData.regions.length;
 
-  const weightsBasisPoints: Record<string, number> = {};
-  if (isRecord(rawData.weights_basis_points)) {
-    for (const [indId, bpsVal] of Object.entries(rawData.weights_basis_points)) {
-      const parsedBps = readIntegerOrNull(bpsVal);
-      if (parsedBps !== null) {
-        weightsBasisPoints[indId] = parsedBps;
-      }
-    }
-  }
+  const weightsBasisPoints = readBasisPointRecord(rawData.weights_basis_points) ?? {};
+  // Guide v2 provenance of the redistribution; absent fields stay null (not reported), never assumed.
+  const unavailable = rawData.unavailable_indicators;
+  const unavailableIndicatorIds = Array.isArray(unavailable)
+    ? unavailable.filter((id): id is string => typeof id === 'string')
+    : null;
 
   const items: ExploratoryRegionRankDTO[] = rawData.regions.map((row) => {
     if (!isRecord(row)) {
@@ -781,11 +919,7 @@ export function mapCompositeQueryData(
 
     const regionId = readString(row.region_id);
     const regionNameId = readString(row.region_name);
-    if (meta.dataMode === 'LIVE' && regionNameId && SYNTHETIC_DEMO_NAME_REGEX.test(regionNameId)) {
-      throw new ApiError(409, 'MODE_MISMATCH', meta.serverRequestId, 'data.live_unavailable', {
-        serverMessage: 'Synthetic DEMO ranking in LIVE payload',
-      });
-    }
+    rejectSyntheticNameInLive(meta, regionNameId);
     const rankPosition = readIntegerOrNull(row.rank);
 
     if (!regionId || !regionNameId) {
@@ -799,22 +933,39 @@ export function mapCompositeQueryData(
       throw new Error('Composite result must block both rank and score together');
     }
 
-    const componentScoresDecimal: Record<string, DecimalString | null> = {};
-    if (isRecord(row.component_scores)) {
-      for (const [indId, compVal] of Object.entries(row.component_scores)) {
-        componentScoresDecimal[indId] = parseOptionalDecimalString(compVal);
-      }
-    }
-
     return {
       regionId,
       regionNameId,
       regionDisplayName: regionNameId,
       compositeScoreDecimal,
       rankPosition,
-      componentScoresDecimal,
+      nationalRank: optionalStrict(row.national_rank, readNonNegativeInteger, meta, 'national_rank'),
+      coveragePct: optionalStrict(row.coverage_pct, readPercent, meta, 'coverage_pct'),
+      componentsUsed: optionalStrict(row.components_used, readStringList, meta, 'components_used'),
+      missingIndicators: optionalStrict(row.missing_indicators, readStringList, meta, 'missing_indicators'),
+      effectiveWeightsRegion: optionalStrict(
+        row.effective_weights_region,
+        readStrictBasisPoints,
+        meta,
+        'effective_weights_region',
+      ),
+      qualityFlags: optionalStrict(row.quality_flags, readStringMap, meta, 'quality_flags'),
+      componentScoresDecimal: readComponentScores(row.component_scores),
     };
   });
+
+  const insufficientRaw = rawData.insufficient_data;
+  if (insufficientRaw !== undefined && insufficientRaw !== null && !Array.isArray(insufficientRaw)) {
+    throw malformedComposite(meta, 'Composite field "insufficient_data" must be a list');
+  }
+  const insufficient = (insufficientRaw ?? []).map((row: unknown) => mapInsufficientRegion(row, meta));
+
+  // v2.2: a weight set the Data Hub declares not rankable carries no ranking. Rows beside that verdict
+  // contradict it; the response is refused rather than shown either way.
+  const rankable = optionalStrict(rawData.rankable, readBooleanOrNull, meta, 'rankable');
+  if (rankable === false && (items.length > 0 || insufficient.length > 0)) {
+    throw malformedComposite(meta, 'Composite is rankable = false but still lists regions');
+  }
 
   return {
     runId: null,
@@ -824,8 +975,43 @@ export function mapCompositeQueryData(
     dataMode: meta.dataMode,
     snapshotId: meta.snapshotId,
     totalRegions,
+    scoreDirection: optionalStrict(rawData.score_direction, readString, meta, 'score_direction'),
+    totalEligibleNational: optionalStrict(
+      rawData.total_eligible_national,
+      readNonNegativeInteger,
+      meta,
+      'total_eligible_national',
+    ),
+    totalExcluded: optionalStrict(rawData.total_excluded, readNonNegativeInteger, meta, 'total_excluded'),
+    minCoveragePct: optionalStrict(rawData.min_coverage_pct, readPercent, meta, 'min_coverage_pct'),
+    minComponents: optionalStrict(rawData.min_components, readNonNegativeInteger, meta, 'min_components'),
     weightsBasisPoints,
+    renormalized: typeof rawData.renormalized === 'boolean' ? rawData.renormalized : null,
+    unavailableIndicatorIds,
+    effectiveWeightsBasisPoints: readBasisPointRecord(rawData.effective_weights),
+    filterProvinceId,
     items,
+    insufficient,
+    rankable,
+    notRankableReason: optionalStrict(rawData.not_rankable_reason, readString, meta, 'not_rankable_reason'),
+    nationalCoveragePct: optionalStrict(
+      rawData.national_coverage_pct,
+      readPercent,
+      meta,
+      'national_coverage_pct',
+    ),
+    availableWeightBasisPoints: optionalStrict(
+      rawData.available_weight_basis_points,
+      readNonNegativeInteger,
+      meta,
+      'available_weight_basis_points',
+    ),
+    availableIndicatorIds: optionalStrict(
+      rawData.available_indicators,
+      readStringList,
+      meta,
+      'available_indicators',
+    ),
   };
 }
 
@@ -855,7 +1041,7 @@ export function mapBoundariesData(rawData: unknown, meta: AdaptedResponseMeta): 
   const geometryTypeReturned = readString(gs.geometry_type_returned);
   const source = readString(gs.source) ?? 'UNKNOWN';
   const boundaryVersion = readString(gs.boundary_version) ?? meta.boundaryVersion;
-  const gsMode = readDataMode(gs.data_mode);
+  const gsMode = readBoundaryDataMode(gs.data_mode);
   if (!gsMode || gsMode !== meta.dataMode) {
     throw new ApiError(
       409,
@@ -987,8 +1173,68 @@ export function mapSnapshotsData(rawData: unknown, meta: AdaptedResponseMeta): r
       isChecksumPlaceholder: !isValidHexSha256,
       notes: readString(item.notes),
       indicatorCompletenessPct: readFiniteNumberOrNull(item.indicator_completeness_pct),
+      contentSha256: readDigest(item.content_sha256, `snapshot ${snapshotId} content_sha256`, {
+        requestId: meta.serverRequestId,
+      }),
+      isImmutable: item.is_immutable === true,
+      isReproducible: item.is_reproducible === true,
     };
   });
+}
+
+/**
+ * Maps `GET /api/v1/snapshots/{id}` (v2.2). The entry must be the snapshot asked for and agree with
+ * the envelope on its digest; a reproducible snapshot without a digest is a contradiction and refused.
+ */
+export function mapSnapshotDetailData(
+  rawData: unknown,
+  meta: AdaptedResponseMeta,
+  requestedSnapshotId: string,
+): SnapshotDetailDTO {
+  const [base] = mapSnapshotsData([rawData], meta);
+  if (!base || !isRecord(rawData)) {
+    throw new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: 'Snapshot detail is not an object',
+    });
+  }
+  if (base.snapshotId !== requestedSnapshotId) {
+    throw new ApiError(502, 'SNAPSHOT_MISMATCH', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: `Asked for snapshot ${requestedSnapshotId}, received ${base.snapshotId}`,
+    });
+  }
+  if (meta.contentSha256 !== null && base.contentSha256 !== meta.contentSha256) {
+    throw new ApiError(502, 'SNAPSHOT_DIGEST_MISMATCH', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: 'Snapshot detail content_sha256 differs from its envelope',
+    });
+  }
+  if (base.isReproducible && base.contentSha256 === null) {
+    throw new ApiError(500, 'MALFORMED_ENVELOPE', meta.serverRequestId, 'network.unavailable', {
+      serverMessage: 'A reproducible snapshot must state its content_sha256',
+    });
+  }
+  const periods = rawData.reference_periods;
+  return {
+    ...base,
+    // DEMO sends a "d3m0…" placeholder here: shown as absent, not as a checksum.
+    metadataChecksum:
+      typeof rawData.metadata_checksum === 'string' && VALID_SHA256_HEX_REGEX.test(rawData.metadata_checksum)
+        ? rawData.metadata_checksum.toLowerCase()
+        : null,
+    contentHashSpec: readString(rawData.content_hash_spec),
+    methodologyVersion: readString(rawData.methodology_version),
+    referencePeriods: Array.isArray(periods)
+      ? periods.filter((year): year is number => typeof year === 'number' && Number.isInteger(year))
+      : [],
+    supersedes: readString(rawData.supersedes),
+    observationCount: readIntegerOrNull(rawData.observation_count),
+    indicatorCount: readIntegerOrNull(rawData.indicator_count),
+    availableIndicatorCount: readIntegerOrNull(rawData.available_indicator_count),
+    availableIndicatorDataPct: readFiniteNumberOrNull(rawData.available_indicator_data_pct),
+    regionCount: readIntegerOrNull(rawData.region_count),
+    regionCoveragePct: readFiniteNumberOrNull(rawData.region_coverage_pct),
+    datasetCount: readIntegerOrNull(rawData.dataset_count),
+    immutabilityNote: readString(rawData.immutability_note),
+  };
 }
 
 /**
@@ -1110,6 +1356,16 @@ function rejectDemoExampleInLive(meta: AdaptedResponseMeta, flag: string | null)
   }
 }
 
+/**
+ * The boundary endpoint labels official geometry `REAL_OFFICIAL` instead of `LIVE`. That label
+ * counts as LIVE and nothing else does, so the comparison with the envelope's mode still rejects
+ * any other value.
+ */
+function readBoundaryDataMode(value: unknown): DataMode | null {
+  if (typeof value === 'string' && value.trim().toUpperCase() === 'REAL_OFFICIAL') return 'LIVE';
+  return readDataMode(value);
+}
+
 function readDataMode(value: unknown): DataMode | null {
   if (typeof value !== 'string') return null;
   const upper = value.trim().toUpperCase();
@@ -1133,4 +1389,17 @@ function readFiniteNumberOrNull(value: unknown): number | null {
 
 function readIntegerOrNull(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) ? value : null;
+}
+
+function readBooleanOrNull(value: unknown): boolean | null {
+  return typeof value === 'boolean' ? value : null;
+}
+
+/** A SHA-256 digest field: absent/null = not sent; anything but 64 hex is a contract error, not a gap. */
+function readDigest(value: unknown, label: string, context: Pick<HttpResponseContext, 'requestId'>) {
+  if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string' && VALID_SHA256_HEX_REGEX.test(value)) return value.toLowerCase();
+  throw new ApiError(500, 'MALFORMED_ENVELOPE', context.requestId, 'network.unavailable', {
+    serverMessage: `${label} is not a 64-character hex SHA-256`,
+  });
 }

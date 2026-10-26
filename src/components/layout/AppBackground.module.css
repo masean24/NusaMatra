@@ -1,0 +1,51 @@
+/*
+ * The shared page background (AppBackground). Every layer is fixed to the viewport, static and
+ * never interactive; z-index -1 keeps it under all content without lifting every page above it.
+ */
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.background > * {
+  position: fixed;
+  pointer-events: none;
+}
+
+/* 1. Colour: Kaca only (Normal stays plain kapur); fades with the display mode. */
+.colour {
+  inset: 0;
+  background: var(--nm-kaca-page-gradient);
+  opacity: var(--c-page-gradient-opacity);
+}
+
+/* 2. Contour: thin rings in the lower right, cropped by the screen edge. */
+.contour {
+  right: -300px;
+  bottom: -260px;
+  width: 1100px;
+  height: 1100px;
+}
+
+.contour path {
+  fill: none;
+  stroke: var(--c-contour);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (width < 760px) {
+  .contour {
+    width: 720px;
+    height: 720px;
+  }
+}
+
+@media print {
+  .background {
+    display: none;
+  }
+}

@@ -6,8 +6,39 @@
   padding: 24px;
 }
 
+/* Inside the Jelajahi sidebar: a section of the panel, not a card of its own. */
+.embedded {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
 .muted {
   color: var(--c-text-muted);
+}
+
+/* Definition, formula and statistics: a quiet disclosure under the value. */
+.more {
+  width: 100%;
+}
+
+.moreSummary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--c-text-muted);
+  cursor: pointer;
+}
+
+.moreSummary:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.more[open] > .moreSummary {
+  margin-bottom: 4px;
 }
 
 .picker {

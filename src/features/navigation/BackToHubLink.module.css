@@ -1,4 +1,4 @@
-/* Figma 62:1270: padding 9px 16px 9px 12px, gap 8px, cobalt pill (white in Kaca mode). */
+/* Figma 62:1270: padding 9px 16px 9px 12px, gap 8px, cobalt pill (a quiet glass control in Kaca). */
 .link {
   display: inline-flex;
   gap: 8px;
@@ -14,21 +14,11 @@
   transition: background-color var(--nm-duration-feedback) ease;
 }
 
-.layersOnLight {
-  display: none;
-}
-
 :global([data-display-mode='glass']) .link {
-  background: var(--nm-surface);
-  color: var(--nm-sea-deep);
-}
-
-:global([data-display-mode='glass']) .layersOnSea {
-  display: none;
-}
-
-:global([data-display-mode='glass']) .layersOnLight {
-  display: block;
+  border: 1px solid var(--c-input-border);
+  background: var(--c-input-bg);
+  color: var(--nm-text-on-sea);
+  backdrop-filter: var(--c-card-filter);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -37,6 +27,12 @@
   }
 
   :global([data-display-mode='glass']) .link:hover {
-    background: var(--nm-land-2);
+    background: var(--c-control-hover);
+  }
+}
+
+@media print {
+  .link {
+    display: none;
   }
 }

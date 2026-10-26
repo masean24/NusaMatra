@@ -53,7 +53,7 @@
 }
 
 .logo[data-surface='dark'] .accent {
-  color: var(--nm-peach);
+  color: var(--nm-accent); /* "Matra" in orange on the cobalt footer (26px, large text: 3.4:1) */
 }
 
 .logo[data-surface='dark'] {

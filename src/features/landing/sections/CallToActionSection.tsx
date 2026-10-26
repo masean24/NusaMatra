@@ -19,6 +19,7 @@ export function CallToActionSection() {
         <RegionSearchForm
           className={styles.search}
           placeholder="Cari kabupaten/kota"
+          landmarkLabel="Cari wilayah, ajakan di akhir halaman"
           shimmerOnce
           actions={<Button type="submit">Mulai jelajahi</Button>}
         />

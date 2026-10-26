@@ -11,7 +11,7 @@
   border: 1px solid var(--c-switch-border);
   border-radius: 24px;
   background: var(--c-switch-track);
-  backdrop-filter: var(--c-surface-blur);
+  backdrop-filter: var(--c-nav-blur);
   cursor: pointer;
   transition: background-color var(--nm-duration-feedback) ease;
 }
@@ -80,8 +80,65 @@
   scale: 0.97;
 }
 
+/* Stretch, overshoot, settle: runs once per click, from the old segment to the new one. */
+.knob[data-squish='glass'] {
+  animation: squish-r 560ms var(--nm-ease-ui) both;
+}
+
+.knob[data-squish='normal'] {
+  animation: squish-l 560ms var(--nm-ease-ui) both;
+}
+
+@keyframes squish-r {
+  0% {
+    transform: translateX(0) scale(1, 1);
+  }
+
+  35% {
+    transform: translateX(40%) scale(1.5, 0.8);
+  }
+
+  64% {
+    transform: translateX(108%) scale(0.88, 1.1);
+  }
+
+  82% {
+    transform: translateX(97%) scale(1.05, 0.96);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes squish-l {
+  0% {
+    transform: translateX(100%) scale(1, 1);
+  }
+
+  35% {
+    transform: translateX(60%) scale(1.5, 0.8);
+  }
+
+  64% {
+    transform: translateX(-8%) scale(0.88, 1.1);
+  }
+
+  82% {
+    transform: translateX(3%) scale(1.05, 0.96);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .knob {
     transition-duration: 1ms;
+  }
+
+  .knob[data-squish] {
+    animation: none;
   }
 }

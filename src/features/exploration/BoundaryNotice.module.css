@@ -10,3 +10,33 @@
   margin: 0;
   color: var(--c-text-muted);
 }
+
+/* Over the map: the label and a small disclosure in one line, the explanation underneath. */
+.notice[data-compact] {
+  flex-flow: row wrap;
+  gap: 4px 10px;
+  align-items: center;
+  width: auto;
+}
+
+.more > summary {
+  min-height: 32px;
+  padding-block: 6px;
+  color: var(--c-text-muted);
+  cursor: pointer;
+}
+
+.more > summary:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.more[open] {
+  flex-basis: 100%;
+}
+
+.more[open] > .detail {
+  max-width: 52ch;
+  padding-top: 4px;
+}

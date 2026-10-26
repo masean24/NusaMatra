@@ -1,0 +1,1958 @@
+/*
+ * Paspor Bukti (Figma "Paspor Bukti", Normal and Kaca; token sheet "Kapur & Kobalt"). Colours come from
+ * the semantic tokens plus the passport's own `--pp-*` aliases below, so Normal and Kaca differ only
+ * in those values. Everything that carries meaning (mode, class of evidence) is also text, and every
+ * tag has a border or a fill that survives printing.
+ */
+.document {
+  /* Normal: kapur cards, cobalt hero, orange as the accent. */
+  --pp-hero-bg: var(--nm-sea);
+  --pp-hero-border: transparent;
+  --pp-hero-blur: none;
+  --pp-inset: var(--nm-page-bg); /* boxes inside a card: flat, never a second glass layer */
+  --pp-inset-border: var(--nm-land-2);
+  --pp-mono-bg: var(--nm-land-2);
+  --pp-chip-bg: var(--nm-land-2);
+  --pp-chip-text: var(--nm-text);
+  --pp-mode-bg: #fff1e6;
+  --pp-mode-text: #a8430f;
+  --pp-trust-chip-bg: #e3e9ff;
+  --pp-trust-chip-text: var(--nm-sea-deep);
+  --pp-meter-track: var(--nm-land-2);
+  --pp-meter-fill: var(--nm-sea);
+  --pp-banner-bg: #fff6ee;
+  --pp-banner-border: var(--nm-peach);
+  --pp-tile-bg: var(--nm-sea);
+  --pp-tile-text: var(--nm-text-on-sea);
+  --pp-row-tint: #fff1e6;
+  --pp-accent-text: #a8430f;
+  --pp-divider: var(--nm-land-2);
+
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  width: 100%;
+  min-width: 0;
+  color: var(--c-text);
+  /* Long identifiers and addresses wrap instead of widening the page. */
+  overflow-wrap: break-word;
+}
+
+/*
+ * Kaca, two recipes (token sheet "Resep kaca · dua tingkat"): kaca kapur rgba(242,241,236,.28) for the
+ * hero, chips and big labels; kaca tinta rgba(18,30,90,.32) for cards with paragraphs, tables and
+ * small metadata, so white text stays readable over the bright islands. Both blur 16px with 140%
+ * saturation, a 1px white top edge at 35% and a deep-blue shadow. Boxes inside a card are flat tints.
+ */
+:global([data-display-mode='glass']) .document {
+  --c-surface: var(--c-card);
+  --c-surface-blur: var(--c-card-filter);
+  --c-surface-border: var(--c-card-border);
+  --c-surface-shadow: var(--c-card-shadow);
+  --c-surface-muted: rgb(255 255 255 / 0.1);
+  --c-input-border: rgb(255 255 255 / 0.22);
+  --c-text-muted: rgb(255 255 255 / 0.84);
+  /* The hero and banner hold sentences, so they are tinta too: white on kapur over the gradient is ~3.6:1. */
+  --pp-hero-bg: var(--c-card);
+  --pp-hero-border: var(--nm-glass-stroke);
+  --pp-hero-blur: var(--c-card-filter);
+  --pp-inset: rgb(255 255 255 / 0.07);
+  --pp-inset-border: rgb(255 255 255 / 0.16);
+  --pp-mono-bg: rgb(255 255 255 / 0.12);
+  --pp-chip-bg: rgb(255 255 255 / 0.14);
+  --pp-chip-text: var(--nm-text-on-sea);
+  --pp-mode-bg: rgb(255 255 255 / 0.16);
+  --pp-mode-text: var(--nm-text-on-sea);
+  --pp-trust-chip-bg: rgb(255 255 255 / 0.16);
+  --pp-trust-chip-text: var(--nm-text-on-sea);
+  --pp-meter-track: rgb(255 255 255 / 0.22);
+  --pp-meter-fill: var(--nm-text-on-sea);
+  --pp-banner-bg: var(--c-card);
+  --pp-banner-border: rgb(255 255 255 / 0.35);
+  --pp-tile-bg: var(--nm-surface);
+  --pp-tile-text: var(--nm-sea-deep);
+  --pp-row-tint: rgb(255 138 61 / 0.18);
+  --pp-accent-text: var(--nm-peach);
+  --pp-divider: rgb(255 255 255 / 0.16);
+}
+
+/* ---------------------------------------------------------------- breadcrumb */
+.breadcrumb {
+  position: relative;
+  z-index: 1;
+}
+
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.breadcrumb li + li::before {
+  content: '/';
+  margin-right: 8px;
+  color: var(--c-text-muted);
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  min-height: 32px;
+  color: var(--c-text);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.breadcrumb a:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.breadcrumb [aria-current='page'] {
+  color: var(--c-text-muted);
+}
+
+/* ---------------------------------------------------------------- hero */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  padding: clamp(24px, 4vw, 44px);
+  overflow: hidden;
+  border: 1px solid var(--pp-hero-border);
+  border-radius: var(--nm-radius-card);
+  background: var(--pp-hero-bg);
+  color: var(--nm-text-on-sea);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 8px 32px rgb(18 30 90 / 0.25);
+  backdrop-filter: var(--pp-hero-blur);
+}
+
+/*
+ * Normal: a soft ambient orange light rising from the lower-right corner of the cobalt block, the same
+ * accent as the site's Kaca backdrop. It fades out inside the card, so it never reads as a shape. Kaca
+ * draws no light of its own: the page backdrop shows through the tinta card.
+ */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 90% at 100% 100%,
+    color-mix(in srgb, var(--nm-accent) 26%, transparent) 0,
+    color-mix(in srgb, var(--nm-accent) 0%, transparent) 72%
+  );
+  pointer-events: none;
+}
+
+:global([data-display-mode='glass']) .hero::before {
+  display: none;
+}
+
+.hero > * {
+  position: relative;
+}
+
+@media (width >= 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(16.25rem, 21.25rem);
+    align-items: center;
+  }
+}
+
+.heroMain {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.heroChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.heroChip,
+.hero .modeChip {
+  border: 1px solid rgb(255 255 255 / 0.3);
+  background: rgb(255 255 255 / 0.16);
+  color: var(--nm-text-on-sea);
+}
+
+.heroChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.heroKicker,
+.eyebrow {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.heroKicker {
+  margin-top: 6px;
+  color: rgb(255 255 255 / 0.82);
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: clamp(44px, 6vw, 68px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.heroQuestion {
+  display: grid;
+  gap: 4px;
+  max-width: 36em;
+}
+
+.heroQuestion p {
+  margin: 0;
+  font-size: 1.1875rem; /* 19px */
+  line-height: 1.55;
+}
+
+.heroQuestion .heroQuestionLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(255 255 255 / 0.85);
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* Hero actions are compact pills; on the hero, Kaca buttons are a flat tint, not a second blur. */
+.heroActions > button {
+  min-height: 40px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+}
+
+.heroActions > button:not(:first-child) {
+  border-color: rgb(255 255 255 / 0.4);
+  background: rgb(255 255 255 / 0.12);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.heroActions > button:focus-visible,
+.hero .inlineButton:focus-visible {
+  outline: 3px solid var(--nm-text-on-sea);
+  outline-offset: 2px;
+}
+
+.actionMessage {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 0.8125rem;
+}
+
+.manualCopy {
+  display: grid;
+  gap: 6px;
+  font-size: 0.8125rem;
+}
+
+/* "Cap paspor": a dashed stamp frame around the snapshot's identity. */
+.snapshotCard {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border: 1.5px dashed rgb(255 255 255 / 0.55);
+  border-radius: var(--nm-radius-control);
+  background: rgb(255 255 255 / 0.1);
+}
+
+.stamp {
+  position: absolute;
+  top: -14px;
+  right: -10px;
+  width: 64px;
+  height: 64px;
+  color: var(--nm-accent);
+  transform: rotate(-14deg);
+}
+
+.snapshotFacts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  margin: 0;
+}
+
+.snapshotFacts > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.snapshotWide {
+  grid-column: 1 / -1;
+}
+
+.snapshotFacts dt {
+  color: rgb(255 255 255 / 0.78);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.snapshotFacts dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.snapshotDigest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.heroNote {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px dashed rgb(255 255 255 / 0.35);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.heroNote svg {
+  flex: none;
+  margin-top: 1px;
+}
+
+.mono,
+.monoBox,
+.code,
+.citation,
+.tocNumber,
+.limitNumber {
+  font-family: var(--nm-font-mono);
+}
+
+.mono {
+  font-size: 0.8125rem;
+}
+
+/* ---------------------------------------------------------------- small shared pieces */
+.modeChip,
+.countChip {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--pp-mode-bg);
+  color: var(--pp-mode-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.modeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+}
+
+/* The hero's LIVE dot breathes once a second and a half; reduced motion keeps it still. */
+.hero .modeDot {
+  animation: live-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 138 61 / 0.7);
+  }
+
+  60% {
+    box-shadow: 0 0 0 6px rgb(255 138 61 / 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero .modeDot {
+    animation: none;
+  }
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border: 1.5px solid currentcolor;
+  border-radius: var(--nm-radius-chip);
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+/* DEMO and evidence warnings: opaque peach with dark text, readable on every surface. */
+.tagWarn,
+.modeChip.tagWarn {
+  border: 1.5px solid var(--nm-priority-5);
+  background: var(--nm-priority-2);
+  color: var(--nm-text);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.softChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--pp-chip-bg);
+  color: var(--pp-chip-text);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.chipWarn {
+  background: var(--nm-priority-2);
+  color: var(--nm-text);
+}
+
+.monoBox {
+  display: inline-block;
+  max-width: 100%;
+  padding: 6px 9px;
+  border-radius: var(--nm-radius-chip);
+  background: var(--pp-mono-bg);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.inlineButton {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 10px;
+  border: 1px solid currentcolor;
+  border-radius: var(--nm-radius-chip);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.inlineButton:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.hero .inlineButton {
+  border-color: rgb(255 255 255 / 0.45);
+  background: rgb(255 255 255 / 0.1);
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+.code {
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.link {
+  color: var(--c-text-strong-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- limitations banner */
+.limitsBanner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border: 1px solid var(--pp-banner-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-banner-bg);
+  backdrop-filter: var(--pp-hero-blur);
+  color: var(--c-text);
+  text-decoration: none;
+  transition: border-color var(--nm-duration-feedback) ease;
+}
+
+.limitsBanner:hover {
+  border-color: var(--nm-accent);
+}
+
+.limitsBanner:hover .limitsLink {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.limitsBanner:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 3px;
+}
+
+.limitsIcon {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+}
+
+.limitsText {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+
+.limitsText {
+  display: grid;
+  gap: 2px;
+}
+
+.limitsHint {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.limitsTitle {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.limitsLink {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 44px;
+  color: var(--c-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------------- sections */
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  padding: clamp(18px, 2.4vw, 28px);
+  min-width: 0;
+}
+
+.plainSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+
+.sectionHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.sectionHeadMain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  align-items: center;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.sectionMeta {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+}
+
+.sectionDescription {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.55;
+}
+
+.section p,
+.section li {
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------- trust overview */
+.trustGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trustGrid > li {
+  display: grid;
+}
+
+.trustCard {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 18px;
+}
+
+.trustCard p {
+  margin: 0;
+}
+
+.trustLabel {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.trustValue {
+  font-size: clamp(1.75rem, 1.4rem + 1vw, 2.125rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.trustText {
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.meter {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--pp-meter-track);
+}
+
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--pp-meter-fill);
+}
+
+.trustChip {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-self: start;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--pp-trust-chip-bg);
+  color: var(--pp-trust-chip-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.trustChip.chipWarn {
+  background: var(--nm-priority-2);
+  color: var(--nm-text);
+}
+
+/* ---------------------------------------------------------------- two columns */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (width >= 1024px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr) minmax(17.5rem, 18.75rem);
+    align-items: start;
+  }
+}
+
+.mainColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  min-width: 0;
+}
+
+.aside {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+/*
+ * Split layout (region and comparison passports): the sections beside the aside set the height,
+ * never the aside. The aside takes exactly that height (`contain: size` keeps its own content out of
+ * the row's sizing), the citation card fits into what the contents and links leave, its text box
+ * scrolling when the citation is longer, and the last card ends level with the last section.
+ */
+@media (width >= 1024px) {
+  .columns[data-split] {
+    align-items: stretch;
+  }
+
+  .columns[data-split] .aside {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    contain: size;
+  }
+
+  .columns[data-split] .citationCard {
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .columns[data-split] .citationCard .citation {
+    min-height: 3lh;
+    max-height: none;
+    overflow-y: auto;
+  }
+}
+
+.wideSections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  min-width: 0;
+  margin-top: 24px;
+}
+
+.asideCard {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.asideTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.eyebrow {
+  color: var(--c-text-muted);
+}
+
+.toc {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toc a,
+.related a {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 6px 8px;
+  border-radius: var(--nm-radius-chip);
+  color: var(--c-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.toc a:hover,
+.related a:hover {
+  background: var(--pp-inset);
+}
+
+.toc a:focus-visible,
+.related a:focus-visible,
+.citation:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.tocNumber {
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+}
+
+.citation {
+  max-height: 170px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: var(--nm-radius-chip);
+  background: var(--pp-mono-bg);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fullButton {
+  width: 100%;
+}
+
+.asideNote {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.related {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.related a {
+  font-weight: 600;
+}
+
+.footerLine {
+  margin: 8px 0 0;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- source status */
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 12px;
+}
+
+.statusColumn {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--pp-inset-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-inset);
+  min-width: 0;
+}
+
+.statusColumnTitle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.statusFacts {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.statusFacts > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.statusFacts dt {
+  color: var(--c-text-muted);
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.statusFacts dd {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.factHint {
+  color: var(--c-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 400;
+}
+
+.digestRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.snapshotNote {
+  margin: 0;
+  padding: 8px 12px;
+  border-left: 4px solid var(--nm-accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.linkWarnings {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linkWarning {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--pp-inset-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-inset);
+  color: var(--c-text);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.linkWarning[data-severity='warning'] {
+  border: 2px solid var(--nm-priority-5);
+  background: var(--nm-priority-2);
+  color: var(--nm-text);
+}
+
+/* ---------------------------------------------------------------- sources */
+.sourceList {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sourceItem {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--pp-divider);
+}
+
+.sourceItem:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.agencyTile {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--pp-tile-bg);
+  color: var(--pp-tile-text);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sourceBody {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sourceTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.sourceMeta {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+}
+
+.sourceLink {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  justify-self: start;
+  min-height: 32px;
+  color: var(--c-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sourceLink:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------- limitations */
+.limitList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.limitList[hidden] {
+  display: none;
+}
+
+.limitItem {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--pp-divider);
+}
+
+.limitNumber {
+  padding-top: 2px;
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+.limitBody {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.limitTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.limitText {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.moreButton {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--c-input-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--c-text);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.moreButton[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.moreButton:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- disclosures */
+.disclosure {
+  border: 1px solid var(--pp-inset-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-inset);
+  min-width: 0;
+}
+
+.disclosure[data-open] {
+  border-left: 4px solid var(--nm-accent);
+}
+
+.disclosureHeading {
+  margin: 0;
+  font: inherit;
+}
+
+.disclosureToggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.disclosureToggle::after {
+  content: '';
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(45deg);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.disclosureToggle[aria-expanded='true']::after {
+  transform: rotate(-135deg);
+}
+
+.disclosureToggle:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.disclosureTitle {
+  grid-column: 1;
+  font-size: 0.875rem;
+}
+
+.disclosureHelper {
+  grid-column: 1;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+}
+
+.disclosureBody {
+  display: grid;
+  gap: 8px;
+  padding: 0 16px 16px;
+  font-size: 0.875rem;
+  min-width: 0;
+}
+
+.disclosureBody p {
+  margin: 0;
+}
+
+/* `display: grid` above would otherwise override the browser's own rule for `hidden`. */
+.disclosureBody[hidden] {
+  display: none;
+}
+
+/* Inline disclosure: a small text toggle under a title, for details inside a cell or list item. */
+.inlineDisclosure {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.inlineToggle {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 28px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--c-text-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.inlineToggle .disclosureTitle {
+  font-size: inherit;
+  white-space: nowrap;
+}
+
+.inlineToggle::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: rotate(45deg);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.inlineToggle[aria-expanded='true'] {
+  color: var(--pp-accent-text);
+}
+
+.inlineToggle[aria-expanded='true']::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+
+.inlineToggle:hover {
+  color: var(--c-text);
+}
+
+.inlineToggle:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.inlineDisclosure .disclosureBody {
+  padding: 8px 12px;
+  border-left: 3px solid var(--nm-accent);
+  border-radius: 0 var(--nm-radius-chip) var(--nm-radius-chip) 0;
+  background: var(--pp-inset);
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.inlineDisclosure .disclosureBody[hidden] {
+  display: none;
+}
+
+.indicatorName {
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ---------------------------------------------------------------- region and indicator evidence */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px 24px;
+  margin: 0;
+}
+
+.facts > div {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  min-width: 0;
+}
+
+.facts dt {
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.regionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 14px;
+}
+
+.regionCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--pp-inset-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-inset);
+  min-width: 0;
+}
+
+.list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.missingList {
+  columns: 2 280px;
+  column-gap: 24px;
+}
+
+.missingList li {
+  break-inside: avoid;
+  margin-bottom: 6px;
+}
+
+/*
+ * Wide tables scroll inside their own box; the page itself never scrolls sideways. The box is
+ * positioned so the visually hidden text inside it (`.srOnly`, absolutely positioned) is placed
+ * inside the box. Without that, such text sits at its static position far to the right, outside
+ * every clipping ancestor, and widens the whole page.
+ */
+.tableScroll {
+  position: relative;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.tableScroll:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.table caption {
+  padding-bottom: 8px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.table th,
+.table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--pp-divider);
+  vertical-align: top;
+}
+
+.table thead th {
+  color: var(--c-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table tbody th {
+  font-weight: 500;
+}
+
+/* Region names break between words, not inside "Kabupaten", on screen and on paper. */
+.table tbody th[scope='row'] {
+  min-width: 9rem;
+}
+
+.cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  min-width: 0;
+}
+
+.value {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.value[data-missing] {
+  color: var(--c-text-muted);
+  font-style: italic;
+}
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fallbackField {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 1.5px solid var(--c-input-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--nm-surface);
+  color: var(--nm-text);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+/* ---------------------------------------------------------------- Lab result */
+.wideTable {
+  min-width: 980px;
+}
+
+.numeric {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.criteriaList {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The row of the region the reader came for: a thick edge as well as a tint, never colour alone. */
+.focusRow th,
+.focusRow td {
+  background: var(--pp-row-tint);
+  border-top: 3px solid currentcolor;
+  border-bottom: 3px solid currentcolor;
+}
+
+.topList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.topItem {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 8px 14px;
+  border: 1px solid var(--pp-inset-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-inset);
+  min-width: 0;
+}
+
+.topItem:first-child {
+  border: 2px solid var(--nm-accent);
+  background: var(--pp-row-tint);
+}
+
+.topItem[data-focus] {
+  border-left: 6px solid var(--nm-sea);
+}
+
+.topRank {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.topName {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.withheld {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--nm-priority-5);
+  border-left-width: 6px;
+  border-radius: var(--nm-radius-control);
+  background: var(--pp-inset);
+}
+
+.summaryFacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: 14px 24px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--pp-divider);
+}
+
+.summaryFacts > div {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.summaryFacts dt {
+  color: var(--pp-accent-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.summaryFacts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--pp-chip-bg);
+  color: var(--pp-chip-text);
+  font-size: 0.8125rem;
+}
+
+.chip strong {
+  color: var(--pp-accent-text);
+  font-weight: 600;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.pagerControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.pagerSelect {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.pagerSelect select {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1.5px solid var(--c-input-border);
+  border-radius: var(--nm-radius-chip);
+  background: var(--c-input-bg);
+  color: var(--c-text);
+  font: inherit;
+}
+
+.pagerSelect select:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.screenOnly {
+  display: grid;
+  /* One column no wider than the card: the table scrolls inside its own box instead. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.printOnly,
+.printHeader {
+  display: none;
+}
+
+@page {
+  margin: 20mm 14mm 16mm;
+}
+
+/*
+ * Print. The record prints as a plain, readable document: dark text on white, no glass, no shadows,
+ * nothing interactive or decorative, and the mode and snapshot repeated at the top of every page.
+ * Page chrome (navigation, footer) is hidden by the app shell's own print rules.
+ */
+@media print {
+  .document,
+  :global([data-display-mode='glass']) .document {
+    --c-text: #000;
+    --c-text-muted: #333;
+    --c-surface: #fff;
+    --c-surface-muted: #fff;
+    --c-surface-border: #000;
+    --c-input-border: #777;
+    --c-text-strong-accent: #000;
+    --c-surface-blur: none;
+    --c-surface-shadow: none;
+    --pp-inset: #fff;
+    --pp-inset-border: #777;
+    --pp-mono-bg: #fff;
+    --pp-chip-bg: #fff;
+    --pp-chip-text: #000;
+    --pp-mode-bg: #fff;
+    --pp-mode-text: #000;
+    --pp-trust-chip-bg: #fff;
+    --pp-trust-chip-text: #000;
+    --pp-meter-track: #ddd;
+    --pp-meter-fill: #000;
+    --pp-banner-bg: #fff;
+    --pp-banner-border: #000;
+    --pp-tile-bg: #fff;
+    --pp-tile-text: #000;
+    --pp-row-tint: #fff;
+    --pp-accent-text: #000;
+    --pp-divider: #999;
+
+    display: block;
+    /* Never wider than the page: a flex/grid parent would otherwise size this box by its widest table. */
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    color: #000;
+    background: #fff;
+    font-size: 10pt;
+  }
+
+  .breadcrumb,
+  .stamp,
+  .hero::before,
+  .noPrint,
+  .screenOnly,
+  .aside {
+    display: none !important;
+  }
+
+  /* Printed tables wrap instead of clipping; nothing may exceed the printable width. */
+  .document * {
+    max-width: 100%;
+  }
+
+  .document > * + *,
+  .mainColumn > * + * {
+    margin-top: 12pt;
+  }
+
+  .columns,
+  .mainColumn {
+    display: block;
+  }
+
+  .hero,
+  .section,
+  .trustCard,
+  .limitsBanner,
+  .linkWarning,
+  .regionCard,
+  .statusColumn,
+  .snapshotCard,
+  .disclosure {
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: #000 !important;
+    break-inside: auto;
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8pt;
+    padding: 10pt;
+  }
+
+  .heroKicker,
+  .heroQuestion .heroQuestionLabel,
+  .snapshotFacts dt,
+  .heroNote {
+    color: #000;
+  }
+
+  .heroTitle {
+    font-size: 22pt;
+  }
+
+  .heroChip {
+    border-color: #000;
+    background: #fff;
+    color: #000;
+  }
+
+  .heroNote {
+    border-top-color: #000;
+  }
+
+  .section {
+    padding: 8pt 10pt;
+  }
+
+  .sectionTitle {
+    font-size: 14pt;
+  }
+
+  .trustGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6pt;
+  }
+
+  .trustCard {
+    padding: 6pt;
+  }
+
+  .trustValue {
+    font-size: 14pt;
+  }
+
+  .statusGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .modeChip,
+  .countChip,
+  .softChip,
+  .trustChip,
+  .tag,
+  .tagWarn,
+  .chip {
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+  }
+
+  .document .table th,
+  .document .table td,
+  .document .tag,
+  .document .tagWarn,
+  .document .numeric,
+  .document .value {
+    white-space: normal;
+    overflow-wrap: break-word;
+  }
+
+  .document .link,
+  .document .code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .document .table th,
+  .document .table td {
+    padding: 3pt 4pt;
+  }
+
+  .document .tag,
+  .document .tagWarn {
+    padding: 1pt 3pt;
+    font-size: 7.5pt;
+  }
+
+  /* The ranking excerpt is the densest table: one small size for every cell, labels included. */
+  .document .wideTable,
+  .document .wideTable * {
+    font-size: 7.5pt !important;
+    line-height: 1.3 !important;
+  }
+
+  .tableScroll {
+    overflow: visible;
+  }
+
+  .table,
+  .wideTable {
+    width: 100%;
+    min-width: 0;
+    font-size: 9pt;
+  }
+
+  .table thead {
+    display: table-header-group;
+  }
+
+  .table tr {
+    break-inside: avoid;
+  }
+
+  .link,
+  .sourceLink {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  /* Print the address after the link text so a paper copy still shows where it points. */
+  .link[href^='http']::after,
+  .sourceLink[href^='http']::after {
+    content: ' <' attr(href) '>';
+    font-size: 8pt;
+    overflow-wrap: anywhere;
+  }
+
+  /* The concise printout: abbreviated tables print their excerpt and say so (see CompositeRanking). */
+  .printOnly {
+    display: block !important;
+  }
+
+  .printExcerptNote {
+    margin: 0 0 6pt;
+    padding: 4pt 6pt;
+    border: 1px solid #000;
+    font-weight: 600;
+  }
+
+  /* Paper cannot be clicked: every collapsed explanation and limitation prints in full. */
+  .disclosureBody[hidden],
+  .limitList[hidden] {
+    display: grid !important;
+  }
+
+  .disclosure {
+    border: 0 !important;
+  }
+
+  .disclosureToggle {
+    min-height: 0;
+    padding: 4pt 0;
+  }
+
+  .disclosureToggle::after,
+  .inlineToggle::after,
+  .disclosureHelper {
+    display: none;
+  }
+
+  .disclosureBody {
+    padding: 0;
+  }
+
+  .topItem,
+  .withheld {
+    border: 1px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .topRank,
+  .limitsIcon {
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
+  }
+
+  .focusRow th,
+  .focusRow td {
+    background: #fff;
+  }
+
+  /*
+   * First line of the printout. It is in the normal flow: a fixed element placed in the page margin
+   * is drawn over the content in Chromium's PDF output. The line repeated on every page comes from
+   * the page margin boxes written by `PrintRunningHeader`.
+   */
+  .printHeader {
+    display: block;
+    margin: 0 0 8pt;
+    padding: 0 0 4pt;
+    border-bottom: 1px solid #000;
+    color: #000;
+    font-size: 9pt;
+    font-weight: 600;
+  }
+}

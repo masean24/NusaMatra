@@ -36,4 +36,5 @@ export type {
   NusaMatra3DMapHandle,
   NusaMatra3DMapProps,
   ProceduralSurfaceSet,
-} from './NusaMatra3DMap';
+} from './NusaMatra3DMap';export { PointOverlay } from './pointOverlay';
+export type { MapOverlayPoint } from './pointOverlay';

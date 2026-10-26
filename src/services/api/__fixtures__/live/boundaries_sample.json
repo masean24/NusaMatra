@@ -1,0 +1,153 @@
+{
+ "status": "success",
+ "meta": {
+  "snapshot_id": "2026.10.0-official-live",
+  "mode": "LIVE",
+  "boundary_version": "BIG-Kepmendagri-300.2.2-2430-2025",
+  "total_count": 3
+ },
+ "data": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "properties": {
+     "region_id": "3371",
+     "kemendagri_code": "33.71",
+     "bps_code": "3371",
+     "name": "Kota Magelang",
+     "short_name": "Kota Magelang",
+     "province_name": "Jawa Tengah",
+     "province_id": "33",
+     "type": "Kota",
+     "parent_region_id": "33"
+    },
+    "geometry": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        110.22521447600008,
+        -7.433925636999959
+       ],
+       [
+        110.23665618900009,
+        -7.504207577999978
+       ],
+       [
+        110.21248,
+        -7.506027
+       ],
+       [
+        110.19889230800004,
+        -7.493030920999956
+       ],
+       [
+        110.22521447600008,
+        -7.433925636999959
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "type": "Feature",
+    "properties": {
+     "region_id": "1375",
+     "kemendagri_code": "13.75",
+     "bps_code": "1375",
+     "name": "Kota Bukittinggi",
+     "short_name": "Kota Bukittinggi",
+     "province_name": "Sumatera Barat",
+     "province_id": "13",
+     "type": "Kota",
+     "parent_region_id": "13"
+    },
+    "geometry": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        100.33263301200009,
+        -0.279591640999968
+       ],
+       [
+        100.39496534000006,
+        -0.285340930999951
+       ],
+       [
+        100.40785332500008,
+        -0.322066379999967
+       ],
+       [
+        100.37052131900003,
+        -0.321943781999948
+       ],
+       [
+        100.33263301200009,
+        -0.279591640999968
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "type": "Feature",
+    "properties": {
+     "region_id": "1374",
+     "kemendagri_code": "13.74",
+     "bps_code": "1374",
+     "name": "Kota Padang Panjang",
+     "short_name": "Kota Padang Panjang",
+     "province_name": "Sumatera Barat",
+     "province_id": "13",
+     "type": "Kota",
+     "parent_region_id": "13"
+    },
+    "geometry": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        100.39867488800007,
+        -0.449326262999932
+       ],
+       [
+        100.43318499400004,
+        -0.458447604999947
+       ],
+       [
+        100.43542106700005,
+        -0.483158077999974
+       ],
+       [
+        100.37418231800007,
+        -0.48851562699997
+       ],
+       [
+        100.36533772700005,
+        -0.47734625399994
+       ],
+       [
+        100.39867488800007,
+        -0.449326262999932
+       ]
+      ]
+     ]
+    }
+   }
+  ],
+  "geometry_status": {
+   "geometry_available": true,
+   "geometry_type_returned": "MultiPolygon",
+   "source": "Badan Informasi Geospasial (BIG) 2026",
+   "boundary_version": "BIG-Kepmendagri-300.2.2-2430-2025",
+   "data_mode": "REAL_OFFICIAL",
+   "note": "Official 2026 administrative boundary polygons from Badan Informasi Geospasial (BIG). Topologically dissolved and simplified for web 3D GIS visualization."
+  },
+  "request_params": {
+   "format": "geojson",
+   "resolution": "low"
+  }
+ }
+}

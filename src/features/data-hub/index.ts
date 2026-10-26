@@ -5,6 +5,7 @@ export { DataModeSwitch } from './DataModeSwitch';
 export { ResourceView } from './ResourceView';
 export { useDataHub } from './useDataHub';
 export { useDataHubResource } from './useDataHubResource';
+export { isLiveBlockedError } from './liveBlocked';
 export type { ResourceState } from './useDataHubResource';
 export {
   adminLevelLabel,
@@ -13,4 +14,5 @@ export {
   formatDecimalId,
   preferredDirectionLabel,
   publicHttpUrl,
+  qualityFlagNote,
 } from './formatters';

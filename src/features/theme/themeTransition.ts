@@ -12,6 +12,7 @@ export interface ThemeTransitionRequest {
 
 const REVEAL_SECONDS = REVEAL_DURATION_MS / 1000;
 const REDUCED_SECONDS = REDUCED_DURATION_MS / 1000;
+/** On <html> while the theme changes: `crossfade` (no View Transitions) or `reveal`. */
 const FALLBACK_ATTRIBUTE = 'data-theme-transition';
 
 /**
@@ -49,15 +50,23 @@ export async function runThemeTransition({
     return;
   }
 
-  if (reducedMotion) {
-    await animateView(apply, { duration: REDUCED_SECONDS, ease: 'easeOut' })
-      .new({ opacity: [0, 1] })
-      .old({ opacity: [1, 0] });
-    return;
-  }
+  // Marks the theme's view transition, so page-change layers (the navbar's) stay out of it and the
+  // reveal sweeps the whole screen as one image.
+  const root = document.documentElement;
+  root.setAttribute(FALLBACK_ATTRIBUTE, 'reveal');
+  try {
+    if (reducedMotion) {
+      await animateView(apply, { duration: REDUCED_SECONDS, ease: 'easeOut' })
+        .new({ opacity: [0, 1] })
+        .old({ opacity: [1, 0] });
+      return;
+    }
 
-  await animateView(apply, { duration: REVEAL_SECONDS, ease: REVEAL_EASE })
-    .new({ clipPath: revealClipPath({ x: originX, y: originY }) })
-    // The old snapshot stays fully opaque under the growing circle.
-    .old({ opacity: [1, 1] });
+    await animateView(apply, { duration: REVEAL_SECONDS, ease: REVEAL_EASE })
+      .new({ clipPath: revealClipPath({ x: originX, y: originY }) })
+      // The old snapshot stays fully opaque under the growing circle.
+      .old({ opacity: [1, 1] });
+  } finally {
+    root.removeAttribute(FALLBACK_ATTRIBUTE);
+  }
 }

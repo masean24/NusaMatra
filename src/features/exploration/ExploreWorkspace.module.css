@@ -1,0 +1,415 @@
+/*
+ * Jelajahi as a map application: the workspace is the viewport. The real 3D map fills it, and the
+ * sidebar, the status cluster and the map buttons float over it; the navbar floats above all.
+ * Floating layers let pointer events through everywhere except on their own controls, so the map
+ * can be dragged and zoomed right up to them.
+ */
+.workspace {
+  --explore-edge: 20px;
+  --explore-top: 96px; /* clears the floating navbar */
+  --explore-sidebar-width: clamp(320px, 26vw, 372px);
+  /*
+   * Panels over the map use the site's reading surface: the kapur card in Normal, and in Kaca the
+   * same glass card as Bandingkan, Lab and Paspor (tint, blur, hairline border, inset highlight).
+   */
+  --explore-reading-surface: var(--c-surface);
+
+  position: relative;
+  height: 100dvh;
+  min-height: 520px;
+  overflow: hidden;
+}
+
+.mapStage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* ------------------------------------------------------------------ status, top right */
+
+.status {
+  /* The banner inside is a shared Surface: give it the reading surface too. */
+  --c-surface: var(--explore-reading-surface);
+
+  position: absolute;
+  top: var(--explore-top);
+  right: var(--explore-edge);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+  /*
+   * A narrow column: what opens in it (the BMKG layer and its list) grows down the right edge
+   * instead of spreading left over the map, and scrolls inside the column when it is tall.
+   */
+  width: min(400px, calc(100% - var(--explore-map-inset, 0px) - 2 * var(--explore-edge)));
+  max-height: calc(100% - var(--explore-top) - 3 * var(--explore-edge) - 132px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  pointer-events: none;
+}
+
+.status > * {
+  flex: none;
+  max-width: 100%;
+  pointer-events: auto;
+}
+
+/* The BMKG switch and the boundary note have no card of their own; on the map they get one. */
+.statusCard {
+  padding: 8px 14px;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-card);
+  background: var(--explore-reading-surface);
+  box-shadow: var(--c-surface-shadow);
+  backdrop-filter: var(--c-surface-blur);
+}
+
+/*
+ * Phones (< 600px): the cards fold into one disclosure. Its summary names the data mode (and an
+ * active BMKG layer); opening it shows the same cards, scrolling above the sheet and the map buttons.
+ */
+.statusDisclosure {
+  max-width: 100%;
+}
+
+.statusSummary {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-pill);
+  background: var(--explore-reading-surface);
+  box-shadow: var(--c-surface-shadow);
+  backdrop-filter: var(--c-surface-blur);
+  color: var(--c-text);
+  list-style: none;
+  cursor: pointer;
+}
+
+.statusSummary::-webkit-details-marker {
+  display: none;
+}
+
+.modeBadge {
+  padding: 3px 9px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.summaryHint {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.statusBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  width: min(100vw - 2 * var(--explore-edge), 400px);
+  /* Ends above the map buttons (134px tall) under the summary (50px), with a little air. */
+  max-height: calc(100dvh - var(--explore-top) - var(--explore-above-sheet, 0px) - 200px);
+  margin-top: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ------------------------------------------------------------------ map buttons, bottom right */
+
+.controls {
+  position: absolute;
+  right: var(--explore-edge);
+  bottom: var(--explore-edge);
+  z-index: 4;
+}
+
+/* ------------------------------------------------------------------ sidebar */
+
+.panel {
+  --c-surface: var(--explore-reading-surface);
+
+  position: absolute;
+  top: var(--explore-top);
+  bottom: var(--explore-edge);
+  left: var(--explore-edge);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  width: var(--explore-sidebar-width);
+  min-width: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .panel {
+    animation: panel-enter 520ms var(--nm-ease-calm, cubic-bezier(0.16, 1, 0.3, 1)) both;
+  }
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    translate: -16px 0;
+  }
+}
+
+/* Folded on desktop: a 64px rail with the unfold button, and the map re-centres beside it. */
+.panel[data-state='collapsed'] {
+  bottom: auto;
+  width: 64px;
+}
+
+.bar {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 1px solid var(--c-surface-border);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.bar:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: -3px;
+}
+
+.barLabel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.barLabel > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barHint {
+  color: var(--c-text-muted);
+}
+
+.grip {
+  display: none;
+}
+
+/* The chevron points left when the panel is open (it folds toward the left edge). */
+.chevron {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  transform: rotate(180deg);
+  transition: transform var(--nm-duration-feedback) ease;
+}
+
+.chevron[data-open] {
+  transform: none;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/*
+ * Kaca: cards inside the sidebar are the second glass level (--c-soft) on the sidebar's own glass,
+ * not another layer of ink, and they do not blur again.
+ */
+:global([data-display-mode='glass']) .body {
+  --c-surface: var(--c-soft);
+  --c-surface-blur: none;
+  --c-surface-shadow: none;
+}
+
+.body[hidden] {
+  display: none;
+}
+
+.panel[data-state='collapsed'] .barLabel {
+  display: none;
+}
+
+.panel[data-state='collapsed'] .bar {
+  justify-content: center;
+  padding-inline: 0;
+  border-bottom: 0;
+}
+
+/* Back link and the page's name, then one section per job: search, region, indicators, source. */
+.intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  padding-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+}
+
+.section {
+  min-width: 0;
+  padding-block: 18px;
+  border-top: 1px solid var(--c-surface-border);
+}
+
+.section:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.section:last-child {
+  padding-bottom: 0;
+}
+
+/* ------------------------------------------------------------------ tablet and phone */
+
+/*
+ * Below 960px a side column would leave too little map, so the same panel becomes a bottom sheet
+ * above the floating tab bar, and the map stays the full-screen surface behind it.
+ */
+@media (width < 960px) {
+  .workspace {
+    --explore-edge: 12px;
+    --explore-top: 84px; /* clears the compact top bar */
+    /* Map credit, map buttons and DEMO list sit just above the folded sheet. */
+    --explore-above-sheet: calc(var(--nm-tabbar-clearance) + 92px); /* the folded sheet is 80px tall */
+    --explore-map-credit-bottom: var(--explore-above-sheet);
+    --explore-float-bottom: calc(var(--explore-above-sheet) + 36px);
+    --explore-float-reserve: 56px; /* room for the map buttons on the right */
+  }
+
+  /* One wrapping row under the top bar: the data mode, then the BMKG switch beside or below it. */
+  .status {
+    left: var(--explore-edge);
+    flex-flow: row wrap;
+    gap: 6px;
+    align-items: center;
+    width: auto;
+  }
+
+  .statusCard {
+    padding: 4px 10px;
+  }
+
+  .controls {
+    bottom: var(--explore-above-sheet);
+  }
+
+  /* With the sheet up, the buttons ride on its top edge or step aside while it is open. */
+  .workspace[data-sheet='peek'] {
+    --explore-map-credit-bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 12px);
+    --explore-float-visibility: hidden;
+  }
+
+  .workspace[data-sheet='peek'] .controls {
+    bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 12px);
+  }
+
+  .workspace[data-sheet='open'] {
+    --explore-float-visibility: hidden;
+  }
+
+  .workspace[data-sheet='open'] .controls {
+    visibility: hidden;
+  }
+
+  .panel,
+  .panel[data-state='collapsed'] {
+    position: fixed;
+    top: auto;
+    right: 10px;
+    bottom: var(--nm-tabbar-clearance); /* always above the bottom tab bar */
+    left: 10px;
+    z-index: 30;
+    width: auto;
+    max-height: min(74dvh, 640px);
+    box-shadow: 0 -8px 28px #121e5a33;
+    animation: none;
+  }
+
+  /* "Peek": the name and the summary are in view and the rest scrolls. */
+  .panel[data-state='peek'] {
+    max-height: 34dvh;
+  }
+
+  .panel[data-state='collapsed'] .barLabel {
+    display: flex;
+  }
+
+  .panel[data-state='collapsed'] .bar {
+    justify-content: space-between;
+    padding-inline: 20px;
+  }
+
+  .bar {
+    position: relative;
+    flex-wrap: wrap;
+    min-height: 64px;
+    padding-top: 22px;
+  }
+
+  .panel[data-state='collapsed'] .bar {
+    border-bottom: 0;
+  }
+
+  .grip {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--c-text-muted);
+    opacity: 0.5;
+    transform: translateX(-50%);
+  }
+
+  /* Pointing up when the sheet is collapsed, down when open. */
+  .chevron {
+    transform: rotate(90deg);
+  }
+
+  .chevron[data-open] {
+    transform: rotate(-90deg);
+  }
+
+  .body {
+    padding: 14px 16px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
+}

@@ -1,0 +1,63 @@
+/* A vertical stack of square map buttons on the shared reading surface. */
+.controls {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--explore-reading-surface, var(--c-surface));
+  box-shadow: var(--c-surface-shadow);
+  backdrop-filter: var(--c-surface-blur);
+}
+
+.button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.button + .button {
+  border-top: 1px solid var(--c-surface-border);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.button:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: -3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .button:not(:disabled):hover {
+    background: var(--c-control-hover, var(--c-surface-muted));
+  }
+}
+
+.button:not(:disabled):active {
+  background: var(--c-sel, var(--c-surface-muted));
+}
+
+.glyph {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

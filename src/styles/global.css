@@ -9,6 +9,12 @@
 }
 
 html {
+  /*
+   * The rem scale grows gently with the wider page column on large monitors: 16px up to 1440px wide,
+   * about 18.6px at 1920 and 22px from 2560. In percent, so the reader's own default size still sets
+   * the base. Media queries are unaffected (they use the initial font size).
+   */
+  font-size: clamp(100%, 51.76% + 0.536vw, 137.5%);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   /* Anchor targets clear the floating navbar. */
@@ -26,6 +32,13 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: clip;
+}
+
+/* The app column fills the screen, so the footer sits at the bottom of a short page. */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
 h1,
@@ -77,20 +90,92 @@ a {
   color: var(--nm-accent-text);
 }
 
-/* Kaca page gradient (27:118): a fixed layer whose opacity follows the display mode. */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(
-    102deg,
-    var(--nm-sea-deep) 14.3%,
-    var(--nm-sea) 53.6%,
-    var(--nm-sea-shallow) 85.7%
-  );
-  opacity: var(--c-page-gradient-opacity);
-  pointer-events: none;
+/* The Kaca colour layer and the contours live in AppBackground (components/layout). */
+
+/*
+ * Page change (React <ViewTransition> in AppLayout, run by every router navigation). The leaving
+ * page fades out, lifting 8px and softening; the new page rises 16px into place as it sharpens,
+ * starting a beat later so the two never read as a muddy double image. The navbar and the page
+ * background stay put. Reduced motion keeps a short crossfade and drops the movement.
+ */
+::view-transition-group(.nm-page-enter),
+::view-transition-group(.nm-page-exit) {
+  animation-duration: 460ms;
+  animation-timing-function: var(--nm-ease-calm);
+}
+
+::view-transition-old(.nm-page-exit) {
+  animation: nm-page-out 220ms var(--nm-ease-ui) both;
+}
+
+::view-transition-new(.nm-page-enter) {
+  animation: nm-page-in 460ms var(--nm-ease-calm) 90ms both;
+}
+
+/* The navbar (named in AppLayout.module.css) swaps at once on top of both pages. */
+::view-transition-group(site-nav-1),
+::view-transition-group(site-nav-2),
+::view-transition-group(site-nav-3) {
+  z-index: 1;
+  animation: none;
+}
+
+::view-transition-old(site-nav-1),
+::view-transition-old(site-nav-2),
+::view-transition-old(site-nav-3) {
+  display: none;
+}
+
+::view-transition-new(site-nav-1),
+::view-transition-new(site-nav-2),
+::view-transition-new(site-nav-3) {
+  animation: none;
+}
+
+@keyframes nm-page-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+    filter: blur(4px);
+  }
+}
+
+@keyframes nm-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(6px);
+  }
+}
+
+@keyframes nm-page-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes nm-page-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(.nm-page-exit) {
+    animation: nm-page-fade-out 150ms ease both;
+  }
+
+  ::view-transition-new(.nm-page-enter) {
+    animation: nm-page-fade-in 150ms ease both;
+  }
+}
+
+/* Printed pages (Paspor Bukti) read as plain documents: white paper, dark ink, no Kaca layer. */
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
 }
 
 .visually-hidden {

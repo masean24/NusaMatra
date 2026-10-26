@@ -1,0 +1,106 @@
+/* Same box as the hero zone (720 × 660 ratio), above the map and below the region cards. */
+.layer {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 720 / 660;
+  pointer-events: none;
+}
+
+.lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.link line {
+  stroke: #fff;
+  stroke-opacity: 0.6;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  transition:
+    stroke-opacity 200ms var(--nm-ease-ui),
+    stroke-width 200ms var(--nm-ease-ui);
+}
+
+.link circle {
+  fill: #fff;
+  fill-opacity: 0.85;
+}
+
+.link[data-active] line {
+  stroke-opacity: 0.95;
+  stroke-width: 2;
+}
+
+/* A pin: orange disc with a white ring, centred on its position. The button is a larger hit area. */
+.pin {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--nm-accent);
+  box-shadow: 0 2px 8px #121e5a66;
+  transition:
+    transform 220ms var(--nm-ease-ui),
+    box-shadow 220ms var(--nm-ease-ui);
+}
+
+.pin:hover .dot,
+.pin[data-active] .dot {
+  transform: scale(1.3);
+}
+
+.pin[data-active] .dot {
+  box-shadow:
+    0 0 0 5px #ffffff59,
+    0 2px 8px #121e5a66;
+}
+
+.pin:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 0;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot,
+  .link line {
+    transition-duration: 1ms;
+  }
+}
+
+/* On phones the cards follow the map in a list, so there is nothing for a line to reach. */
+@media (width < 640px) {
+  .lines {
+    display: none;
+  }
+}
+
+/* Hidden until the sequence plays (motion sets the final values); lines are drawn by their dash offset. */
+.pin,
+.link line,
+.link circle {
+  opacity: 0;
+}
+
+.link line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}

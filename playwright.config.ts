@@ -26,5 +26,10 @@ export default defineConfig({
     url: 'http://localhost:4173',
     reuseExistingServer: true,
     timeout: 180_000,
+    // The mocked suites answer from captured DEMO fixtures, so they build with DEMO as the first mode
+    // and the DEMO/LIVE switch visitors never see (VITE_DATA_MODE_SWITCH).
+    // The read-only LIVE suite (NUSAMATRA_LIVE_E2E=1) tests the real production default instead.
+    // Stop any running preview before switching suites: an existing server is reused as built.
+    env: process.env['NUSAMATRA_LIVE_E2E'] ? {} : { VITE_DATA_MODE: 'demo', VITE_DATA_MODE_SWITCH: '1' },
   },
 });

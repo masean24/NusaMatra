@@ -75,10 +75,12 @@ export const FEATURE_SHELLS: readonly FeatureShell[] = [
   {
     path: '/paspor-bukti',
     title: 'Paspor Bukti',
-    summary: 'Simpan satu hasil analisis beserta sumber, tahun, asumsi, dan batasannya.',
+    summary:
+      'Catatan bukti satu wilayah, perbandingan, atau hasil Lab: sumber, tahun, penanda kualitas, dan batasannya. Dirangkai di peramban, bukan arsip resmi.',
     plannedCapabilities: [
-      'Mencatat pertanyaan, bobot, versi model, dan waktu pembuatan.',
-      'Menyertakan sumber, tahun, dan masalah kualitas data yang relevan.',
+      'Menampilkan mode data dan snapshot yang terbaca dari respons Data Hub.',
+      'Menyertakan sumber, tahun, penanda kualitas, dan data yang belum tersedia.',
+      'Mencetak catatan atau mengunduhnya sebagai JSON.',
     ],
     figmaNode: '13:446',
   },

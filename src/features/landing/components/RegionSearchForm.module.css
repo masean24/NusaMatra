@@ -9,8 +9,102 @@
   align-items: center;
 }
 
-.searchField {
+.combobox {
+  position: relative;
   flex: 1 1 260px;
+  min-width: 0;
+}
+
+/*
+ * Suggestions under the field. It floats over the hero map and the next sections, so it uses the
+ * navbar's surface (the site's readable floating glass in both modes), not a page card.
+ */
+.popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  z-index: var(--nm-z-popover);
+  padding: 6px;
+  border: 1px solid var(--c-nav-border);
+  border-radius: var(--nm-radius-control);
+  background: var(--c-nav-bg);
+  box-shadow: var(--c-nav-shadow);
+  backdrop-filter: var(--c-nav-blur);
+  transform-origin: top;
+  transition:
+    opacity 180ms var(--nm-ease-ui),
+    transform 180ms var(--nm-ease-ui);
+}
+
+/* Entry: drops 4px from under the field as it fades in; closing is instant. */
+@starting-style {
+  .popup {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.popup[hidden] {
+  display: none;
+}
+
+.options {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: calc(var(--nm-radius-control) - 6px);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.option[aria-selected='true'] {
+  background: var(--c-nav-hover-fill);
+  color: var(--c-nav-hover-text);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .option:hover {
+    background: var(--c-nav-hover-fill);
+    color: var(--c-nav-hover-text);
+  }
+}
+
+.optionName {
+  font-weight: 500;
+}
+
+.optionMeta {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.popupNote {
+  margin: 0;
+  padding: 6px 12px;
+  color: var(--c-text-muted);
+}
+
+.popupNote:empty {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup {
+    transition: opacity 180ms ease;
+  }
+
+  @starting-style {
+    .popup {
+      transform: none;
+    }
+  }
 }
 
 /* G11: a single light sweep across the field once it is revealed. */

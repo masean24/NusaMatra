@@ -10,11 +10,20 @@ import {
   mapIndicatorValuesData,
   mapRegionDetailData,
   mapRegionsListData,
+  mapSnapshotDetailData,
   mapSnapshotsData,
   toBackendRegionLevelQuery,
   validateAndBuildCompositeWeights,
 } from './domainMappers';
+import { mapEarthquakeFeed, type EarthquakeFeedDTO } from './earthquakes';
+import {
+  mapCompositePresetsData,
+  mapIndicatorCoverageData,
+  type CompositePresetsDTO,
+  type IndicatorCoverageDTO,
+} from './labContract';
 import { DataHubHttpClient } from './httpClient';
+import { assertPinned, pinQuery } from './snapshotPinning';
 import type {
   AdaptedEnvelope,
   AdminLevel,
@@ -28,11 +37,21 @@ import type {
   IndicatorCatalogDTO,
   IndicatorValuesMapDTO,
   RegionProfileDTO,
+  SnapshotDetailDTO,
+  SnapshotPin,
   SystemHealthDTO,
   WeightedCriterionInput,
 } from './wireTypes';
 
-export interface SearchRegionsInput {
+/**
+ * v2.2: pins a request to one snapshot (`?snapshot=<id>`); the response must repeat its id and digest
+ * or the call fails (`assertPinned`). Absent = the Data Hub's active snapshot, unverified.
+ */
+interface Pinnable {
+  readonly snapshot?: SnapshotPin | null | undefined;
+}
+
+export interface SearchRegionsInput extends Pinnable {
   readonly dataMode: DataMode;
   readonly query?: string | undefined;
   readonly adminLevel?: AdminLevel | undefined;
@@ -40,26 +59,26 @@ export interface SearchRegionsInput {
   readonly signal?: AbortSignal | undefined;
 }
 
-export interface GetRegionDetailInput {
+export interface GetRegionDetailInput extends Pinnable {
   readonly dataMode: DataMode;
   readonly regionId: string;
   readonly signal?: AbortSignal | undefined;
 }
 
-export interface GetIndicatorsInput {
+export interface GetIndicatorsInput extends Pinnable {
   readonly dataMode: DataMode;
   readonly category?: string | undefined;
   readonly query?: string | undefined;
   readonly signal?: AbortSignal | undefined;
 }
 
-export interface GetIndicatorValuesInput {
+export interface GetIndicatorValuesInput extends Pinnable {
   readonly dataMode: DataMode;
   readonly indicatorId: string;
   readonly signal?: AbortSignal | undefined;
 }
 
-export interface RunExploratoryCompositeInput {
+export interface RunExploratoryCompositeInput extends Pinnable {
   readonly dataMode: DataMode;
   readonly criteria: readonly WeightedCriterionInput[];
   readonly filterProvinceId?: string | null | undefined;
@@ -164,7 +183,7 @@ export class NusaMatraDataHubRepository {
     const trimmedQuery = input.query?.trim();
     const levelParam = toBackendRegionLevelQuery(input.adminLevel);
 
-    return this.client.get(
+    const envelope = await this.client.get(
       '/api/v1/regions',
       {
         parse: (raw, ctx) =>
@@ -179,14 +198,16 @@ export class NusaMatraDataHubRepository {
           level: levelParam,
           parent_id: input.parentRegionId ?? undefined,
           q: trimmedQuery && trimmedQuery.length > 0 ? trimmedQuery : undefined,
+          ...pinQuery(input.snapshot),
         },
       },
     );
+    return assertPinned(envelope, input.snapshot);
   }
 
   async getRegionDetail(input: GetRegionDetailInput): Promise<AdaptedEnvelope<RegionProfileDTO>> {
     const encodedId = encodeURIComponent(input.regionId.trim());
-    return this.client.get(
+    const envelope = await this.client.get(
       `/api/v1/regions/${encodedId}`,
       {
         parse: (raw, ctx) =>
@@ -195,21 +216,27 @@ export class NusaMatraDataHubRepository {
       {
         dataMode: input.dataMode,
         signal: input.signal,
+        query: pinQuery(input.snapshot),
       },
     );
+    return assertPinned(envelope, input.snapshot);
   }
 
   async getIndicatorCatalog(input: GetIndicatorsInput): Promise<AdaptedEnvelope<IndicatorCatalogDTO>> {
-    const envelope = await this.client.get(
-      '/api/v1/indicators',
-      {
-        parse: (raw, ctx) =>
-          mapEnvelope(raw, input.dataMode, ctx, (data, meta) => mapIndicatorCatalogData(data, meta)),
-      },
-      {
-        dataMode: input.dataMode,
-        signal: input.signal,
-      },
+    const envelope = assertPinned(
+      await this.client.get(
+        '/api/v1/indicators',
+        {
+          parse: (raw, ctx) =>
+            mapEnvelope(raw, input.dataMode, ctx, (data, meta) => mapIndicatorCatalogData(data, meta)),
+        },
+        {
+          dataMode: input.dataMode,
+          signal: input.signal,
+          query: pinQuery(input.snapshot),
+        },
+      ),
+      input.snapshot,
     );
 
     const categoryFilter = input.category?.trim();
@@ -251,7 +278,7 @@ export class NusaMatraDataHubRepository {
 
   async getIndicatorValues(input: GetIndicatorValuesInput): Promise<AdaptedEnvelope<IndicatorValuesMapDTO>> {
     const encodedIndicatorId = encodeURIComponent(input.indicatorId.trim());
-    return this.client.get(
+    const envelope = await this.client.get(
       `/api/v1/indicators/${encodedIndicatorId}/values`,
       {
         parse: (raw, ctx) =>
@@ -260,8 +287,10 @@ export class NusaMatraDataHubRepository {
       {
         dataMode: input.dataMode,
         signal: input.signal,
+        query: pinQuery(input.snapshot),
       },
     );
+    return assertPinned(envelope, input.snapshot);
   }
 
   async runExploratoryCompositeQuery(
@@ -270,7 +299,7 @@ export class NusaMatraDataHubRepository {
     // Client-side pre-validation of basis points (sum === 10000, integer, no duplicates)
     const weights = validateAndBuildCompositeWeights(input.criteria);
 
-    return this.client.post(
+    const envelope = await this.client.post(
       '/api/v1/indicators/composite-query',
       {
         weights,
@@ -278,12 +307,62 @@ export class NusaMatraDataHubRepository {
       },
       {
         parse: (raw, ctx) =>
-          mapEnvelope(raw, input.dataMode, ctx, (data, meta) => mapCompositeQueryData(data, meta)),
+          mapEnvelope(raw, input.dataMode, ctx, (data, meta) =>
+            mapCompositeQueryData(data, meta, input.filterProvinceId ?? null),
+          ),
       },
       {
         dataMode: input.dataMode,
         signal: input.signal,
+        query: pinQuery(input.snapshot),
       },
+    );
+    return assertPinned(envelope, input.snapshot);
+  }
+
+  /** Which indicators hold data in this mode, and for how many regions (guide v2, BE-03). */
+  async getIndicatorCoverage(
+    input: {
+      readonly dataMode: DataMode;
+      readonly signal?: AbortSignal | undefined;
+    } & Pinnable,
+  ): Promise<AdaptedEnvelope<IndicatorCoverageDTO>> {
+    const envelope = await this.client.get(
+      '/api/v1/indicators/coverage',
+      { parse: (raw, ctx) => mapEnvelope(raw, input.dataMode, ctx, mapIndicatorCoverageData) },
+      { dataMode: input.dataMode, signal: input.signal, query: pinQuery(input.snapshot) },
+    );
+    return assertPinned(envelope, input.snapshot);
+  }
+
+  /** Scenario presets the Data Hub publishes; only presets matching the contract are kept. */
+  async getCompositePresets(
+    input: {
+      readonly dataMode: DataMode;
+      readonly signal?: AbortSignal | undefined;
+    } & Pinnable,
+  ): Promise<AdaptedEnvelope<CompositePresetsDTO>> {
+    const envelope = await this.client.get(
+      '/api/v1/indicators/composite-presets',
+      { parse: (raw, ctx) => mapEnvelope(raw, input.dataMode, ctx, mapCompositePresetsData) },
+      { dataMode: input.dataMode, signal: input.signal, query: pinQuery(input.snapshot) },
+    );
+    return assertPinned(envelope, input.snapshot);
+  }
+
+  /**
+   * BMKG earthquake epicentres (`GET /api/v1/earthquakes/geojson`). Not an envelope: a GeoJSON
+   * collection whose mode is read from the response header. Always revalidated with the server: the
+   * feed changes every minute, and older deployments marked it cacheable for an hour.
+   */
+  async getEarthquakeFeed(input: {
+    readonly dataMode: DataMode;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<EarthquakeFeedDTO> {
+    return this.client.get(
+      '/api/v1/earthquakes/geojson',
+      { parse: (raw, ctx) => mapEarthquakeFeed(raw, ctx, input.dataMode) },
+      { dataMode: input.dataMode, signal: input.signal, cache: 'no-cache' },
     );
   }
 
@@ -325,15 +404,39 @@ export class NusaMatraDataHubRepository {
       {
         dataMode,
         signal,
+        // Which snapshot is active changes on deploy; a cached list would pin to an old one.
+        cache: 'no-cache',
       },
+    );
+  }
+
+  /**
+   * v2.2 `GET /api/v1/snapshots/{id}`: full metadata of one snapshot. An unknown id is a 404
+   * (`SNAPSHOT_NOT_FOUND`); the Data Hub never answers with another snapshot instead.
+   */
+  async getSnapshotDetail(input: {
+    readonly dataMode: DataMode;
+    readonly snapshotId: string;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<AdaptedEnvelope<SnapshotDetailDTO>> {
+    return this.client.get(
+      `/api/v1/snapshots/${encodeURIComponent(input.snapshotId)}`,
+      {
+        parse: (raw, ctx) =>
+          mapEnvelope(raw, input.dataMode, ctx, (data, meta) =>
+            mapSnapshotDetailData(data, meta, input.snapshotId),
+          ),
+      },
+      { dataMode: input.dataMode, signal: input.signal, cache: 'no-cache' },
     );
   }
 
   async getDatasets(
     dataMode: DataMode,
     signal?: AbortSignal,
+    snapshot?: SnapshotPin | null,
   ): Promise<AdaptedEnvelope<readonly DataHubDatasetDTO[]>> {
-    return this.client.get(
+    const envelope = await this.client.get(
       '/api/v1/datasets',
       {
         parse: (raw, ctx) => mapEnvelope(raw, dataMode, ctx, (data, meta) => mapDatasetsData(data, meta)),
@@ -341,8 +444,10 @@ export class NusaMatraDataHubRepository {
       {
         dataMode,
         signal,
+        query: pinQuery(snapshot),
       },
     );
+    return assertPinned(envelope, snapshot);
   }
 }
 

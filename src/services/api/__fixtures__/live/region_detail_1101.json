@@ -1,0 +1,319 @@
+{
+ "status": "success",
+ "meta": {
+  "snapshot_id": "2026.10.0-official-live",
+  "mode": "LIVE",
+  "boundary_version": null,
+  "total_count": null
+ },
+ "data": {
+  "region": {
+   "region_id": "1101",
+   "parent_region_id": "11",
+   "province_name": "Provinsi Aceh",
+   "level": "kabupaten",
+   "name": "Kabupaten Aceh Selatan",
+   "short_name": "Aceh Selatan",
+   "codes": {
+    "kemendagri": "11.01",
+    "bps": "1101",
+    "kemendikdasmen": null
+   },
+   "island_group": "Aceh",
+   "area_km2": 0,
+   "anchor_point": {
+    "lng": 97.424625,
+    "lat": 3.071425
+   },
+   "bbox": [
+    96.942596,
+    2.401352,
+    97.906655,
+    3.741497
+   ]
+  },
+  "composite_scores": {
+   "overall_priority_index": 55.2,
+   "disaster_risk": 24.5,
+   "socioeconomic": 63.6,
+   "education_access": 69.4,
+   "healthcare_access": 30.8,
+   "infrastructure": 88.8,
+   "data_reliability": null
+  },
+  "indicators": [
+   {
+    "indicator_id": "dis_earthquake_hazard_idx",
+    "indicator_name": "Indeks Bahaya Gempabumi (Rata-rata Wilayah)",
+    "category": "disaster_risk",
+    "raw_value": 21.6,
+    "unit": "index (0.0-1.0)",
+    "normalized_score": 38.34,
+    "national_percentile": 25.19,
+    "national_rank": 401,
+    "reference_year": 2024,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bnpb_irbi_2024",
+     "agency_code": "BNPB",
+     "official_url": "https://inarisk.bnpb.go.id/"
+    }
+   },
+   {
+    "indicator_id": "dis_flood_hazard_idx",
+    "indicator_name": "Indeks Bahaya Banjir (Rata-rata Wilayah)",
+    "category": "disaster_risk",
+    "raw_value": 36,
+    "unit": "index (0.0-1.0)",
+    "normalized_score": 0,
+    "national_percentile": 14.29,
+    "national_rank": 360,
+    "reference_year": 2024,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bnpb_irbi_2024",
+     "agency_code": "BNPB",
+     "official_url": "https://inarisk.bnpb.go.id/"
+    }
+   },
+   {
+    "indicator_id": "dis_landslide_hazard_idx",
+    "indicator_name": "Indeks Bahaya Tanah Longsor (Rata-rata Wilayah)",
+    "category": "disaster_risk",
+    "raw_value": 24,
+    "unit": "index (0.0-1.0)",
+    "normalized_score": 34.29,
+    "national_percentile": 19.22,
+    "national_rank": 433,
+    "reference_year": 2024,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bnpb_irbi_2024",
+     "agency_code": "BNPB",
+     "official_url": "https://inarisk.bnpb.go.id/"
+    }
+   },
+   {
+    "indicator_id": "dis_multihazard_index",
+    "indicator_name": "Indeks Risiko Bencana Indonesia (IRBI) Multi-Bencana",
+    "category": "disaster_risk",
+    "raw_value": 171.2,
+    "unit": "score (0-300)",
+    "normalized_score": 25.45,
+    "national_percentile": 9.12,
+    "national_rank": 488,
+    "reference_year": 2024,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bnpb_irbi_2024",
+     "agency_code": "BNPB",
+     "official_url": "https://inarisk.bnpb.go.id/"
+    }
+   },
+   {
+    "indicator_id": "edu_expected_years_schooling",
+    "indicator_name": "Harapan Lama Sekolah (HLS / EYS)",
+    "category": "education_access",
+    "raw_value": 14.72,
+    "unit": "years",
+    "normalized_score": 75.57,
+    "national_percentile": 89.45,
+    "national_rank": 54,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "edu_mean_years_schooling",
+    "indicator_name": "Rata-rata Lama Sekolah (RLS / MYS)",
+    "category": "education_access",
+    "raw_value": 9.25,
+    "unit": "years",
+    "normalized_score": 63.15,
+    "national_percentile": 63.28,
+    "national_rank": 188,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "hlt_life_expectancy",
+    "indicator_name": "Umur Harapan Hidup Saat Lahir (UHH)",
+    "category": "healthcare_access",
+    "raw_value": 64.97,
+    "unit": "years",
+    "normalized_score": 40.99,
+    "national_percentile": 5.27,
+    "national_rank": 485,
+    "reference_year": 2024,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "hlt_stunting_prevalence",
+    "indicator_name": "Prevalensi Balita Stunting",
+    "category": "healthcare_access",
+    "raw_value": 40.2,
+    "unit": "percent (%)",
+    "normalized_score": 20.58,
+    "national_percentile": 2.2,
+    "national_rank": 489,
+    "reference_year": 2023,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "kemenkes_ski_2023",
+     "agency_code": "KEMENKES",
+     "official_url": "https://badankebijakan.kemkes.go.id/"
+    }
+   },
+   {
+    "indicator_id": "inf_electrification_pct",
+    "indicator_name": "Persentase Rumah Tangga Pengguna Listrik (PLN & Non-PLN)",
+    "category": "infrastructure",
+    "raw_value": 99.97,
+    "unit": "percent (%)",
+    "normalized_score": 99.91,
+    "national_percentile": 73.42,
+    "national_rank": 143,
+    "reference_year": 2025,
+    "quality_flag": "IMPUTED_PROVINCE",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "inf_safe_sanitation_pct",
+    "indicator_name": "Persentase Rumah Tangga Akses Sanitasi Layak",
+    "category": "infrastructure",
+    "raw_value": 78.42,
+    "unit": "percent (%)",
+    "normalized_score": 78.17,
+    "national_percentile": 25.83,
+    "national_rank": 379,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "inf_safe_water_pct",
+    "indicator_name": "Persentase Rumah Tangga Akses Air Minum Layak",
+    "category": "infrastructure",
+    "raw_value": 92.06,
+    "unit": "percent (%)",
+    "normalized_score": 88.19,
+    "national_percentile": 50.93,
+    "national_rank": 264,
+    "reference_year": 2025,
+    "quality_flag": "IMPUTED_PROVINCE",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "soc_expenditure_per_capita",
+    "indicator_name": "Pengeluaran per Kapita Disesuaikan",
+    "category": "socioeconomic",
+    "raw_value": 9573,
+    "unit": "thousand IDR/person/year",
+    "normalized_score": 22.21,
+    "national_percentile": 20.7,
+    "national_rank": 406,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "soc_hdi",
+    "indicator_name": "Indeks Pembangunan Manusia (IPM / HDI)",
+    "category": "socioeconomic",
+    "raw_value": 69.1,
+    "unit": "score (0-100)",
+    "normalized_score": 62.51,
+    "national_percentile": 27.34,
+    "national_rank": 372,
+    "reference_year": 2024,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "soc_poverty_rate",
+    "indicator_name": "Persentase Penduduk Miskin (P0)",
+    "category": "socioeconomic",
+    "raw_value": 9.89,
+    "unit": "percent (%)",
+    "normalized_score": 80.35,
+    "national_percentile": 44.14,
+    "national_rank": 286,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "soc_poverty_severity_p2",
+    "indicator_name": "Indeks Keparahan Kemiskinan (P2)",
+    "category": "socioeconomic",
+    "raw_value": 0.46,
+    "unit": "index",
+    "normalized_score": 90.73,
+    "national_percentile": 22.46,
+    "national_rank": 397,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   },
+   {
+    "indicator_id": "soc_unemployment_rate",
+    "indicator_name": "Tingkat Pengangguran Terbuka (TPT)",
+    "category": "socioeconomic",
+    "raw_value": 4.39,
+    "unit": "percent (%)",
+    "normalized_score": 62.15,
+    "national_percentile": 38.66,
+    "national_rank": 330,
+    "reference_year": 2025,
+    "quality_flag": "VERIFIED",
+    "provenance": {
+     "dataset_id": "bps_susenas_sakernas_2025",
+     "agency_code": "BPS",
+     "official_url": "https://webapi.bps.go.id/developer/"
+    }
+   }
+  ]
+ }
+}

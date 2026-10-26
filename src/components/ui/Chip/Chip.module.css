@@ -19,7 +19,13 @@
   color: var(--c-text);
 }
 
+/*
+ * A data caveat (DEMO, mismatched years, illustrative geometry): a soft orange note with readable
+ * ink, so it never looks like the solid orange of a primary action.
+ */
 .warning {
-  background: var(--nm-accent);
-  color: var(--nm-accent-text);
+  border: 1px solid var(--c-warn-line);
+  background: var(--c-warn);
+  color: var(--c-warn-ink);
+  font-weight: 500;
 }

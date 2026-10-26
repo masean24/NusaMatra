@@ -1,0 +1,5837 @@
+{
+ "status": "success",
+ "meta": {
+  "snapshot_id": "2026.10.0-official-live",
+  "mode": "LIVE",
+  "boundary_version": null,
+  "total_count": null
+ },
+ "data": {
+  "total_regions": 487,
+  "weights_basis_points": {
+   "soc_hdi": 3000,
+   "dis_multihazard_index": 3000,
+   "soc_poverty_rate": 2000,
+   "hlt_stunting_prevalence": 2000
+  },
+  "regions": [
+   {
+    "region_id": "3174",
+    "region_name": "Kota Administrasi Jakarta Selatan",
+    "composite_score": 91.03,
+    "rank": 1,
+    "component_scores": {
+     "dis_multihazard_index": 96.35,
+     "hlt_stunting_prevalence": 69.14,
+     "soc_hdi": 96.51,
+     "soc_poverty_rate": 96.73
+    }
+   },
+   {
+    "region_id": "3674",
+    "region_name": "Kota Tangerang Selatan",
+    "composite_score": 88.96,
+    "rank": 2,
+    "component_scores": {
+     "dis_multihazard_index": 85.64,
+     "hlt_stunting_prevalence": 84.36,
+     "soc_hdi": 88.79,
+     "soc_poverty_rate": 98.79
+    }
+   },
+   {
+    "region_id": "3471",
+    "region_name": "Kota Yogyakarta",
+    "composite_score": 88.03,
+    "rank": 3,
+    "component_scores": {
+     "dis_multihazard_index": 87.9,
+     "hlt_stunting_prevalence": 68.72,
+     "soc_hdi": 100,
+     "soc_poverty_rate": 89.57
+    }
+   },
+   {
+    "region_id": "5103",
+    "region_name": "Kabupaten Badung",
+    "composite_score": 86.87,
+    "rank": 4,
+    "component_scores": {
+     "dis_multihazard_index": 70.09,
+     "hlt_stunting_prevalence": 93.21,
+     "soc_hdi": 90.66,
+     "soc_poverty_rate": 100
+    }
+   },
+   {
+    "region_id": "3171",
+    "region_name": "Kota Administrasi Jakarta Pusat",
+    "composite_score": 86.24,
+    "rank": 5,
+    "component_scores": {
+     "dis_multihazard_index": 93.72,
+     "hlt_stunting_prevalence": 63.99,
+     "soc_hdi": 89.02,
+     "soc_poverty_rate": 93.11
+    }
+   },
+   {
+    "region_id": "3276",
+    "region_name": "Kota Depok",
+    "composite_score": 86.18,
+    "rank": 6,
+    "component_scores": {
+     "dis_multihazard_index": 83.2,
+     "hlt_stunting_prevalence": 73.87,
+     "soc_hdi": 88.83,
+     "soc_poverty_rate": 98.99
+    }
+   },
+   {
+    "region_id": "3404",
+    "region_name": "Kabupaten Sleman",
+    "composite_score": 86.16,
+    "rank": 7,
+    "component_scores": {
+     "dis_multihazard_index": 82.57,
+     "hlt_stunting_prevalence": 77.78,
+     "soc_hdi": 93.98,
+     "soc_poverty_rate": 88.17
+    }
+   },
+   {
+    "region_id": "5171",
+    "region_name": "Kota Denpasar",
+    "composite_score": 85.89,
+    "rank": 8,
+    "component_scores": {
+     "dis_multihazard_index": 72.78,
+     "hlt_stunting_prevalence": 81.07,
+     "soc_hdi": 93.23,
+     "soc_poverty_rate": 99.36
+    }
+   },
+   {
+    "region_id": "3175",
+    "region_name": "Kota Administrasi Jakarta Timur",
+    "composite_score": 85.47,
+    "rank": 9,
+    "component_scores": {
+     "dis_multihazard_index": 83.6,
+     "hlt_stunting_prevalence": 68.72,
+     "soc_hdi": 92.15,
+     "soc_poverty_rate": 94.98
+    }
+   },
+   {
+    "region_id": "3173",
+    "region_name": "Kota Administrasi Jakarta Barat",
+    "composite_score": 85.45,
+    "rank": 10,
+    "component_scores": {
+     "dis_multihazard_index": 85.84,
+     "hlt_stunting_prevalence": 68.11,
+     "soc_hdi": 90.22,
+     "soc_poverty_rate": 95.06
+    }
+   },
+   {
+    "region_id": "3373",
+    "region_name": "Kota Salatiga",
+    "composite_score": 85.04,
+    "rank": 11,
+    "component_scores": {
+     "dis_multihazard_index": 80.72,
+     "hlt_stunting_prevalence": 68.52,
+     "soc_hdi": 94.19,
+     "soc_poverty_rate": 94.34
+    }
+   },
+   {
+    "region_id": "1271",
+    "region_name": "Kota Medan",
+    "composite_score": 85.03,
+    "rank": 12,
+    "component_scores": {
+     "dis_multihazard_index": 76.07,
+     "hlt_stunting_prevalence": 91.36,
+     "soc_hdi": 88.55,
+     "soc_poverty_rate": 86.84
+    }
+   },
+   {
+    "region_id": "3515",
+    "region_name": "Kabupaten Sidoarjo",
+    "composite_score": 84.52,
+    "rank": 13,
+    "component_scores": {
+     "dis_multihazard_index": 74.13,
+     "hlt_stunting_prevalence": 86.01,
+     "soc_hdi": 87.69,
+     "soc_poverty_rate": 93.85
+    }
+   },
+   {
+    "region_id": "3578",
+    "region_name": "Kota Surabaya",
+    "composite_score": 83.15,
+    "rank": 14,
+    "component_scores": {
+     "dis_multihazard_index": 55.36,
+     "hlt_stunting_prevalence": 100,
+     "soc_hdi": 91.18,
+     "soc_poverty_rate": 95.92
+    }
+   },
+   {
+    "region_id": "1272",
+    "region_name": "Kota Pematangsiantar",
+    "composite_score": 82.66,
+    "rank": 15,
+    "component_scores": {
+     "dis_multihazard_index": 72.15,
+     "hlt_stunting_prevalence": 87.45,
+     "soc_hdi": 85.52,
+     "soc_poverty_rate": 89.33
+    }
+   },
+   {
+    "region_id": "3172",
+    "region_name": "Kota Administrasi Jakarta Utara",
+    "composite_score": 81.66,
+    "rank": 16,
+    "component_scores": {
+     "dis_multihazard_index": 85.18,
+     "hlt_stunting_prevalence": 62.55,
+     "soc_hdi": 85.93,
+     "soc_poverty_rate": 89.1
+    }
+   },
+   {
+    "region_id": "6372",
+    "region_name": "Kota Banjarbaru",
+    "composite_score": 81.59,
+    "rank": 17,
+    "component_scores": {
+     "dis_multihazard_index": 71.7,
+     "hlt_stunting_prevalence": 77.78,
+     "soc_hdi": 84.26,
+     "soc_poverty_rate": 96.21
+    }
+   },
+   {
+    "region_id": "5108",
+    "region_name": "Kabupaten Buleleng",
+    "composite_score": 80.89,
+    "rank": 18,
+    "component_scores": {
+     "dis_multihazard_index": 75.18,
+     "hlt_stunting_prevalence": 90.53,
+     "soc_hdi": 72.84,
+     "soc_poverty_rate": 91.88
+    }
+   },
+   {
+    "region_id": "3277",
+    "region_name": "Kota Cimahi",
+    "composite_score": 80.58,
+    "rank": 19,
+    "component_scores": {
+     "dis_multihazard_index": 87,
+     "hlt_stunting_prevalence": 52.88,
+     "soc_hdi": 83.44,
+     "soc_poverty_rate": 94.34
+    }
+   },
+   {
+    "region_id": "7171",
+    "region_name": "Kota Manado",
+    "composite_score": 80.26,
+    "rank": 20,
+    "component_scores": {
+     "dis_multihazard_index": 82.49,
+     "hlt_stunting_prevalence": 58.44,
+     "soc_hdi": 84.49,
+     "soc_poverty_rate": 92.4
+    }
+   },
+   {
+    "region_id": "3101",
+    "region_name": "Kabupaten Administrasi Kepulauan Seribu",
+    "composite_score": 79.5,
+    "rank": 21,
+    "component_scores": {
+     "dis_multihazard_index": 100,
+     "hlt_stunting_prevalence": 65.02,
+     "soc_hdi": 72.17,
+     "soc_poverty_rate": 74.25
+    }
+   },
+   {
+    "region_id": "1872",
+    "region_name": "Kota Metro",
+    "composite_score": 79.27,
+    "rank": 22,
+    "component_scores": {
+     "dis_multihazard_index": 64.64,
+     "hlt_stunting_prevalence": 88.68,
+     "soc_hdi": 81.25,
+     "soc_poverty_rate": 88.83
+    }
+   },
+   {
+    "region_id": "3311",
+    "region_name": "Kabupaten Sukoharjo",
+    "composite_score": 79.2,
+    "rank": 23,
+    "component_scores": {
+     "dis_multihazard_index": 87.93,
+     "hlt_stunting_prevalence": 53.29,
+     "soc_hdi": 81.95,
+     "soc_poverty_rate": 87.88
+    }
+   },
+   {
+    "region_id": "6472",
+    "region_name": "Kota Samarinda",
+    "composite_score": 79.15,
+    "rank": 24,
+    "component_scores": {
+     "dis_multihazard_index": 75.66,
+     "hlt_stunting_prevalence": 53.09,
+     "soc_hdi": 88.64,
+     "soc_poverty_rate": 96.19
+    }
+   },
+   {
+    "region_id": "3271",
+    "region_name": "Kota Bogor",
+    "composite_score": 79.11,
+    "rank": 25,
+    "component_scores": {
+     "dis_multihazard_index": 91.52,
+     "hlt_stunting_prevalence": 65.84,
+     "soc_hdi": 68.78,
+     "soc_poverty_rate": 89.28
+    }
+   },
+   {
+    "region_id": "7471",
+    "region_name": "Kota Kendari",
+    "composite_score": 79.1,
+    "rank": 26,
+    "component_scores": {
+     "dis_multihazard_index": 73.69,
+     "hlt_stunting_prevalence": 50.41,
+     "soc_hdi": 93.44,
+     "soc_poverty_rate": 94.39
+    }
+   },
+   {
+    "region_id": "8271",
+    "region_name": "Kota Ternate",
+    "composite_score": 78.98,
+    "rank": 27,
+    "component_scores": {
+     "dis_multihazard_index": 71.7,
+     "hlt_stunting_prevalence": 59.88,
+     "soc_hdi": 87.33,
+     "soc_poverty_rate": 96.46
+    }
+   },
+   {
+    "region_id": "3319",
+    "region_name": "Kabupaten Kudus",
+    "composite_score": 78.94,
+    "rank": 28,
+    "component_scores": {
+     "dis_multihazard_index": 78.84,
+     "hlt_stunting_prevalence": 70.99,
+     "soc_hdi": 77.99,
+     "soc_poverty_rate": 88.47
+    }
+   },
+   {
+    "region_id": "1471",
+    "region_name": "Kota Pekanbaru",
+    "composite_score": 78.69,
+    "rank": 29,
+    "component_scores": {
+     "dis_multihazard_index": 52.03,
+     "hlt_stunting_prevalence": 85.39,
+     "soc_hdi": 88.79,
+     "soc_poverty_rate": 96.83
+    }
+   },
+   {
+    "region_id": "6571",
+    "region_name": "Kota Tarakan",
+    "composite_score": 78.6,
+    "rank": 30,
+    "component_scores": {
+     "dis_multihazard_index": 72.5,
+     "hlt_stunting_prevalence": 72.84,
+     "soc_hdi": 79.4,
+     "soc_poverty_rate": 92.3
+    }
+   },
+   {
+    "region_id": "7174",
+    "region_name": "Kota Kotamobagu",
+    "composite_score": 78.57,
+    "rank": 31,
+    "component_scores": {
+     "dis_multihazard_index": 85.53,
+     "hlt_stunting_prevalence": 61.11,
+     "soc_hdi": 74.27,
+     "soc_poverty_rate": 92.03
+    }
+   },
+   {
+    "region_id": "1572",
+    "region_name": "Kota Sungai Penuh",
+    "composite_score": 78.54,
+    "rank": 32,
+    "component_scores": {
+     "dis_multihazard_index": 55.73,
+     "hlt_stunting_prevalence": 94.86,
+     "soc_hdi": 78.33,
+     "soc_poverty_rate": 96.73
+    }
+   },
+   {
+    "region_id": "1276",
+    "region_name": "Kota Tebing Tinggi",
+    "composite_score": 78.39,
+    "rank": 33,
+    "component_scores": {
+     "dis_multihazard_index": 72.83,
+     "hlt_stunting_prevalence": 81.89,
+     "soc_hdi": 78.43,
+     "soc_poverty_rate": 83.18
+    }
+   },
+   {
+    "region_id": "2171",
+    "region_name": "Kota Batam",
+    "composite_score": 78.26,
+    "rank": 34,
+    "component_scores": {
+     "dis_multihazard_index": 61.83,
+     "hlt_stunting_prevalence": 70.16,
+     "soc_hdi": 88.74,
+     "soc_poverty_rate": 95.3
+    }
+   },
+   {
+    "region_id": "1171",
+    "region_name": "Kota Banda Aceh",
+    "composite_score": 78.16,
+    "rank": 35,
+    "component_scores": {
+     "dis_multihazard_index": 63.63,
+     "hlt_stunting_prevalence": 58.64,
+     "soc_hdi": 96.95,
+     "soc_poverty_rate": 91.27
+    }
+   },
+   {
+    "region_id": "5104",
+    "region_name": "Kabupaten Gianyar",
+    "composite_score": 78.14,
+    "rank": 36,
+    "component_scores": {
+     "dis_multihazard_index": 53.61,
+     "hlt_stunting_prevalence": 90.33,
+     "soc_hdi": 82.94,
+     "soc_poverty_rate": 95.55
+    }
+   },
+   {
+    "region_id": "3374",
+    "region_name": "Kota Semarang",
+    "composite_score": 78.02,
+    "rank": 37,
+    "component_scores": {
+     "dis_multihazard_index": 78.24,
+     "hlt_stunting_prevalence": 70.99,
+     "soc_hdi": 75.03,
+     "soc_poverty_rate": 89.18
+    }
+   },
+   {
+    "region_id": "6471",
+    "region_name": "Kota Balikpapan",
+    "composite_score": 77.85,
+    "rank": 38,
+    "component_scores": {
+     "dis_multihazard_index": 66.18,
+     "hlt_stunting_prevalence": 58.85,
+     "soc_hdi": 87.55,
+     "soc_poverty_rate": 99.83
+    }
+   },
+   {
+    "region_id": "8171",
+    "region_name": "Kota Ambon",
+    "composite_score": 77.66,
+    "rank": 39,
+    "component_scores": {
+     "dis_multihazard_index": 67.56,
+     "hlt_stunting_prevalence": 60.7,
+     "soc_hdi": 88.16,
+     "soc_poverty_rate": 94
+    }
+   },
+   {
+    "region_id": "6209",
+    "region_name": "Kabupaten Lamandau",
+    "composite_score": 77.64,
+    "rank": 40,
+    "component_scores": {
+     "dis_multihazard_index": 75.22,
+     "hlt_stunting_prevalence": 76.13,
+     "soc_hdi": 68.52,
+     "soc_poverty_rate": 96.48
+    }
+   },
+   {
+    "region_id": "3579",
+    "region_name": "Kota Batu",
+    "composite_score": 77.36,
+    "rank": 41,
+    "component_scores": {
+     "dis_multihazard_index": 74.61,
+     "hlt_stunting_prevalence": 55.76,
+     "soc_hdi": 80.98,
+     "soc_poverty_rate": 97.64
+    }
+   },
+   {
+    "region_id": "7173",
+    "region_name": "Kota Tomohon",
+    "composite_score": 77.31,
+    "rank": 42,
+    "component_scores": {
+     "dis_multihazard_index": 60.27,
+     "hlt_stunting_prevalence": 81.69,
+     "soc_hdi": 81.17,
+     "soc_poverty_rate": 92.72
+    }
+   },
+   {
+    "region_id": "5102",
+    "region_name": "Kabupaten Tabanan",
+    "composite_score": 77.23,
+    "rank": 43,
+    "component_scores": {
+     "dis_multihazard_index": 54.1,
+     "hlt_stunting_prevalence": 90.33,
+     "soc_hdi": 80.27,
+     "soc_poverty_rate": 94.27
+    }
+   },
+   {
+    "region_id": "3275",
+    "region_name": "Kota Bekasi",
+    "composite_score": 77.15,
+    "rank": 44,
+    "component_scores": {
+     "dis_multihazard_index": 63.29,
+     "hlt_stunting_prevalence": 82.1,
+     "soc_hdi": 76.5,
+     "soc_poverty_rate": 93.95
+    }
+   },
+   {
+    "region_id": "1472",
+    "region_name": "Kota Dumai",
+    "composite_score": 77.05,
+    "rank": 45,
+    "component_scores": {
+     "dis_multihazard_index": 67.65,
+     "hlt_stunting_prevalence": 72.63,
+     "soc_hdi": 76.02,
+     "soc_poverty_rate": 97.1
+    }
+   },
+   {
+    "region_id": "1208",
+    "region_name": "Kabupaten Simalungun",
+    "composite_score": 76.62,
+    "rank": 46,
+    "component_scores": {
+     "dis_multihazard_index": 78.65,
+     "hlt_stunting_prevalence": 66.87,
+     "soc_hdi": 73.7,
+     "soc_poverty_rate": 87.68
+    }
+   },
+   {
+    "region_id": "2172",
+    "region_name": "Kota Tanjung Pinang",
+    "composite_score": 76.39,
+    "rank": 47,
+    "component_scores": {
+     "dis_multihazard_index": 62.11,
+     "hlt_stunting_prevalence": 72.02,
+     "soc_hdi": 84.49,
+     "soc_poverty_rate": 90.01
+    }
+   },
+   {
+    "region_id": "3321",
+    "region_name": "Kabupaten Demak",
+    "composite_score": 75.77,
+    "rank": 48,
+    "component_scores": {
+     "dis_multihazard_index": 71.83,
+     "hlt_stunting_prevalence": 83.74,
+     "soc_hdi": 72.94,
+     "soc_poverty_rate": 77.94
+    }
+   },
+   {
+    "region_id": "1376",
+    "region_name": "Kota Payakumbuh",
+    "composite_score": 75.61,
+    "rank": 49,
+    "component_scores": {
+     "dis_multihazard_index": 64.21,
+     "hlt_stunting_prevalence": 62.55,
+     "soc_hdi": 84.45,
+     "soc_poverty_rate": 92.5
+    }
+   },
+   {
+    "region_id": "1971",
+    "region_name": "Kota Pangkal Pinang",
+    "composite_score": 75.6,
+    "rank": 50,
+    "component_scores": {
+     "dis_multihazard_index": 65.07,
+     "hlt_stunting_prevalence": 60.7,
+     "soc_hdi": 84.05,
+     "soc_poverty_rate": 93.61
+    }
+   },
+   {
+    "region_id": "1408",
+    "region_name": "Kabupaten Siak",
+    "composite_score": 75.57,
+    "rank": 51,
+    "component_scores": {
+     "dis_multihazard_index": 60.12,
+     "hlt_stunting_prevalence": 81.89,
+     "soc_hdi": 74.61,
+     "soc_poverty_rate": 93.85
+    }
+   },
+   {
+    "region_id": "1374",
+    "region_name": "Kota Padang Panjang",
+    "composite_score": 75.52,
+    "rank": 52,
+    "component_scores": {
+     "dis_multihazard_index": 59.31,
+     "hlt_stunting_prevalence": 70.78,
+     "soc_hdi": 83.61,
+     "soc_poverty_rate": 92.45
+    }
+   },
+   {
+    "region_id": "3273",
+    "region_name": "Kota Bandung",
+    "composite_score": 75.14,
+    "rank": 53,
+    "component_scores": {
+     "dis_multihazard_index": 71.72,
+     "hlt_stunting_prevalence": 69.75,
+     "soc_hdi": 72.37,
+     "soc_poverty_rate": 89.82
+    }
+   },
+   {
+    "region_id": "3573",
+    "region_name": "Kota Malang",
+    "composite_score": 74.88,
+    "rank": 54,
+    "component_scores": {
+     "dis_multihazard_index": 79.74,
+     "hlt_stunting_prevalence": 67.7,
+     "soc_hdi": 69.33,
+     "soc_poverty_rate": 83.08
+    }
+   },
+   {
+    "region_id": "5271",
+    "region_name": "Kota Mataram",
+    "composite_score": 74.83,
+    "rank": 55,
+    "component_scores": {
+     "dis_multihazard_index": 73.18,
+     "hlt_stunting_prevalence": 50.62,
+     "soc_hdi": 84.43,
+     "soc_poverty_rate": 87.09
+    }
+   },
+   {
+    "region_id": "1275",
+    "region_name": "Kota Binjai",
+    "composite_score": 74.74,
+    "rank": 56,
+    "component_scores": {
+     "dis_multihazard_index": 65.15,
+     "hlt_stunting_prevalence": 63.37,
+     "soc_hdi": 79.66,
+     "soc_poverty_rate": 93.09
+    }
+   },
+   {
+    "region_id": "3372",
+    "region_name": "Kota Surakarta",
+    "composite_score": 74.57,
+    "rank": 57,
+    "component_scores": {
+     "dis_multihazard_index": 99.71,
+     "soc_hdi": 91.67,
+     "soc_poverty_rate": 85.76
+    }
+   },
+   {
+    "region_id": "5105",
+    "region_name": "Kabupaten Klungkung",
+    "composite_score": 74.45,
+    "rank": 58,
+    "component_scores": {
+     "dis_multihazard_index": 52.81,
+     "hlt_stunting_prevalence": 93.21,
+     "soc_hdi": 71.93,
+     "soc_poverty_rate": 91.93
+    }
+   },
+   {
+    "region_id": "3313",
+    "region_name": "Kabupaten Karanganyar",
+    "composite_score": 74.45,
+    "rank": 59,
+    "component_scores": {
+     "dis_multihazard_index": 74.19,
+     "hlt_stunting_prevalence": 57.61,
+     "soc_hdi": 79.68,
+     "soc_poverty_rate": 83.82
+    }
+   },
+   {
+    "region_id": "1771",
+    "region_name": "Kota Bengkulu",
+    "composite_score": 74.29,
+    "rank": 60,
+    "component_scores": {
+     "dis_multihazard_index": 50.53,
+     "hlt_stunting_prevalence": 89.51,
+     "soc_hdi": 87.17,
+     "soc_poverty_rate": 75.38
+    }
+   },
+   {
+    "region_id": "7210",
+    "region_name": "Kabupaten Sigi",
+    "composite_score": 74.23,
+    "rank": 61,
+    "component_scores": {
+     "dis_multihazard_index": 96.96,
+     "hlt_stunting_prevalence": 48.97,
+     "soc_hdi": 65.2,
+     "soc_poverty_rate": 78.92
+    }
+   },
+   {
+    "region_id": "7172",
+    "region_name": "Kota Bitung",
+    "composite_score": 74.01,
+    "rank": 62,
+    "component_scores": {
+     "dis_multihazard_index": 69.21,
+     "hlt_stunting_prevalence": 63.17,
+     "soc_hdi": 75.11,
+     "soc_poverty_rate": 90.38
+    }
+   },
+   {
+    "region_id": "1810",
+    "region_name": "Kabupaten Pringsewu",
+    "composite_score": 73.99,
+    "rank": 63,
+    "component_scores": {
+     "dis_multihazard_index": 73.54,
+     "hlt_stunting_prevalence": 70.78,
+     "soc_hdi": 68.59,
+     "soc_poverty_rate": 85.98
+    }
+   },
+   {
+    "region_id": "6201",
+    "region_name": "Kotawaringin Barat",
+    "composite_score": 73.96,
+    "rank": 64,
+    "component_scores": {
+     "dis_multihazard_index": 66.75,
+     "hlt_stunting_prevalence": 66.46,
+     "soc_hdi": 72.69,
+     "soc_poverty_rate": 94.17
+    }
+   },
+   {
+    "region_id": "6305",
+    "region_name": "Kabupaten Tapin",
+    "composite_score": 73.87,
+    "rank": 65,
+    "component_scores": {
+     "dis_multihazard_index": 63.11,
+     "hlt_stunting_prevalence": 73.66,
+     "soc_hdi": 69.01,
+     "soc_poverty_rate": 97.52
+    }
+   },
+   {
+    "region_id": "6271",
+    "region_name": "Kota Palangkaraya",
+    "composite_score": 73.79,
+    "rank": 66,
+    "component_scores": {
+     "dis_multihazard_index": 64.19,
+     "hlt_stunting_prevalence": 45.68,
+     "soc_hdi": 87.48,
+     "soc_poverty_rate": 95.77
+    }
+   },
+   {
+    "region_id": "2105",
+    "region_name": "Kabupaten Kepulauan Anambas",
+    "composite_score": 73.78,
+    "rank": 67,
+    "component_scores": {
+     "dis_multihazard_index": 72.56,
+     "hlt_stunting_prevalence": 72.02,
+     "soc_hdi": 66,
+     "soc_poverty_rate": 89.06
+    }
+   },
+   {
+    "region_id": "7271",
+    "region_name": "Kota Palu",
+    "composite_score": 73.75,
+    "rank": 68,
+    "component_scores": {
+     "dis_multihazard_index": 57.36,
+     "hlt_stunting_prevalence": 57.82,
+     "soc_hdi": 88.77,
+     "soc_poverty_rate": 91.74
+    }
+   },
+   {
+    "region_id": "3571",
+    "region_name": "Kota Kediri",
+    "composite_score": 73.71,
+    "rank": 69,
+    "component_scores": {
+     "dis_multihazard_index": 75.97,
+     "hlt_stunting_prevalence": 65.02,
+     "soc_hdi": 72.69,
+     "soc_poverty_rate": 80.55
+    }
+   },
+   {
+    "region_id": "3525",
+    "region_name": "Kabupaten Gresik",
+    "composite_score": 73.68,
+    "rank": 70,
+    "component_scores": {
+     "dis_multihazard_index": 64.06,
+     "hlt_stunting_prevalence": 71.6,
+     "soc_hdi": 80.33,
+     "soc_poverty_rate": 80.2
+    }
+   },
+   {
+    "region_id": "3671",
+    "region_name": "Kota Tangerang",
+    "composite_score": 73.65,
+    "rank": 71,
+    "component_scores": {
+     "dis_multihazard_index": 69.5,
+     "hlt_stunting_prevalence": 67.08,
+     "soc_hdi": 72.02,
+     "soc_poverty_rate": 88.88
+    }
+   },
+   {
+    "region_id": "1571",
+    "region_name": "Kota Jambi",
+    "composite_score": 73.62,
+    "rank": 72,
+    "component_scores": {
+     "dis_multihazard_index": 52.62,
+     "hlt_stunting_prevalence": 75.51,
+     "soc_hdi": 85.27,
+     "soc_poverty_rate": 85.76
+    }
+   },
+   {
+    "region_id": "7106",
+    "region_name": "Kabupaten Minahasa Utara",
+    "composite_score": 73.58,
+    "rank": 73,
+    "component_scores": {
+     "dis_multihazard_index": 56.06,
+     "hlt_stunting_prevalence": 80.86,
+     "soc_hdi": 75.45,
+     "soc_poverty_rate": 89.79
+    }
+   },
+   {
+    "region_id": "3512",
+    "region_name": "Kabupaten Situbondo",
+    "composite_score": 73.51,
+    "rank": 74,
+    "component_scores": {
+     "dis_multihazard_index": 66.57,
+     "hlt_stunting_prevalence": 94.86,
+     "soc_hdi": 63.75,
+     "soc_poverty_rate": 77.2
+    }
+   },
+   {
+    "region_id": "5107",
+    "region_name": "Kabupaten Karangasem",
+    "composite_score": 73.14,
+    "rank": 75,
+    "component_scores": {
+     "dis_multihazard_index": 60.72,
+     "hlt_stunting_prevalence": 90.12,
+     "soc_hdi": 63.73,
+     "soc_poverty_rate": 88.93
+    }
+   },
+   {
+    "region_id": "6205",
+    "region_name": "Kabupaten Barito Utara",
+    "composite_score": 73.11,
+    "rank": 76,
+    "component_scores": {
+     "dis_multihazard_index": 66.46,
+     "hlt_stunting_prevalence": 71.81,
+     "soc_hdi": 68.63,
+     "soc_poverty_rate": 91.1
+    }
+   },
+   {
+    "region_id": "1375",
+    "region_name": "Kota Bukittinggi",
+    "composite_score": 72.98,
+    "rank": 77,
+    "component_scores": {
+     "dis_multihazard_index": 50.32,
+     "hlt_stunting_prevalence": 61.93,
+     "soc_hdi": 88.07,
+     "soc_poverty_rate": 95.38
+    }
+   },
+   {
+    "region_id": "3522",
+    "region_name": "Kabupaten Bojonegoro",
+    "composite_score": 72.85,
+    "rank": 78,
+    "component_scores": {
+     "dis_multihazard_index": 74.75,
+     "hlt_stunting_prevalence": 74.28,
+     "soc_hdi": 67.62,
+     "soc_poverty_rate": 76.41
+    }
+   },
+   {
+    "region_id": "3576",
+    "region_name": "Kota Mojokerto",
+    "composite_score": 72.81,
+    "rank": 79,
+    "component_scores": {
+     "dis_multihazard_index": 57.95,
+     "hlt_stunting_prevalence": 80.66,
+     "soc_hdi": 75.62,
+     "soc_poverty_rate": 83.05
+    }
+   },
+   {
+    "region_id": "1274",
+    "region_name": "Kota Tanjungbalai",
+    "composite_score": 72.73,
+    "rank": 80,
+    "component_scores": {
+     "dis_multihazard_index": 62.78,
+     "hlt_stunting_prevalence": 91.56,
+     "soc_hdi": 66.32,
+     "soc_poverty_rate": 78.43
+    }
+   },
+   {
+    "region_id": "3518",
+    "region_name": "Kabupaten Nganjuk",
+    "composite_score": 72.58,
+    "rank": 81,
+    "component_scores": {
+     "dis_multihazard_index": 70.96,
+     "hlt_stunting_prevalence": 68.11,
+     "soc_hdi": 72.29,
+     "soc_poverty_rate": 79.93
+    }
+   },
+   {
+    "region_id": "6371",
+    "region_name": "Kota Banjarmasin",
+    "composite_score": 72.53,
+    "rank": 82,
+    "component_scores": {
+     "dis_multihazard_index": 65.4,
+     "hlt_stunting_prevalence": 48.77,
+     "soc_hdi": 81.48,
+     "soc_poverty_rate": 93.56
+    }
+   },
+   {
+    "region_id": "3324",
+    "region_name": "Kabupaten Kendal",
+    "composite_score": 72.45,
+    "rank": 83,
+    "component_scores": {
+     "dis_multihazard_index": 74.87,
+     "hlt_stunting_prevalence": 57.2,
+     "soc_hdi": 72.5,
+     "soc_poverty_rate": 84.01
+    }
+   },
+   {
+    "region_id": "2103",
+    "region_name": "Kabupaten Natuna",
+    "composite_score": 72.41,
+    "rank": 84,
+    "component_scores": {
+     "dis_multihazard_index": 59.78,
+     "hlt_stunting_prevalence": 70.16,
+     "soc_hdi": 72.92,
+     "soc_poverty_rate": 92.84
+    }
+   },
+   {
+    "region_id": "6474",
+    "region_name": "Kota Bontang",
+    "composite_score": 72.31,
+    "rank": 85,
+    "component_scores": {
+     "dis_multihazard_index": 57.34,
+     "hlt_stunting_prevalence": 46.91,
+     "soc_hdi": 87.9,
+     "soc_poverty_rate": 96.78
+    }
+   },
+   {
+    "region_id": "3520",
+    "region_name": "Kabupaten Magetan",
+    "composite_score": 72.25,
+    "rank": 86,
+    "component_scores": {
+     "dis_multihazard_index": 68.11,
+     "hlt_stunting_prevalence": 63.79,
+     "soc_hdi": 75.41,
+     "soc_poverty_rate": 82.19
+    }
+   },
+   {
+    "region_id": "5106",
+    "region_name": "Kabupaten Bangli",
+    "composite_score": 72.12,
+    "rank": 87,
+    "component_scores": {
+     "dis_multihazard_index": 56.88,
+     "hlt_stunting_prevalence": 82.3,
+     "soc_hdi": 66.78,
+     "soc_poverty_rate": 92.79
+    }
+   },
+   {
+    "region_id": "5101",
+    "region_name": "Kabupaten Jembrana",
+    "composite_score": 72.09,
+    "rank": 88,
+    "component_scores": {
+     "dis_multihazard_index": 47.72,
+     "hlt_stunting_prevalence": 85.39,
+     "soc_hdi": 72.99,
+     "soc_poverty_rate": 94.02
+    }
+   },
+   {
+    "region_id": "3371",
+    "region_name": "Kota Magelang",
+    "composite_score": 72.06,
+    "rank": 89,
+    "component_scores": {
+     "dis_multihazard_index": 70.9,
+     "hlt_stunting_prevalence": 71.6,
+     "soc_hdi": 68.02,
+     "soc_poverty_rate": 80.32
+    }
+   },
+   {
+    "region_id": "1373",
+    "region_name": "Kota Sawahlunto",
+    "composite_score": 72.05,
+    "rank": 90,
+    "component_scores": {
+     "dis_multihazard_index": 58.72,
+     "hlt_stunting_prevalence": 63.17,
+     "soc_hdi": 74,
+     "soc_poverty_rate": 97.98
+    }
+   },
+   {
+    "region_id": "3312",
+    "region_name": "Kabupaten Wonogiri",
+    "composite_score": 72,
+    "rank": 91,
+    "component_scores": {
+     "dis_multihazard_index": 74.73,
+     "hlt_stunting_prevalence": 63.17,
+     "soc_hdi": 69.09,
+     "soc_poverty_rate": 81.09
+    }
+   },
+   {
+    "region_id": "1871",
+    "region_name": "Kota Bandar Lampung",
+    "composite_score": 71.93,
+    "rank": 92,
+    "component_scores": {
+     "dis_multihazard_index": 49.15,
+     "hlt_stunting_prevalence": 75.72,
+     "soc_hdi": 81.74,
+     "soc_poverty_rate": 87.58
+    }
+   },
+   {
+    "region_id": "1811",
+    "region_name": "Kabupaten Mesuji",
+    "composite_score": 71.69,
+    "rank": 93,
+    "component_scores": {
+     "dis_multihazard_index": 59.41,
+     "hlt_stunting_prevalence": 93,
+     "soc_hdi": 57.48,
+     "soc_poverty_rate": 90.11
+    }
+   },
+   {
+    "region_id": "1608",
+    "region_name": "Kabupaten Ogan Komering Ulu Timur",
+    "composite_score": 71.58,
+    "rank": 94,
+    "component_scores": {
+     "dis_multihazard_index": 60.06,
+     "hlt_stunting_prevalence": 84.16,
+     "soc_hdi": 67.18,
+     "soc_poverty_rate": 82.88
+    }
+   },
+   {
+    "region_id": "3376",
+    "region_name": "Kota Tegal",
+    "composite_score": 71.37,
+    "rank": 95,
+    "component_scores": {
+     "dis_multihazard_index": 76.1,
+     "hlt_stunting_prevalence": 57.41,
+     "soc_hdi": 65.69,
+     "soc_poverty_rate": 86.77
+    }
+   },
+   {
+    "region_id": "3575",
+    "region_name": "Kota Pasuruan",
+    "composite_score": 71.33,
+    "rank": 96,
+    "component_scores": {
+     "dis_multihazard_index": 63.01,
+     "hlt_stunting_prevalence": 79.22,
+     "soc_hdi": 65.62,
+     "soc_poverty_rate": 84.48
+    }
+   },
+   {
+    "region_id": "3672",
+    "region_name": "Kota Cilegon",
+    "composite_score": 71.23,
+    "rank": 97,
+    "component_scores": {
+     "dis_multihazard_index": 60.59,
+     "hlt_stunting_prevalence": 58.02,
+     "soc_hdi": 74.02,
+     "soc_poverty_rate": 96.21
+    }
+   },
+   {
+    "region_id": "1805",
+    "region_name": "Kabupaten Tulang Bawang",
+    "composite_score": 71.08,
+    "rank": 98,
+    "component_scores": {
+     "dis_multihazard_index": 58.59,
+     "hlt_stunting_prevalence": 83.13,
+     "soc_hdi": 65.49,
+     "soc_poverty_rate": 86.13
+    }
+   },
+   {
+    "region_id": "3315",
+    "region_name": "Kabupaten Grobogan",
+    "composite_score": 71.05,
+    "rank": 99,
+    "component_scores": {
+     "dis_multihazard_index": 75.24,
+     "hlt_stunting_prevalence": 61.73,
+     "soc_hdi": 68.08,
+     "soc_poverty_rate": 78.53
+    }
+   },
+   {
+    "region_id": "3502",
+    "region_name": "Kabupaten Ponorogo",
+    "composite_score": 70.95,
+    "rank": 100,
+    "component_scores": {
+     "dis_multihazard_index": 64.5,
+     "hlt_stunting_prevalence": 70.16,
+     "soc_hdi": 69.96,
+     "soc_poverty_rate": 82.88
+    }
+   },
+   {
+    "region_id": "6307",
+    "region_name": "Kabupaten Hulu Sungai Tengah",
+    "composite_score": 70.67,
+    "rank": 101,
+    "component_scores": {
+     "dis_multihazard_index": 57.47,
+     "hlt_stunting_prevalence": 76.54,
+     "soc_hdi": 65.54,
+     "soc_poverty_rate": 92.3
+    }
+   },
+   {
+    "region_id": "3314",
+    "region_name": "Kabupaten Sragen",
+    "composite_score": 70.53,
+    "rank": 102,
+    "component_scores": {
+     "dis_multihazard_index": 65.31,
+     "hlt_stunting_prevalence": 65.43,
+     "soc_hdi": 74.77,
+     "soc_poverty_rate": 77.08
+    }
+   },
+   {
+    "region_id": "6402",
+    "region_name": "Kabupaten Kutai Kartanegara",
+    "composite_score": 70.5,
+    "rank": 103,
+    "component_scores": {
+     "dis_multihazard_index": 56.04,
+     "hlt_stunting_prevalence": 67.08,
+     "soc_hdi": 75.49,
+     "soc_poverty_rate": 88.15
+    }
+   },
+   {
+    "region_id": "7303",
+    "region_name": "Kabupaten Bantaeng",
+    "composite_score": 70.49,
+    "rank": 104,
+    "component_scores": {
+     "dis_multihazard_index": 63.54,
+     "hlt_stunting_prevalence": 70.78,
+     "soc_hdi": 67.05,
+     "soc_poverty_rate": 85.78
+    }
+   },
+   {
+    "region_id": "3301",
+    "region_name": "Kabupaten Cilacap",
+    "composite_score": 70.47,
+    "rank": 105,
+    "component_scores": {
+     "dis_multihazard_index": 68.31,
+     "hlt_stunting_prevalence": 65.23,
+     "soc_hdi": 68.76,
+     "soc_poverty_rate": 81.53
+    }
+   },
+   {
+    "region_id": "3572",
+    "region_name": "Kota Blitar",
+    "composite_score": 70.32,
+    "rank": 106,
+    "component_scores": {
+     "dis_multihazard_index": 62.34,
+     "hlt_stunting_prevalence": 66.87,
+     "soc_hdi": 70.12,
+     "soc_poverty_rate": 86.06
+    }
+   },
+   {
+    "region_id": "1812",
+    "region_name": "Kabupaten Tulang Bawang Barat",
+    "composite_score": 70.24,
+    "rank": 107,
+    "component_scores": {
+     "dis_multihazard_index": 59.63,
+     "hlt_stunting_prevalence": 81.69,
+     "soc_hdi": 61.29,
+     "soc_poverty_rate": 88.15
+    }
+   },
+   {
+    "region_id": "1401",
+    "region_name": "Kabupaten Kampar",
+    "composite_score": 70.21,
+    "rank": 108,
+    "component_scores": {
+     "dis_multihazard_index": 42.65,
+     "hlt_stunting_prevalence": 87.65,
+     "soc_hdi": 73.47,
+     "soc_poverty_rate": 89.2
+    }
+   },
+   {
+    "region_id": "1504",
+    "region_name": "Kabupaten Batanghari",
+    "composite_score": 70.12,
+    "rank": 109,
+    "component_scores": {
+     "dis_multihazard_index": 55.11,
+     "hlt_stunting_prevalence": 82.51,
+     "soc_hdi": 67.41,
+     "soc_poverty_rate": 84.33
+    }
+   },
+   {
+    "region_id": "1304",
+    "region_name": "Kabupaten Tanah Datar",
+    "composite_score": 69.98,
+    "rank": 110,
+    "component_scores": {
+     "dis_multihazard_index": 52.31,
+     "hlt_stunting_prevalence": 65.23,
+     "soc_hdi": 73.57,
+     "soc_poverty_rate": 95.84
+    }
+   },
+   {
+    "region_id": "2102",
+    "region_name": "Kabupaten Karimun",
+    "composite_score": 69.94,
+    "rank": 111,
+    "component_scores": {
+     "dis_multihazard_index": 55.11,
+     "hlt_stunting_prevalence": 66.46,
+     "soc_hdi": 72.38,
+     "soc_poverty_rate": 91.98
+    }
+   },
+   {
+    "region_id": "7104",
+    "region_name": "Kabupaten Kepulauan Talaud",
+    "composite_score": 69.91,
+    "rank": 112,
+    "component_scores": {
+     "dis_multihazard_index": 66.93,
+     "hlt_stunting_prevalence": 63.58,
+     "soc_hdi": 67.6,
+     "soc_poverty_rate": 84.16
+    }
+   },
+   {
+    "region_id": "3272",
+    "region_name": "Kota Sukabumi",
+    "composite_score": 69.84,
+    "rank": 113,
+    "component_scores": {
+     "dis_multihazard_index": 80.12,
+     "hlt_stunting_prevalence": 47.94,
+     "soc_hdi": 62.26,
+     "soc_poverty_rate": 87.7
+    }
+   },
+   {
+    "region_id": "3577",
+    "region_name": "Kota Madiun",
+    "composite_score": 69.66,
+    "rank": 114,
+    "component_scores": {
+     "dis_multihazard_index": 56.83,
+     "hlt_stunting_prevalence": 76.95,
+     "soc_hdi": 71.36,
+     "soc_poverty_rate": 79.09
+    }
+   },
+   {
+    "region_id": "1802",
+    "region_name": "Kabupaten Lampung Tengah",
+    "composite_score": 69.66,
+    "rank": 115,
+    "component_scores": {
+     "dis_multihazard_index": 63.43,
+     "hlt_stunting_prevalence": 68.93,
+     "soc_hdi": 68.74,
+     "soc_poverty_rate": 81.09
+    }
+   },
+   {
+    "region_id": "6213",
+    "region_name": "Kabupaten Barito Timur",
+    "composite_score": 69.56,
+    "rank": 116,
+    "component_scores": {
+     "dis_multihazard_index": 62.57,
+     "hlt_stunting_prevalence": 58.64,
+     "soc_hdi": 70.44,
+     "soc_poverty_rate": 89.67
+    }
+   },
+   {
+    "region_id": "1206",
+    "region_name": "Kabupaten Karo",
+    "composite_score": 69.48,
+    "rank": 117,
+    "component_scores": {
+     "dis_multihazard_index": 61.05,
+     "hlt_stunting_prevalence": 52.47,
+     "soc_hdi": 76.71,
+     "soc_poverty_rate": 88.29
+    }
+   },
+   {
+    "region_id": "1402",
+    "region_name": "Kabupaten Indragiri Hulu",
+    "composite_score": 69.4,
+    "rank": 118,
+    "component_scores": {
+     "dis_multihazard_index": 52.63,
+     "hlt_stunting_prevalence": 77.16,
+     "soc_hdi": 67.05,
+     "soc_poverty_rate": 90.33
+    }
+   },
+   {
+    "region_id": "1671",
+    "region_name": "Kota Palembang",
+    "composite_score": 69.25,
+    "rank": 119,
+    "component_scores": {
+     "dis_multihazard_index": 48.57,
+     "hlt_stunting_prevalence": 64.4,
+     "soc_hdi": 84.37,
+     "soc_poverty_rate": 82.44
+    }
+   },
+   {
+    "region_id": "1707",
+    "region_name": "Kabupaten Lebong",
+    "composite_score": 69.24,
+    "rank": 120,
+    "component_scores": {
+     "dis_multihazard_index": 67.41,
+     "hlt_stunting_prevalence": 70.99,
+     "soc_hdi": 62.84,
+     "soc_poverty_rate": 79.83
+    }
+   },
+   {
+    "region_id": "1218",
+    "region_name": "Kabupaten Serdang Bedagai",
+    "composite_score": 69.21,
+    "rank": 121,
+    "component_scores": {
+     "dis_multihazard_index": 53.01,
+     "hlt_stunting_prevalence": 73.66,
+     "soc_hdi": 68.93,
+     "soc_poverty_rate": 89.47
+    }
+   },
+   {
+    "region_id": "2101",
+    "region_name": "Kabupaten Bintan",
+    "composite_score": 69.21,
+    "rank": 122,
+    "component_scores": {
+     "dis_multihazard_index": 53.49,
+     "hlt_stunting_prevalence": 58.85,
+     "soc_hdi": 76.01,
+     "soc_poverty_rate": 92.94
+    }
+   },
+   {
+    "region_id": "5207",
+    "region_name": "Kabupaten Sumbawa Barat",
+    "composite_score": 69.06,
+    "rank": 123,
+    "component_scores": {
+     "dis_multihazard_index": 52.39,
+     "hlt_stunting_prevalence": 81.69,
+     "soc_hdi": 71.58,
+     "soc_poverty_rate": 77.67
+    }
+   },
+   {
+    "region_id": "3503",
+    "region_name": "Kabupaten Trenggalek",
+    "composite_score": 68.99,
+    "rank": 124,
+    "component_scores": {
+     "dis_multihazard_index": 61.38,
+     "hlt_stunting_prevalence": 70.78,
+     "soc_hdi": 68.5,
+     "soc_poverty_rate": 79.37
+    }
+   },
+   {
+    "region_id": "1505",
+    "region_name": "Kabupaten Muaro Jambi",
+    "composite_score": 68.89,
+    "rank": 125,
+    "component_scores": {
+     "dis_multihazard_index": 46.65,
+     "hlt_stunting_prevalence": 78.6,
+     "soc_hdi": 67.87,
+     "soc_poverty_rate": 94.05
+    }
+   },
+   {
+    "region_id": "3521",
+    "region_name": "Kabupaten Ngawi",
+    "composite_score": 68.77,
+    "rank": 126,
+    "component_scores": {
+     "dis_multihazard_index": 61.99,
+     "hlt_stunting_prevalence": 74.49,
+     "soc_hdi": 70.12,
+     "soc_poverty_rate": 71.18
+    }
+   },
+   {
+    "region_id": "1708",
+    "region_name": "Kabupaten Kepahiang",
+    "composite_score": 68.75,
+    "rank": 127,
+    "component_scores": {
+     "dis_multihazard_index": 73.13,
+     "hlt_stunting_prevalence": 57.82,
+     "soc_hdi": 64.74,
+     "soc_poverty_rate": 79.14
+    }
+   },
+   {
+    "region_id": "1311",
+    "region_name": "Kabupaten Solok Selatan",
+    "composite_score": 68.74,
+    "rank": 128,
+    "component_scores": {
+     "dis_multihazard_index": 53.41,
+     "hlt_stunting_prevalence": 73.05,
+     "soc_hdi": 67.09,
+     "soc_poverty_rate": 89.92
+    }
+   },
+   {
+    "region_id": "1174",
+    "region_name": "Kota Langsa",
+    "composite_score": 68.61,
+    "rank": 129,
+    "component_scores": {
+     "dis_multihazard_index": 58.24,
+     "hlt_stunting_prevalence": 50.62,
+     "soc_hdi": 81.02,
+     "soc_poverty_rate": 83.55
+    }
+   },
+   {
+    "region_id": "1212",
+    "region_name": "Kabupaten Toba",
+    "composite_score": 68.59,
+    "rank": 130,
+    "component_scores": {
+     "dis_multihazard_index": 62.81,
+     "hlt_stunting_prevalence": 45.68,
+     "soc_hdi": 77.4,
+     "soc_poverty_rate": 86.94
+    }
+   },
+   {
+    "region_id": "6210",
+    "region_name": "Kabupaten Gunung Mas",
+    "composite_score": 68.49,
+    "rank": 131,
+    "component_scores": {
+     "dis_multihazard_index": 46.89,
+     "hlt_stunting_prevalence": 76.75,
+     "soc_hdi": 69.43,
+     "soc_poverty_rate": 91.2
+    }
+   },
+   {
+    "region_id": "1503",
+    "region_name": "Kabupaten Sarolangun",
+    "composite_score": 68.43,
+    "rank": 132,
+    "component_scores": {
+     "dis_multihazard_index": 42.32,
+     "hlt_stunting_prevalence": 93.42,
+     "soc_hdi": 68.06,
+     "soc_poverty_rate": 83.18
+    }
+   },
+   {
+    "region_id": "3402",
+    "region_name": "Kabupaten Bantul",
+    "composite_score": 68.4,
+    "rank": 133,
+    "component_scores": {
+     "dis_multihazard_index": 49.8,
+     "hlt_stunting_prevalence": 61.11,
+     "soc_hdi": 86.6,
+     "soc_poverty_rate": 76.29
+    }
+   },
+   {
+    "region_id": "8202",
+    "region_name": "Kabupaten Halmahera Tengah",
+    "composite_score": 68.4,
+    "rank": 134,
+    "component_scores": {
+     "dis_multihazard_index": 83.57,
+     "hlt_stunting_prevalence": 42.59,
+     "soc_hdi": 61.27,
+     "soc_poverty_rate": 82.14
+    }
+   },
+   {
+    "region_id": "5205",
+    "region_name": "Kabupaten Dompu",
+    "composite_score": 68.38,
+    "rank": 135,
+    "component_scores": {
+     "dis_multihazard_index": 58.88,
+     "hlt_stunting_prevalence": 77.78,
+     "soc_hdi": 65.71,
+     "soc_poverty_rate": 77.25
+    }
+   },
+   {
+    "region_id": "1508",
+    "region_name": "Kabupaten Bungo",
+    "composite_score": 68.24,
+    "rank": 136,
+    "component_scores": {
+     "dis_multihazard_index": 48.21,
+     "hlt_stunting_prevalence": 75.1,
+     "soc_hdi": 67.89,
+     "soc_poverty_rate": 91.96
+    }
+   },
+   {
+    "region_id": "1673",
+    "region_name": "Kota Lubuk Linggau",
+    "composite_score": 68.21,
+    "rank": 137,
+    "component_scores": {
+     "dis_multihazard_index": 52.69,
+     "hlt_stunting_prevalence": 67.28,
+     "soc_hdi": 77.23,
+     "soc_poverty_rate": 78.87
+    }
+   },
+   {
+    "region_id": "1674",
+    "region_name": "Kota Prabumulih",
+    "composite_score": 68.2,
+    "rank": 138,
+    "component_scores": {
+     "dis_multihazard_index": 48.1,
+     "hlt_stunting_prevalence": 71.6,
+     "soc_hdi": 77.72,
+     "soc_poverty_rate": 80.69
+    }
+   },
+   {
+    "region_id": "6109",
+    "region_name": "Kabupaten Sekadau",
+    "composite_score": 68.14,
+    "rank": 139,
+    "component_scores": {
+     "dis_multihazard_index": 55.43,
+     "hlt_stunting_prevalence": 78.19,
+     "soc_hdi": 58.99,
+     "soc_poverty_rate": 90.88
+    }
+   },
+   {
+    "region_id": "3211",
+    "region_name": "Kabupaten Sumedang",
+    "composite_score": 68.07,
+    "rank": 140,
+    "component_scores": {
+     "dis_multihazard_index": 51.12,
+     "hlt_stunting_prevalence": 73.66,
+     "soc_hdi": 71.34,
+     "soc_poverty_rate": 83.01
+    }
+   },
+   {
+    "region_id": "3212",
+    "region_name": "Kabupaten Indramayu",
+    "composite_score": 68.01,
+    "rank": 141,
+    "component_scores": {
+     "dis_multihazard_index": 67.48,
+     "hlt_stunting_prevalence": 65.43,
+     "soc_hdi": 63.9,
+     "soc_poverty_rate": 77.57
+    }
+   },
+   {
+    "region_id": "3306",
+    "region_name": "Kabupaten Purworejo",
+    "composite_score": 68,
+    "rank": 142,
+    "component_scores": {
+     "dis_multihazard_index": 58.79,
+     "hlt_stunting_prevalence": 60.91,
+     "soc_hdi": 73.97,
+     "soc_poverty_rate": 79.93
+    }
+   },
+   {
+    "region_id": "3307",
+    "region_name": "Kabupaten Wonosobo",
+    "composite_score": 67.89,
+    "rank": 143,
+    "component_scores": {
+     "dis_multihazard_index": 85.71,
+     "hlt_stunting_prevalence": 43.21,
+     "soc_hdi": 63.88,
+     "soc_poverty_rate": 71.86
+    }
+   },
+   {
+    "region_id": "3302",
+    "region_name": "Kabupaten Banyumas",
+    "composite_score": 67.89,
+    "rank": 144,
+    "component_scores": {
+     "dis_multihazard_index": 61.76,
+     "hlt_stunting_prevalence": 60.29,
+     "soc_hdi": 72.84,
+     "soc_poverty_rate": 77.25
+    }
+   },
+   {
+    "region_id": "1501",
+    "region_name": "Kabupaten Kerinci",
+    "composite_score": 67.88,
+    "rank": 145,
+    "component_scores": {
+     "dis_multihazard_index": 41.68,
+     "hlt_stunting_prevalence": 85.39,
+     "soc_hdi": 70.15,
+     "soc_poverty_rate": 86.28
+    }
+   },
+   {
+    "region_id": "3524",
+    "region_name": "Kabupaten Lamongan",
+    "composite_score": 67.82,
+    "rank": 146,
+    "component_scores": {
+     "dis_multihazard_index": 46.05,
+     "hlt_stunting_prevalence": 83.95,
+     "soc_hdi": 74,
+     "soc_poverty_rate": 75.09
+    }
+   },
+   {
+    "region_id": "6171",
+    "region_name": "Kota Pontianak",
+    "composite_score": 67.73,
+    "rank": 147,
+    "component_scores": {
+     "dis_multihazard_index": 76.25,
+     "soc_hdi": 86.28,
+     "soc_poverty_rate": 94.84
+    }
+   },
+   {
+    "region_id": "6204",
+    "region_name": "Kabupaten Barito Selatan",
+    "composite_score": 67.71,
+    "rank": 148,
+    "component_scores": {
+     "dis_multihazard_index": 59.21,
+     "hlt_stunting_prevalence": 54.12,
+     "soc_hdi": 68.72,
+     "soc_poverty_rate": 92.52
+    }
+   },
+   {
+    "region_id": "1222",
+    "region_name": "Kabupaten Labuhanbatu Selatan",
+    "composite_score": 67.67,
+    "rank": 149,
+    "component_scores": {
+     "dis_multihazard_index": 48.8,
+     "hlt_stunting_prevalence": 70.37,
+     "soc_hdi": 71.22,
+     "soc_poverty_rate": 87.95
+    }
+   },
+   {
+    "region_id": "3510",
+    "region_name": "Kabupaten Banyuwangi",
+    "composite_score": 67.65,
+    "rank": 150,
+    "component_scores": {
+     "dis_multihazard_index": 56.8,
+     "hlt_stunting_prevalence": 58.23,
+     "soc_hdi": 70.15,
+     "soc_poverty_rate": 89.6
+    }
+   },
+   {
+    "region_id": "1310",
+    "region_name": "Kabupaten Dharmasraya",
+    "composite_score": 67.64,
+    "rank": 151,
+    "component_scores": {
+     "dis_multihazard_index": 46.7,
+     "hlt_stunting_prevalence": 66.87,
+     "soc_hdi": 71.96,
+     "soc_poverty_rate": 93.33
+    }
+   },
+   {
+    "region_id": "1377",
+    "region_name": "Kota Pariaman",
+    "composite_score": 67.58,
+    "rank": 152,
+    "component_scores": {
+     "dis_multihazard_index": 36.05,
+     "hlt_stunting_prevalence": 66.87,
+     "soc_hdi": 81.15,
+     "soc_poverty_rate": 95.25
+    }
+   },
+   {
+    "region_id": "6310",
+    "region_name": "Kabupaten Tanah Bumbu",
+    "composite_score": 67.58,
+    "rank": 153,
+    "component_scores": {
+     "dis_multihazard_index": 56.35,
+     "hlt_stunting_prevalence": 51.65,
+     "soc_hdi": 69.85,
+     "soc_poverty_rate": 96.97
+    }
+   },
+   {
+    "region_id": "1808",
+    "region_name": "Kabupaten Way Kanan",
+    "composite_score": 67.51,
+    "rank": 154,
+    "component_scores": {
+     "dis_multihazard_index": 69.98,
+     "hlt_stunting_prevalence": 56.58,
+     "soc_hdi": 62.91,
+     "soc_poverty_rate": 81.65
+    }
+   },
+   {
+    "region_id": "3214",
+    "region_name": "Kabupaten Purwakarta",
+    "composite_score": 67.51,
+    "rank": 155,
+    "component_scores": {
+     "dis_multihazard_index": 62.92,
+     "hlt_stunting_prevalence": 53.91,
+     "soc_hdi": 69.28,
+     "soc_poverty_rate": 85.32
+    }
+   },
+   {
+    "region_id": "3207",
+    "region_name": "Kabupaten Ciamis",
+    "composite_score": 67.47,
+    "rank": 156,
+    "component_scores": {
+     "dis_multihazard_index": 63.77,
+     "hlt_stunting_prevalence": 51.03,
+     "soc_hdi": 69.11,
+     "soc_poverty_rate": 86.99
+    }
+   },
+   {
+    "region_id": "9171",
+    "region_name": "Kota Jayapura",
+    "composite_score": 67.45,
+    "rank": 157,
+    "component_scores": {
+     "dis_multihazard_index": 64.72,
+     "hlt_stunting_prevalence": 59.47,
+     "soc_hdi": 72.06,
+     "soc_poverty_rate": 72.63
+    }
+   },
+   {
+    "region_id": "6502",
+    "region_name": "Kabupaten Malinau",
+    "composite_score": 67.44,
+    "rank": 158,
+    "component_scores": {
+     "dis_multihazard_index": 51.74,
+     "hlt_stunting_prevalence": 61.11,
+     "soc_hdi": 71.66,
+     "soc_poverty_rate": 91
+    }
+   },
+   {
+    "region_id": "8207",
+    "region_name": "Kabupaten Pulau Morotai",
+    "composite_score": 67.44,
+    "rank": 159,
+    "component_scores": {
+     "dis_multihazard_index": 53.58,
+     "hlt_stunting_prevalence": 79.22,
+     "soc_hdi": 55.99,
+     "soc_poverty_rate": 93.63
+    }
+   },
+   {
+    "region_id": "1371",
+    "region_name": "Kota Padang",
+    "composite_score": 67.42,
+    "rank": 160,
+    "component_scores": {
+     "dis_multihazard_index": 34.35,
+     "hlt_stunting_prevalence": 53.5,
+     "soc_hdi": 90.89,
+     "soc_poverty_rate": 95.75
+    }
+   },
+   {
+    "region_id": "6103",
+    "region_name": "Kabupaten Sanggau",
+    "composite_score": 67.34,
+    "rank": 161,
+    "component_scores": {
+     "dis_multihazard_index": 62.46,
+     "hlt_stunting_prevalence": 57.82,
+     "soc_hdi": 61.23,
+     "soc_poverty_rate": 93.33
+    }
+   },
+   {
+    "region_id": "3517",
+    "region_name": "Kabupaten Jombang",
+    "composite_score": 67.28,
+    "rank": 162,
+    "component_scores": {
+     "dis_multihazard_index": 50.08,
+     "hlt_stunting_prevalence": 66.26,
+     "soc_hdi": 73.95,
+     "soc_poverty_rate": 84.11
+    }
+   },
+   {
+    "region_id": "1372",
+    "region_name": "Kota Solok",
+    "composite_score": 67.27,
+    "rank": 163,
+    "component_scores": {
+     "dis_multihazard_index": 52.47,
+     "hlt_stunting_prevalence": 69.75,
+     "soc_hdi": 66.17,
+     "soc_poverty_rate": 88.64
+    }
+   },
+   {
+    "region_id": "7372",
+    "region_name": "Kota Parepare",
+    "composite_score": 67.17,
+    "rank": 164,
+    "component_scores": {
+     "dis_multihazard_index": 46.58,
+     "hlt_stunting_prevalence": 48.35,
+     "soc_hdi": 82.6,
+     "soc_poverty_rate": 93.75
+    }
+   },
+   {
+    "region_id": "1403",
+    "region_name": "Kabupaten Bengkalis",
+    "composite_score": 67.02,
+    "rank": 165,
+    "component_scores": {
+     "dis_multihazard_index": 44.99,
+     "hlt_stunting_prevalence": 66.46,
+     "soc_hdi": 74.29,
+     "soc_poverty_rate": 89.72
+    }
+   },
+   {
+    "region_id": "1173",
+    "region_name": "Kota Lhokseumawe",
+    "composite_score": 67,
+    "rank": 166,
+    "component_scores": {
+     "dis_multihazard_index": 45.42,
+     "hlt_stunting_prevalence": 60.7,
+     "soc_hdi": 82.43,
+     "soc_poverty_rate": 82.51
+    }
+   },
+   {
+    "region_id": "3403",
+    "region_name": "Kabupaten Gunungkidul",
+    "composite_score": 66.93,
+    "rank": 167,
+    "component_scores": {
+     "dis_multihazard_index": 70.27,
+     "hlt_stunting_prevalence": 57.61,
+     "soc_hdi": 67.83,
+     "soc_poverty_rate": 69.87
+    }
+   },
+   {
+    "region_id": "3323",
+    "region_name": "Kabupaten Temanggung",
+    "composite_score": 66.87,
+    "rank": 168,
+    "component_scores": {
+     "dis_multihazard_index": 63.65,
+     "hlt_stunting_prevalence": 51.65,
+     "soc_hdi": 67.79,
+     "soc_poverty_rate": 85.54
+    }
+   },
+   {
+    "region_id": "2104",
+    "region_name": "Kabupaten Lingga",
+    "composite_score": 66.85,
+    "rank": 169,
+    "component_scores": {
+     "dis_multihazard_index": 66.48,
+     "hlt_stunting_prevalence": 61.11,
+     "soc_hdi": 60.78,
+     "soc_poverty_rate": 82.24
+    }
+   },
+   {
+    "region_id": "1606",
+    "region_name": "Kabupaten Musi Banyuasin",
+    "composite_score": 66.57,
+    "rank": 170,
+    "component_scores": {
+     "dis_multihazard_index": 57.77,
+     "hlt_stunting_prevalence": 69.34,
+     "soc_hdi": 64.46,
+     "soc_poverty_rate": 80.15
+    }
+   },
+   {
+    "region_id": "1113",
+    "region_name": "Kabupaten Gayo Lues",
+    "composite_score": 66.56,
+    "rank": 171,
+    "component_scores": {
+     "dis_multihazard_index": 67.95,
+     "hlt_stunting_prevalence": 71.6,
+     "soc_hdi": 63.9,
+     "soc_poverty_rate": 63.43
+    }
+   },
+   {
+    "region_id": "1172",
+    "region_name": "Kota Sabang",
+    "composite_score": 66.51,
+    "rank": 172,
+    "component_scores": {
+     "dis_multihazard_index": 59,
+     "hlt_stunting_prevalence": 50.62,
+     "soc_hdi": 80.08,
+     "soc_poverty_rate": 73.32
+    }
+   },
+   {
+    "region_id": "3504",
+    "region_name": "Kabupaten Tulungagung",
+    "composite_score": 66.5,
+    "rank": 173,
+    "component_scores": {
+     "dis_multihazard_index": 48.38,
+     "hlt_stunting_prevalence": 59.05,
+     "soc_hdi": 73.93,
+     "soc_poverty_rate": 90.01
+    }
+   },
+   {
+    "region_id": "3274",
+    "region_name": "Kota Cirebon",
+    "composite_score": 66.41,
+    "rank": 174,
+    "component_scores": {
+     "dis_multihazard_index": 59.82,
+     "hlt_stunting_prevalence": 62.35,
+     "soc_hdi": 66.97,
+     "soc_poverty_rate": 79.51
+    }
+   },
+   {
+    "region_id": "6212",
+    "region_name": "Kabupaten Murung Raya",
+    "composite_score": 66.34,
+    "rank": 175,
+    "component_scores": {
+     "dis_multihazard_index": 57.16,
+     "hlt_stunting_prevalence": 60.08,
+     "soc_hdi": 64.28,
+     "soc_poverty_rate": 89.45
+    }
+   },
+   {
+    "region_id": "3327",
+    "region_name": "Kabupaten Pemalang",
+    "composite_score": 66.33,
+    "rank": 176,
+    "component_scores": {
+     "dis_multihazard_index": 63.83,
+     "hlt_stunting_prevalence": 71.81,
+     "soc_hdi": 61.46,
+     "soc_poverty_rate": 71.91
+    }
+   },
+   {
+    "region_id": "1202",
+    "region_name": "Kabupaten Tapanuli Utara",
+    "composite_score": 66.32,
+    "rank": 177,
+    "component_scores": {
+     "dis_multihazard_index": 58.07,
+     "hlt_stunting_prevalence": 46.91,
+     "soc_hdi": 74.19,
+     "soc_poverty_rate": 86.3
+    }
+   },
+   {
+    "region_id": "1405",
+    "region_name": "Kabupaten Pelalawan",
+    "composite_score": 66.31,
+    "rank": 178,
+    "component_scores": {
+     "dis_multihazard_index": 36.13,
+     "hlt_stunting_prevalence": 82.51,
+     "soc_hdi": 72,
+     "soc_poverty_rate": 86.87
+    }
+   },
+   {
+    "region_id": "6306",
+    "region_name": "Kabupaten Hulu Sungai Selatan",
+    "composite_score": 66.28,
+    "rank": 179,
+    "component_scores": {
+     "dis_multihazard_index": 55.72,
+     "hlt_stunting_prevalence": 51.03,
+     "soc_hdi": 66.53,
+     "soc_poverty_rate": 97
+    }
+   },
+   {
+    "region_id": "7314",
+    "region_name": "Kabupaten Sidenreng Rappang",
+    "composite_score": 66.16,
+    "rank": 180,
+    "component_scores": {
+     "dis_multihazard_index": 55.81,
+     "hlt_stunting_prevalence": 48.97,
+     "soc_hdi": 70.34,
+     "soc_poverty_rate": 92.6
+    }
+   },
+   {
+    "region_id": "7306",
+    "region_name": "Kabupaten Gowa",
+    "composite_score": 66.13,
+    "rank": 181,
+    "component_scores": {
+     "dis_multihazard_index": 53.09,
+     "hlt_stunting_prevalence": 59.88,
+     "soc_hdi": 68.53,
+     "soc_poverty_rate": 88.34
+    }
+   },
+   {
+    "region_id": "3511",
+    "region_name": "Kabupaten Bondowoso",
+    "composite_score": 66.12,
+    "rank": 182,
+    "component_scores": {
+     "dis_multihazard_index": 63.44,
+     "hlt_stunting_prevalence": 68.31,
+     "soc_hdi": 61.65,
+     "soc_poverty_rate": 74.67
+    }
+   },
+   {
+    "region_id": "5201",
+    "region_name": "Kabupaten Lombok Barat",
+    "composite_score": 66.04,
+    "rank": 183,
+    "component_scores": {
+     "dis_multihazard_index": 62.8,
+     "hlt_stunting_prevalence": 62.35,
+     "soc_hdi": 65.5,
+     "soc_poverty_rate": 75.41
+    }
+   },
+   {
+    "region_id": "1207",
+    "region_name": "Kabupaten Deli Serdang",
+    "composite_score": 65.76,
+    "rank": 184,
+    "component_scores": {
+     "dis_multihazard_index": 54.61,
+     "hlt_stunting_prevalence": 33.74,
+     "soc_hdi": 77.42,
+     "soc_poverty_rate": 97.02
+    }
+   },
+   {
+    "region_id": "3316",
+    "region_name": "Kabupaten Blora",
+    "composite_score": 65.72,
+    "rank": 185,
+    "component_scores": {
+     "dis_multihazard_index": 59.99,
+     "hlt_stunting_prevalence": 59.67,
+     "soc_hdi": 66.88,
+     "soc_poverty_rate": 78.65
+    }
+   },
+   {
+    "region_id": "1223",
+    "region_name": "Kabupaten Labuhanbatu Utara",
+    "composite_score": 65.72,
+    "rank": 186,
+    "component_scores": {
+     "dis_multihazard_index": 34.79,
+     "hlt_stunting_prevalence": 83.54,
+     "soc_hdi": 72.61,
+     "soc_poverty_rate": 83.96
+    }
+   },
+   {
+    "region_id": "1216",
+    "region_name": "Kabupaten Humbang Hasundutan",
+    "composite_score": 65.7,
+    "rank": 187,
+    "component_scores": {
+     "dis_multihazard_index": 51.14,
+     "hlt_stunting_prevalence": 65.43,
+     "soc_hdi": 67.26,
+     "soc_poverty_rate": 85.49
+    }
+   },
+   {
+    "region_id": "7571",
+    "region_name": "Kota Gorontalo",
+    "composite_score": 65.7,
+    "rank": 188,
+    "component_scores": {
+     "dis_multihazard_index": 73.56,
+     "hlt_stunting_prevalence": 54.73,
+     "soc_hdi": 63.58,
+     "soc_poverty_rate": 68.05
+    }
+   },
+   {
+    "region_id": "1303",
+    "region_name": "Kabupaten Sijunjung",
+    "composite_score": 65.66,
+    "rank": 189,
+    "component_scores": {
+     "dis_multihazard_index": 63.09,
+     "hlt_stunting_prevalence": 44.65,
+     "soc_hdi": 64.67,
+     "soc_poverty_rate": 92.01
+    }
+   },
+   {
+    "region_id": "1217",
+    "region_name": "Kabupaten Samosir",
+    "composite_score": 65.64,
+    "rank": 190,
+    "component_scores": {
+     "dis_multihazard_index": 58.84,
+     "hlt_stunting_prevalence": 57.2,
+     "soc_hdi": 69.72,
+     "soc_poverty_rate": 78.14
+    }
+   },
+   {
+    "region_id": "1209",
+    "region_name": "Kabupaten Asahan",
+    "composite_score": 65.59,
+    "rank": 191,
+    "component_scores": {
+     "dis_multihazard_index": 38.66,
+     "hlt_stunting_prevalence": 80.66,
+     "soc_hdi": 68.21,
+     "soc_poverty_rate": 87.01
+    }
+   },
+   {
+    "region_id": "1609",
+    "region_name": "Kabupaten Ogan Komering Ulu Selatan",
+    "composite_score": 65.54,
+    "rank": 192,
+    "component_scores": {
+     "dis_multihazard_index": 66.67,
+     "hlt_stunting_prevalence": 55.97,
+     "soc_hdi": 59.75,
+     "soc_poverty_rate": 82.12
+    }
+   },
+   {
+    "region_id": "1203",
+    "region_name": "Kabupaten Tapanuli Selatan",
+    "composite_score": 65.53,
+    "rank": 193,
+    "component_scores": {
+     "dis_multihazard_index": 42.97,
+     "hlt_stunting_prevalence": 71.19,
+     "soc_hdi": 68.31,
+     "soc_poverty_rate": 89.52
+    }
+   },
+   {
+    "region_id": "3317",
+    "region_name": "Kabupaten Rembang",
+    "composite_score": 65.5,
+    "rank": 194,
+    "component_scores": {
+     "dis_multihazard_index": 58.7,
+     "hlt_stunting_prevalence": 63.17,
+     "soc_hdi": 69.05,
+     "soc_poverty_rate": 72.68
+    }
+   },
+   {
+    "region_id": "1104",
+    "region_name": "Kabupaten Aceh Tengah",
+    "composite_score": 65.47,
+    "rank": 195,
+    "component_scores": {
+     "dis_multihazard_index": 57.57,
+     "hlt_stunting_prevalence": 54.73,
+     "soc_hdi": 74.54,
+     "soc_poverty_rate": 74.45
+    }
+   },
+   {
+    "region_id": "6303",
+    "region_name": "Kabupaten Banjar",
+    "composite_score": 65.45,
+    "rank": 196,
+    "component_scores": {
+     "dis_multihazard_index": 57.52,
+     "hlt_stunting_prevalence": 41.36,
+     "soc_hdi": 67.79,
+     "soc_poverty_rate": 97.93
+    }
+   },
+   {
+    "region_id": "3304",
+    "region_name": "Kabupaten Banjarnegara",
+    "composite_score": 65.44,
+    "rank": 197,
+    "component_scores": {
+     "dis_multihazard_index": 65.1,
+     "hlt_stunting_prevalence": 62.35,
+     "soc_hdi": 63.46,
+     "soc_poverty_rate": 72.01
+    }
+   },
+   {
+    "region_id": "6203",
+    "region_name": "Kabupaten Kapuas",
+    "composite_score": 65.22,
+    "rank": 198,
+    "component_scores": {
+     "dis_multihazard_index": 43.23,
+     "hlt_stunting_prevalence": 69.96,
+     "soc_hdi": 66.74,
+     "soc_poverty_rate": 91.2
+    }
+   },
+   {
+    "region_id": "1215",
+    "region_name": "Kabupaten Pakpak Bharat",
+    "composite_score": 65.21,
+    "rank": 199,
+    "component_scores": {
+     "dis_multihazard_index": 63.95,
+     "hlt_stunting_prevalence": 43.83,
+     "soc_hdi": 64.91,
+     "soc_poverty_rate": 88.93
+    }
+   },
+   {
+    "region_id": "1904",
+    "region_name": "Kabupaten Bangka Tengah",
+    "composite_score": 65.2,
+    "rank": 200,
+    "component_scores": {
+     "dis_multihazard_index": 46.81,
+     "hlt_stunting_prevalence": 65.84,
+     "soc_hdi": 67.85,
+     "soc_poverty_rate": 88.19
+    }
+   },
+   {
+    "region_id": "7322",
+    "region_name": "Kabupaten Luwu Utara",
+    "composite_score": 65.18,
+    "rank": 201,
+    "component_scores": {
+     "dis_multihazard_index": 49.32,
+     "hlt_stunting_prevalence": 71.4,
+     "soc_hdi": 68.17,
+     "soc_poverty_rate": 78.26
+    }
+   },
+   {
+    "region_id": "1604",
+    "region_name": "Kabupaten Lahat",
+    "composite_score": 65.06,
+    "rank": 202,
+    "component_scores": {
+     "dis_multihazard_index": 47.59,
+     "hlt_stunting_prevalence": 87.24,
+     "soc_hdi": 63.79,
+     "soc_poverty_rate": 71
+    }
+   },
+   {
+    "region_id": "3279",
+    "region_name": "Kota Banjar",
+    "composite_score": 64.99,
+    "rank": 203,
+    "component_scores": {
+     "dis_multihazard_index": 57.52,
+     "hlt_stunting_prevalence": 41.36,
+     "soc_hdi": 71.16,
+     "soc_poverty_rate": 90.58
+    }
+   },
+   {
+    "region_id": "6311",
+    "region_name": "Kabupaten Balangan",
+    "composite_score": 64.96,
+    "rank": 204,
+    "component_scores": {
+     "dis_multihazard_index": 64.54,
+     "hlt_stunting_prevalence": 34.57,
+     "soc_hdi": 66.78,
+     "soc_poverty_rate": 93.26
+    }
+   },
+   {
+    "region_id": "3318",
+    "region_name": "Kabupaten Pati",
+    "composite_score": 64.96,
+    "rank": 205,
+    "component_scores": {
+     "dis_multihazard_index": 44.72,
+     "hlt_stunting_prevalence": 65.23,
+     "soc_hdi": 72.04,
+     "soc_poverty_rate": 84.41
+    }
+   },
+   {
+    "region_id": "3215",
+    "region_name": "Kabupaten Karawang",
+    "composite_score": 64.74,
+    "rank": 206,
+    "component_scores": {
+     "dis_multihazard_index": 42.46,
+     "hlt_stunting_prevalence": 68.11,
+     "soc_hdi": 69.75,
+     "soc_poverty_rate": 87.26
+    }
+   },
+   {
+    "region_id": "6409",
+    "region_name": "Kabupaten Penajam Paser Utara",
+    "composite_score": 64.66,
+    "rank": 207,
+    "component_scores": {
+     "dis_multihazard_index": 48.45,
+     "hlt_stunting_prevalence": 52.67,
+     "soc_hdi": 71.66,
+     "soc_poverty_rate": 90.46
+    }
+   },
+   {
+    "region_id": "3375",
+    "region_name": "Kota Pekalongan",
+    "composite_score": 64.63,
+    "rank": 208,
+    "component_scores": {
+     "dis_multihazard_index": 60.93,
+     "hlt_stunting_prevalence": 45.27,
+     "soc_hdi": 67.73,
+     "soc_poverty_rate": 84.87
+    }
+   },
+   {
+    "region_id": "6403",
+    "region_name": "Kabupaten Berau",
+    "composite_score": 64.61,
+    "rank": 209,
+    "component_scores": {
+     "dis_multihazard_index": 38.62,
+     "hlt_stunting_prevalence": 55.97,
+     "soc_hdi": 76.92,
+     "soc_poverty_rate": 93.75
+    }
+   },
+   {
+    "region_id": "1806",
+    "region_name": "Kabupaten Tanggamus",
+    "composite_score": 64.58,
+    "rank": 210,
+    "component_scores": {
+     "dis_multihazard_index": 55.22,
+     "hlt_stunting_prevalence": 68.11,
+     "soc_hdi": 61.41,
+     "soc_poverty_rate": 79.83
+    }
+   },
+   {
+    "region_id": "3673",
+    "region_name": "Kota Serang",
+    "composite_score": 64.45,
+    "rank": 211,
+    "component_scores": {
+     "dis_multihazard_index": 53.42,
+     "hlt_stunting_prevalence": 57.41,
+     "soc_hdi": 62.38,
+     "soc_poverty_rate": 91.12
+    }
+   },
+   {
+    "region_id": "7324",
+    "region_name": "Kabupaten Luwu Timur",
+    "composite_score": 64.4,
+    "rank": 212,
+    "component_scores": {
+     "dis_multihazard_index": 47.53,
+     "hlt_stunting_prevalence": 49.79,
+     "soc_hdi": 73.66,
+     "soc_poverty_rate": 90.43
+    }
+   },
+   {
+    "region_id": "6504",
+    "region_name": "Kabupaten Tana Tidung",
+    "composite_score": 64.36,
+    "rank": 213,
+    "component_scores": {
+     "dis_multihazard_index": 39.71,
+     "hlt_stunting_prevalence": 72.22,
+     "soc_hdi": 64.38,
+     "soc_poverty_rate": 93.46
+    }
+   },
+   {
+    "region_id": "3217",
+    "region_name": "Kabupaten Bandung Barat",
+    "composite_score": 64.35,
+    "rank": 214,
+    "component_scores": {
+     "dis_multihazard_index": 62.18,
+     "hlt_stunting_prevalence": 51.65,
+     "soc_hdi": 64.28,
+     "soc_poverty_rate": 80.4
+    }
+   },
+   {
+    "region_id": "6503",
+    "region_name": "Kabupaten Nunukan",
+    "composite_score": 64.32,
+    "rank": 215,
+    "component_scores": {
+     "dis_multihazard_index": 44.66,
+     "hlt_stunting_prevalence": 70.78,
+     "soc_hdi": 61.41,
+     "soc_poverty_rate": 91.71
+    }
+   },
+   {
+    "region_id": "3210",
+    "region_name": "Kabupaten Majalengka",
+    "composite_score": 64.25,
+    "rank": 216,
+    "component_scores": {
+     "dis_multihazard_index": 61.77,
+     "hlt_stunting_prevalence": 53.7,
+     "soc_hdi": 63.73,
+     "soc_poverty_rate": 79.32
+    }
+   },
+   {
+    "region_id": "1902",
+    "region_name": "Kabupaten Belitung",
+    "composite_score": 64.14,
+    "rank": 217,
+    "component_scores": {
+     "dis_multihazard_index": 41.5,
+     "hlt_stunting_prevalence": 60.49,
+     "soc_hdi": 72.75,
+     "soc_poverty_rate": 88.83
+    }
+   },
+   {
+    "region_id": "3278",
+    "region_name": "Kota Tasikmalaya",
+    "composite_score": 64.05,
+    "rank": 218,
+    "component_scores": {
+     "dis_multihazard_index": 68.69,
+     "hlt_stunting_prevalence": 47.53,
+     "soc_hdi": 61.1,
+     "soc_poverty_rate": 78.01
+    }
+   },
+   {
+    "region_id": "1509",
+    "region_name": "Kabupaten Tebo",
+    "composite_score": 63.98,
+    "rank": 219,
+    "component_scores": {
+     "dis_multihazard_index": 48.8,
+     "hlt_stunting_prevalence": 56.58,
+     "soc_hdi": 66.74,
+     "soc_poverty_rate": 89.99
+    }
+   },
+   {
+    "region_id": "1205",
+    "region_name": "Kabupaten Langkat",
+    "composite_score": 63.97,
+    "rank": 220,
+    "component_scores": {
+     "dis_multihazard_index": 42.14,
+     "hlt_stunting_prevalence": 68.52,
+     "soc_hdi": 69.43,
+     "soc_poverty_rate": 83.96
+    }
+   },
+   {
+    "region_id": "1409",
+    "region_name": "Kabupaten Kuantan Singingi",
+    "composite_score": 63.93,
+    "rank": 221,
+    "component_scores": {
+     "dis_multihazard_index": 48.8,
+     "hlt_stunting_prevalence": 55.97,
+     "soc_hdi": 68.67,
+     "soc_poverty_rate": 87.48
+    }
+   },
+   {
+    "region_id": "1672",
+    "region_name": "Kota Pagar Alam",
+    "composite_score": 63.8,
+    "rank": 222,
+    "component_scores": {
+     "dis_multihazard_index": 52.11,
+     "hlt_stunting_prevalence": 55.35,
+     "soc_hdi": 66.5,
+     "soc_poverty_rate": 85.74
+    }
+   },
+   {
+    "region_id": "6106",
+    "region_name": "Kabupaten Kapuas Hulu",
+    "composite_score": 63.75,
+    "rank": 223,
+    "component_scores": {
+     "dis_multihazard_index": 46.49,
+     "hlt_stunting_prevalence": 68.93,
+     "soc_hdi": 61.52,
+     "soc_poverty_rate": 87.8
+    }
+   },
+   {
+    "region_id": "3213",
+    "region_name": "Kabupaten Subang",
+    "composite_score": 63.63,
+    "rank": 224,
+    "component_scores": {
+     "dis_multihazard_index": 47.43,
+     "hlt_stunting_prevalence": 64.81,
+     "soc_hdi": 66.82,
+     "soc_poverty_rate": 81.97
+    }
+   },
+   {
+    "region_id": "6309",
+    "region_name": "Kabupaten Tabalong",
+    "composite_score": 63.62,
+    "rank": 225,
+    "component_scores": {
+     "dis_multihazard_index": 33.29,
+     "hlt_stunting_prevalence": 66.05,
+     "soc_hdi": 72.63,
+     "soc_poverty_rate": 93.19
+    }
+   },
+   {
+    "region_id": "3526",
+    "region_name": "Kabupaten Bangkalan",
+    "composite_score": 63.61,
+    "rank": 226,
+    "component_scores": {
+     "dis_multihazard_index": 60.18,
+     "hlt_stunting_prevalence": 82.3,
+     "soc_hdi": 57.12,
+     "soc_poverty_rate": 59.79
+    }
+   },
+   {
+    "region_id": "1211",
+    "region_name": "Kabupaten Dairi",
+    "composite_score": 63.56,
+    "rank": 227,
+    "component_scores": {
+     "dis_multihazard_index": 57.68,
+     "hlt_stunting_prevalence": 36.21,
+     "soc_hdi": 71.7,
+     "soc_poverty_rate": 87.51
+    }
+   },
+   {
+    "region_id": "1905",
+    "region_name": "Kabupaten Bangka Barat",
+    "composite_score": 63.5,
+    "rank": 228,
+    "component_scores": {
+     "dis_multihazard_index": 40.58,
+     "hlt_stunting_prevalence": 60.91,
+     "soc_hdi": 65.5,
+     "soc_poverty_rate": 97.49
+    }
+   },
+   {
+    "region_id": "1307",
+    "region_name": "Kabupaten Lima Puluh Kota",
+    "composite_score": 63.48,
+    "rank": 229,
+    "component_scores": {
+     "dis_multihazard_index": 55.81,
+     "hlt_stunting_prevalence": 44.44,
+     "soc_hdi": 66.4,
+     "soc_poverty_rate": 89.67
+    }
+   },
+   {
+    "region_id": "1901",
+    "region_name": "Kabupaten Bangka",
+    "composite_score": 63.45,
+    "rank": 230,
+    "component_scores": {
+     "dis_multihazard_index": 40.6,
+     "hlt_stunting_prevalence": 55.56,
+     "soc_hdi": 71.81,
+     "soc_poverty_rate": 93.09
+    }
+   },
+   {
+    "region_id": "7373",
+    "region_name": "Kota Palopo",
+    "composite_score": 63.33,
+    "rank": 231,
+    "component_scores": {
+     "dis_multihazard_index": 36.03,
+     "hlt_stunting_prevalence": 50.82,
+     "soc_hdi": 83.17,
+     "soc_poverty_rate": 87.01
+    }
+   },
+   {
+    "region_id": "7110",
+    "region_name": "Kabupaten Bolaang Mongondow Timur",
+    "composite_score": 63.33,
+    "rank": 232,
+    "component_scores": {
+     "dis_multihazard_index": 58.69,
+     "hlt_stunting_prevalence": 44.86,
+     "soc_hdi": 61.43,
+     "soc_poverty_rate": 91.59
+    }
+   },
+   {
+    "region_id": "3310",
+    "region_name": "Kabupaten Klaten",
+    "composite_score": 63.32,
+    "rank": 233,
+    "component_scores": {
+     "dis_multihazard_index": 79.53,
+     "soc_hdi": 79.78,
+     "soc_poverty_rate": 77.62
+    }
+   },
+   {
+    "region_id": "6207",
+    "region_name": "Kabupaten Seruyan",
+    "composite_score": 63.29,
+    "rank": 234,
+    "component_scores": {
+     "dis_multihazard_index": 56.3,
+     "hlt_stunting_prevalence": 50.21,
+     "soc_hdi": 62.42,
+     "soc_poverty_rate": 88.15
+    }
+   },
+   {
+    "region_id": "7502",
+    "region_name": "Kabupaten Boalemo",
+    "composite_score": 63.28,
+    "rank": 235,
+    "component_scores": {
+     "dis_multihazard_index": 59.24,
+     "hlt_stunting_prevalence": 70.37,
+     "soc_hdi": 61.83,
+     "soc_poverty_rate": 64.41
+    }
+   },
+   {
+    "region_id": "1906",
+    "region_name": "Kabupaten Belitung Timur",
+    "composite_score": 63.27,
+    "rank": 236,
+    "component_scores": {
+     "dis_multihazard_index": 36.63,
+     "hlt_stunting_prevalence": 67.7,
+     "soc_hdi": 70.31,
+     "soc_poverty_rate": 88.22
+    }
+   },
+   {
+    "region_id": "1273",
+    "region_name": "Kota Sibolga",
+    "composite_score": 63.24,
+    "rank": 237,
+    "component_scores": {
+     "dis_multihazard_index": 28.53,
+     "hlt_stunting_prevalence": 81.48,
+     "soc_hdi": 75.01,
+     "soc_poverty_rate": 79.39
+    }
+   },
+   {
+    "region_id": "6308",
+    "region_name": "Kabupaten Hulu Sungai Utara",
+    "composite_score": 63.21,
+    "rank": 238,
+    "component_scores": {
+     "dis_multihazard_index": 68.37,
+     "hlt_stunting_prevalence": 29.22,
+     "soc_hdi": 60.95,
+     "soc_poverty_rate": 92.84
+    }
+   },
+   {
+    "region_id": "1607",
+    "region_name": "Kabupaten Banyuasin",
+    "composite_score": 63.18,
+    "rank": 239,
+    "component_scores": {
+     "dis_multihazard_index": 50.54,
+     "hlt_stunting_prevalence": 61.32,
+     "soc_hdi": 63.29,
+     "soc_poverty_rate": 83.82
+    }
+   },
+   {
+    "region_id": "7312",
+    "region_name": "Kabupaten Soppeng",
+    "composite_score": 63.15,
+    "rank": 240,
+    "component_scores": {
+     "dis_multihazard_index": 48.8,
+     "hlt_stunting_prevalence": 53.91,
+     "soc_hdi": 66.88,
+     "soc_poverty_rate": 88.32
+    }
+   },
+   {
+    "region_id": "6211",
+    "region_name": "Kabupaten Pulang Pisau",
+    "composite_score": 63.12,
+    "rank": 241,
+    "component_scores": {
+     "dis_multihazard_index": 47.78,
+     "hlt_stunting_prevalence": 53.91,
+     "soc_hdi": 64.74,
+     "soc_poverty_rate": 92.89
+    }
+   },
+   {
+    "region_id": "1601",
+    "region_name": "Kabupaten Ogan Komering Ulu",
+    "composite_score": 63.09,
+    "rank": 242,
+    "component_scores": {
+     "dis_multihazard_index": 42.55,
+     "hlt_stunting_prevalence": 70.99,
+     "soc_hdi": 67.18,
+     "soc_poverty_rate": 79.88
+    }
+   },
+   {
+    "region_id": "6172",
+    "region_name": "Kota Singkawang",
+    "composite_score": 63.09,
+    "rank": 243,
+    "component_scores": {
+     "dis_multihazard_index": 34.64,
+     "hlt_stunting_prevalence": 61.93,
+     "soc_hdi": 71.6,
+     "soc_poverty_rate": 94.15
+    }
+   },
+   {
+    "region_id": "1610",
+    "region_name": "Kabupaten Ogan Ilir",
+    "composite_score": 63.02,
+    "rank": 244,
+    "component_scores": {
+     "dis_multihazard_index": 58.93,
+     "hlt_stunting_prevalence": 56.17,
+     "soc_hdi": 63.08,
+     "soc_poverty_rate": 75.92
+    }
+   },
+   {
+    "region_id": "3501",
+    "region_name": "Kabupaten Pacitan",
+    "composite_score": 63,
+    "rank": 245,
+    "component_scores": {
+     "dis_multihazard_index": 55.64,
+     "hlt_stunting_prevalence": 60.29,
+     "soc_hdi": 65.64,
+     "soc_poverty_rate": 72.77
+    }
+   },
+   {
+    "region_id": "6208",
+    "region_name": "Kabupaten Sukamara",
+    "composite_score": 62.97,
+    "rank": 246,
+    "component_scores": {
+     "dis_multihazard_index": 53.82,
+     "hlt_stunting_prevalence": 43.42,
+     "soc_hdi": 63.94,
+     "soc_poverty_rate": 94.79
+    }
+   },
+   {
+    "region_id": "1175",
+    "region_name": "Kota Subulussalam",
+    "composite_score": 62.96,
+    "rank": 247,
+    "component_scores": {
+     "dis_multihazard_index": 74.1,
+     "hlt_stunting_prevalence": 42.39,
+     "soc_hdi": 60.49,
+     "soc_poverty_rate": 70.54
+    }
+   },
+   {
+    "region_id": "1702",
+    "region_name": "Kabupaten Rejang Lebong",
+    "composite_score": 62.94,
+    "rank": 248,
+    "component_scores": {
+     "dis_multihazard_index": 59.81,
+     "hlt_stunting_prevalence": 44.44,
+     "soc_hdi": 69.79,
+     "soc_poverty_rate": 75.87
+    }
+   },
+   {
+    "region_id": "3523",
+    "region_name": "Kabupaten Tuban",
+    "composite_score": 62.86,
+    "rank": 249,
+    "component_scores": {
+     "dis_multihazard_index": 51.89,
+     "hlt_stunting_prevalence": 66.67,
+     "soc_hdi": 66.57,
+     "soc_poverty_rate": 69.92
+    }
+   },
+   {
+    "region_id": "7105",
+    "region_name": "Kabupaten Minahasa Selatan",
+    "composite_score": 62.83,
+    "rank": 250,
+    "component_scores": {
+     "dis_multihazard_index": 48.39,
+     "hlt_stunting_prevalence": 48.97,
+     "soc_hdi": 72.17,
+     "soc_poverty_rate": 84.36
+    }
+   },
+   {
+    "region_id": "1220",
+    "region_name": "Kabupaten Padang Lawas Utara",
+    "composite_score": 62.77,
+    "rank": 251,
+    "component_scores": {
+     "dis_multihazard_index": 45.01,
+     "hlt_stunting_prevalence": 58.44,
+     "soc_hdi": 68.65,
+     "soc_poverty_rate": 84.9
+    }
+   },
+   {
+    "region_id": "1305",
+    "region_name": "Kabupaten Padang Pariaman",
+    "composite_score": 62.74,
+    "rank": 252,
+    "component_scores": {
+     "dis_multihazard_index": 36.56,
+     "hlt_stunting_prevalence": 63.37,
+     "soc_hdi": 70.14,
+     "soc_poverty_rate": 90.26
+    }
+   },
+   {
+    "region_id": "3305",
+    "region_name": "Kabupaten Kebumen",
+    "composite_score": 62.63,
+    "rank": 253,
+    "component_scores": {
+     "dis_multihazard_index": 54.54,
+     "hlt_stunting_prevalence": 58.23,
+     "soc_hdi": 67.91,
+     "soc_poverty_rate": 71.27
+    }
+   },
+   {
+    "region_id": "5272",
+    "region_name": "Kota Bima",
+    "composite_score": 62.53,
+    "rank": 254,
+    "component_scores": {
+     "dis_multihazard_index": 71.84,
+     "hlt_stunting_prevalence": 37.86,
+     "soc_hdi": 62.21,
+     "soc_poverty_rate": 73.71
+    }
+   },
+   {
+    "region_id": "5309",
+    "region_name": "Kabupaten Ngada",
+    "composite_score": 62.52,
+    "rank": 255,
+    "component_scores": {
+     "dis_multihazard_index": 54.07,
+     "hlt_stunting_prevalence": 59.47,
+     "soc_hdi": 63.31,
+     "soc_poverty_rate": 77.08
+    }
+   },
+   {
+    "region_id": "1210",
+    "region_name": "Kabupaten Labuhanbatu",
+    "composite_score": 62.45,
+    "rank": 256,
+    "component_scores": {
+     "dis_multihazard_index": 37.13,
+     "hlt_stunting_prevalence": 61.73,
+     "soc_hdi": 72.19,
+     "soc_poverty_rate": 86.55
+    }
+   },
+   {
+    "region_id": "3325",
+    "region_name": "Kabupaten Batang",
+    "composite_score": 62.37,
+    "rank": 257,
+    "component_scores": {
+     "dis_multihazard_index": 50.26,
+     "hlt_stunting_prevalence": 52.47,
+     "soc_hdi": 65.64,
+     "soc_poverty_rate": 85.51
+    }
+   },
+   {
+    "region_id": "6105",
+    "region_name": "Kabupaten Sintang",
+    "composite_score": 62.33,
+    "rank": 258,
+    "component_scores": {
+     "dis_multihazard_index": 53.03,
+     "hlt_stunting_prevalence": 52.26,
+     "soc_hdi": 63.12,
+     "soc_poverty_rate": 85.17
+    }
+   },
+   {
+    "region_id": "7208",
+    "region_name": "Kabupaten Parigi Moutong",
+    "composite_score": 62.29,
+    "rank": 259,
+    "component_scores": {
+     "dis_multihazard_index": 70.79,
+     "hlt_stunting_prevalence": 44.65,
+     "soc_hdi": 59.44,
+     "soc_poverty_rate": 71.45
+    }
+   },
+   {
+    "region_id": "5202",
+    "region_name": "Kabupaten Lombok Tengah",
+    "composite_score": 62.21,
+    "rank": 260,
+    "component_scores": {
+     "dis_multihazard_index": 47.72,
+     "hlt_stunting_prevalence": 67.08,
+     "soc_hdi": 62.65,
+     "soc_poverty_rate": 78.41
+    }
+   },
+   {
+    "region_id": "1506",
+    "region_name": "Kabupaten Tanjung Jabung Barat",
+    "composite_score": 62.07,
+    "rank": 261,
+    "component_scores": {
+     "dis_multihazard_index": 39.35,
+     "hlt_stunting_prevalence": 74.28,
+     "soc_hdi": 64.09,
+     "soc_poverty_rate": 80.89
+    }
+   },
+   {
+    "region_id": "7503",
+    "region_name": "Kabupaten Bone Bolango",
+    "composite_score": 62.04,
+    "rank": 262,
+    "component_scores": {
+     "dis_multihazard_index": 58.14,
+     "hlt_stunting_prevalence": 47.53,
+     "soc_hdi": 68.76,
+     "soc_poverty_rate": 72.31
+    }
+   },
+   {
+    "region_id": "1801",
+    "region_name": "Kabupaten Lampung Selatan",
+    "composite_score": 62,
+    "rank": 263,
+    "component_scores": {
+     "dis_multihazard_index": 37.16,
+     "hlt_stunting_prevalence": 82.1,
+     "soc_hdi": 64.76,
+     "soc_poverty_rate": 75.04
+    }
+   },
+   {
+    "region_id": "7311",
+    "region_name": "Kabupaten Barru",
+    "composite_score": 62,
+    "rank": 264,
+    "component_scores": {
+     "dis_multihazard_index": 41.4,
+     "hlt_stunting_prevalence": 57.82,
+     "soc_hdi": 70.06,
+     "soc_poverty_rate": 85
+    }
+   },
+   {
+    "region_id": "6304",
+    "region_name": "Kabupaten Barito Kuala",
+    "composite_score": 61.81,
+    "rank": 265,
+    "component_scores": {
+     "dis_multihazard_index": 34.24,
+     "hlt_stunting_prevalence": 70.58,
+     "soc_hdi": 62.02,
+     "soc_poverty_rate": 94.07
+    }
+   },
+   {
+    "region_id": "7202",
+    "region_name": "Kabupaten Poso",
+    "composite_score": 61.7,
+    "rank": 266,
+    "component_scores": {
+     "dis_multihazard_index": 54.82,
+     "hlt_stunting_prevalence": 48.77,
+     "soc_hdi": 69.7,
+     "soc_poverty_rate": 72.95
+    }
+   },
+   {
+    "region_id": "6302",
+    "region_name": "Kotabaru",
+    "composite_score": 61.64,
+    "rank": 267,
+    "component_scores": {
+     "dis_multihazard_index": 36.2,
+     "hlt_stunting_prevalence": 61.93,
+     "soc_hdi": 65.39,
+     "soc_poverty_rate": 93.88
+    }
+   },
+   {
+    "region_id": "1219",
+    "region_name": "Kabupaten Batu Bara",
+    "composite_score": 61.62,
+    "rank": 268,
+    "component_scores": {
+     "dis_multihazard_index": 41.8,
+     "hlt_stunting_prevalence": 66.87,
+     "soc_hdi": 65.81,
+     "soc_poverty_rate": 79.83
+    }
+   },
+   {
+    "region_id": "7315",
+    "region_name": "Kabupaten Pinrang",
+    "composite_score": 61.58,
+    "rank": 269,
+    "component_scores": {
+     "dis_multihazard_index": 33.53,
+     "hlt_stunting_prevalence": 67.08,
+     "soc_hdi": 70.99,
+     "soc_poverty_rate": 84.06
+    }
+   },
+   {
+    "region_id": "1221",
+    "region_name": "Kabupaten Padang Lawas",
+    "composite_score": 61.57,
+    "rank": 270,
+    "component_scores": {
+     "dis_multihazard_index": 36.22,
+     "hlt_stunting_prevalence": 66.87,
+     "soc_hdi": 66.65,
+     "soc_poverty_rate": 86.67
+    }
+   },
+   {
+    "region_id": "3527",
+    "region_name": "Kabupaten Sampang",
+    "composite_score": 61.55,
+    "rank": 271,
+    "component_scores": {
+     "dis_multihazard_index": 65.62,
+     "hlt_stunting_prevalence": 74.28,
+     "soc_hdi": 54.03,
+     "soc_poverty_rate": 53.98
+    }
+   },
+   {
+    "region_id": "1406",
+    "region_name": "Kabupaten Rokan Hulu",
+    "composite_score": 61.51,
+    "rank": 272,
+    "component_scores": {
+     "dis_multihazard_index": 34.79,
+     "hlt_stunting_prevalence": 70.58,
+     "soc_hdi": 67.7,
+     "soc_poverty_rate": 83.25
+    }
+   },
+   {
+    "region_id": "6107",
+    "region_name": "Kabupaten Bengkayang",
+    "composite_score": 61.39,
+    "rank": 273,
+    "component_scores": {
+     "dis_multihazard_index": 55.6,
+     "hlt_stunting_prevalence": 36.01,
+     "soc_hdi": 64.8,
+     "soc_poverty_rate": 90.33
+    }
+   },
+   {
+    "region_id": "1809",
+    "region_name": "Kabupaten Pesawaran",
+    "composite_score": 61.38,
+    "rank": 274,
+    "component_scores": {
+     "dis_multihazard_index": 36.2,
+     "hlt_stunting_prevalence": 82.72,
+     "soc_hdi": 61.41,
+     "soc_poverty_rate": 77.79
+    }
+   },
+   {
+    "region_id": "1407",
+    "region_name": "Kabupaten Rokan Hilir",
+    "composite_score": 61.33,
+    "rank": 275,
+    "component_scores": {
+     "dis_multihazard_index": 33.8,
+     "hlt_stunting_prevalence": 69.14,
+     "soc_hdi": 66.51,
+     "soc_poverty_rate": 87.06
+    }
+   },
+   {
+    "region_id": "1102",
+    "region_name": "Kabupaten Aceh Tenggara",
+    "composite_score": 61.33,
+    "rank": 276,
+    "component_scores": {
+     "dis_multihazard_index": 59.49,
+     "hlt_stunting_prevalence": 35.6,
+     "soc_hdi": 67.47,
+     "soc_poverty_rate": 80.62
+    }
+   },
+   {
+    "region_id": "3218",
+    "region_name": "Kabupaten Pangandaran",
+    "composite_score": 61.29,
+    "rank": 277,
+    "component_scores": {
+     "dis_multihazard_index": 47.68,
+     "hlt_stunting_prevalence": 54.12,
+     "soc_hdi": 63.94,
+     "soc_poverty_rate": 84.92
+    }
+   },
+   {
+    "region_id": "6407",
+    "region_name": "Kabupaten Kutai Barat",
+    "composite_score": 61.21,
+    "rank": 278,
+    "component_scores": {
+     "dis_multihazard_index": 37.06,
+     "hlt_stunting_prevalence": 58.02,
+     "soc_hdi": 72.8,
+     "soc_poverty_rate": 83.23
+    }
+   },
+   {
+    "region_id": "9404",
+    "region_name": "Kabupaten Mimika",
+    "composite_score": 61.19,
+    "rank": 279,
+    "component_scores": {
+     "dis_multihazard_index": 44.37,
+     "hlt_stunting_prevalence": 52.47,
+     "soc_hdi": 77.28,
+     "soc_poverty_rate": 70.98
+    }
+   },
+   {
+    "region_id": "1117",
+    "region_name": "Kabupaten Bener Meriah",
+    "composite_score": 61.04,
+    "rank": 280,
+    "component_scores": {
+     "dis_multihazard_index": 61.78,
+     "hlt_stunting_prevalence": 37.04,
+     "soc_hdi": 73.78,
+     "soc_poverty_rate": 64.83
+    }
+   },
+   {
+    "region_id": "3303",
+    "region_name": "Kabupaten Purbalingga",
+    "composite_score": 60.95,
+    "rank": 281,
+    "component_scores": {
+     "dis_multihazard_index": 55.23,
+     "hlt_stunting_prevalence": 49.79,
+     "soc_hdi": 65.54,
+     "soc_poverty_rate": 73.81
+    }
+   },
+   {
+    "region_id": "7401",
+    "region_name": "Kabupaten Kolaka",
+    "composite_score": 60.95,
+    "rank": 282,
+    "component_scores": {
+     "dis_multihazard_index": 39.78,
+     "hlt_stunting_prevalence": 54.32,
+     "soc_hdi": 74.1,
+     "soc_poverty_rate": 79.61
+    }
+   },
+   {
+    "region_id": "6108",
+    "region_name": "Kabupaten Landak",
+    "composite_score": 60.66,
+    "rank": 283,
+    "component_scores": {
+     "dis_multihazard_index": 58.2,
+     "hlt_stunting_prevalence": 39.51,
+     "soc_hdi": 62.47,
+     "soc_poverty_rate": 82.78
+    }
+   },
+   {
+    "region_id": "6202",
+    "region_name": "Kotawaringin Timur",
+    "composite_score": 60.66,
+    "rank": 284,
+    "component_scores": {
+     "dis_multihazard_index": 52.51,
+     "hlt_stunting_prevalence": 30.25,
+     "soc_hdi": 69.3,
+     "soc_poverty_rate": 90.33
+    }
+   },
+   {
+    "region_id": "7313",
+    "region_name": "Kabupaten Wajo",
+    "composite_score": 60.48,
+    "rank": 285,
+    "component_scores": {
+     "dis_multihazard_index": 43.03,
+     "hlt_stunting_prevalence": 46.91,
+     "soc_hdi": 67.12,
+     "soc_poverty_rate": 90.26
+    }
+   },
+   {
+    "region_id": "3309",
+    "region_name": "Kabupaten Boyolali",
+    "composite_score": 60.37,
+    "rank": 286,
+    "component_scores": {
+     "dis_multihazard_index": 70.13,
+     "soc_hdi": 75.59,
+     "soc_poverty_rate": 83.25
+    }
+   },
+   {
+    "region_id": "1502",
+    "region_name": "Kabupaten Merangin",
+    "composite_score": 60.26,
+    "rank": 287,
+    "component_scores": {
+     "dis_multihazard_index": 28.49,
+     "hlt_stunting_prevalence": 72.63,
+     "soc_hdi": 67.39,
+     "soc_poverty_rate": 84.83
+    }
+   },
+   {
+    "region_id": "5203",
+    "region_name": "Kabupaten Lombok Timur",
+    "composite_score": 60.23,
+    "rank": 288,
+    "component_scores": {
+     "dis_multihazard_index": 59.42,
+     "hlt_stunting_prevalence": 46.5,
+     "soc_hdi": 62.76,
+     "soc_poverty_rate": 71.4
+    }
+   },
+   {
+    "region_id": "3508",
+    "region_name": "Kabupaten Lumajang",
+    "composite_score": 60.16,
+    "rank": 289,
+    "component_scores": {
+     "dis_multihazard_index": 55.08,
+     "hlt_stunting_prevalence": 41.77,
+     "soc_hdi": 61.94,
+     "soc_poverty_rate": 83.52
+    }
+   },
+   {
+    "region_id": "6501",
+    "region_name": "Kabupaten Bulungan",
+    "composite_score": 59.96,
+    "rank": 290,
+    "component_scores": {
+     "dis_multihazard_index": 33.54,
+     "hlt_stunting_prevalence": 56.79,
+     "soc_hdi": 70.59,
+     "soc_poverty_rate": 86.82
+    }
+   },
+   {
+    "region_id": "8272",
+    "region_name": "Kota Tidore Kepulauan",
+    "composite_score": 59.92,
+    "rank": 291,
+    "component_scores": {
+     "dis_multihazard_index": 31.26,
+     "hlt_stunting_prevalence": 59.47,
+     "soc_hdi": 69.77,
+     "soc_poverty_rate": 88.59
+    }
+   },
+   {
+    "region_id": "1612",
+    "region_name": "Kabupaten Penukal Abab Lematang Ilir",
+    "composite_score": 59.91,
+    "rank": 292,
+    "component_scores": {
+     "dis_multihazard_index": 37.97,
+     "hlt_stunting_prevalence": 71.6,
+     "soc_hdi": 59.42,
+     "soc_poverty_rate": 81.87
+    }
+   },
+   {
+    "region_id": "5204",
+    "region_name": "Kabupaten Sumbawa",
+    "composite_score": 59.9,
+    "rank": 293,
+    "component_scores": {
+     "dis_multihazard_index": 50.33,
+     "hlt_stunting_prevalence": 50.41,
+     "soc_hdi": 65.28,
+     "soc_poverty_rate": 75.68
+    }
+   },
+   {
+    "region_id": "3205",
+    "region_name": "Kabupaten Garut",
+    "composite_score": 59.65,
+    "rank": 294,
+    "component_scores": {
+     "dis_multihazard_index": 46.73,
+     "hlt_stunting_prevalence": 53.7,
+     "soc_hdi": 61.92,
+     "soc_poverty_rate": 81.58
+    }
+   },
+   {
+    "region_id": "3208",
+    "region_name": "Kabupaten Kuningan",
+    "composite_score": 59.5,
+    "rank": 295,
+    "component_scores": {
+     "dis_multihazard_index": 42.76,
+     "hlt_stunting_prevalence": 55.14,
+     "soc_hdi": 66.63,
+     "soc_poverty_rate": 78.26
+    }
+   },
+   {
+    "region_id": "3401",
+    "region_name": "Kabupaten Kulon Progo",
+    "composite_score": 59.39,
+    "rank": 296,
+    "component_scores": {
+     "dis_multihazard_index": 36.28,
+     "hlt_stunting_prevalence": 59.67,
+     "soc_hdi": 75.93,
+     "soc_poverty_rate": 68.94
+    }
+   },
+   {
+    "region_id": "1301",
+    "region_name": "Kabupaten Pesisir Selatan",
+    "composite_score": 59.18,
+    "rank": 297,
+    "component_scores": {
+     "dis_multihazard_index": 38.28,
+     "hlt_stunting_prevalence": 47.74,
+     "soc_hdi": 68.08,
+     "soc_poverty_rate": 88.64
+    }
+   },
+   {
+    "region_id": "3529",
+    "region_name": "Kabupaten Sumenep",
+    "composite_score": 58.75,
+    "rank": 298,
+    "component_scores": {
+     "dis_multihazard_index": 45.17,
+     "hlt_stunting_prevalence": 68.93,
+     "soc_hdi": 62.82,
+     "soc_poverty_rate": 62.81
+    }
+   },
+   {
+    "region_id": "6101",
+    "region_name": "Kabupaten Sambas",
+    "composite_score": 58.71,
+    "rank": 299,
+    "component_scores": {
+     "dis_multihazard_index": 46.85,
+     "hlt_stunting_prevalence": 39.92,
+     "soc_hdi": 62.91,
+     "soc_poverty_rate": 89.01
+    }
+   },
+   {
+    "region_id": "1807",
+    "region_name": "Kabupaten Lampung Timur",
+    "composite_score": 58.57,
+    "rank": 300,
+    "component_scores": {
+     "dis_multihazard_index": 28.25,
+     "hlt_stunting_prevalence": 74.07,
+     "soc_hdi": 67.73,
+     "soc_poverty_rate": 74.79
+    }
+   },
+   {
+    "region_id": "7316",
+    "region_name": "Kabupaten Enrekang",
+    "composite_score": 58.51,
+    "rank": 301,
+    "component_scores": {
+     "dis_multihazard_index": 48.86,
+     "hlt_stunting_prevalence": 31.48,
+     "soc_hdi": 73.01,
+     "soc_poverty_rate": 78.28
+    }
+   },
+   {
+    "region_id": "3203",
+    "region_name": "Kabupaten Cianjur",
+    "composite_score": 58.45,
+    "rank": 302,
+    "component_scores": {
+     "dis_multihazard_index": 28.97,
+     "hlt_stunting_prevalence": 79.84,
+     "soc_hdi": 58.97,
+     "soc_poverty_rate": 80.52
+    }
+   },
+   {
+    "region_id": "9208",
+    "region_name": "Kabupaten Kaimana",
+    "composite_score": 58.36,
+    "rank": 303,
+    "component_scores": {
+     "dis_multihazard_index": 54.17,
+     "hlt_stunting_prevalence": 50.41,
+     "soc_hdi": 59.65,
+     "soc_poverty_rate": 70.66
+    }
+   },
+   {
+    "region_id": "8203",
+    "region_name": "Kabupaten Halmahera Utara",
+    "composite_score": 58.17,
+    "rank": 304,
+    "component_scores": {
+     "dis_multihazard_index": 31.92,
+     "hlt_stunting_prevalence": 53.29,
+     "soc_hdi": 63.81,
+     "soc_poverty_rate": 93.97
+    }
+   },
+   {
+    "region_id": "7107",
+    "region_name": "Kabupaten Minahasa Tenggara",
+    "composite_score": 58.15,
+    "rank": 305,
+    "component_scores": {
+     "dis_multihazard_index": 23.36,
+     "hlt_stunting_prevalence": 72.43,
+     "soc_hdi": 69.3,
+     "soc_poverty_rate": 79.32
+    }
+   },
+   {
+    "region_id": "3528",
+    "region_name": "Kabupaten Pamekasan",
+    "composite_score": 58.03,
+    "rank": 306,
+    "component_scores": {
+     "dis_multihazard_index": 48.81,
+     "hlt_stunting_prevalence": 51.65,
+     "soc_hdi": 61.35,
+     "soc_poverty_rate": 73.27
+    }
+   },
+   {
+    "region_id": "7305",
+    "region_name": "Kabupaten Takalar",
+    "composite_score": 58.02,
+    "rank": 307,
+    "component_scores": {
+     "dis_multihazard_index": 52.01,
+     "hlt_stunting_prevalence": 30.45,
+     "soc_hdi": 63.22,
+     "soc_poverty_rate": 86.79
+    }
+   },
+   {
+    "region_id": "3574",
+    "region_name": "Kota Probolinggo",
+    "composite_score": 58,
+    "rank": 308,
+    "component_scores": {
+     "dis_multihazard_index": 64.09,
+     "hlt_stunting_prevalence": 37.86,
+     "soc_hdi": 60.97,
+     "soc_poverty_rate": 64.56
+    }
+   },
+   {
+    "region_id": "9203",
+    "region_name": "Kabupaten Fak Fak",
+    "composite_score": 57.96,
+    "rank": 309,
+    "component_scores": {
+     "dis_multihazard_index": 63.98,
+     "hlt_stunting_prevalence": 40.53,
+     "soc_hdi": 64.97,
+     "soc_poverty_rate": 55.83
+    }
+   },
+   {
+    "region_id": "1603",
+    "region_name": "Kabupaten Muara Enim",
+    "composite_score": 57.93,
+    "rank": 310,
+    "component_scores": {
+     "dis_multihazard_index": 39.34,
+     "hlt_stunting_prevalence": 50,
+     "soc_hdi": 66.13,
+     "soc_poverty_rate": 81.43
+    }
+   },
+   {
+    "region_id": "5316",
+    "region_name": "Kabupaten Nagekeo",
+    "composite_score": 57.89,
+    "rank": 311,
+    "component_scores": {
+     "dis_multihazard_index": 48.58,
+     "hlt_stunting_prevalence": 52.06,
+     "soc_hdi": 59.88,
+     "soc_poverty_rate": 74.72
+    }
+   },
+   {
+    "region_id": "1404",
+    "region_name": "Kabupaten Indragiri Hilir",
+    "composite_score": 57.89,
+    "rank": 312,
+    "component_scores": {
+     "dis_multihazard_index": 27.09,
+     "hlt_stunting_prevalence": 64.61,
+     "soc_hdi": 61.14,
+     "soc_poverty_rate": 92.5
+    }
+   },
+   {
+    "region_id": "1803",
+    "region_name": "Kabupaten Lampung Utara",
+    "composite_score": 57.85,
+    "rank": 313,
+    "component_scores": {
+     "dis_multihazard_index": 48.8,
+     "hlt_stunting_prevalence": 54.94,
+     "soc_hdi": 63.5,
+     "soc_poverty_rate": 65.86
+    }
+   },
+   {
+    "region_id": "1116",
+    "region_name": "Kabupaten Aceh Tamiang",
+    "composite_score": 57.8,
+    "rank": 314,
+    "component_scores": {
+     "dis_multihazard_index": 52.39,
+     "hlt_stunting_prevalence": 29.42,
+     "soc_hdi": 68.65,
+     "soc_poverty_rate": 78.01
+    }
+   },
+   {
+    "region_id": "7326",
+    "region_name": "Kabupaten Toraja Utara",
+    "composite_score": 57.71,
+    "rank": 315,
+    "component_scores": {
+     "dis_multihazard_index": 41.83,
+     "hlt_stunting_prevalence": 44.24,
+     "soc_hdi": 67.75,
+     "soc_poverty_rate": 79.96
+    }
+   },
+   {
+    "region_id": "8205",
+    "region_name": "Kabupaten Kepulauan Sula",
+    "composite_score": 57.71,
+    "rank": 316,
+    "component_scores": {
+     "dis_multihazard_index": 35.48,
+     "hlt_stunting_prevalence": 64.61,
+     "soc_hdi": 56.58,
+     "soc_poverty_rate": 85.86
+    }
+   },
+   {
+    "region_id": "6206",
+    "region_name": "Kabupaten Katingan",
+    "composite_score": 57.63,
+    "rank": 317,
+    "component_scores": {
+     "dis_multihazard_index": 43.23,
+     "hlt_stunting_prevalence": 33.33,
+     "soc_hdi": 65.56,
+     "soc_poverty_rate": 91.64
+    }
+   },
+   {
+    "region_id": "1605",
+    "region_name": "Kabupaten Musi Rawas",
+    "composite_score": 57.45,
+    "rank": 318,
+    "component_scores": {
+     "dis_multihazard_index": 41.44,
+     "hlt_stunting_prevalence": 58.23,
+     "soc_hdi": 62.23,
+     "soc_poverty_rate": 73.51
+    }
+   },
+   {
+    "region_id": "7201",
+    "region_name": "Kabupaten Banggai",
+    "composite_score": 57.38,
+    "rank": 319,
+    "component_scores": {
+     "dis_multihazard_index": 34.11,
+     "hlt_stunting_prevalence": 43.42,
+     "soc_hdi": 68.65,
+     "soc_poverty_rate": 89.35
+    }
+   },
+   {
+    "region_id": "1709",
+    "region_name": "Kabupaten Bengkulu Tengah",
+    "composite_score": 57.37,
+    "rank": 320,
+    "component_scores": {
+     "dis_multihazard_index": 36.46,
+     "hlt_stunting_prevalence": 55.56,
+     "soc_hdi": 63.92,
+     "soc_poverty_rate": 80.72
+    }
+   },
+   {
+    "region_id": "7204",
+    "region_name": "Kabupaten Toli-Toli",
+    "composite_score": 57.31,
+    "rank": 321,
+    "component_scores": {
+     "dis_multihazard_index": 51.07,
+     "hlt_stunting_prevalence": 43.62,
+     "soc_hdi": 61.12,
+     "soc_poverty_rate": 74.67
+    }
+   },
+   {
+    "region_id": "1118",
+    "region_name": "Kabupaten Pidie Jaya",
+    "composite_score": 57.3,
+    "rank": 322,
+    "component_scores": {
+     "dis_multihazard_index": 45.07,
+     "hlt_stunting_prevalence": 42.8,
+     "soc_hdi": 74.06,
+     "soc_poverty_rate": 65.03
+    }
+   },
+   {
+    "region_id": "8201",
+    "region_name": "Kabupaten Halmahera Barat",
+    "composite_score": 57.3,
+    "rank": 323,
+    "component_scores": {
+     "dis_multihazard_index": 41.59,
+     "hlt_stunting_prevalence": 49.59,
+     "soc_hdi": 59.52,
+     "soc_poverty_rate": 85.24
+    }
+   },
+   {
+    "region_id": "5371",
+    "region_name": "Kota Kupang",
+    "composite_score": 57.29,
+    "rank": 324,
+    "component_scores": {
+     "dis_multihazard_index": 68.97,
+     "hlt_stunting_prevalence": 41.77,
+     "soc_hdi": 57.69,
+     "soc_poverty_rate": 54.7
+    }
+   },
+   {
+    "region_id": "7302",
+    "region_name": "Kabupaten Bulukumba",
+    "composite_score": 57.26,
+    "rank": 325,
+    "component_scores": {
+     "dis_multihazard_index": 40.4,
+     "hlt_stunting_prevalence": 33.95,
+     "soc_hdi": 67.98,
+     "soc_poverty_rate": 89.77
+    }
+   },
+   {
+    "region_id": "6112",
+    "region_name": "Kabupaten Kubu Raya",
+    "composite_score": 57.16,
+    "rank": 326,
+    "component_scores": {
+     "dis_multihazard_index": 28.56,
+     "hlt_stunting_prevalence": 51.03,
+     "soc_hdi": 64.7,
+     "soc_poverty_rate": 94.86
+    }
+   },
+   {
+    "region_id": "7411",
+    "region_name": "Kabupaten Kolaka Timur",
+    "composite_score": 56.76,
+    "rank": 327,
+    "component_scores": {
+     "dis_multihazard_index": 49.36,
+     "hlt_stunting_prevalence": 38.89,
+     "soc_hdi": 64.74,
+     "soc_poverty_rate": 73.76
+    }
+   },
+   {
+    "region_id": "7209",
+    "region_name": "Kabupaten Tojo Una Una",
+    "composite_score": 56.67,
+    "rank": 328,
+    "component_scores": {
+     "dis_multihazard_index": 45.07,
+     "hlt_stunting_prevalence": 59.47,
+     "soc_hdi": 58.45,
+     "soc_poverty_rate": 68.59
+    }
+   },
+   {
+    "region_id": "7407",
+    "region_name": "Kabupaten Wakatobi",
+    "composite_score": 56.64,
+    "rank": 329,
+    "component_scores": {
+     "dis_multihazard_index": 47.82,
+     "hlt_stunting_prevalence": 37.65,
+     "soc_hdi": 68.08,
+     "soc_poverty_rate": 71.72
+    }
+   },
+   {
+    "region_id": "3509",
+    "region_name": "Kabupaten Jember",
+    "composite_score": 56.64,
+    "rank": 330,
+    "component_scores": {
+     "dis_multihazard_index": 42.5,
+     "hlt_stunting_prevalence": 42.18,
+     "soc_hdi": 62.61,
+     "soc_poverty_rate": 83.35
+    }
+   },
+   {
+    "region_id": "3329",
+    "region_name": "Kabupaten Brebes",
+    "composite_score": 56.58,
+    "rank": 331,
+    "component_scores": {
+     "dis_multihazard_index": 41.51,
+     "hlt_stunting_prevalence": 58.85,
+     "soc_hdi": 61.29,
+     "soc_poverty_rate": 69.87
+    }
+   },
+   {
+    "region_id": "7102",
+    "region_name": "Kabupaten Minahasa",
+    "composite_score": 56.56,
+    "rank": 332,
+    "component_scores": {
+     "dis_multihazard_index": 12.23,
+     "hlt_stunting_prevalence": 55.76,
+     "soc_hdi": 78.98,
+     "soc_poverty_rate": 90.21
+    }
+   },
+   {
+    "region_id": "3320",
+    "region_name": "Kabupaten Jepara",
+    "composite_score": 56.52,
+    "rank": 333,
+    "component_scores": {
+     "dis_multihazard_index": 55.64,
+     "soc_hdi": 72.46,
+     "soc_poverty_rate": 90.43
+    }
+   },
+   {
+    "region_id": "7308",
+    "region_name": "Kabupaten Bone",
+    "composite_score": 56.37,
+    "rank": 334,
+    "component_scores": {
+     "dis_multihazard_index": 38.8,
+     "hlt_stunting_prevalence": 49.79,
+     "soc_hdi": 61.1,
+     "soc_poverty_rate": 82.22
+    }
+   },
+   {
+    "region_id": "8104",
+    "region_name": "Kabupaten Buru",
+    "composite_score": 56.35,
+    "rank": 335,
+    "component_scores": {
+     "dis_multihazard_index": 35.66,
+     "hlt_stunting_prevalence": 61.52,
+     "soc_hdi": 66.15,
+     "soc_poverty_rate": 67.51
+    }
+   },
+   {
+    "region_id": "6102",
+    "region_name": "Kabupaten Mempawah",
+    "composite_score": 56.23,
+    "rank": 336,
+    "component_scores": {
+     "dis_multihazard_index": 31.99,
+     "hlt_stunting_prevalence": 47.33,
+     "soc_hdi": 61.48,
+     "soc_poverty_rate": 93.63
+    }
+   },
+   {
+    "region_id": "1701",
+    "region_name": "Kabupaten Bengkulu Selatan",
+    "composite_score": 55.97,
+    "rank": 337,
+    "component_scores": {
+     "dis_multihazard_index": 37.92,
+     "hlt_stunting_prevalence": 53.91,
+     "soc_hdi": 68.71,
+     "soc_poverty_rate": 66.01
+    }
+   },
+   {
+    "region_id": "1903",
+    "region_name": "Kabupaten Bangka Selatan",
+    "composite_score": 55.79,
+    "rank": 338,
+    "component_scores": {
+     "dis_multihazard_index": 20.5,
+     "hlt_stunting_prevalence": 60.7,
+     "soc_hdi": 62.05,
+     "soc_poverty_rate": 94.42
+    }
+   },
+   {
+    "region_id": "5208",
+    "region_name": "Kabupaten Lombok Utara",
+    "composite_score": 55.55,
+    "rank": 339,
+    "component_scores": {
+     "dis_multihazard_index": 67.51,
+     "hlt_stunting_prevalence": 34.36,
+     "soc_hdi": 58.97,
+     "soc_poverty_rate": 53.66
+    }
+   },
+   {
+    "region_id": "7606",
+    "region_name": "Kabupaten Mamuju Tengah",
+    "composite_score": 55.52,
+    "rank": 340,
+    "component_scores": {
+     "dis_multihazard_index": 35.43,
+     "hlt_stunting_prevalence": 45.88,
+     "soc_hdi": 61.1,
+     "soc_poverty_rate": 86.92
+    }
+   },
+   {
+    "region_id": "6408",
+    "region_name": "Kabupaten Kutai Timur",
+    "composite_score": 55.38,
+    "rank": 341,
+    "component_scores": {
+     "dis_multihazard_index": 24.19,
+     "hlt_stunting_prevalence": 43.62,
+     "soc_hdi": 74.77,
+     "soc_poverty_rate": 84.83
+    }
+   },
+   {
+    "region_id": "6301",
+    "region_name": "Kabupaten Tanah Laut",
+    "composite_score": 55.25,
+    "rank": 342,
+    "component_scores": {
+     "dis_multihazard_index": 40.69,
+     "hlt_stunting_prevalence": 17.49,
+     "soc_hdi": 66.95,
+     "soc_poverty_rate": 97.29
+    }
+   },
+   {
+    "region_id": "7410",
+    "region_name": "Kabupaten Buton Utara",
+    "composite_score": 55.13,
+    "rank": 343,
+    "component_scores": {
+     "dis_multihazard_index": 47.93,
+     "hlt_stunting_prevalence": 33.54,
+     "soc_hdi": 65.37,
+     "soc_poverty_rate": 72.16
+    }
+   },
+   {
+    "region_id": "1111",
+    "region_name": "Kabupaten Bireuen",
+    "composite_score": 55.1,
+    "rank": 344,
+    "component_scores": {
+     "dis_multihazard_index": 34.33,
+     "hlt_stunting_prevalence": 35.6,
+     "soc_hdi": 72.71,
+     "soc_poverty_rate": 79.34
+    }
+   },
+   {
+    "region_id": "1507",
+    "region_name": "Kabupaten Tanjung Jabung Timur",
+    "composite_score": 55.03,
+    "rank": 345,
+    "component_scores": {
+     "dis_multihazard_index": 34.09,
+     "hlt_stunting_prevalence": 54.53,
+     "soc_hdi": 59.54,
+     "soc_poverty_rate": 80.18
+    }
+   },
+   {
+    "region_id": "6401",
+    "region_name": "Kabupaten Paser",
+    "composite_score": 55.03,
+    "rank": 346,
+    "component_scores": {
+     "dis_multihazard_index": 15.66,
+     "hlt_stunting_prevalence": 57.2,
+     "soc_hdi": 73.18,
+     "soc_poverty_rate": 84.68
+    }
+   },
+   {
+    "region_id": "7402",
+    "region_name": "Kabupaten Konawe",
+    "composite_score": 55,
+    "rank": 347,
+    "component_scores": {
+     "dis_multihazard_index": 33.09,
+     "hlt_stunting_prevalence": 46.09,
+     "soc_hdi": 70.69,
+     "soc_poverty_rate": 73.24
+    }
+   },
+   {
+    "region_id": "7504",
+    "region_name": "Kabupaten Pohuwato",
+    "composite_score": 54.98,
+    "rank": 348,
+    "component_scores": {
+     "dis_multihazard_index": 34.4,
+     "hlt_stunting_prevalence": 65.43,
+     "soc_hdi": 60.45,
+     "soc_poverty_rate": 67.19
+    }
+   },
+   {
+    "region_id": "1602",
+    "region_name": "Kabupaten Ogan Komering Ilir",
+    "composite_score": 54.94,
+    "rank": 349,
+    "component_scores": {
+     "dis_multihazard_index": 45.53,
+     "hlt_stunting_prevalence": 36.42,
+     "soc_hdi": 62.95,
+     "soc_poverty_rate": 75.55
+    }
+   },
+   {
+    "region_id": "9301",
+    "region_name": "Kabupaten Merauke",
+    "composite_score": 54.91,
+    "rank": 350,
+    "component_scores": {
+     "dis_multihazard_index": 26.15,
+     "hlt_stunting_prevalence": 54.32,
+     "soc_hdi": 69.43,
+     "soc_poverty_rate": 76.86
+    }
+   },
+   {
+    "region_id": "8206",
+    "region_name": "Kabupaten Halmahera Timur",
+    "composite_score": 54.9,
+    "rank": 351,
+    "component_scores": {
+     "dis_multihazard_index": 24.28,
+     "hlt_stunting_prevalence": 64.2,
+     "soc_hdi": 63.43,
+     "soc_poverty_rate": 78.75
+    }
+   },
+   {
+    "region_id": "6110",
+    "region_name": "Kabupaten Melawi",
+    "composite_score": 54.83,
+    "rank": 352,
+    "component_scores": {
+     "dis_multihazard_index": 48.1,
+     "hlt_stunting_prevalence": 30.66,
+     "soc_hdi": 61.67,
+     "soc_poverty_rate": 78.82
+    }
+   },
+   {
+    "region_id": "7309",
+    "region_name": "Kabupaten Maros",
+    "composite_score": 54.79,
+    "rank": 353,
+    "component_scores": {
+     "dis_multihazard_index": 37.95,
+     "hlt_stunting_prevalence": 31.89,
+     "soc_hdi": 68.25,
+     "soc_poverty_rate": 82.78
+    }
+   },
+   {
+    "region_id": "7206",
+    "region_name": "Kabupaten Morowali",
+    "composite_score": 54.72,
+    "rank": 354,
+    "component_scores": {
+     "dis_multihazard_index": 25.47,
+     "hlt_stunting_prevalence": 49.79,
+     "soc_hdi": 70.97,
+     "soc_poverty_rate": 79.14
+    }
+   },
+   {
+    "region_id": "7505",
+    "region_name": "Kabupaten Gorontalo Utara",
+    "composite_score": 54.45,
+    "rank": 355,
+    "component_scores": {
+     "dis_multihazard_index": 51.36,
+     "hlt_stunting_prevalence": 40.53,
+     "soc_hdi": 59.39,
+     "soc_poverty_rate": 65.59
+    }
+   },
+   {
+    "region_id": "7408",
+    "region_name": "Kabupaten Kolaka Utara",
+    "composite_score": 54.37,
+    "rank": 356,
+    "component_scores": {
+     "dis_multihazard_index": 39.96,
+     "hlt_stunting_prevalence": 37.86,
+     "soc_hdi": 67.47,
+     "soc_poverty_rate": 72.85
+    }
+   },
+   {
+    "region_id": "1306",
+    "region_name": "Kabupaten Agam",
+    "composite_score": 54.1,
+    "rank": 357,
+    "component_scores": {
+     "dis_multihazard_index": 5.95,
+     "hlt_stunting_prevalence": 61.93,
+     "soc_hdi": 73.11,
+     "soc_poverty_rate": 89.99
+    }
+   },
+   {
+    "region_id": "7604",
+    "region_name": "Kabupaten Polewali Mandar",
+    "composite_score": 54.04,
+    "rank": 358,
+    "component_scores": {
+     "dis_multihazard_index": 46.01,
+     "hlt_stunting_prevalence": 45.47,
+     "soc_hdi": 57.02,
+     "soc_poverty_rate": 70.19
+    }
+   },
+   {
+    "region_id": "1706",
+    "region_name": "Kabupaten Mukomuko",
+    "composite_score": 53.97,
+    "rank": 359,
+    "component_scores": {
+     "dis_multihazard_index": 29.47,
+     "hlt_stunting_prevalence": 47.53,
+     "soc_hdi": 65.43,
+     "soc_poverty_rate": 79.96
+    }
+   },
+   {
+    "region_id": "7205",
+    "region_name": "Kabupaten Buol",
+    "composite_score": 53.95,
+    "rank": 360,
+    "component_scores": {
+     "dis_multihazard_index": 38.06,
+     "hlt_stunting_prevalence": 41.56,
+     "soc_hdi": 64.76,
+     "soc_poverty_rate": 73.98
+    }
+   },
+   {
+    "region_id": "5306",
+    "region_name": "Kabupaten Flores Timur",
+    "composite_score": 53.9,
+    "rank": 361,
+    "component_scores": {
+     "dis_multihazard_index": 52.73,
+     "hlt_stunting_prevalence": 26.75,
+     "soc_hdi": 57.16,
+     "soc_poverty_rate": 77.91
+    }
+   },
+   {
+    "region_id": "6111",
+    "region_name": "Kabupaten Kayong Utara",
+    "composite_score": 53.68,
+    "rank": 362,
+    "component_scores": {
+     "dis_multihazard_index": 29.95,
+     "hlt_stunting_prevalence": 56.17,
+     "soc_hdi": 56.11,
+     "soc_poverty_rate": 83.15
+    }
+   },
+   {
+    "region_id": "7409",
+    "region_name": "Kabupaten Konawe Utara",
+    "composite_score": 53.54,
+    "rank": 363,
+    "component_scores": {
+     "dis_multihazard_index": 24.54,
+     "hlt_stunting_prevalence": 52.47,
+     "soc_hdi": 68.65,
+     "soc_poverty_rate": 75.43
+    }
+   },
+   {
+    "region_id": "1103",
+    "region_name": "Kabupaten Aceh Timur",
+    "composite_score": 53.45,
+    "rank": 364,
+    "component_scores": {
+     "dis_multihazard_index": 34.73,
+     "hlt_stunting_prevalence": 42.18,
+     "soc_hdi": 63.98,
+     "soc_poverty_rate": 77.03
+    }
+   },
+   {
+    "region_id": "7602",
+    "region_name": "Kabupaten Mamuju",
+    "composite_score": 53.45,
+    "rank": 365,
+    "component_scores": {
+     "dis_multihazard_index": 30.99,
+     "hlt_stunting_prevalence": 35.8,
+     "soc_hdi": 64.99,
+     "soc_poverty_rate": 87.48
+    }
+   },
+   {
+    "region_id": "7601",
+    "region_name": "Kabupaten Pasangkayu",
+    "composite_score": 53.44,
+    "rank": 366,
+    "component_scores": {
+     "dis_multihazard_index": 22.18,
+     "hlt_stunting_prevalence": 45.88,
+     "soc_hdi": 63.71,
+     "soc_poverty_rate": 92.47
+    }
+   },
+   {
+    "region_id": "7472",
+    "region_name": "Kota Bau Bau",
+    "composite_score": 53.43,
+    "rank": 367,
+    "component_scores": {
+     "dis_multihazard_index": 11.68,
+     "hlt_stunting_prevalence": 42.18,
+     "soc_hdi": 79.72,
+     "soc_poverty_rate": 87.88
+    }
+   },
+   {
+    "region_id": "1410",
+    "region_name": "Kabupaten Kepulauan Meranti",
+    "composite_score": 53.37,
+    "rank": 368,
+    "component_scores": {
+     "dis_multihazard_index": 39.51,
+     "hlt_stunting_prevalence": 62.96,
+     "soc_hdi": 60.26,
+     "soc_poverty_rate": 54.23
+    }
+   },
+   {
+    "region_id": "7405",
+    "region_name": "Kabupaten Konawe Selatan",
+    "composite_score": 53.35,
+    "rank": 369,
+    "component_scores": {
+     "dis_multihazard_index": 37.11,
+     "hlt_stunting_prevalence": 34.16,
+     "soc_hdi": 66.5,
+     "soc_poverty_rate": 77.18
+    }
+   },
+   {
+    "region_id": "7111",
+    "region_name": "Kabupaten Bolaang Mongondow Selatan",
+    "composite_score": 53.25,
+    "rank": 370,
+    "component_scores": {
+     "dis_multihazard_index": 42.6,
+     "hlt_stunting_prevalence": 35.39,
+     "soc_hdi": 58.78,
+     "soc_poverty_rate": 78.8
+    }
+   },
+   {
+    "region_id": "1107",
+    "region_name": "Kabupaten Pidie",
+    "composite_score": 53.12,
+    "rank": 371,
+    "component_scores": {
+     "dis_multihazard_index": 37.24,
+     "hlt_stunting_prevalence": 42.59,
+     "soc_hdi": 68.63,
+     "soc_poverty_rate": 64.19
+    }
+   },
+   {
+    "region_id": "1108",
+    "region_name": "Kabupaten Aceh Utara",
+    "composite_score": 52.96,
+    "rank": 372,
+    "component_scores": {
+     "dis_multihazard_index": 28.37,
+     "hlt_stunting_prevalence": 51.44,
+     "soc_hdi": 67.47,
+     "soc_poverty_rate": 69.58
+    }
+   },
+   {
+    "region_id": "5307",
+    "region_name": "Kabupaten Sikka",
+    "composite_score": 52.92,
+    "rank": 373,
+    "component_scores": {
+     "dis_multihazard_index": 42.61,
+     "hlt_stunting_prevalence": 34.77,
+     "soc_hdi": 59.29,
+     "soc_poverty_rate": 77
+    }
+   },
+   {
+    "region_id": "7212",
+    "region_name": "Kabupaten Morowali Utara",
+    "composite_score": 52.92,
+    "rank": 374,
+    "component_scores": {
+     "dis_multihazard_index": 23.34,
+     "hlt_stunting_prevalence": 52.47,
+     "soc_hdi": 65.33,
+     "soc_poverty_rate": 79.14
+    }
+   },
+   {
+    "region_id": "8105",
+    "region_name": "Kabupaten Seram Bagian Timur",
+    "composite_score": 52.81,
+    "rank": 375,
+    "component_scores": {
+     "dis_multihazard_index": 52.31,
+     "hlt_stunting_prevalence": 46.71,
+     "soc_hdi": 57.06,
+     "soc_poverty_rate": 53.27
+    }
+   },
+   {
+    "region_id": "7318",
+    "region_name": "Kabupaten Tana Toraja",
+    "composite_score": 52.8,
+    "rank": 376,
+    "component_scores": {
+     "dis_multihazard_index": 37.83,
+     "hlt_stunting_prevalence": 27.37,
+     "soc_hdi": 67.41,
+     "soc_poverty_rate": 78.75
+    }
+   },
+   {
+    "region_id": "5311",
+    "region_name": "Kabupaten Sumba Timur",
+    "composite_score": 52.59,
+    "rank": 377,
+    "component_scores": {
+     "dis_multihazard_index": 54.96,
+     "hlt_stunting_prevalence": 49.18,
+     "soc_hdi": 59.81,
+     "soc_poverty_rate": 41.61
+    }
+   },
+   {
+    "region_id": "9111",
+    "region_name": "Kabupaten Keerom",
+    "composite_score": 52.55,
+    "rank": 378,
+    "component_scores": {
+     "dis_multihazard_index": 51.14,
+     "hlt_stunting_prevalence": 32.51,
+     "soc_hdi": 61.71,
+     "soc_poverty_rate": 60.99
+    }
+   },
+   {
+    "region_id": "1703",
+    "region_name": "Kabupaten Bengkulu Utara",
+    "composite_score": 52.54,
+    "rank": 379,
+    "component_scores": {
+     "dis_multihazard_index": 16.28,
+     "hlt_stunting_prevalence": 58.85,
+     "soc_hdi": 66.34,
+     "soc_poverty_rate": 79.91
+    }
+   },
+   {
+    "region_id": "1804",
+    "region_name": "Kabupaten Lampung Barat",
+    "composite_score": 52.51,
+    "rank": 380,
+    "component_scores": {
+     "dis_multihazard_index": 22.49,
+     "hlt_stunting_prevalence": 52.67,
+     "soc_hdi": 63.92,
+     "soc_poverty_rate": 80.25
+    }
+   },
+   {
+    "region_id": "7406",
+    "region_name": "Kabupaten Bombana",
+    "composite_score": 52.47,
+    "rank": 381,
+    "component_scores": {
+     "dis_multihazard_index": 33.88,
+     "hlt_stunting_prevalence": 40.74,
+     "soc_hdi": 60.7,
+     "soc_poverty_rate": 79.73
+    }
+   },
+   {
+    "region_id": "1201",
+    "region_name": "Kabupaten Tapanuli Tengah",
+    "composite_score": 52.34,
+    "rank": 382,
+    "component_scores": {
+     "dis_multihazard_index": 19.45,
+     "hlt_stunting_prevalence": 54.32,
+     "soc_hdi": 67.12,
+     "soc_poverty_rate": 77.55
+    }
+   },
+   {
+    "region_id": "7207",
+    "region_name": "Kabupaten Banggai Kepulauan",
+    "composite_score": 52.04,
+    "rank": 383,
+    "component_scores": {
+     "dis_multihazard_index": 32.34,
+     "hlt_stunting_prevalence": 46.3,
+     "soc_hdi": 59.33,
+     "soc_poverty_rate": 76.41
+    }
+   },
+   {
+    "region_id": "1613",
+    "region_name": "Kabupaten Musi Rawas Utara",
+    "composite_score": 51.96,
+    "rank": 384,
+    "component_scores": {
+     "dis_multihazard_index": 45.7,
+     "hlt_stunting_prevalence": 35.19,
+     "soc_hdi": 59.27,
+     "soc_poverty_rate": 67.17
+    }
+   },
+   {
+    "region_id": "7603",
+    "region_name": "Kabupaten Mamasa",
+    "composite_score": 51.82,
+    "rank": 385,
+    "component_scores": {
+     "dis_multihazard_index": 46.93,
+     "hlt_stunting_prevalence": 25.93,
+     "soc_hdi": 61.12,
+     "soc_poverty_rate": 71.08
+    }
+   },
+   {
+    "region_id": "7307",
+    "region_name": "Kabupaten Sinjai",
+    "composite_score": 51.77,
+    "rank": 386,
+    "component_scores": {
+     "dis_multihazard_index": 28.72,
+     "hlt_stunting_prevalence": 34.36,
+     "soc_hdi": 63.31,
+     "soc_poverty_rate": 86.45
+    }
+   },
+   {
+    "region_id": "9105",
+    "region_name": "Kabupaten Kepulauan Yapen",
+    "composite_score": 51.69,
+    "rank": 387,
+    "component_scores": {
+     "dis_multihazard_index": 70.75,
+     "hlt_stunting_prevalence": 21.19,
+     "soc_hdi": 63.56,
+     "soc_poverty_rate": 35.81
+    }
+   },
+   {
+    "region_id": "1308",
+    "region_name": "Kabupaten Pasaman",
+    "composite_score": 51.67,
+    "rank": 388,
+    "component_scores": {
+     "dis_multihazard_index": 21.69,
+     "hlt_stunting_prevalence": 42.8,
+     "soc_hdi": 62.11,
+     "soc_poverty_rate": 89.87
+    }
+   },
+   {
+    "region_id": "7211",
+    "region_name": "Kabupaten Banggai Laut",
+    "composite_score": 51.64,
+    "rank": 389,
+    "component_scores": {
+     "dis_multihazard_index": 30.12,
+     "hlt_stunting_prevalence": 50.62,
+     "soc_hdi": 59.33,
+     "soc_poverty_rate": 73.41
+    }
+   },
+   {
+    "region_id": "5308",
+    "region_name": "Kabupaten Ende",
+    "composite_score": 51.58,
+    "rank": 390,
+    "component_scores": {
+     "dis_multihazard_index": 43.42,
+     "hlt_stunting_prevalence": 46.71,
+     "soc_hdi": 62.53,
+     "soc_poverty_rate": 52.26
+    }
+   },
+   {
+    "region_id": "8101",
+    "region_name": "Kabupaten Maluku Tengah",
+    "composite_score": 51.54,
+    "rank": 391,
+    "component_scores": {
+     "dis_multihazard_index": 30.54,
+     "hlt_stunting_prevalence": 42.8,
+     "soc_hdi": 70.34,
+     "soc_poverty_rate": 63.58
+    }
+   },
+   {
+    "region_id": "1611",
+    "region_name": "Kabupaten Empat Lawang",
+    "composite_score": 51.41,
+    "rank": 392,
+    "component_scores": {
+     "dis_multihazard_index": 35.62,
+     "hlt_stunting_prevalence": 36.21,
+     "soc_hdi": 58.99,
+     "soc_poverty_rate": 78.9
+    }
+   },
+   {
+    "region_id": "6104",
+    "region_name": "Kabupaten Ketapang",
+    "composite_score": 51.32,
+    "rank": 393,
+    "component_scores": {
+     "dis_multihazard_index": 51.99,
+     "soc_hdi": 63.12,
+     "soc_poverty_rate": 83.92
+    }
+   },
+   {
+    "region_id": "9401",
+    "region_name": "Kabupaten Nabire",
+    "composite_score": 51.13,
+    "rank": 394,
+    "component_scores": {
+     "dis_multihazard_index": 31.79,
+     "hlt_stunting_prevalence": 57.61,
+     "soc_hdi": 67.6,
+     "soc_poverty_rate": 48.97
+    }
+   },
+   {
+    "region_id": "7108",
+    "region_name": "Kabupaten Bolaang Mongondow Utara",
+    "composite_score": 51.12,
+    "rank": 395,
+    "component_scores": {
+     "dis_multihazard_index": 49.42,
+     "soc_hdi": 62.93,
+     "soc_poverty_rate": 87.09
+    }
+   },
+   {
+    "region_id": "5315",
+    "region_name": "Kabupaten Manggarai Barat",
+    "composite_score": 51.06,
+    "rank": 396,
+    "component_scores": {
+     "dis_multihazard_index": 49.75,
+     "hlt_stunting_prevalence": 28.81,
+     "soc_hdi": 57.84,
+     "soc_poverty_rate": 65.1
+    }
+   },
+   {
+    "region_id": "1813",
+    "region_name": "Kabupaten Pesisir Barat",
+    "composite_score": 50.95,
+    "rank": 397,
+    "component_scores": {
+     "dis_multihazard_index": 15.15,
+     "hlt_stunting_prevalence": 70.16,
+     "soc_hdi": 58,
+     "soc_poverty_rate": 74.84
+    }
+   },
+   {
+    "region_id": "1704",
+    "region_name": "Kabupaten Kaur",
+    "composite_score": 50.58,
+    "rank": 398,
+    "component_scores": {
+     "dis_multihazard_index": 13.22,
+     "hlt_stunting_prevalence": 73.87,
+     "soc_hdi": 62.28,
+     "soc_poverty_rate": 65.76
+    }
+   },
+   {
+    "region_id": "7413",
+    "region_name": "Kabupaten Muna Barat",
+    "composite_score": 50.48,
+    "rank": 399,
+    "component_scores": {
+     "dis_multihazard_index": 23.58,
+     "hlt_stunting_prevalence": 53.09,
+     "soc_hdi": 60.53,
+     "soc_poverty_rate": 73.12
+    }
+   },
+   {
+    "region_id": "7403",
+    "region_name": "Kabupaten Muna",
+    "composite_score": 50.42,
+    "rank": 400,
+    "component_scores": {
+     "dis_multihazard_index": 23.58,
+     "hlt_stunting_prevalence": 43.21,
+     "soc_hdi": 66.23,
+     "soc_poverty_rate": 74.18
+    }
+   },
+   {
+    "region_id": "1705",
+    "region_name": "Kabupaten Seluma",
+    "composite_score": 50.29,
+    "rank": 401,
+    "component_scores": {
+     "dis_multihazard_index": 28.6,
+     "hlt_stunting_prevalence": 49.79,
+     "soc_hdi": 62.26,
+     "soc_poverty_rate": 65.37
+    }
+   },
+   {
+    "region_id": "9505",
+    "region_name": "Kabupaten Mamberamo Tengah",
+    "composite_score": 50.19,
+    "rank": 402,
+    "component_scores": {
+     "dis_multihazard_index": 99.24,
+     "hlt_stunting_prevalence": 35.39,
+     "soc_hdi": 27.48,
+     "soc_poverty_rate": 25.48
+    }
+   },
+   {
+    "region_id": "9106",
+    "region_name": "Kabupaten Biak Numfor",
+    "composite_score": 49.99,
+    "rank": 403,
+    "component_scores": {
+     "dis_multihazard_index": 44.6,
+     "hlt_stunting_prevalence": 33.95,
+     "soc_hdi": 71.81,
+     "soc_poverty_rate": 41.39
+    }
+   },
+   {
+    "region_id": "1312",
+    "region_name": "Kabupaten Pasaman Barat",
+    "composite_score": 49.92,
+    "rank": 404,
+    "component_scores": {
+     "dis_multihazard_index": 12.81,
+     "hlt_stunting_prevalence": 42.18,
+     "soc_hdi": 66,
+     "soc_poverty_rate": 89.18
+    }
+   },
+   {
+    "region_id": "1278",
+    "region_name": "Kota Gunungsitoli",
+    "composite_score": 49.84,
+    "rank": 405,
+    "component_scores": {
+     "dis_multihazard_index": 9.22,
+     "hlt_stunting_prevalence": 64.4,
+     "soc_hdi": 66.91,
+     "soc_poverty_rate": 70.61
+    }
+   },
+   {
+    "region_id": "9603",
+    "region_name": "Kabupaten Raja Ampat",
+    "composite_score": 49.72,
+    "rank": 406,
+    "component_scores": {
+     "dis_multihazard_index": 40.3,
+     "hlt_stunting_prevalence": 39.71,
+     "soc_hdi": 56.34,
+     "soc_poverty_rate": 63.92
+    }
+   },
+   {
+    "region_id": "1114",
+    "region_name": "Kabupaten Aceh Jaya",
+    "composite_score": 49.69,
+    "rank": 407,
+    "component_scores": {
+     "dis_multihazard_index": 22.92,
+     "hlt_stunting_prevalence": 33.33,
+     "soc_hdi": 67.71,
+     "soc_poverty_rate": 79.17
+    }
+   },
+   {
+    "region_id": "7412",
+    "region_name": "Kabupaten Konawe Kepulauan",
+    "composite_score": 49.46,
+    "rank": 408,
+    "component_scores": {
+     "dis_multihazard_index": 32.39,
+     "hlt_stunting_prevalence": 38.89,
+     "soc_hdi": 60.4,
+     "soc_poverty_rate": 69.21
+    }
+   },
+   {
+    "region_id": "7304",
+    "region_name": "Kabupaten Jeneponto",
+    "composite_score": 49.38,
+    "rank": 409,
+    "component_scores": {
+     "dis_multihazard_index": 37.13,
+     "hlt_stunting_prevalence": 28.6,
+     "soc_hdi": 57.33,
+     "soc_poverty_rate": 76.59
+    }
+   },
+   {
+    "region_id": "1106",
+    "region_name": "Kabupaten Aceh Besar",
+    "composite_score": 49.33,
+    "rank": 410,
+    "component_scores": {
+     "dis_multihazard_index": 11.2,
+     "hlt_stunting_prevalence": 41.36,
+     "soc_hdi": 74,
+     "soc_poverty_rate": 77.5
+    }
+   },
+   {
+    "region_id": "7404",
+    "region_name": "Kabupaten Buton",
+    "composite_score": 49.32,
+    "rank": 411,
+    "component_scores": {
+     "dis_multihazard_index": 36.77,
+     "hlt_stunting_prevalence": 26.75,
+     "soc_hdi": 62.09,
+     "soc_poverty_rate": 71.57
+    }
+   },
+   {
+    "region_id": "1109",
+    "region_name": "Kabupaten Simeulue",
+    "composite_score": 49.27,
+    "rank": 412,
+    "component_scores": {
+     "dis_multihazard_index": 30.82,
+     "hlt_stunting_prevalence": 40.12,
+     "soc_hdi": 62.34,
+     "soc_poverty_rate": 66.5
+    }
+   },
+   {
+    "region_id": "7605",
+    "region_name": "Kabupaten Majene",
+    "composite_score": 49.24,
+    "rank": 413,
+    "component_scores": {
+     "dis_multihazard_index": 25.48,
+     "hlt_stunting_prevalence": 40.53,
+     "soc_hdi": 63.12,
+     "soc_poverty_rate": 72.75
+    }
+   },
+   {
+    "region_id": "7301",
+    "region_name": "Kabupaten Kepulauan Selayar",
+    "composite_score": 49.22,
+    "rank": 414,
+    "component_scores": {
+     "dis_multihazard_index": 47.41,
+     "soc_hdi": 64.28,
+     "soc_poverty_rate": 78.58
+    }
+   },
+   {
+    "region_id": "7103",
+    "region_name": "Kabupaten Kepulauan Sangihe",
+    "composite_score": 49.05,
+    "rank": 415,
+    "component_scores": {
+     "dis_multihazard_index": 42.23,
+     "soc_hdi": 69.39,
+     "soc_poverty_rate": 77.84
+    }
+   },
+   {
+    "region_id": "1105",
+    "region_name": "Kabupaten Aceh Barat",
+    "composite_score": 48.79,
+    "rank": 416,
+    "component_scores": {
+     "dis_multihazard_index": 23.96,
+     "hlt_stunting_prevalence": 34.57,
+     "soc_hdi": 71.26,
+     "soc_poverty_rate": 66.55
+    }
+   },
+   {
+    "region_id": "7317",
+    "region_name": "Kabupaten Luwu",
+    "composite_score": 48.79,
+    "rank": 417,
+    "component_scores": {
+     "dis_multihazard_index": 16.47,
+     "hlt_stunting_prevalence": 37.24,
+     "soc_hdi": 69.54,
+     "soc_poverty_rate": 77.69
+    }
+   },
+   {
+    "region_id": "5313",
+    "region_name": "Kabupaten Lembata",
+    "composite_score": 48.55,
+    "rank": 418,
+    "component_scores": {
+     "dis_multihazard_index": 51.71,
+     "hlt_stunting_prevalence": 31.07,
+     "soc_hdi": 57.79,
+     "soc_poverty_rate": 47.44
+    }
+   },
+   {
+    "region_id": "7414",
+    "region_name": "Kabupaten Buton Tengah",
+    "composite_score": 48.34,
+    "rank": 419,
+    "component_scores": {
+     "dis_multihazard_index": 37.45,
+     "hlt_stunting_prevalence": 27.57,
+     "soc_hdi": 57.5,
+     "soc_poverty_rate": 71.72
+    }
+   },
+   {
+    "region_id": "9302",
+    "region_name": "Kabupaten Boven Digoel",
+    "composite_score": 48.15,
+    "rank": 420,
+    "component_scores": {
+     "dis_multihazard_index": 47.64,
+     "hlt_stunting_prevalence": 38.68,
+     "soc_hdi": 53.29,
+     "soc_poverty_rate": 50.66
+    }
+   },
+   {
+    "region_id": "1213",
+    "region_name": "Kabupaten Mandailing Natal",
+    "composite_score": 48.07,
+    "rank": 421,
+    "component_scores": {
+     "dis_multihazard_index": 0,
+     "hlt_stunting_prevalence": 60.7,
+     "soc_hdi": 62.95,
+     "soc_poverty_rate": 85.22
+    }
+   },
+   {
+    "region_id": "9110",
+    "region_name": "Kabupaten Sarmi",
+    "composite_score": 48.03,
+    "rank": 422,
+    "component_scores": {
+     "dis_multihazard_index": 24.69,
+     "hlt_stunting_prevalence": 48.77,
+     "soc_hdi": 57.98,
+     "soc_poverty_rate": 67.36
+    }
+   },
+   {
+    "region_id": "5310",
+    "region_name": "Kabupaten Manggarai",
+    "composite_score": 47.99,
+    "rank": 423,
+    "component_scores": {
+     "dis_multihazard_index": 42.45,
+     "hlt_stunting_prevalence": 27.57,
+     "soc_hdi": 59.04,
+     "soc_poverty_rate": 60.16
+    }
+   },
+   {
+    "region_id": "9207",
+    "region_name": "Kabupaten Teluk Wondama",
+    "composite_score": 47.94,
+    "rank": 424,
+    "component_scores": {
+     "dis_multihazard_index": 43.72,
+     "hlt_stunting_prevalence": 62.76,
+     "soc_hdi": 49.67,
+     "soc_poverty_rate": 36.87
+    }
+   },
+   {
+    "region_id": "5314",
+    "region_name": "Kabupaten Rote Ndao",
+    "composite_score": 47.93,
+    "rank": 425,
+    "component_scores": {
+     "dis_multihazard_index": 61.77,
+     "hlt_stunting_prevalence": 21.4,
+     "soc_hdi": 53.92,
+     "soc_poverty_rate": 44.74
+    }
+   },
+   {
+    "region_id": "8204",
+    "region_name": "Kabupaten Halmahera Selatan",
+    "composite_score": 47.79,
+    "rank": 426,
+    "component_scores": {
+     "dis_multihazard_index": 12.38,
+     "hlt_stunting_prevalence": 40.74,
+     "soc_hdi": 57.86,
+     "soc_poverty_rate": 92.84
+    }
+   },
+   {
+    "region_id": "7101",
+    "region_name": "Kabupaten Bolaang Mongondow",
+    "composite_score": 47.76,
+    "rank": 427,
+    "component_scores": {
+     "dis_multihazard_index": 36.08,
+     "soc_hdi": 64.78,
+     "soc_poverty_rate": 87.51
+    }
+   },
+   {
+    "region_id": "8109",
+    "region_name": "Kabupaten Buru Selatan",
+    "composite_score": 47.73,
+    "rank": 428,
+    "component_scores": {
+     "dis_multihazard_index": 34.79,
+     "hlt_stunting_prevalence": 30.25,
+     "soc_hdi": 58.68,
+     "soc_poverty_rate": 68.18
+    }
+   },
+   {
+    "region_id": "1112",
+    "region_name": "Kabupaten Aceh Barat Daya",
+    "composite_score": 47.66,
+    "rank": 429,
+    "component_scores": {
+     "dis_multihazard_index": 18.45,
+     "hlt_stunting_prevalence": 45.88,
+     "soc_hdi": 61.84,
+     "soc_poverty_rate": 71.96
+    }
+   },
+   {
+    "region_id": "6411",
+    "region_name": "Kabupaten Mahakam Ulu",
+    "composite_score": 47.48,
+    "rank": 430,
+    "component_scores": {
+     "dis_multihazard_index": 40.15,
+     "soc_hdi": 64.89,
+     "soc_poverty_rate": 79.86
+    }
+   },
+   {
+    "region_id": "5305",
+    "region_name": "Kabupaten Alor",
+    "composite_score": 47.32,
+    "rank": 431,
+    "component_scores": {
+     "dis_multihazard_index": 50.55,
+     "hlt_stunting_prevalence": 22.43,
+     "soc_hdi": 52.45,
+     "soc_poverty_rate": 59.69
+    }
+   },
+   {
+    "region_id": "8208",
+    "region_name": "Kabupaten Pulau Taliabu",
+    "composite_score": 47.31,
+    "rank": 432,
+    "component_scores": {
+     "dis_multihazard_index": 21.19,
+     "hlt_stunting_prevalence": 40.33,
+     "soc_hdi": 50.7,
+     "soc_poverty_rate": 88.37
+    }
+   },
+   {
+    "region_id": "3601",
+    "region_name": "Kabupaten Pandeglang",
+    "composite_score": 47.09,
+    "rank": 433,
+    "component_scores": {
+     "dis_multihazard_index": 13.01,
+     "hlt_stunting_prevalence": 44.44,
+     "soc_hdi": 58.49,
+     "soc_poverty_rate": 83.74
+    }
+   },
+   {
+    "region_id": "7415",
+    "region_name": "Kabupaten Buton Selatan",
+    "composite_score": 47.03,
+    "rank": 434,
+    "component_scores": {
+     "dis_multihazard_index": 32.88,
+     "hlt_stunting_prevalence": 26.95,
+     "soc_hdi": 58.51,
+     "soc_poverty_rate": 71.13
+    }
+   },
+   {
+    "region_id": "9206",
+    "region_name": "Kabupaten Teluk Bintuni",
+    "composite_score": 46.88,
+    "rank": 435,
+    "component_scores": {
+     "dis_multihazard_index": 28.02,
+     "hlt_stunting_prevalence": 62.96,
+     "soc_hdi": 58.03,
+     "soc_poverty_rate": 42.35
+    }
+   },
+   {
+    "region_id": "7203",
+    "region_name": "Kabupaten Donggala",
+    "composite_score": 46.86,
+    "rank": 436,
+    "component_scores": {
+     "dis_multihazard_index": 28.99,
+     "hlt_stunting_prevalence": 33.13,
+     "soc_hdi": 59.37,
+     "soc_poverty_rate": 68.62
+    }
+   },
+   {
+    "region_id": "1101",
+    "region_name": "Kabupaten Aceh Selatan",
+    "composite_score": 46.57,
+    "rank": 437,
+    "component_scores": {
+     "dis_multihazard_index": 25.45,
+     "hlt_stunting_prevalence": 20.58,
+     "soc_hdi": 62.51,
+     "soc_poverty_rate": 80.35
+    }
+   },
+   {
+    "region_id": "8172",
+    "region_name": "Kota Tual",
+    "composite_score": 46.47,
+    "rank": 438,
+    "component_scores": {
+     "dis_multihazard_index": 27.32,
+     "hlt_stunting_prevalence": 37.45,
+     "soc_hdi": 64.63,
+     "soc_poverty_rate": 56.98
+    }
+   },
+   {
+    "region_id": "5320",
+    "region_name": "Kabupaten Sabu Raijua",
+    "composite_score": 46.04,
+    "rank": 439,
+    "component_scores": {
+     "dis_multihazard_index": 65.62,
+     "hlt_stunting_prevalence": 27.37,
+     "soc_hdi": 44.37,
+     "soc_poverty_rate": 37.83
+    }
+   },
+   {
+    "region_id": "9303",
+    "region_name": "Kabupaten Mappi",
+    "composite_score": 45.72,
+    "rank": 440,
+    "component_scores": {
+     "dis_multihazard_index": 51.61,
+     "hlt_stunting_prevalence": 44.44,
+     "soc_hdi": 48.05,
+     "soc_poverty_rate": 34.68
+    }
+   },
+   {
+    "region_id": "5303",
+    "region_name": "Kabupaten Timor Tengah Utara",
+    "composite_score": 45.68,
+    "rank": 441,
+    "component_scores": {
+     "dis_multihazard_index": 48.97,
+     "hlt_stunting_prevalence": 15.43,
+     "soc_hdi": 56.28,
+     "soc_poverty_rate": 55.07
+    }
+   },
+   {
+    "region_id": "9115",
+    "region_name": "Kabupaten Waropen",
+    "composite_score": 45.38,
+    "rank": 442,
+    "component_scores": {
+     "dis_multihazard_index": 43.67,
+     "hlt_stunting_prevalence": 49.38,
+     "soc_hdi": 58.36,
+     "soc_poverty_rate": 24.5
+    }
+   },
+   {
+    "region_id": "1110",
+    "region_name": "Kabupaten Aceh Singkil",
+    "composite_score": 45.31,
+    "rank": 443,
+    "component_scores": {
+     "dis_multihazard_index": 21.48,
+     "hlt_stunting_prevalence": 33.13,
+     "soc_hdi": 65.66,
+     "soc_poverty_rate": 62.69
+    }
+   },
+   {
+    "region_id": "8106",
+    "region_name": "Kabupaten Seram Bagian Barat",
+    "composite_score": 45.26,
+    "rank": 444,
+    "component_scores": {
+     "dis_multihazard_index": 29.98,
+     "hlt_stunting_prevalence": 38.68,
+     "soc_hdi": 61.16,
+     "soc_poverty_rate": 50.93
+    }
+   },
+   {
+    "region_id": "9501",
+    "region_name": "Kabupaten Jayawijaya",
+    "composite_score": 45.21,
+    "rank": 445,
+    "component_scores": {
+     "dis_multihazard_index": 58.14,
+     "hlt_stunting_prevalence": 34.98,
+     "soc_hdi": 47.13,
+     "soc_poverty_rate": 33.15
+    }
+   },
+   {
+    "region_id": "1115",
+    "region_name": "Kabupaten Nagan Raya",
+    "composite_score": 45.2,
+    "rank": 446,
+    "component_scores": {
+     "dis_multihazard_index": 13.13,
+     "hlt_stunting_prevalence": 38.27,
+     "soc_hdi": 67.51,
+     "soc_poverty_rate": 66.75
+    }
+   },
+   {
+    "region_id": "5317",
+    "region_name": "Kabupaten Sumba Tengah",
+    "composite_score": 45.07,
+    "rank": 447,
+    "component_scores": {
+     "dis_multihazard_index": 60.33,
+     "hlt_stunting_prevalence": 22.02,
+     "soc_hdi": 53.38,
+     "soc_poverty_rate": 32.78
+    }
+   },
+   {
+    "region_id": "3602",
+    "region_name": "Kabupaten Lebak",
+    "composite_score": 45.04,
+    "rank": 448,
+    "component_scores": {
+     "dis_multihazard_index": 17.02,
+     "hlt_stunting_prevalence": 30.25,
+     "soc_hdi": 56.34,
+     "soc_poverty_rate": 84.92
+    }
+   },
+   {
+    "region_id": "7310",
+    "region_name": "Kabupaten Pangkajene Dan Kepulauan",
+    "composite_score": 44.88,
+    "rank": 449,
+    "component_scores": {
+     "dis_multihazard_index": 32.29,
+     "soc_hdi": 66.55,
+     "soc_poverty_rate": 76.14
+    }
+   },
+   {
+    "region_id": "9211",
+    "region_name": "Kabupaten Manokwari Selatan",
+    "composite_score": 44.64,
+    "rank": 450,
+    "component_scores": {
+     "dis_multihazard_index": 31.79,
+     "hlt_stunting_prevalence": 61.32,
+     "soc_hdi": 49.84,
+     "soc_poverty_rate": 39.45
+    }
+   },
+   {
+    "region_id": "5312",
+    "region_name": "Kabupaten Sumba Barat",
+    "composite_score": 44.63,
+    "rank": 451,
+    "component_scores": {
+     "dis_multihazard_index": 55.1,
+     "hlt_stunting_prevalence": 15.84,
+     "soc_hdi": 56.72,
+     "soc_poverty_rate": 39.57
+    }
+   },
+   {
+    "region_id": "9605",
+    "region_name": "Kabupaten Maybrat",
+    "composite_score": 43.47,
+    "rank": 452,
+    "component_scores": {
+     "dis_multihazard_index": 74.02,
+     "soc_hdi": 48.66,
+     "soc_poverty_rate": 33.35
+    }
+   },
+   {
+    "region_id": "1204",
+    "region_name": "Kabupaten Nias",
+    "composite_score": 43.37,
+    "rank": 453,
+    "component_scores": {
+     "dis_multihazard_index": 1.81,
+     "hlt_stunting_prevalence": 61.52,
+     "soc_hdi": 55.75,
+     "soc_poverty_rate": 68.99
+    }
+   },
+   {
+    "region_id": "9119",
+    "region_name": "Kabupaten Supiori",
+    "composite_score": 43.07,
+    "rank": 454,
+    "component_scores": {
+     "dis_multihazard_index": 71.45,
+     "hlt_stunting_prevalence": 25.72,
+     "soc_hdi": 54.98,
+     "soc_poverty_rate": 0
+    }
+   },
+   {
+    "region_id": "8102",
+    "region_name": "Kabupaten Maluku Tenggara",
+    "composite_score": 42.94,
+    "rank": 455,
+    "component_scores": {
+     "dis_multihazard_index": 24.95,
+     "hlt_stunting_prevalence": 33.33,
+     "soc_hdi": 60.87,
+     "soc_poverty_rate": 52.63
+    }
+   },
+   {
+    "region_id": "9604",
+    "region_name": "Kabupaten Tambrauw",
+    "composite_score": 42.6,
+    "rank": 456,
+    "component_scores": {
+     "dis_multihazard_index": 56.28,
+     "hlt_stunting_prevalence": 37.86,
+     "soc_hdi": 38.16,
+     "soc_poverty_rate": 33.5
+    }
+   },
+   {
+    "region_id": "9602",
+    "region_name": "Kabupaten Sorong Selatan",
+    "composite_score": 42.45,
+    "rank": 457,
+    "component_scores": {
+     "dis_multihazard_index": 21.02,
+     "hlt_stunting_prevalence": 38.89,
+     "soc_hdi": 53.74,
+     "soc_poverty_rate": 61.24
+    }
+   },
+   {
+    "region_id": "9202",
+    "region_name": "Kabupaten Manokwari",
+    "composite_score": 42.44,
+    "rank": 458,
+    "component_scores": {
+     "dis_multihazard_index": 28.66,
+     "soc_hdi": 71.53,
+     "soc_poverty_rate": 61.93
+    }
+   },
+   {
+    "region_id": "8103",
+    "region_name": "Kabupaten Kepulauan Tanimbar",
+    "composite_score": 42.06,
+    "rank": 459,
+    "component_scores": {
+     "dis_multihazard_index": 19.96,
+     "hlt_stunting_prevalence": 51.65,
+     "soc_hdi": 54.37,
+     "soc_poverty_rate": 47.17
+    }
+   },
+   {
+    "region_id": "5304",
+    "region_name": "Kabupaten Belu",
+    "composite_score": 41.89,
+    "rank": 460,
+    "component_scores": {
+     "dis_multihazard_index": 34.32,
+     "hlt_stunting_prevalence": 4.32,
+     "soc_hdi": 53.61,
+     "soc_poverty_rate": 73.22
+    }
+   },
+   {
+    "region_id": "9671",
+    "region_name": "Kota Sorong",
+    "composite_score": 41.49,
+    "rank": 461,
+    "component_scores": {
+     "dis_multihazard_index": 22.36,
+     "hlt_stunting_prevalence": 39.51,
+     "soc_hdi": 60.97,
+     "soc_poverty_rate": 42.94
+    }
+   },
+   {
+    "region_id": "1277",
+    "region_name": "Kota Padangsidimpuan",
+    "composite_score": 41.42,
+    "rank": 462,
+    "component_scores": {
+     "soc_hdi": 77.49,
+     "soc_poverty_rate": 90.88
+    }
+   },
+   {
+    "region_id": "1309",
+    "region_name": "Kabupaten Kepulauan Mentawai",
+    "composite_score": 41.28,
+    "rank": 463,
+    "component_scores": {
+     "dis_multihazard_index": 14.09,
+     "hlt_stunting_prevalence": 33.95,
+     "soc_hdi": 52.77,
+     "soc_poverty_rate": 72.16
+    }
+   },
+   {
+    "region_id": "5321",
+    "region_name": "Kabupaten Malaka",
+    "composite_score": 41.1,
+    "rank": 464,
+    "component_scores": {
+     "dis_multihazard_index": 35.59,
+     "hlt_stunting_prevalence": 5.14,
+     "soc_hdi": 50.37,
+     "soc_poverty_rate": 71.42
+    }
+   },
+   {
+    "region_id": "1214",
+    "region_name": "Kabupaten Nias Selatan",
+    "composite_score": 40.63,
+    "rank": 465,
+    "component_scores": {
+     "dis_multihazard_index": 12.16,
+     "hlt_stunting_prevalence": 37.86,
+     "soc_hdi": 54.74,
+     "soc_poverty_rate": 64.93
+    }
+   },
+   {
+    "region_id": "5318",
+    "region_name": "Kabupaten Sumba Barat Daya",
+    "composite_score": 40.36,
+    "rank": 466,
+    "component_scores": {
+     "dis_multihazard_index": 45.43,
+     "hlt_stunting_prevalence": 12.14,
+     "soc_hdi": 53.31,
+     "soc_poverty_rate": 41.56
+    }
+   },
+   {
+    "region_id": "9507",
+    "region_name": "Kabupaten Lanny Jaya",
+    "composite_score": 40.19,
+    "rank": 467,
+    "component_scores": {
+     "dis_multihazard_index": 72.15,
+     "hlt_stunting_prevalence": 22.02,
+     "soc_hdi": 29.14,
+     "soc_poverty_rate": 26.98
+    }
+   },
+   {
+    "region_id": "1224",
+    "region_name": "Kabupaten Nias Utara",
+    "composite_score": 39.92,
+    "rank": 468,
+    "component_scores": {
+     "dis_multihazard_index": 0.47,
+     "hlt_stunting_prevalence": 61.52,
+     "soc_hdi": 55.88,
+     "soc_poverty_rate": 53.54
+    }
+   },
+   {
+    "region_id": "5319",
+    "region_name": "Kabupaten Manggarai Timur",
+    "composite_score": 39.36,
+    "rank": 469,
+    "component_scores": {
+     "dis_multihazard_index": 37.89,
+     "hlt_stunting_prevalence": 13.37,
+     "soc_hdi": 53.17,
+     "soc_poverty_rate": 46.85
+    }
+   },
+   {
+    "region_id": "9506",
+    "region_name": "Kabupaten Yalimo",
+    "composite_score": 37.25,
+    "rank": 470,
+    "component_scores": {
+     "dis_multihazard_index": 69.59,
+     "soc_hdi": 29.64,
+     "soc_poverty_rate": 37.41
+    }
+   },
+   {
+    "region_id": "8107",
+    "region_name": "Kabupaten Kepulauan Aru",
+    "composite_score": 35.84,
+    "rank": 471,
+    "component_scores": {
+     "dis_multihazard_index": 18.1,
+     "hlt_stunting_prevalence": 19.75,
+     "soc_hdi": 56.28,
+     "soc_poverty_rate": 47.86
+    }
+   },
+   {
+    "region_id": "9407",
+    "region_name": "Kabupaten Intan Jaya",
+    "composite_score": 35.73,
+    "rank": 472,
+    "component_scores": {
+     "dis_multihazard_index": 86.16,
+     "soc_hdi": 27.46,
+     "soc_poverty_rate": 8.24
+    }
+   },
+   {
+    "region_id": "1225",
+    "region_name": "Kabupaten Nias Barat",
+    "composite_score": 35.57,
+    "rank": 473,
+    "component_scores": {
+     "dis_multihazard_index": 2.34,
+     "hlt_stunting_prevalence": 43.83,
+     "soc_hdi": 54.07,
+     "soc_poverty_rate": 49.41
+    }
+   },
+   {
+    "region_id": "9406",
+    "region_name": "Kabupaten Dogiyai",
+    "composite_score": 34.7,
+    "rank": 474,
+    "component_scores": {
+     "dis_multihazard_index": 53.24,
+     "soc_hdi": 40.75,
+     "soc_poverty_rate": 32.51
+    }
+   },
+   {
+    "region_id": "9212",
+    "region_name": "Kabupaten Pegunungan Arfak",
+    "composite_score": 34.49,
+    "rank": 475,
+    "component_scores": {
+     "dis_multihazard_index": 31.79,
+     "hlt_stunting_prevalence": 31.89,
+     "soc_hdi": 42.75,
+     "soc_poverty_rate": 28.73
+    }
+   },
+   {
+    "region_id": "5302",
+    "region_name": "Kabupaten Timor Tengah Selatan",
+    "composite_score": 33.48,
+    "rank": 476,
+    "component_scores": {
+     "dis_multihazard_index": 28.36,
+     "hlt_stunting_prevalence": 0.21,
+     "soc_hdi": 53.48,
+     "soc_poverty_rate": 44.42
+    }
+   },
+   {
+    "region_id": "9504",
+    "region_name": "Kabupaten Tolikara",
+    "composite_score": 33.45,
+    "rank": 477,
+    "component_scores": {
+     "dis_multihazard_index": 58.84,
+     "soc_hdi": 30.02,
+     "soc_poverty_rate": 33.96
+    }
+   },
+   {
+    "region_id": "9304",
+    "region_name": "Kabupaten Asmat",
+    "composite_score": 33.05,
+    "rank": 478,
+    "component_scores": {
+     "dis_multihazard_index": 53.47,
+     "soc_hdi": 33.58,
+     "soc_poverty_rate": 34.65
+    }
+   },
+   {
+    "region_id": "9403",
+    "region_name": "Kabupaten Paniai",
+    "composite_score": 33.04,
+    "rank": 479,
+    "component_scores": {
+     "dis_multihazard_index": 57.21,
+     "soc_hdi": 42.67,
+     "soc_poverty_rate": 15.37
+    }
+   },
+   {
+    "region_id": "8108",
+    "region_name": "Kabupaten Maluku Barat Daya",
+    "composite_score": 32.35,
+    "rank": 480,
+    "component_scores": {
+     "dis_multihazard_index": 1.1,
+     "hlt_stunting_prevalence": 41.77,
+     "soc_hdi": 54.43,
+     "soc_poverty_rate": 36.67
+    }
+   },
+   {
+    "region_id": "9502",
+    "region_name": "Kabupaten Pegunungan Bintang",
+    "composite_score": 31.16,
+    "rank": 481,
+    "component_scores": {
+     "dis_multihazard_index": 51.61,
+     "soc_hdi": 24.89,
+     "soc_poverty_rate": 41.05
+    }
+   },
+   {
+    "region_id": "9408",
+    "region_name": "Kabupaten Deiyai",
+    "composite_score": 30.24,
+    "rank": 482,
+    "component_scores": {
+     "dis_multihazard_index": 62.11,
+     "hlt_stunting_prevalence": 0,
+     "soc_hdi": 30.06,
+     "soc_poverty_rate": 12.96
+    }
+   },
+   {
+    "region_id": "9402",
+    "region_name": "Kabupaten Puncak Jaya",
+    "composite_score": 29.44,
+    "rank": 483,
+    "component_scores": {
+     "dis_multihazard_index": 56.98,
+     "soc_hdi": 29.5,
+     "soc_poverty_rate": 17.46
+    }
+   },
+   {
+    "region_id": "9503",
+    "region_name": "Kabupaten Yahukimo",
+    "composite_score": 29.2,
+    "rank": 484,
+    "component_scores": {
+     "dis_multihazard_index": 47.87,
+     "soc_hdi": 29.88,
+     "soc_poverty_rate": 29.39
+    }
+   },
+   {
+    "region_id": "9405",
+    "region_name": "Kabupaten Puncak",
+    "composite_score": 28.25,
+    "rank": 485,
+    "component_scores": {
+     "dis_multihazard_index": 67.25,
+     "soc_hdi": 17.72,
+     "soc_poverty_rate": 13.82
+    }
+   },
+   {
+    "region_id": "9120",
+    "region_name": "Kabupaten Mamberamo Raya",
+    "composite_score": 27.18,
+    "rank": 486,
+    "component_scores": {
+     "dis_multihazard_index": 28.72,
+     "hlt_stunting_prevalence": 20.99,
+     "soc_hdi": 35.64,
+     "soc_poverty_rate": 18.37
+    }
+   },
+   {
+    "region_id": "9508",
+    "region_name": "Kabupaten Nduga",
+    "composite_score": 25.49,
+    "rank": 487,
+    "component_scores": {
+     "dis_multihazard_index": 69.12,
+     "soc_hdi": 0,
+     "soc_poverty_rate": 23.78
+    }
+   }
+  ]
+ }
+}

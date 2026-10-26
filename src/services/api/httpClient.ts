@@ -9,6 +9,10 @@ export interface HttpResponseContext {
   readonly dataFallback: string | null;
   readonly serverMode: string | null;
   readonly clientReceivedAt: string;
+  /** v2.2 `X-NusaMatra-Snapshot`; must agree with `meta.snapshot_id` when both are sent. */
+  readonly snapshotHeader?: string | null;
+  /** v2.2 `X-NusaMatra-Content-SHA256`; must agree with `meta.content_sha256` when both are sent. */
+  readonly contentSha256Header?: string | null;
 }
 
 export interface RuntimeDecoder<T> {
@@ -20,6 +24,11 @@ export interface RequestOptions {
   readonly query?: Readonly<Record<string, string | number | boolean | null | undefined>> | undefined;
   readonly signal?: AbortSignal | undefined;
   readonly headers?: Readonly<Record<string, string>> | undefined;
+  /**
+   * Browser cache policy. Time-critical feeds pass `no-cache`: the API sends
+   * `Cache-Control: max-age=3600` even for data refreshed every minute.
+   */
+  readonly cache?: RequestCache | undefined;
 }
 
 export interface DataHubHttpClientConfig {
@@ -107,6 +116,7 @@ export class DataHubHttpClient {
     try {
       response = await this.fetchImpl(url, {
         ...init,
+        ...(options.cache ? { cache: options.cache } : {}),
         signal: options.signal ?? null,
         headers: mergedHeaders,
       });
@@ -129,6 +139,8 @@ export class DataHubHttpClient {
       serverMode:
         readHeader(response.headers, 'x-nusamatra-mode') ?? readHeader(response.headers, 'x-data-mode'),
       clientReceivedAt: new Date().toISOString(),
+      snapshotHeader: readHeader(response.headers, 'x-nusamatra-snapshot'),
+      contentSha256Header: readHeader(response.headers, 'x-nusamatra-content-sha256'),
     };
 
     const rawText = await readResponseTextSafely(response, context);

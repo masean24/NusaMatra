@@ -12,6 +12,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
 import styles from './NusaMatra3DMap.module.css';
+import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
+import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
 import { fbmNoise } from './terrain/noise';
 import { getIndonesiaCoastline } from './terrain/coastline';
 import { buildHeroTerrain, type HeroTerrain } from './terrain/heroTerrain';
@@ -19,6 +21,78 @@ import { HERO_SUN_DIRECTION } from './terrain/heightField';
 import { fitCameraToPoints, type CameraPose } from './terrain/cameraFit';
 
 /** Hero framing: elevation of the camera and the free border kept for parallax and the intro. */
+/** Start-up camera of the Explore map, (0, 33, 29): its distance and the direction it looks from. */
+const EXPLORE_CAMERA_DISTANCE = Math.hypot(33, 29);
+const EXPLORE_CAMERA_DIRECTION = new THREE.Vector3(0, 33, 29).normalize();
+const EXPLORE_FOG_NEAR = 32;
+const EXPLORE_FOG_FAR = 118;
+/** Extra room around the official geography when it is fitted to the canvas width. */
+const EXPLORE_FIT_MARGIN = 1.2;
+
+/**
+ * Host fix: how far the camera must be for a ground strip of `width` to fit the canvas. LIVE
+ * geography (the whole archipelago) is fitted this way so it is never cropped, whatever the shape of
+ * the canvas beside the side panel or above a phone's sheet; it never comes closer than start-up.
+ */
+function exploreDefaultPosition(
+  eng: { camera: THREE.PerspectiveCamera; scene: THREE.Scene; exploreFrame: { width: number } | null },
+  target: THREE.Vector3,
+): THREE.Vector3 {
+  const distance = eng.exploreFrame
+    ? exploreFitDistance(eng.camera, eng.exploreFrame.width, eng.scene)
+    : EXPLORE_CAMERA_DISTANCE;
+  return target.clone().addScaledVector(EXPLORE_CAMERA_DIRECTION, distance);
+}
+
+/**
+ * Host fix: the share of the canvas width left visible beside a panel floating over its left edge.
+ * The fit uses only that part, so the whole archipelago stays in view next to the panel.
+ */
+const VISIBLE_WIDTH_SHARE = new WeakMap<THREE.PerspectiveCamera, number>();
+
+/**
+ * Host fix: shifts the projection centre right by half of `insetPx` (the canvas covered by a
+ * floating panel), so what the camera looks at sits in the middle of the visible part. Picking
+ * stays exact: the raycaster uses the same projection matrix.
+ */
+function applyViewInset(camera: THREE.PerspectiveCamera, w: number, h: number, insetPx: number): void {
+  const inset = Math.min(Math.max(0, insetPx), w * 0.6);
+  if (inset > 0) {
+    camera.setViewOffset(w, h, -inset / 2, 0, w, h);
+  } else {
+    camera.clearViewOffset();
+  }
+  VISIBLE_WIDTH_SHARE.set(camera, (w - inset) / w);
+}
+
+/** OrbitControls' farthest zoom on a wide canvas. */
+const EXPLORE_MAX_DISTANCE = 85.0;
+
+/**
+ * Host fix: a tall, narrow canvas (a phone's full screen) needs the camera farther away than the
+ * controls' usual limit to fit the whole archipelago; let the limit follow the fitted distance.
+ */
+function keepFitReachable(controls: OrbitControls | null, fitDistance: number): void {
+  if (controls) controls.maxDistance = Math.max(EXPLORE_MAX_DISTANCE, fitDistance * 1.1);
+}
+
+function exploreFitDistance(camera: THREE.PerspectiveCamera, width: number, scene?: THREE.Scene): number {
+  const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+  const visibleAspect = camera.aspect * (VISIBLE_WIDTH_SHARE.get(camera) ?? 1);
+  const fitting = (width * EXPLORE_FIT_MARGIN) / (2 * Math.tan(halfFov) * visibleAspect);
+  const distance = Math.max(EXPLORE_CAMERA_DISTANCE, fitting);
+  // The haze was tuned for the start-up distance; keep it in proportion when the camera backs off,
+  // or the land washes out toward the sea colour.
+  if (scene?.fog instanceof THREE.Fog) {
+    const ratio = distance / EXPLORE_CAMERA_DISTANCE;
+    scene.fog.near = EXPLORE_FOG_NEAR * ratio;
+    scene.fog.far = EXPLORE_FOG_FAR * ratio;
+  }
+  return distance;
+}
+
+const NO_OVERLAY_POINTS: readonly MapOverlayPoint[] = [];
+
 const HERO_CAMERA_ELEVATION_DEG = 54;
 const HERO_FRAME_MARGIN = 0.05;
 const HERO_MARKER_SCALE = 2.2;
@@ -103,6 +177,8 @@ export interface NusaMatra3DMapHandle {
   focusRegion: (regionId: string) => void;
   focusCoordinates: (lon: number, lat: number, distance?: number) => void;
   resetCamera: () => void;
+  /** Moves the camera toward (factor < 1) or away from (factor > 1) what it looks at, within the controls' limits. */
+  zoomBy: (factor: number) => void;
   setCameraPreset: (preset: CameraPreset) => void;
   triggerExploreTransition: () => void;
 }
@@ -127,6 +203,12 @@ export interface NusaMatra3DMapProps {
   cameraPreset?: CameraPreset;
   /** Optional DEV-only inspector panel (off by default in production) */
   enableDevInspector?: boolean;
+  /** Host fix: clickable points drawn over the map (e.g. BMKG epicentres); never touch region geometry. */
+  overlayPoints?: readonly MapOverlayPoint[];
+  selectedOverlayId?: string | null;
+  onSelectOverlay?: (id: string) => void;
+  /** Host fix: CSS pixels of the canvas covered on the left by a floating panel; the view is centred beside it. */
+  viewInsetLeft?: number;
 }
 
 // ============================================================================
@@ -164,6 +246,81 @@ export function getTierColorHex(tier: 1 | 2 | 3 | 4 = 1): number {
     default:
       return 0xfbfaf6;
   }
+}
+
+/**
+ * Jelajahi atlas materials per display mode (Kapur & Kobalt). Every region gets the same land
+ * colour: the map shows no indicator, so nothing may read as a choropleth. Hover and selection
+ * recolour only the top surface, and stay distinct from the earthquake markers (dark discs with a
+ * light ring).
+ */
+export interface AtlasPalette {
+  readonly ocean: string;
+  readonly landTop: string;
+  readonly landSide: string;
+  readonly boundary: string;
+  readonly hover: string;
+  readonly selected: string;
+  readonly graticule: string;
+}
+
+export const EXPLORE_ATLAS_PALETTE: Readonly<Record<NusaMatraDisplayMode, AtlasPalette>> = {
+  // Kapur land (limestone, the Kapur & Kobalt palette; owner request 2026-10-26). The sea is the page
+  // background (the canvas is transparent), so `ocean` only tints the light bounced onto the sides.
+  // The selection stays Kobalt. `graticule` matches the homepage hexagon map's grid ink.
+  normal: {
+    ocean: '#DCE8FF',
+    landTop: '#F2EBDD',
+    landSide: '#D4CBB8',
+    boundary: '#B9AB92',
+    hover: '#8CACFF',
+    selected: '#2F5BFF',
+    graticule: '#2F5BFF',
+  },
+  glass: {
+    ocean: '#17368C',
+    landTop: '#FBFAF6',
+    landSide: '#D4CBB8',
+    boundary: '#B9AB92',
+    hover: '#8CACFF',
+    selected: '#2F5BFF',
+    graticule: '#FFFFFF',
+  },
+};
+
+/** Shadows of the land on the invisible sea plane, so the islands still sit on a surface. */
+const EXPLORE_SHADOW_OPACITY = { normal: 0.14, glass: 0.3 } as const;
+
+/** Homepage graticule: faint 10° meridians and 5° parallels, the equator dashed and stronger. */
+const GRATICULE_OPACITY = 0.16;
+const EQUATOR_OPACITY = 0.38;
+const GRATICULE_MERIDIANS = [100, 110, 120, 130, 140] as const;
+const GRATICULE_PARALLELS = [5, 0, -5, -10] as const;
+const GRATICULE_LAT_SPAN = [8, -13] as const;
+const GRATICULE_LON_SPAN = [92, 143] as const;
+
+/**
+ * Explore lights. MeshStandardMaterial reflects albedo / π of the light it receives, so a surface
+ * facing up is lit with about π in total (sky + sun + rim) and renders at its palette colour. Most of
+ * it is soft sky light, which keeps shadows and extruded sides gentle.
+ */
+const EXPLORE_HEMI_INTENSITY = 2.1;
+const EXPLORE_SUN_INTENSITY = 1.25;
+const EXPLORE_RIM_INTENSITY = 0.25;
+
+/** Share of land colour in the hemisphere's ground (bounce) light; the rest is the sea's. */
+const SIDE_BOUNCE_LAND_SHARE = 0.8;
+
+type RegionPaint = 'idle' | 'hover' | 'selected';
+const REGION_LIFT: Readonly<Record<RegionPaint, number>> = { idle: 0, hover: 0.08, selected: 0.16 };
+
+/** Colour and lift of one region for its interaction state; the only place regions are recoloured. */
+function paintRegion(group: THREE.Group, palette: AtlasPalette, state: RegionPaint): void {
+  const top = group.userData.topMaterial as THREE.MeshStandardMaterial;
+  top.color.set(
+    state === 'selected' ? palette.selected : state === 'hover' ? palette.hover : palette.landTop
+  );
+  group.position.y = REGION_LIFT[state];
 }
 
 // ============================================================================
@@ -992,6 +1149,7 @@ export function createIllustrativeTextures(): ProceduralSurfaceSet {
   bumpCanvas.height = size;
   const bumpCtx = bumpCanvas.getContext('2d');
 
+
   const oceanCanvas = document.createElement('canvas');
   oceanCanvas.width = 128;
   oceanCanvas.height = 128;
@@ -1153,6 +1311,17 @@ interface InternalEngineState {
   /** Hero only: coastline relief scene and the camera pose that frames it. */
   heroTerrain: HeroTerrain | null;
   heroPose: CameraPose | null;
+  /** Explore, LIVE geography only: centre and width of the drawn regions, for fitting the camera. */
+  exploreFrame: { center: THREE.Vector3; width: number } | null;
+  /** Points over the map (host overlay), in their own group. */
+  overlay: PointOverlay;
+  /** Explore: lights and materials the atlas palette recolours in place on a theme change. */
+  hemiLight: THREE.HemisphereLight;
+  gridMaterial: THREE.LineBasicMaterial;
+  equatorMaterial: THREE.LineDashedMaterial;
+  shadowMaterial: THREE.ShadowMaterial;
+  regionSideMaterial: THREE.MeshStandardMaterial | null;
+  regionBoundaryMaterial: THREE.LineBasicMaterial | null;
 }
 
 export const NusaMatra3DMap = forwardRef<
@@ -1176,9 +1345,16 @@ export const NusaMatra3DMap = forwardRef<
     showCoastlines = true,
     cameraPreset = 'perspective',
     enableDevInspector = false,
+    overlayPoints = NO_OVERLAY_POINTS,
+    selectedOverlayId = null,
+    onSelectOverlay,
+    viewInsetLeft = 0,
   } = props;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const viewInsetRef = useRef(viewInsetLeft);
+  /** Re-runs the resize handling (projection, fit, renderer size) for the container's current size. */
+  const relayoutRef = useRef<((w: number, h: number) => void) | null>(null);
   const [webglError, setWebglError] = useState<string | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -1210,9 +1386,19 @@ export const NusaMatra3DMap = forwardRef<
   }, []);
 
   const isMotionReduced = reducedMotion || prefersReducedMotion;
+
+  // A floating panel opening, folding or changing width moves the visible centre: re-run the layout.
+  useEffect(() => {
+    viewInsetRef.current = viewInsetLeft;
+    const container = containerRef.current;
+    if (container) relayoutRef.current?.(container.clientWidth, container.clientHeight);
+  }, [viewInsetLeft]);
   // Motion preference must not tear down/recreate the WebGL scene.
   const isMotionReducedRef = useRef(isMotionReduced);
   isMotionReducedRef.current = isMotionReduced;
+  // Read when regions are (re)built, so new materials start in the current theme.
+  const displayModeRef = useRef(displayMode);
+  displayModeRef.current = displayMode;
 
   const validationResult = useMemo<{
     dataset: GeographyDataset | null;
@@ -1284,11 +1470,30 @@ export const NusaMatra3DMap = forwardRef<
           eng.cameraTargetPos = eng.heroPose.position.clone();
         } else if (mode === 'hero') {
           eng.cameraTargetPos = new THREE.Vector3(1.5, 29, 25);
+        } else if (eng.exploreFrame && cameraPreset !== 'top-down') {
+          // Official geography: back to the fitted start-up view, so the whole archipelago is in view.
+          eng.controlsTargetPos = eng.exploreFrame.center.clone();
+          eng.cameraTargetPos = exploreDefaultPosition(eng, eng.exploreFrame.center);
         } else if (cameraPreset === 'top-down') {
           eng.cameraTargetPos = new THREE.Vector3(0, 44, 0.01);
         } else {
           eng.cameraTargetPos = new THREE.Vector3(0, 33, 29);
         }
+      },
+      zoomBy: (factor: number) => {
+        const eng = engineRef.current;
+        if (!eng?.controls || !(factor > 0)) return;
+        // From where the camera is heading (a move may be under way), along the same line of sight.
+        const target = (eng.controlsTargetPos ?? eng.controls.target).clone();
+        const from = eng.cameraTargetPos ?? eng.camera.position;
+        const offset = from.clone().sub(target);
+        const distance = THREE.MathUtils.clamp(
+          offset.length() * factor,
+          eng.controls.minDistance,
+          eng.controls.maxDistance,
+        );
+        eng.controlsTargetPos = target;
+        eng.cameraTargetPos = target.clone().addScaledVector(offset.normalize(), distance);
       },
       setCameraPreset: (preset: CameraPreset) => {
         const eng = engineRef.current;
@@ -1300,7 +1505,7 @@ export const NusaMatra3DMap = forwardRef<
         if (preset === 'top-down') {
           eng.cameraTargetPos = new THREE.Vector3(target.x, 42, target.z + 0.01);
         } else {
-          eng.cameraTargetPos = new THREE.Vector3(target.x, 33, target.z + 29);
+          eng.cameraTargetPos = exploreDefaultPosition(eng, target);
         }
       },
       triggerExploreTransition: () => {
@@ -1321,7 +1526,8 @@ export const NusaMatra3DMap = forwardRef<
     try {
       renderer = new THREE.WebGLRenderer({
         antialias: true,
-        alpha: mode === 'hero',
+        // Transparent in both modes: the hero sits on its section, Explore on the page background.
+        alpha: true,
         powerPreference: 'high-performance',
       });
     } catch {
@@ -1341,12 +1547,16 @@ export const NusaMatra3DMap = forwardRef<
     renderer.shadowMap.enabled = true;
     // Host integration fix: PCFSoftShadowMap is deprecated since three r186 (the host's version).
     renderer.shadowMap.type = THREE.PCFShadowMap;
+    // Host performance fix: the Explore scene is static between selections, so the shadow pass
+    // (a second full draw of every region) runs only when something moved, not every frame. The
+    // hero animates its whole group, so it keeps the per-frame update.
+    renderer.shadowMap.autoUpdate = mode === 'hero';
     container.innerHTML = '';
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(KAPUR_KOBALT_PALETTE.sea);
-    scene.fog = new THREE.Fog(KAPUR_KOBALT_PALETTE.seaShallow, 32, 118);
+    scene.fog = new THREE.Fog(KAPUR_KOBALT_PALETTE.seaShallow, EXPLORE_FOG_NEAR, EXPLORE_FOG_FAR);
 
     const camera = new THREE.PerspectiveCamera(
       mode === 'hero' ? 40 : 45,
@@ -1368,7 +1578,7 @@ export const NusaMatra3DMap = forwardRef<
       controls.dampingFactor = 0.07;
       controls.maxPolarAngle = Math.PI / 2 - 0.05;
       controls.minDistance = 4.0;
-      controls.maxDistance = 85.0;
+      controls.maxDistance = EXPLORE_MAX_DISTANCE;
       controls.target.set(0, 0, 0);
     }
 
@@ -1411,7 +1621,8 @@ export const NusaMatra3DMap = forwardRef<
     const markersGroup = new THREE.Group();
     const gridGroup = new THREE.Group();
 
-    rootGroup.add(regionsGroup, markersGroup, gridGroup);
+    const overlay = new PointOverlay(lonLatToPlanar);
+    rootGroup.add(regionsGroup, markersGroup, gridGroup, overlay.group);
     scene.add(rootGroup);
 
     // Hero: coastline relief on a textured sea, both inside rootGroup so the intro and the
@@ -1474,36 +1685,58 @@ export const NusaMatra3DMap = forwardRef<
       dirLight.shadow.normalBias = 0.02;
       dirLight.shadow.camera.updateProjectionMatrix();
     } else {
-      oceanMaterial = new THREE.MeshStandardMaterial({
-        color: KAPUR_KOBALT_PALETTE.sea,
-        roughness: displayMode === 'glass' ? 0.36 : 0.6,
-        metalness: 0.1,
-        bumpMap: textures.oceanBumpMap,
-        bumpScale: 0.035,
-      });
+      // The sea is the page itself: no background, no haze, and the sea plane draws nothing but the
+      // land's shadows (shadowCatcher), so the map sits on the same surface as every other page.
+      scene.background = null;
+      scene.fog = null;
+      hemiLight.intensity = EXPLORE_HEMI_INTENSITY;
+      dirLight.intensity = EXPLORE_SUN_INTENSITY;
+      rimLight.intensity = EXPLORE_RIM_INTENSITY;
+      oceanMaterial = new THREE.MeshStandardMaterial({ colorWrite: false, depthWrite: false });
       oceanMesh = new THREE.Mesh(new THREE.PlaneGeometry(200, 130, 32, 32), oceanMaterial);
       oceanMesh.rotation.x = -Math.PI / 2;
       oceanMesh.position.y = -0.02;
-      oceanMesh.receiveShadow = true;
       scene.add(oceanMesh);
+    }
+    // Explore: the land's shadows on the sea plane (its geometry), drawn over the page background.
+    const shadowMaterial = new THREE.ShadowMaterial({ opacity: EXPLORE_SHADOW_OPACITY[displayMode] });
+    if (mode === 'explore') {
+      const shadowCatcher = new THREE.Mesh(oceanMesh.geometry, shadowMaterial);
+      shadowCatcher.rotation.x = -Math.PI / 2;
+      shadowCatcher.position.y = -0.02;
+      shadowCatcher.receiveShadow = true;
+      scene.add(shadowCatcher);
     }
 
     const gridMaterial = new THREE.LineBasicMaterial({
-      color: KAPUR_KOBALT_PALETTE.seaShallow,
+      color: EXPLORE_ATLAS_PALETTE[displayMode].graticule,
       transparent: true,
-      opacity: 0.45,
+      opacity: GRATICULE_OPACITY,
     });
-    for (let lon = 95; lon <= 140; lon += 5) {
-      const start = lonLatToPlanar(lon, -12, 0.01);
-      const end = lonLatToPlanar(lon, 8, 0.01);
-      const geo = new THREE.BufferGeometry().setFromPoints([start, end]);
+    const equatorMaterial = new THREE.LineDashedMaterial({
+      color: EXPLORE_ATLAS_PALETTE[displayMode].graticule,
+      transparent: true,
+      opacity: EQUATOR_OPACITY,
+      dashSize: 0.5,
+      gapSize: 0.42,
+    });
+    const [north, south] = GRATICULE_LAT_SPAN;
+    const [west, east] = GRATICULE_LON_SPAN;
+    for (const lon of GRATICULE_MERIDIANS) {
+      const geo = new THREE.BufferGeometry().setFromPoints([
+        lonLatToPlanar(lon, north, 0.01),
+        lonLatToPlanar(lon, south, 0.01),
+      ]);
       gridGroup.add(new THREE.Line(geo, gridMaterial));
     }
-    for (let lat = -10; lat <= 5; lat += 5) {
-      const start = lonLatToPlanar(92, lat, 0.01);
-      const end = lonLatToPlanar(143, lat, 0.01);
-      const geo = new THREE.BufferGeometry().setFromPoints([start, end]);
-      gridGroup.add(new THREE.Line(geo, gridMaterial));
+    for (const lat of GRATICULE_PARALLELS) {
+      const geo = new THREE.BufferGeometry().setFromPoints([
+        lonLatToPlanar(west, lat, 0.01),
+        lonLatToPlanar(east, lat, 0.01),
+      ]);
+      const line = new THREE.Line(geo, lat === 0 ? equatorMaterial : gridMaterial);
+      if (lat === 0) line.computeLineDistances();
+      gridGroup.add(line);
     }
     gridGroup.visible = mode === 'explore' && showGraticule;
 
@@ -1529,30 +1762,66 @@ export const NusaMatra3DMap = forwardRef<
       isVisible: true,
       heroTerrain,
       heroPose,
+      exploreFrame: null,
+      overlay,
+      hemiLight,
+      gridMaterial,
+      equatorMaterial,
+      shadowMaterial,
+      regionSideMaterial: null,
+      regionBoundaryMaterial: null,
     };
 
     onReady?.();
 
+    // Projection, fit and renderer size for a container size; run on resize and when the inset changes.
+    const relayout = (rawW: number, rawH: number) => {
+      const w = Math.max(1, rawW);
+      const h = Math.max(1, rawH);
+      const eng = engineRef.current;
+      const fitBefore =
+        mode === 'explore' && eng?.exploreFrame
+          ? exploreFitDistance(camera, eng.exploreFrame.width, scene)
+          : null;
+      camera.aspect = w / h;
+      if (mode === 'explore') {
+        applyViewInset(camera, w, h, viewInsetRef.current); // also updates the projection matrix
+      } else {
+        camera.updateProjectionMatrix();
+      }
+      renderer.setSize(w, h);
+      if (mode === 'explore' && eng?.exploreFrame && fitBefore !== null) {
+        keepFitReachable(eng.controls, exploreFitDistance(camera, eng.exploreFrame.width, scene));
+        // Refit to the new canvas shape, keeping the direction the user is looking from.
+        const target = eng.controls ? eng.controls.target : new THREE.Vector3();
+        if (eng.cameraTargetPos) {
+          // A camera move is under way (start-up framing): retarget it for the new shape.
+          eng.cameraTargetPos.copy(exploreDefaultPosition(eng, eng.controlsTargetPos ?? target));
+        } else {
+          // Scale the distance by how much the fitted distance changed, so a side panel folding
+          // keeps the user's zoom and target instead of snapping back to the whole frame.
+          const fitAfter = exploreFitDistance(camera, eng.exploreFrame.width, scene);
+          const offset = camera.position.clone().sub(target);
+          camera.position.copy(target).addScaledVector(offset, fitAfter / fitBefore);
+        }
+      }
+      if (eng?.heroTerrain && !eng.cameraTargetPos) {
+        // Re-frame the whole archipelago for the new aspect ratio.
+        eng.heroPose = fitCameraToPoints(camera, eng.heroTerrain.framingPoints, {
+          elevationDeg: HERO_CAMERA_ELEVATION_DEG,
+          margin: HERO_FRAME_MARGIN,
+        });
+        const viewDistance = eng.heroPose.position.distanceTo(eng.heroPose.target);
+        if (scene.fog instanceof THREE.Fog) {
+          scene.fog.near = viewDistance * HERO_FOG_NEAR;
+          scene.fog.far = viewDistance * HERO_FOG_FAR;
+        }
+      }
+    };
+    relayoutRef.current = relayout;
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const w = Math.max(1, entry.contentRect.width);
-        const h = Math.max(1, entry.contentRect.height);
-        camera.aspect = w / h;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w, h);
-        const eng = engineRef.current;
-        if (eng?.heroTerrain && !eng.cameraTargetPos) {
-          // Re-frame the whole archipelago for the new aspect ratio.
-          eng.heroPose = fitCameraToPoints(camera, eng.heroTerrain.framingPoints, {
-            elevationDeg: HERO_CAMERA_ELEVATION_DEG,
-            margin: HERO_FRAME_MARGIN,
-          });
-          const viewDistance = eng.heroPose.position.distanceTo(eng.heroPose.target);
-          if (scene.fog instanceof THREE.Fog) {
-            scene.fog.near = viewDistance * HERO_FOG_NEAR;
-            scene.fog.far = viewDistance * HERO_FOG_FAR;
-          }
-        }
+        relayout(entry.contentRect.width, entry.contentRect.height);
       }
     });
     resizeObserver.observe(container);
@@ -1633,6 +1902,7 @@ export const NusaMatra3DMap = forwardRef<
       }
 
       eng.controls?.update();
+      eng.overlay.tick(now);
       eng.renderer.render(eng.scene, eng.camera);
     };
 
@@ -1640,13 +1910,16 @@ export const NusaMatra3DMap = forwardRef<
 
     return () => {
       cancelAnimationFrame(rafId);
+      relayoutRef.current = null;
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       controls?.dispose();
+      overlay.dispose();
       disposeObjectTree(rootGroup);
       heroTerrain?.dispose(); // also frees the data textures, which the tree walk does not reach
       oceanMesh.geometry.dispose();
       oceanMaterial.dispose();
+      shadowMaterial.dispose(); // the graticule materials go with rootGroup's tree
       textures.dispose();
       dirLight.shadow.map?.dispose();
       renderer.dispose();
@@ -1658,22 +1931,34 @@ export const NusaMatra3DMap = forwardRef<
     const eng = engineRef.current;
     if (!eng || !validatedDataset) return;
 
+    eng.renderer.shadowMap.needsUpdate = true;
     disposeObjectTree(eng.regionsGroup);
     disposeObjectTree(eng.markersGroup);
     eng.featureMeshes.clear();
     eng.interactiveMeshes = [];
 
+    const palette = EXPLORE_ATLAS_PALETTE[displayModeRef.current];
+    // Shared by every region (one draw state), recoloured in place on a theme change.
     const borderMat = new THREE.LineBasicMaterial({
-      color: KAPUR_KOBALT_PALETTE.land4,
+      color: palette.boundary,
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
     });
+    const sideMaterial = new THREE.MeshStandardMaterial({
+      color: palette.landSide,
+      roughness: 0.95,
+      metalness: 0,
+      wireframe: devWireframe,
+    });
+    eng.regionSideMaterial = sideMaterial;
+    eng.regionBoundaryMaterial = borderMat;
 
     // The hero draws the coastline relief built with the scene; selectable regions are Explore's.
     const regionFeatures = mode === 'hero' ? [] : validatedDataset.features;
     regionFeatures.forEach((feature) => {
-      const { regionId, displayName, tier = 1 } = feature.properties;
-      const tierDepth = mode === 'hero' ? 0.26 + tier * 0.06 : 0.28;
+      const { regionId, displayName } = feature.properties;
+      // Regions are Explore's only (the hero draws its own relief): one uniform height.
+      const tierDepth = 0.28;
 
       const extrudeSettings: THREE.ExtrudeGeometryOptions = {
         depth: tierDepth,
@@ -1690,7 +1975,7 @@ export const NusaMatra3DMap = forwardRef<
           : feature.geometry.coordinates;
 
       const shapes: THREE.Shape[] = [];
-      const coastlineLines: THREE.Line[] = [];
+      const coastlineRings: THREE.Vector3[][] = [];
 
       polygons.forEach((polygon) => {
         if (!polygon || !polygon[0] || polygon[0].length < 4) return;
@@ -1721,30 +2006,24 @@ export const NusaMatra3DMap = forwardRef<
           const pts = outerRing.map((c) =>
             lonLatToPlanar(c[0], c[1], tierDepth + 0.032)
           );
-          const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
-          coastlineLines.push(new THREE.Line(lineGeo, borderMat));
+          coastlineRings.push(pts);
         }
       });
 
       if (shapes.length === 0) return;
 
-      const geometry = new THREE.ExtrudeGeometry(shapes, extrudeSettings);
+      // Host performance fix: two material groups per region instead of two per island.
+      const geometry = consolidateExtrudeGroups(new THREE.ExtrudeGeometry(shapes, extrudeSettings));
       geometry.rotateX(-Math.PI / 2);
 
+      // One uniform land colour (no tier tint: the map shows no indicator); a faint bump keeps it
+      // material. Its own instance only so hover and selection can recolour this region alone.
       const topMaterial = new THREE.MeshStandardMaterial({
-        color: getTierColorHex(tier),
-        map: eng.textures.diffuseMap,
+        color: palette.landTop,
         bumpMap: eng.textures.bumpMap,
-        bumpScale: 0.16,
-        roughness: 0.9,
-        metalness: 0.02,
-        wireframe: devWireframe,
-      });
-
-      const sideMaterial = new THREE.MeshStandardMaterial({
-        color: KAPUR_KOBALT_PALETTE.land4,
-        roughness: 0.95,
-        metalness: 0.02,
+        bumpScale: 0.05,
+        roughness: 0.88,
+        metalness: 0,
         wireframe: devWireframe,
       });
 
@@ -1762,17 +2041,38 @@ export const NusaMatra3DMap = forwardRef<
       const featureGroup = new THREE.Group();
       featureGroup.userData = { regionId, topMaterial };
       featureGroup.add(mesh);
-      coastlineLines.forEach((line) => featureGroup.add(line));
+      if (coastlineRings.length > 0) {
+        featureGroup.add(new THREE.LineSegments(ringsToSegmentsGeometry(coastlineRings), borderMat));
+      }
 
       eng.regionsGroup.add(featureGroup);
       eng.featureMeshes.set(regionId, featureGroup);
       eng.interactiveMeshes.push(mesh);
     });
 
+    // Centre the view on the drawn regions and fit them to the canvas, for the official LIVE
+    // archipelago and the illustrative DEMO one alike, so the map opens centred on screen.
+    if (mode === 'explore' && eng.regionsGroup.children.length > 0) {
+      const bounds = new THREE.Box3().setFromObject(eng.regionsGroup);
+      const center = bounds.getCenter(new THREE.Vector3());
+      center.y = 0;
+      eng.exploreFrame = { center, width: bounds.max.x - bounds.min.x };
+      const target = eng.controls ? eng.controls.target : new THREE.Vector3();
+      target.copy(center);
+      const fitDistance = exploreFitDistance(eng.camera, eng.exploreFrame.width, eng.scene);
+      keepFitReachable(eng.controls, fitDistance);
+      eng.camera.position.copy(center).addScaledVector(EXPLORE_CAMERA_DIRECTION, fitDistance);
+      eng.camera.lookAt(center);
+      eng.controls?.update();
+    } else {
+      eng.exploreFrame = null;
+    }
+
     const activeMarkers =
       mode === 'hero'
         ? HERO_DIORAMA_MARKERS
-        : showMarkers
+        : // Host fix: the demo markers are illustrative pins, so official LIVE geography never shows them.
+        showMarkers && validatedDataset.metadata.dataMode === 'DEMO'
         ? EXPLORE_DEMO_MARKERS
         : [];
 
@@ -1832,30 +2132,40 @@ export const NusaMatra3DMap = forwardRef<
   useEffect(() => {
     const eng = engineRef.current;
     if (!eng) return;
-    eng.oceanMaterial.roughness = displayMode === 'glass' ? 0.36 : 0.6;
-    eng.oceanMaterial.needsUpdate = true;
+    if (mode === 'explore') {
+      // Theme change in place: no rebuild of regions, no new canvas.
+      const palette = EXPLORE_ATLAS_PALETTE[displayMode];
+      const ocean = new THREE.Color(palette.ocean);
+      // Light bounced up onto the extruded sides: sea and land mixed, so a deep Kaca sea tints the
+      // sides without turning them grey.
+      eng.hemiLight.groundColor.copy(ocean).lerp(new THREE.Color(palette.landSide), SIDE_BOUNCE_LAND_SHARE);
+      eng.gridMaterial.color.set(palette.graticule);
+      eng.equatorMaterial.color.set(palette.graticule);
+      eng.shadowMaterial.opacity = EXPLORE_SHADOW_OPACITY[displayMode];
+      eng.regionSideMaterial?.color.set(palette.landSide);
+      eng.regionBoundaryMaterial?.color.set(palette.boundary);
+    }
+    // The hero's sea glints in Kaca; the Explore atlas sea stays matt, like a printed map.
+    if (mode === 'hero') {
+      eng.oceanMaterial.roughness = displayMode === 'glass' ? 0.36 : 0.6;
+      eng.oceanMaterial.needsUpdate = true;
+    }
     eng.gridGroup.visible = mode === 'explore' && showGraticule;
     eng.regionsGroup.scale.y = devExtrusion;
+    eng.renderer.shadowMap.needsUpdate = true;
     eng.markersGroup.position.y = (devExtrusion - 1) * 0.32;
   }, [displayMode, mode, showGraticule, devExtrusion]);
 
   useEffect(() => {
     const eng = engineRef.current;
     if (!eng) return;
+    eng.renderer.shadowMap.needsUpdate = true;
+    const palette = EXPLORE_ATLAS_PALETTE[displayMode];
     eng.featureMeshes.forEach((group, id) => {
-      const mat = group.userData.topMaterial as THREE.MeshStandardMaterial;
-      const isSelected = id === selectedRegionId;
-      if (isSelected) {
-        mat.emissive.set(KAPUR_KOBALT_PALETTE.accent);
-        mat.emissiveIntensity = 0.38;
-        group.position.y = 0.16;
-      } else {
-        mat.emissive.setHex(0x000000);
-        mat.emissiveIntensity = 0;
-        group.position.y = 0;
-      }
+      paintRegion(group, palette, id === selectedRegionId ? 'selected' : 'idle');
     });
-  }, [selectedRegionId, validatedDataset]);
+    hoveredIdRef.current = null;
+  }, [selectedRegionId, validatedDataset, displayMode]);
 
   useEffect(() => {
     const eng = engineRef.current;
@@ -1867,9 +2177,19 @@ export const NusaMatra3DMap = forwardRef<
     if (cameraPreset === 'top-down') {
       eng.cameraTargetPos = new THREE.Vector3(target.x, 42, target.z + 0.01);
     } else {
-      eng.cameraTargetPos = new THREE.Vector3(target.x, 33, target.z + 29);
+      eng.cameraTargetPos = exploreDefaultPosition(eng, target);
     }
   }, [cameraPreset, mode]);
+
+  useEffect(() => {
+    const eng = engineRef.current;
+    if (!eng) return;
+    eng.overlay.setPoints(overlayPoints, performance.now(), !isMotionReducedRef.current);
+  }, [overlayPoints, mode, dataValidationError]);
+
+  useEffect(() => {
+    engineRef.current?.overlay.setSelected(selectedOverlayId);
+  }, [selectedOverlayId, overlayPoints, mode, dataValidationError]);
 
   const pointerDownRef = useRef<{ x: number; y: number; time: number } | null>(
     null
@@ -1924,7 +2244,8 @@ export const NusaMatra3DMap = forwardRef<
         }
       }
 
-      const hits = eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
+      const overlayId = eng.overlay.hit(eng.raycaster);
+      const hits = overlayId ? [] : eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
       const firstHit = hits[0];
       if (firstHit) {
         const hitMesh = firstHit.object;
@@ -1956,23 +2277,13 @@ export const NusaMatra3DMap = forwardRef<
             hoveredIdRef.current !== selectedRegionId
           ) {
             const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
-            if (prevGroup) {
-              const prevMat = prevGroup.userData
-                .topMaterial as THREE.MeshStandardMaterial;
-              prevMat.emissive.setHex(0x000000);
-              prevGroup.position.y = 0;
-            }
+            if (prevGroup) paintRegion(prevGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
           }
           hoveredIdRef.current = rId;
+          eng.renderer.shadowMap.needsUpdate = true;
           if (rId !== selectedRegionId) {
             const currGroup = eng.featureMeshes.get(rId);
-            if (currGroup) {
-              const currMat = currGroup.userData
-                .topMaterial as THREE.MeshStandardMaterial;
-              currMat.emissive.set(KAPUR_KOBALT_PALETTE.accent);
-              currMat.emissiveIntensity = 0.22;
-              currGroup.position.y = 0.08;
-            }
+            if (currGroup) paintRegion(currGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'hover');
           }
           onHoverRegion?.({
             regionId: rId,
@@ -1984,18 +2295,24 @@ export const NusaMatra3DMap = forwardRef<
           });
         }
       } else {
-        setHoveredInfo(null);
+        const overlayLabel = overlayId ? eng.overlay.labelOf(overlayId) : null;
+        setHoveredInfo(
+          overlayLabel
+            ? {
+                name: overlayLabel,
+                x: Math.min(Math.max(coords.localX + 14, 12), Math.max(12, coords.rect.width - 220)),
+                y: Math.min(Math.max(coords.localY - 12, 12), Math.max(12, coords.rect.height - 64)),
+                subtitle: 'Klik untuk detail gempa',
+              }
+            : null,
+        );
         if (hoveredIdRef.current) {
           if (hoveredIdRef.current !== selectedRegionId) {
             const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
-            if (prevGroup) {
-              const prevMat = prevGroup.userData
-                .topMaterial as THREE.MeshStandardMaterial;
-              prevMat.emissive.setHex(0x000000);
-              prevGroup.position.y = 0;
-            }
+            if (prevGroup) paintRegion(prevGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
           }
           hoveredIdRef.current = null;
+          eng.renderer.shadowMap.needsUpdate = true;
           onHoverRegion?.(null);
         }
       }
@@ -2004,6 +2321,7 @@ export const NusaMatra3DMap = forwardRef<
       mode,
       validatedDataset,
       selectedRegionId,
+      displayMode,
       enableDevInspector,
       getBoundedNDC,
       onHoverRegion,
@@ -2046,6 +2364,11 @@ export const NusaMatra3DMap = forwardRef<
       if (!eng || !coords) return;
 
       eng.raycaster.setFromCamera(coords.ndc, eng.camera);
+      const overlayId = eng.overlay.hit(eng.raycaster);
+      if (overlayId) {
+        onSelectOverlay?.(overlayId);
+        return;
+      }
       const hits = eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
 
       const firstHit = hits[0];
@@ -2061,7 +2384,7 @@ export const NusaMatra3DMap = forwardRef<
         });
       }
     },
-    [mode, validatedDataset, getBoundedNDC, onSelectRegion]
+    [mode, validatedDataset, getBoundedNDC, onSelectRegion, onSelectOverlay]
   );
 
   const handlePointerLeave = useCallback(() => {
@@ -2071,18 +2394,14 @@ export const NusaMatra3DMap = forwardRef<
       const previousId = hoveredIdRef.current;
       if (previousId && previousId !== selectedRegionId) {
         const previousGroup = eng.featureMeshes.get(previousId);
-        if (previousGroup) {
-          const previousMat = previousGroup.userData.topMaterial as THREE.MeshStandardMaterial;
-          previousMat.emissive.setHex(0x000000);
-          previousMat.emissiveIntensity = 0;
-          previousGroup.position.y = 0;
-        }
+        if (previousGroup) paintRegion(previousGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
       }
     }
     hoveredIdRef.current = null;
+    if (eng) eng.renderer.shadowMap.needsUpdate = true;
     setHoveredInfo(null);
     onHoverRegion?.(null);
-  }, [selectedRegionId, onHoverRegion]);
+  }, [selectedRegionId, displayMode, onHoverRegion]);
 
   if (webglError || dataValidationError) {
     return (

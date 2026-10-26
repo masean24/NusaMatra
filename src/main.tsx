@@ -1,4 +1,5 @@
 import '@fontsource-variable/lexend';
+import '@fontsource-variable/jetbrains-mono';
 import './styles/global.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

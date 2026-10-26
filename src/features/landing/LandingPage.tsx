@@ -1,10 +1,8 @@
-import { GlassGlows } from './components/GlassGlows';
 import { CallToActionSection } from './sections/CallToActionSection';
 import { HeroSection } from './sections/HeroSection';
 import { HowItWorksSection } from './sections/HowItWorksSection';
 import { LabPreviewSection } from './sections/LabPreviewSection';
 import { SourcesSection } from './sections/SourcesSection';
-import { StorySection } from './sections/StorySection';
 import { TransparencySection } from './sections/TransparencySection';
 import styles from './LandingPage.module.css';
 
@@ -13,12 +11,10 @@ export function LandingPage() {
   return (
     <div className={styles.page}>
       <title>Nusa Matra — Memahami wilayah, menentukan arah</title>
-      <GlassGlows />
       <HeroSection />
       <HowItWorksSection />
       <LabPreviewSection />
       <TransparencySection />
-      <StorySection />
       <SourcesSection />
       <CallToActionSection />
     </div>

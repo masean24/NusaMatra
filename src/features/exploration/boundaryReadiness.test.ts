@@ -33,6 +33,7 @@ describe('describeBoundaryReadiness', () => {
       collection({ geometryAvailable: true, geometryTypeReturned: 'MultiPolygon', canExtrudePolygons: true }),
     );
     expect(readiness.hasPolygons).toBe(true);
-    expect(readiness.detail).toMatch(/belum memakainya/);
+    expect(readiness.detail).toMatch(/disederhanakan/);
+    expect(readiness.detail).toMatch(/BIG-Kepmendagri-300\.2\.2-2430-2025/);
   });
 });

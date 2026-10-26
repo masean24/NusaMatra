@@ -4,6 +4,7 @@ import { afterEach, beforeEach } from 'vitest';
 import {
   installIntersectionObserver,
   installMatchMedia,
+  installResizeObserver,
   resetIntersectionObservers,
   resetMediaQueries,
 } from './browserMocks';
@@ -11,6 +12,7 @@ import {
 beforeEach(() => {
   installMatchMedia();
   installIntersectionObserver();
+  installResizeObserver();
 });
 
 afterEach(() => {

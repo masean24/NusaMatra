@@ -4,18 +4,59 @@
   z-index: var(--nm-z-nav);
 }
 
-.filterDefs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
 .bar {
   border: 1px solid var(--c-nav-border);
-  background: var(--c-nav-bg);
   box-shadow: var(--c-nav-shadow);
-  backdrop-filter: var(--c-surface-blur);
+}
+
+/*
+ * The glass is its own layer, not the bar: a backdrop-filter on the bar would make it the backdrop
+ * root, and the selection pill inside it could then only see the bar, never the page behind.
+ * `--glass-refraction` (set by useRefractiveGlass on Chromium in Kaca) bends what is behind the edge.
+ * The blur runs first and the refraction bends the blurred image: in the other order the displacement
+ * filter's output reached the blur almost unblurred, so page text read through the labels.
+ */
+.bar::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--c-nav-bg);
+  backdrop-filter: var(--c-nav-blur) var(--glass-refraction,);
+  content: '';
+  pointer-events: none;
+}
+
+/*
+ * WebKit (Safari, and every browser on iOS and iPadOS) blurs only what lies inside the fixed bar's
+ * own layer, so the layer behind the content saw nothing and the Kaca bar read as clear glass. There
+ * the bar carries the blur itself; the pill inside then refracts the bar, not the page.
+ */
+@supports (-webkit-backdrop-filter: none) {
+  .bar {
+    -webkit-backdrop-filter: var(--c-nav-blur);
+    backdrop-filter: var(--c-nav-blur);
+  }
+
+  .bar::before {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* Directional edge light: a 1px ring masked out of a gradient, so it follows the capsule's radius. */
+.bar::after {
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--c-glass-rim);
+  content: '';
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /*
@@ -28,15 +69,51 @@
   --group-gap: 16px;
   position: fixed;
   top: 16px;
-  left: 50%;
+  /* Same centre line with or without a page scrollbar (useScrollbarCompensation). */
+  left: calc(50% - var(--nm-scrollbar-compensation, 0px) / 2);
   display: flex;
   gap: var(--group-gap);
   align-items: center;
-  width: max-content;
+  /* The same column as every page: --nm-page-max minus the page gutters on each side. */
+  width: calc(min(100vw, var(--nm-page-max)) - 2 * var(--nm-gutter));
+  min-width: max-content;
   max-width: calc(100vw - 24px);
   padding: 8px 8px 8px 22px;
   border-radius: var(--nm-radius-pill);
   translate: -50% 0;
+}
+
+/* The links take the free width, so the mode switch sits on the container's right edge. */
+.desktop > nav {
+  flex: 1 1 auto;
+}
+
+/*
+ * Scrolled (useCompactOnScroll): the bar keeps its centre but shrinks to its content, the links stop
+ * spreading out, and the wordmark folds away so only the logo mark is left. The change between the
+ * two states is animated by the hook.
+ */
+.desktop [data-wordmark] {
+  display: inline-block;
+  overflow: hidden;
+}
+
+.desktop[data-compact] {
+  width: max-content;
+}
+
+.desktop[data-compact] > nav {
+  flex: none;
+}
+
+.desktop[data-compact] [data-wordmark] {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* The logo's own gap would stay after the folded wordmark; it goes with it. */
+.desktop[data-compact] .home > span {
+  gap: 0;
 }
 
 .home {
@@ -55,19 +132,13 @@
   background: var(--c-nav-divider);
 }
 
-.items {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
 .compactTop,
 .tabBar {
   display: none;
 }
 
-/* Below this width the full navbar (~1190px with its group spacing) no longer fits with 24px margins. */
-@media (width < 1240px) {
+/* Below this width the full navbar (~950px with four destinations) no longer fits with 24px margins. */
+@media (width < 1024px) {
   .desktop {
     display: none;
   }
@@ -87,27 +158,16 @@
 
   .tabBar {
     position: fixed;
-    bottom: max(12px, env(safe-area-inset-bottom));
+    bottom: var(--nm-tabbar-offset);
     left: 12px;
     right: 12px;
     display: block;
     padding: 6px;
     border-radius: 24px;
   }
-
-  .tabItems {
-    display: flex;
-    gap: 2px;
-  }
-
-  .tabCell {
-    display: flex;
-    flex: 1 1 auto;
-    min-width: max(44px, min-content);
-  }
 }
 
-@media (width >= 640px) and (width < 1240px) {
+@media (width >= 640px) and (width < 1024px) {
   .tabBar {
     left: 50%;
     right: auto;

@@ -1,36 +1,125 @@
 /*
- * 27:2 hero: copy column at x=88 (600px wide, top 190); 3D zone at x=710 (720×660, top 160).
- * Cards sit relative to the zone: A (+420, −10), B (−20, +170), C (+460, +440).
+ * Hero: a copy column (~42%) beside the map zone (~58%) as one composition. The zone keeps its 720×660
+ * proportions; cards sit relative to it: A (+58.3%, −10), B (−20, +25.8%), C (+63.9%, +66.7%).
+ *
+ * The composition is the page column (fluid --nm-page-max, minus the gutters): 1264px at 1440, about
+ * 1600px at 1920, 2060px at 2560, at most 2400px. --hero-w is that width; --hero-u is one laptop pixel
+ * at the composition's scale (1px at 1264px wide). Type, gaps and controls are sized from it, so the
+ * whole hero grows in proportion with the column, within readable bounds.
+ *
+ * The hero fills the first screen (100svh, so mobile browser bars never cut it), and the next
+ * section starts below the fold. The navbar floats (position: fixed), so the top padding only clears
+ * it. Content taller than the screen makes the hero taller (min-height, never a fixed height).
  */
 .hero {
+  --hero-w: calc(min(100vw, var(--nm-page-max)) - 2 * var(--nm-gutter));
+  --hero-u: calc(var(--hero-w) / 1264);
+
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 600fr) minmax(0, 720fr);
-  column-gap: clamp(16px, 1.55vw, 22px);
-  align-items: start;
-  padding: 160px 10px 0 var(--nm-gutter);
+  grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
+  /* Card B hangs 20px left of the map, so the gap keeps it clear of the copy. */
+  column-gap: clamp(36px, 48 * var(--hero-u), 112px);
+  align-items: center;
+  min-height: 100svh;
+  padding: 96px var(--nm-gutter) 24px;
 }
 
+/* One composition: heading, lead, search, actions and note, with the search set a step further off. */
 .copy {
   display: flex;
   flex-direction: column;
-  gap: 26px;
-  padding-top: 30px;
+  gap: 20px;
 }
 
+/*
+ * One column: the width decides the line breaks. On short screens the size also follows the height,
+ * so the whole column stays on the first screen.
+ */
 .title {
   max-width: 600px;
+  font-size: clamp(2.5rem, min(1.4rem + 3vw, 7svh), 3.5rem);
   text-wrap: balance;
 }
 
 .lead {
-  max-width: 540px;
+  max-width: 500px;
   color: var(--c-text-muted);
 }
 
-.search,
+.search {
+  /* Above the buttons and note revealed after it, so its suggestion list is not drawn under them. */
+  position: relative;
+  z-index: var(--nm-z-overlay-art);
+  max-width: 560px;
+  margin-top: 8px;
+}
+
 .note {
-  max-width: 540px;
+  max-width: 500px;
+  text-wrap: pretty;
+}
+
+/*
+ * Two columns: everything scales with the composition. The heading is 4% of its width (about 10.5em
+ * per copy column), so it wraps the same way at every desktop size; 8svh keeps it on short screens.
+ * Text blocks span the copy column, which keeps their line length constant as the type grows. The
+ * copy sits a little above the map's centre (optical centring).
+ */
+@media (width >= 1180px) {
+  .copy {
+    gap: clamp(16px, 20 * var(--hero-u), 40px);
+    margin-bottom: clamp(0px, 10svh, 96px);
+  }
+
+  .title {
+    max-width: none;
+    font-size: min(clamp(2.5rem, var(--hero-w) * 0.04, 6rem), 8svh);
+  }
+
+  .lead {
+    max-width: none;
+    font-size: clamp(1.0625rem, 17 * var(--hero-u), 1.5rem);
+  }
+
+  .search {
+    max-width: none;
+    margin-top: calc(8 * var(--hero-u));
+  }
+
+  .search input {
+    font-size: clamp(1rem, 16 * var(--hero-u), 1.375rem);
+  }
+
+  .actions {
+    gap: clamp(12px, 12 * var(--hero-u), 20px);
+  }
+
+  .actions > :is(a, button) {
+    padding: max(13px, 13 * var(--hero-u)) max(22px, 22 * var(--hero-u));
+    font-size: clamp(0.9375rem, 15 * var(--hero-u), 1.25rem);
+  }
+
+  .note {
+    max-width: none;
+    font-size: clamp(0.875rem, 14 * var(--hero-u), 1.25rem);
+  }
+
+  .caption {
+    font-size: clamp(0.8125rem, 13 * var(--hero-u), 1.125rem);
+  }
+}
+
+/* Short laptop screens (e.g. 1366 × 768): tighter rhythm so heading to note fit the first screen. */
+@media (width >= 1180px) and (height < 820px) {
+  .hero {
+    padding-top: 96px;
+    padding-bottom: 24px;
+  }
+
+  .copy {
+    gap: 16px;
+  }
 }
 
 .actions {
@@ -43,8 +132,25 @@
   color: var(--c-text-muted);
 }
 
+/*
+ * The map never outgrows the first screen: its width is capped by the height left under the navbar
+ * (stage 720:660 plus the caption), so on short laptops the whole composition still fits.
+ */
 .visual {
   position: relative;
+  justify-self: end;
+  width: min(100%, calc((100svh - 170px) * 720 / 660));
+}
+
+/*
+ * The map zone and its pin layer share this box. It has its own aspect ratio (the 720 × 660 zone), so
+ * the box exists before anything inside it has loaded and never depends on the canvas, and `contain`
+ * keeps whatever the scene does from changing the layout around it.
+ */
+.stage {
+  position: relative;
+  aspect-ratio: 720 / 660;
+  contain: layout style;
 }
 
 .dioramaReveal {
@@ -86,17 +192,15 @@
 @media (width < 1180px) {
   .hero {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 48px;
-    padding: 120px var(--nm-gutter) 0;
+    row-gap: 32px;
+    align-content: start;
+    padding-bottom: 40px;
   }
 
-  .copy {
-    padding-top: 0;
-  }
-
+  /* One column: heading, lead, search and actions first, then the map at a readable size. */
   .visual {
-    width: min(100%, 720px);
     justify-self: center;
+    width: min(100%, 720px);
   }
 
   .cardSlot[data-card='a'] {
@@ -119,7 +223,14 @@
     padding-top: 96px;
   }
 
-  /* On phones the cards follow the illustration as a list instead of covering it. */
+  /*
+   * On phones the copy leads (heading, lead, search, actions), the map stage follows, and the cards
+   * and caption sit under the map as a list.
+   */
+  .visual {
+    display: contents;
+  }
+
   .cards {
     position: static;
     display: grid;
@@ -135,4 +246,12 @@
     margin-top: 12px;
     text-align: left;
   }
+}
+
+/*
+ * Cards are always laid out (the connector lines measure them) but stay hidden until the map has
+ * finished its entrance. Reduced motion shows them without the rise.
+ */
+.cardHold {
+  opacity: 0;
 }

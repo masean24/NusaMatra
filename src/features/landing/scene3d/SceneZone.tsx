@@ -4,7 +4,7 @@ import { useDisplayMode } from '@/features/theme';
 import { RenderErrorBoundary } from '@/components/feedback/RenderErrorBoundary';
 import type { SceneProps } from './sceneProps';
 import { STATIC_ART, type SceneKind } from './staticArt';
-import { supportsWebGL, whenIdle } from './webglSupport';
+import { supportsWebGL, whenIdle } from '@/lib/webglSupport';
 import styles from './SceneZone.module.css';
 
 /* Each scene is its own chunk; three.js only downloads when the first zone comes near the viewport. */

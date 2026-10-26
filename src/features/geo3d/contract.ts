@@ -26,6 +26,8 @@ export interface GeoCameraHandle {
   focusRegion: (regionId: string) => void;
   /** Return to the overview framing. */
   resetView: () => void;
+  /** Closer (factor < 1) or farther (factor > 1) along the current line of sight, within the map's limits. */
+  zoomBy: (factor: number) => void;
 }
 
 /** Props every engine component receives from the host. */
@@ -43,6 +45,15 @@ export interface GeoEngineBaseProps {
 /** Landing hero diorama (Figma 3D-1). Always illustrative, even when the app runs LIVE. */
 export type HeroDioramaProps = GeoEngineBaseProps;
 
+/**
+ * Landing hero map drawn with hexagons (the default hero engine). Illustrative and SIMULATED, like
+ * the diorama it replaces; it tells the host when its entrance has finished so the pins, the
+ * connector lines and the region cards can follow.
+ */
+export interface HeroHexMapProps extends GeoEngineBaseProps {
+  readonly onEntranceSettled?: (() => void) | undefined;
+}
+
 /** Interactive 3D map for Peta Utama / Jelajahi (Figma 61:1183, 29:34). */
 export interface Explore3DMapProps extends GeoEngineBaseProps {
   /**
@@ -55,4 +66,22 @@ export interface Explore3DMapProps extends GeoEngineBaseProps {
   readonly onRegionSelect: (selection: GeoRegionSelection) => void;
   readonly onRegionHover?: ((selection: GeoRegionSelection | null) => void) | undefined;
   readonly cameraRef?: Ref<GeoCameraHandle> | undefined;
+  /** Clickable points over the map (e.g. epicentres). Updating them never rebuilds the regions. */
+  readonly overlayPoints?: readonly GeoOverlayPoint[] | undefined;
+  readonly selectedOverlayId?: string | null | undefined;
+  readonly onOverlaySelect?: ((id: string) => void) | undefined;
+  /** CSS pixels of the map covered on the left by a floating panel; the view is centred beside it. */
+  readonly viewInsetLeft?: number | undefined;
+}
+
+/** A point drawn over the map. `size` is a symbol size in map units, never an area on the ground. */
+export interface GeoOverlayPoint {
+  readonly id: string;
+  readonly lon: number;
+  readonly lat: number;
+  readonly size: number;
+  /** Plain text for the hover label. */
+  readonly label: string;
+  /** New since the previous update: animated once. */
+  readonly isNew: boolean;
 }

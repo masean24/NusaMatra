@@ -17,7 +17,64 @@
   outline-color: var(--nm-accent);
 }
 
+/* Site chrome around the page; it adds no box of its own and is left off printed pages. */
+.screenOnly {
+  display: contents;
+}
+
+/*
+ * During a page change each navbar bar is its own view-transition layer above the pages, so the
+ * leaving and entering page never draw over it. Named only while a transition runs (a named element
+ * is a backdrop root, which would cut the glass blur of the pills inside it), and never during the
+ * theme reveal, which must sweep over the navbar like everything else.
+ */
+:global(:root:active-view-transition:not([data-theme-transition])) .navSlot header > :nth-child(1) {
+  view-transition-name: site-nav-1;
+}
+
+:global(:root:active-view-transition:not([data-theme-transition])) .navSlot header > :nth-child(2) {
+  view-transition-name: site-nav-2;
+}
+
+:global(:root:active-view-transition:not([data-theme-transition])) .navSlot header > :nth-child(3) {
+  view-transition-name: site-nav-3;
+}
+
+@media print {
+  .screenOnly,
+  .skipLink {
+    display: none;
+  }
+}
+
 .main {
   display: block;
+  /* Takes the spare height on short pages, pushing the footer to the bottom of the screen. */
+  flex: 1 0 auto;
+  /* Soft background lights may spill past the page column; they must never widen the page. */
+  overflow-x: clip;
   outline: none;
+}
+
+/*
+ * Route change without View Transitions (global.css has the full one): the new page fades in.
+ * Opacity only, so a transform never becomes the containing block of fixed children (the Jelajahi
+ * sheet); reduced motion shows the page at once.
+ */
+@supports not (view-transition-name: none) {
+  .routeEnter {
+    animation: route-enter 240ms var(--nm-ease-calm);
+  }
+}
+
+@keyframes route-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routeEnter {
+    animation: none;
+  }
 }

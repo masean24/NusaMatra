@@ -54,16 +54,18 @@
   composes: outline;
 }
 
+/* Kaca: outline and secondary read as quiet glass controls (dark text would vanish on the page). */
+:global([data-display-mode='glass']) .outline,
 :global([data-display-mode='glass']) .secondary {
   border-width: 1px;
-  border-color: var(--nm-glass-stroke);
-  background: var(--nm-glass-surface);
+  border-color: var(--c-input-border);
+  background: var(--c-input-bg);
   color: var(--nm-text-on-sea);
   backdrop-filter: blur(var(--nm-blur-panel));
-  box-shadow: var(--nm-shadow-nav-glass);
+  box-shadow: none;
 }
 
-/* Hover states: Aksen → #FF7420, Garis → darat/2 fill, Kaca → slightly brighter glass. */
+/* Hover states: Aksen → #FF7420, Garis → a light tint, Kaca → a slightly brighter glass. */
 @media (hover: hover) and (pointer: fine) {
   .accent:hover:not(:disabled) {
     background: var(--nm-accent-hover);
@@ -71,12 +73,12 @@
 
   .outline:hover:not(:disabled),
   .secondary:hover:not(:disabled) {
-    background: var(--nm-land-2);
+    background: var(--c-control-hover);
   }
 
-  .glass:hover:not(:disabled),
-  :global([data-display-mode='glass']) .secondary:hover:not(:disabled) {
-    background: var(--nm-glass-surface-hover);
+  /* On cobalt or glass the hover only brightens the tint; the white label stays readable. */
+  .glass:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--nm-text-on-sea) 22%, transparent);
   }
 }
 

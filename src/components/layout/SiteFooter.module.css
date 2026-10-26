@@ -4,6 +4,11 @@
   color: var(--c-on-footer);
 }
 
+/* Kaca: the page gradient ends in the footer's cobalt, so a hairline marks where the footer starts. */
+:global([data-display-mode='glass']) .footer {
+  border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
 .inner {
   display: flex;
   flex-wrap: wrap;
@@ -21,7 +26,7 @@
 }
 
 .statement {
-  max-width: 560px;
+  max-width: 35rem;
   color: var(--c-on-footer-muted);
 }
 
@@ -56,8 +61,8 @@
 }
 
 /* Leave room for the mobile tab bar so the last links are not covered. */
-@media (width < 1120px) {
+@media (width < 1024px) {
   .inner {
-    padding-bottom: calc(48px + 88px);
+    padding-bottom: calc(48px + var(--nm-tabbar-clearance));
   }
 }

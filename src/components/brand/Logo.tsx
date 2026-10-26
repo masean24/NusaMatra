@@ -18,7 +18,7 @@ export function Logo({ size, surface }: LogoProps) {
     <span className={`${styles.logo} ${styles[size]}`} data-surface={surface}>
       <img className={styles.markLight} src={logoMarkUrl} alt="" width={29} height={26} />
       <img className={styles.markDark} src={logoMarkOnDarkUrl} alt="" width={29} height={26} />
-      <span className={styles.wordmark}>
+      <span className={styles.wordmark} data-wordmark="">
         Nusa <span className={styles.accent}>Matra</span>
       </span>
     </span>

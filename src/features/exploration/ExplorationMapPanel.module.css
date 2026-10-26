@@ -53,7 +53,105 @@
 
 @media (hover: hover) and (pointer: fine) {
   .regionButton[aria-pressed='false']:hover {
-    background: var(--c-nav-hover-liquid);
+    background: var(--c-nav-hover-fill);
     color: var(--c-nav-hover-text);
   }
+}
+
+/*
+ * The map fills its column. A host that lays the map out (Jelajahi) sets --explore-map-height, and
+ * with --explore-map-aspect: auto, the map is then exactly that tall at any width, so folding a side panel only widens it. Without
+ * it (Peta Utama) the map keeps a 3:2 shape, and about half the screen on phones.
+ */
+.workspace .map {
+  height: var(--explore-map-height, auto);
+  min-height: 340px;
+  max-height: var(--explore-map-height, calc(100vh - 150px));
+  aspect-ratio: var(--explore-map-aspect, 3 / 2);
+}
+
+@media (width < 960px) {
+  .workspace .map {
+    height: var(--explore-map-height, 52vh);
+  }
+}
+
+/*
+ * Full-screen host (Jelajahi): the map fills the whole box, edge to edge with no card frame, and
+ * anything else the panel shows (a load error) is centred in the part beside the floating panel.
+ */
+.workspace[data-immersive] {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding-left: var(--explore-map-inset, 0px);
+}
+
+.workspace[data-immersive] .map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  /* The 3D sea is transparent: the page background is the map's surface, as on every page. */
+  background: transparent;
+  box-shadow: none;
+}
+
+/* DEMO's illustrative regions, folded into a corner of the full-screen map. */
+.selectionFloat {
+  position: absolute;
+  bottom: var(--explore-float-bottom, 52px);
+  left: calc(var(--explore-map-inset, 0px) + var(--explore-edge, 16px));
+  z-index: 3;
+  visibility: var(--explore-float-visibility, visible);
+  width: min(
+    400px,
+    calc(
+      100% - var(--explore-map-inset, 0px) - 2 * var(--explore-edge, 16px) - var(--explore-float-reserve, 0px)
+    )
+  );
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-card);
+  background: var(--explore-reading-surface, var(--c-surface));
+  box-shadow: var(--c-surface-shadow);
+  backdrop-filter: var(--c-surface-blur);
+  color: var(--c-text);
+}
+
+.selectionSummary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 44px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.selectionSummary > span:last-child {
+  color: var(--c-text-muted);
+}
+
+.selectionFloat > .selection {
+  max-height: 46vh;
+  padding: 0 16px 16px;
+  overflow-y: auto;
+}
+
+.workspace .loadingFrame {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border: 1px solid var(--c-surface-border);
+  border-radius: var(--nm-radius-card);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--nm-sea) 22%, var(--c-surface)),
+    var(--c-surface-muted)
+  );
 }

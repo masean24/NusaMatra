@@ -1,6 +1,6 @@
 /* 27:2 y=4560: band at x=64 (1312px), padding 44px 48px, gap 32px, radius 36; cobalt (glass in Kaca). */
 .section {
-  padding-inline: var(--nm-band-gutter);
+  padding-inline: var(--nm-gutter);
 }
 
 .band {
@@ -25,7 +25,7 @@
 }
 
 .copy p {
-  max-width: 560px;
+  max-width: 35rem;
 }
 
 /* In both modes the CTA field is the opaque surface from 41:425, so it reads against cobalt. */

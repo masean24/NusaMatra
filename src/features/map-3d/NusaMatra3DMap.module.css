@@ -43,6 +43,8 @@
 .modeExplore {
   touch-action: none;
   cursor: grab;
+  /* The sea is the host page's background: the WebGL canvas is transparent and so is its box. */
+  background-color: transparent;
 }
 
 .modeExplore:active {
@@ -64,8 +66,9 @@
 .attributionBadge {
   pointer-events: none;
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  /* A host with panels floating over the map's left edge or bottom moves the credit clear of them. */
+  bottom: var(--explore-map-credit-bottom, 12px);
+  left: calc(var(--explore-map-inset, 0px) + 12px);
   z-index: 5;
   padding: 5px 10px;
   border-radius: 8px;
@@ -163,7 +166,7 @@
   font-weight: 700;
   font-size: 18px;
   background-color: #FF8A3D;
-  color: #121826;
+  color: #121826; /* dark ink on orange, as --nm-accent-text */
   box-shadow: 0 4px 14px rgba(255, 138, 61, 0.4);
 }
 

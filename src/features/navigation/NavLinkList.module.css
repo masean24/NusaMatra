@@ -1,0 +1,82 @@
+/*
+ * One selection pill sits behind every link (layer order: pill → link content → focus ring). Its
+ * position and width are written by motion as transforms, so it never reflows the bar.
+ */
+.root {
+  --pill-text: var(--c-nav-pill-text);
+  position: relative;
+  isolation: isolate;
+}
+
+.root[data-preview='true'] {
+  --pill-text: var(--c-nav-pill-text-preview);
+}
+
+.list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tab .list {
+  gap: 2px;
+}
+
+.cell {
+  display: flex;
+}
+
+.tab .cell {
+  flex: 1 1 0; /* four equal touch targets */
+  min-width: max(44px, min-content);
+}
+
+.indicator {
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-nav-pill-bg);
+  box-shadow: var(--c-nav-pill-shadow);
+  backdrop-filter: var(--glass-refraction,) var(--c-nav-pill-blur);
+  pointer-events: none;
+  transition: background-color 220ms var(--nm-ease-ui);
+}
+
+.tab .indicator {
+  border-radius: 18px;
+}
+
+.root[data-preview='true'] .indicator {
+  background: var(--c-nav-pill-bg-preview);
+}
+
+/* Glass: a curved sheen across the upper half and a rim that follows the pill's own radius. */
+.indicator::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--c-nav-pill-sheen);
+  content: '';
+}
+
+.indicator::after {
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--c-glass-rim);
+  content: '';
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    transition-duration: 1ms;
+  }
+}

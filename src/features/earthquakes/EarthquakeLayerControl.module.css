@@ -1,0 +1,156 @@
+.control {
+  position: relative;
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+}
+
+.switch {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface);
+  box-shadow: var(--c-surface-shadow);
+  color: var(--c-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--c-surface-muted);
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--nm-land-4);
+  transition: transform var(--nm-duration-feedback) ease;
+}
+
+.switch[aria-checked='true'] .track {
+  background: var(--nm-sea);
+}
+
+.switch[aria-checked='true'] .knob {
+  background: var(--nm-surface);
+  transform: translateX(16px);
+}
+
+.status {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.reasons {
+  margin: 0;
+  padding: 0;
+  color: var(--c-text-muted);
+  list-style: none;
+}
+
+/* "Daftar gempa": a pill toggle whose content opens over the map below. */
+.disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+.disclosure[open] > summary {
+  background: var(--c-surface-muted);
+}
+
+/* Anchored to the whole control (not the pill), so it never runs off a narrow screen. */
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: min(420px, 100%);
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: var(--nm-radius-card);
+  background: var(--c-surface);
+  box-shadow: var(--c-surface-shadow);
+  color: var(--c-text);
+  backdrop-filter: var(--c-surface-blur, none);
+}
+
+.legend {
+  margin: 0 0 10px;
+  color: var(--c-text-muted);
+}
+
+.events {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: min(340px, 45dvh);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.event {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--c-surface-border, transparent);
+  border-radius: 12px;
+  background: var(--c-surface-muted);
+  color: var(--c-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.event[aria-pressed='true'] {
+  background: var(--c-nav-active-liquid);
+  color: var(--c-nav-active-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track,
+  .knob {
+    transition: none;
+  }
+}

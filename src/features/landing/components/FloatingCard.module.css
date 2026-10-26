@@ -16,3 +16,12 @@
     white-space: normal;
   }
 }
+
+.card {
+  transition: outline-color 200ms var(--nm-ease-ui);
+}
+
+.card[data-highlighted] {
+  outline: 2px solid var(--nm-accent);
+  outline-offset: 3px;
+}

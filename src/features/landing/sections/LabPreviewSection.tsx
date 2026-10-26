@@ -57,12 +57,14 @@ export function LabPreviewSection() {
           description="Ilustrasi tiga kolom data oranye di atas alas kapur; tinggi kolom mengikuti bobot kriteria: paparan banjir 45 persen, kerentanan sosial 35 persen, kapasitas layanan 20 persen."
         />
         <div ref={panelRef} className={styles.content} data-revealed={revealed}>
+          <p className={`kk-small ${styles.eyebrow}`}>Lab Prioritas</p>
           <h2 id="lab-title" className={`kk-h1 ${styles.title}`}>
-            Ubah bobot, lihat urutan bergeser
+            Wilayah mana yang perlu didahulukan?
           </h2>
           <p className={`kk-body ${styles.lead}`}>
-            Lab Prioritas menghitung urutan wilayah dari kriteria yang Anda pilih, lengkap dengan alasan
-            mengapa satu wilayah naik atau turun.
+            Pilih kriteria dan beri bobot sesuai kebijakan Anda. Lab Prioritas mengurutkan kabupaten/kota dari
+            data resmi Data Hub dan menunjukkan sumbangan tiap kriteria pada setiap skor, sehingga alasannya
+            bisa diperiksa dan dikutip lewat Paspor Bukti.
           </p>
 
           <ul role="list" className={styles.weights} aria-label="Bobot kriteria (contoh)">
@@ -99,9 +101,12 @@ export function LabPreviewSection() {
             reducedMotion={reducedMotion}
           />
 
-          <ButtonLink to="/lab-prioritas" className={styles.cta}>
-            Coba Lab Prioritas
-          </ButtonLink>
+          <div className={styles.actions}>
+            <ButtonLink to="/lab-prioritas">Buka Lab Prioritas</ButtonLink>
+            <ButtonLink to="/metodologi" variant="secondary">
+              Cara skor dihitung
+            </ButtonLink>
+          </div>
         </div>
       </Reveal>
     </section>

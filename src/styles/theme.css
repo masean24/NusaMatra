@@ -26,6 +26,8 @@
   --c-input-bg: var(--nm-surface);
   --c-input-border: var(--nm-land-3);
   --c-input-shadow: none;
+  /* Hover/pressed fill for outline and quiet buttons: a tint, never a white block. */
+  --c-control-hover: var(--nm-land-2);
   --c-input-placeholder: var(--nm-text-muted);
 
   --c-cta-band: var(--nm-sea);
@@ -33,7 +35,8 @@
   --c-cta-band-shadow: none;
   --c-on-cta-band: var(--nm-text-on-sea);
 
-  --c-footer: var(--nm-text);
+  /* A deep cobalt band: the same family as the page, without the glare of --nm-sea-deep. */
+  --c-footer: var(--nm-sea-ink);
   --c-on-footer: var(--nm-text-on-sea);
   --c-on-footer-muted: var(--nm-glass-text-muted);
 
@@ -41,57 +44,112 @@
   --c-icon: var(--nm-text);
   --c-zone-fill: transparent;
 
+  --c-glass-rim: none; /* directional edge highlight; Kaca only */
+
   --c-nav-bg: var(--nm-surface);
   --c-nav-border: var(--nm-land-3);
   --c-nav-shadow: var(--nm-shadow-nav-normal);
+  --c-nav-blur: none;
+  /* The one sliding selection pill: cobalt at rest, laguna-muda while previewing another item. */
+  --c-nav-pill-bg: var(--nm-sea);
+  --c-nav-pill-bg-preview: #e3e9ff;
+  --c-nav-pill-text: var(--nm-text-on-sea);
+  --c-nav-pill-text-preview: var(--nm-sea-deep);
+  --c-nav-pill-shadow: 0 4px 10px #1e3fd933;
+  --c-nav-pill-sheen: none;
+  --c-nav-pill-blur: none;
   --c-nav-divider: var(--nm-land-3);
   --c-nav-text: var(--nm-text-muted);
   --c-nav-hover-liquid: #e3e9ff; /* info/laut-muda */
   /* The gooey filter thresholds alpha, so the liquid is always opaque and faded as a layer. */
   --c-nav-hover-opacity: 1;
+  /* The same hover for controls that paint it as a plain background, already faded. */
+  --c-nav-hover-fill: var(--c-nav-hover-liquid);
   --c-nav-hover-text: var(--nm-sea-deep);
   --c-nav-active-liquid: var(--nm-sea);
   --c-nav-active-text: var(--nm-text-on-sea);
 
   --c-switch-track: var(--nm-land-2);
   --c-switch-border: var(--nm-land-3);
-  --c-switch-knob: var(--nm-surface);
+  --c-switch-knob: var(--nm-accent);
   --c-switch-text: var(--nm-text-muted);
-  --c-switch-text-selected: var(--nm-text);
+  --c-switch-text-selected: var(--nm-accent-text);
 
-  --c-focus-ring: var(--nm-sea-deep);
+  /*
+   * Content cards and their parts (Paspor Bukti, Lab Prioritas). Kaca uses "kaca tinta": dark enough
+   * that white body text stays >= 4.5:1 over the orange light. "Kaca kapur" (--nm-glass-surface)
+   * reaches only ~3.3:1 with white text, so it stays on toggles, chips and large type.
+   */
+  --c-card: var(--nm-surface);
+  --c-card-border: #e2ddd0;
+  --c-card-filter: none;
+  --c-card-shadow: 0 1px 0 rgb(18 30 90 / 4%), 0 18px 40px -26px rgb(18 30 90 / 25%);
+  --c-chip: var(--nm-land-2);
+  --c-chip-ink: var(--nm-text);
+  --c-link: var(--nm-sea-deep);
+  --c-soft: #f4f2ec;
+  --c-code: var(--nm-land-2);
+  --c-track: #e2ddd0;
+  --c-bar: var(--nm-sea);
+  --c-warn: #fff0e4;
+  --c-warn-line: #ffd2b3;
+  --c-warn-ink: #8a3b07;
+  /* Bandingkan bars: the side in the better / worse condition (graphics, at least 3:1 on the card). */
+  --c-better: var(--nm-positive);
+  --c-worse: var(--nm-negative);
+  --c-ok-bg: #e4eaff;
+  --c-ok-ink: var(--nm-sea-deep);
+  --c-sel: #e4eaff;
+  --c-sel-line: var(--nm-sea);
+  /* Four criterion colours: cobalt, orange, sand, ink. Lightness differs, not only hue. */
+  --c-series-1: var(--nm-sea);
+  --c-series-2: var(--nm-accent);
+  --c-series-3: var(--nm-land-4);
+  --c-series-4: var(--nm-text);
+
+  /* AppBackground: faint topographic contour lines, the same on every page. */
+  --c-contour: rgb(18 30 90 / 5%);
+
+  /* Orange focus ring; this darker orange keeps 3:1 against the limestone page. */
+  --c-focus-ring: #c2560f;
   --c-focus-ring-inner: var(--nm-surface);
 }
 
 [data-display-mode='glass'] {
   color-scheme: dark;
 
+  --c-page-bg: var(--nm-sea-ink); /* under the gradient, e.g. before it paints */
   --c-page-gradient-opacity: 1;
   --c-text: var(--nm-text-on-sea);
   --c-text-muted: var(--nm-glass-text-muted);
   --c-text-strong-accent: var(--nm-text-on-sea);
   --c-note: var(--nm-text-on-sea);
 
-  --c-surface: var(--nm-glass-surface);
-  --c-surface-border: var(--nm-glass-stroke);
-  --c-surface-shadow: var(--nm-shadow-glass);
-  --c-surface-blur: blur(var(--nm-blur-panel));
-  --c-surface-muted: var(--nm-glass-surface);
-  --c-band: var(--nm-glass-surface);
-  --c-band-border: var(--nm-glass-stroke);
-  --c-band-shadow: var(--nm-shadow-glass);
+  /*
+   * One glass recipe for every reading surface (cards, bands, panels): kaca tinta, as on Bandingkan,
+   * Lab and Paspor. Kaca kapur (--nm-glass-surface) stays only on small controls and chips.
+   */
+  --c-surface: var(--c-card);
+  --c-surface-border: var(--c-card-border);
+  --c-surface-shadow: var(--c-card-shadow);
+  --c-surface-blur: var(--c-card-filter);
+  --c-surface-muted: rgb(255 255 255 / 10%);
+  --c-band: var(--c-card);
+  --c-band-border: var(--c-card-border);
+  --c-band-shadow: var(--c-card-shadow);
 
-  --c-input-bg: var(--nm-glass-surface);
-  --c-input-border: var(--nm-glass-stroke);
-  --c-input-shadow: var(--nm-shadow-glass);
+  --c-input-bg: rgb(255 255 255 / 8%);
+  --c-input-border: rgb(255 255 255 / 28%);
+  --c-input-shadow: none;
+  --c-control-hover: rgb(255 255 255 / 14%);
   --c-input-placeholder: var(--nm-glass-text-muted);
 
-  --c-cta-band: var(--nm-glass-surface);
-  --c-cta-band-border: var(--nm-glass-stroke);
-  --c-cta-band-shadow: var(--nm-shadow-glass);
+  --c-cta-band: var(--c-card);
+  --c-cta-band-border: var(--c-card-border);
+  --c-cta-band-shadow: var(--c-card-shadow);
   --c-on-cta-band: var(--nm-text-on-sea);
 
-  --c-footer: var(--nm-sea-deep);
+  --c-footer: color-mix(in srgb, var(--nm-sea-ink) 70%, var(--nm-text));
   --c-on-footer: var(--nm-text-on-sea);
   --c-on-footer-muted: var(--nm-glass-text-muted);
 
@@ -99,24 +157,89 @@
   --c-icon: var(--nm-text-on-sea);
   --c-zone-fill: var(--nm-glass-zone);
 
-  --c-nav-bg: var(--nm-glass-surface);
-  --c-nav-border: var(--nm-glass-stroke);
-  --c-nav-shadow: var(--nm-shadow-nav-glass);
+  /* A quiet edge light (about half the earlier rim), so the navbar does not draw the eye. */
+  --c-glass-rim: linear-gradient(
+    160deg,
+    rgb(255 255 255 / 18%) 0%,
+    rgb(255 255 255 / 7%) 22%,
+    rgb(255 255 255 / 0%) 50%,
+    rgb(255 255 255 / 2%) 78%,
+    rgb(255 255 255 / 9%) 100%
+  );
+
+  /*
+   * Kaca "Ink Glass" navbar over a real blur (FloatingNavbar applies the blur before the refraction):
+   * a translucent ink tint (ink with a little --nm-sea-ink) that blends into the "Tinta dan kobalt"
+   * page instead of standing out, so the orange switch stays the brightest thing in the bar. Content
+   * scrolled under it turns to frosted ink; low saturation keeps the frost neutral, not bright blue.
+   * White labels measure about 12:1 or more on the rendered bar.
+   */
+  --c-nav-bg:
+    linear-gradient(180deg, rgb(255 255 255 / 3%), rgb(255 255 255 / 0%) 60%),
+    color-mix(in srgb, color-mix(in srgb, var(--nm-text) 75%, var(--nm-sea-ink)) 55%, transparent);
+  --c-nav-border: rgb(255 255 255 / 12%);
+  --c-nav-shadow: var(--nm-shadow-nav-glass), var(--nm-glass-lighting);
+  --c-nav-blur: blur(32px) saturate(115%);
+  --c-nav-pill-bg: #ffffff14;
+  --c-nav-pill-bg-preview: #ffffff0d;
+  --c-nav-pill-text: var(--nm-text-on-sea);
+  --c-nav-pill-text-preview: var(--nm-text-on-sea);
+  --c-nav-pill-shadow: 0 2px 8px #121e5a26, inset 1px 1px 0 #ffffff33, inset -1px -1px 0 #ffffff14;
+  --c-nav-pill-sheen: none;
+  --c-nav-pill-blur: saturate(115%);
   --c-nav-divider: var(--nm-glass-stroke);
   --c-nav-text: var(--nm-text-on-sea);
   --c-nav-hover-liquid: #ffffff;
   --c-nav-hover-opacity: 0.24;
+  --c-nav-hover-fill: rgb(255 255 255 / 24%);
   --c-nav-hover-text: var(--nm-text-on-sea);
   --c-nav-active-liquid: var(--nm-surface);
   --c-nav-active-text: var(--nm-sea-deep);
 
-  --c-switch-track: var(--nm-glass-surface);
-  --c-switch-border: var(--nm-glass-stroke);
+  --c-switch-track: #ffffff1f;
+  --c-switch-border: var(--nm-glass-stroke-soft);
   --c-switch-knob: var(--nm-accent);
   --c-switch-text: var(--nm-text-on-sea);
   --c-switch-text-selected: var(--nm-accent-text);
 
-  --c-focus-ring: var(--nm-text-on-sea);
+  /*
+   * Kaca surface levels, one family on every page:
+   *   1 --c-card            primary surface (cards, panels, bands): a light ink tint, blurred, rimmed
+   *   2 --c-soft            secondary surface nested in a card (rows, insets, code)
+   *   3 --c-control-hover   interactive hover / pressed
+   *   4 --c-sel             selected / active, with --c-sel-line
+   * The tint is light enough to read as glass on the dark page; white text stays >= 7:1 and muted
+   * text >= 4.5:1 even over the page's brightest cobalt and its orange glow.
+   */
+  --c-card: rgb(18 24 38 / 26%);
+  --c-card-border: rgb(255 255 255 / 16%);
+  --c-card-filter: blur(var(--nm-blur-strong)) saturate(140%);
+  --c-card-shadow: inset 0 1px 0 rgb(255 255 255 / 35%), 0 8px 32px rgb(0 0 0 / 30%);
+  --c-chip: rgb(255 255 255 / 10%);
+  --c-chip-ink: var(--nm-land-1);
+  --c-link: var(--nm-text-on-sea);
+  --c-soft: rgb(255 255 255 / 6%);
+  --c-code: rgb(18 30 90 / 38%);
+  --c-track: rgb(255 255 255 / 14%);
+  --c-bar: #a9bbff;
+  --c-warn: rgb(255 138 61 / 22%);
+  --c-warn-line: rgb(255 190 150 / 50%);
+  --c-warn-ink: var(--nm-text-on-sea);
+  /* Lighter jade and coral, so the bars stand out on the ink glass. */
+  --c-better: #4cc79a;
+  --c-worse: #f17c82;
+  --c-ok-bg: rgb(255 255 255 / 10%);
+  --c-ok-ink: var(--nm-land-1);
+  --c-sel: rgb(255 255 255 / 14%);
+  --c-sel-line: rgb(255 255 255 / 80%);
+  --c-series-1: #a9bbff;
+  --c-series-2: var(--nm-accent);
+  --c-series-3: var(--nm-land-3);
+  --c-series-4: var(--nm-land-1);
+
+  --c-contour: rgb(255 255 255 / 6%);
+
+  --c-focus-ring: var(--nm-accent);
   --c-focus-ring-inner: var(--nm-sea-deep);
 }
 
