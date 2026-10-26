@@ -11,3 +11,11 @@ playwright-report
 test-results
 .taste-skill
 .DS_Store
+
+# Local tooling and AI-agent environments: kept on disk, never part of the web app or its repository.
+.claude/
+.codex/
+CLAUDE.md
+AGENTS.md
+NUSAMATRA_*.md
+integrations/
