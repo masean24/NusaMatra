@@ -121,6 +121,11 @@ export interface AdaptedResponseMeta {
   /** v2.2 `snapshot_reproducible`; `null` = not reported. */
   readonly snapshotReproducible: boolean | null;
   readonly methodologyVersion: string | null;
+  /**
+   * v2.4 `meta.score_direction` (region detail): `higher_is_need` states that `national_percentile`
+   * is a need percentile, higher = greater need whatever the polarity. `null` = not stated.
+   */
+  readonly scoreDirection: string | null;
 }
 
 /** The snapshot a request is pinned to (`?snapshot=`), with the digest every response must repeat. */

@@ -159,6 +159,7 @@ export function mapEnvelope<TDomain>(
     snapshotImmutable: readBooleanOrNull(raw.meta.snapshot_immutable),
     snapshotReproducible: readBooleanOrNull(raw.meta.snapshot_reproducible),
     methodologyVersion: readString(raw.meta.methodology_version),
+    scoreDirection: readString(raw.meta.score_direction),
   };
 
   const mappedData = transformData(raw.data, adaptedMeta);

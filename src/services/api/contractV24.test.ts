@@ -6,8 +6,10 @@
 import notFound from './__fixtures__/contract-v2.4/error_not_found.json';
 import validationQuery from './__fixtures__/contract-v2.4/error_validation_query.json';
 import validationWeight from './__fixtures__/contract-v2.4/error_validation_weight.json';
+import regionDetail from './__fixtures__/contract-v2.4/meta_region_detail.json';
 import snapshots from './__fixtures__/contract-v2.4/meta_snapshots.json';
 import { mapHttpErrorResponse } from './apiError';
+import { mapEnvelope, mapRegionDetailData } from './domainMappers';
 
 const NO_HEADERS = { requestId: null, dataFallback: null, serverMode: null } as const;
 const parse = (sample: { readonly http_status: number; readonly body: unknown }) =>
@@ -35,6 +37,24 @@ describe('Data Hub contract v2.4 error envelope', () => {
     const error = parse(notFound);
     expect(error.status).toBe(404);
     expect(error.code).toBe('NOT_FOUND');
+  });
+});
+
+describe('Data Hub contract v2.4 region detail (archive 74dd6b53…, score_direction patch)', () => {
+  it('reads meta.score_direction', () => {
+    const envelope = mapEnvelope(
+      regionDetail.body,
+      'LIVE',
+      {
+        status: 200,
+        requestId: null,
+        dataFallback: null,
+        serverMode: null,
+        clientReceivedAt: '2026-10-28T00:00:00Z',
+      },
+      (data, meta) => mapRegionDetailData(data, meta),
+    );
+    expect(envelope.meta.scoreDirection).toBe('higher_is_need');
   });
 });
 

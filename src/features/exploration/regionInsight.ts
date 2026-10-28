@@ -4,6 +4,7 @@ import {
   readIndicator,
   type DisplayUnit,
   type IndicatorReading,
+  type PercentileOrientation,
 } from '@/domain/indicators';
 import { describeObservation } from '@/features/data-hub';
 import type {
@@ -78,6 +79,7 @@ const toNumber = (decimal: string | null): number | null => {
 function toInsightIndicator(
   item: RegionProfileIndicatorValueDTO,
   definition: DataHubIndicatorDTO | undefined,
+  orientation: PercentileOrientation,
 ): InsightIndicator {
   const hasValue = item.value.status === 'AVAILABLE';
   const value = item.value.status === 'AVAILABLE' ? Number(item.value.decimal) : null;
@@ -101,7 +103,7 @@ function toInsightIndicator(
     reading: readIndicator({
       polarity: definition?.polarity ?? 'unknown',
       percentile: toNumber(item.nationalPercentileDecimal),
-      percentileOrientation: DATA_HUB_PERCENTILE_ORIENTATION,
+      percentileOrientation: orientation,
       qualityFlag: item.qualityFlag,
       hasValue,
     }),
@@ -119,10 +121,16 @@ function toInsightIndicator(
 export function buildRegionInsight(
   profile: RegionProfileDTO,
   catalog: IndicatorCatalogDTO | null,
+  /** The profile response's `meta.score_direction` (contract v2.4); `null` when not stated. */
+  scoreDirection: string | null = null,
 ): RegionInsight {
+  // v2.4 states what the percentile means: with `higher_is_need` it is a need percentile, so a
+  // verdict may be drawn. Without that statement no verdict is drawn (UNVERIFIED).
+  const orientation: PercentileOrientation =
+    scoreDirection === 'higher_is_need' ? 'NEED_SHARE' : DATA_HUB_PERCENTILE_ORIENTATION;
   const definitions = new Map((catalog?.items ?? []).map((item) => [item.indicatorId, item]));
   const indicators = profile.indicators.map((item) =>
-    toInsightIndicator(item, definitions.get(item.indicatorId)),
+    toInsightIndicator(item, definitions.get(item.indicatorId), orientation),
   );
 
   const withValue = indicators.filter((indicator) => indicator.hasValue);

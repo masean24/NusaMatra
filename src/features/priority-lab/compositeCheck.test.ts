@@ -42,6 +42,7 @@ const META: AdaptedResponseMeta = {
   snapshotImmutable: null,
   snapshotReproducible: null,
   methodologyVersion: null,
+  scoreDirection: null,
 };
 
 const KMS_WEIGHTS = {

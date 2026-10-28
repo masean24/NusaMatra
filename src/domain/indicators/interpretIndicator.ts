@@ -23,7 +23,9 @@ export type PercentileOrientation = 'BETTER_SHARE' | 'NEED_SHARE' | 'UNVERIFIED'
  * v1-era capture behaved as BETTER_SHARE (Lanny Jaya 9507, poverty 31,59 %: percentile 1,95), the
  * v2.1/v2.2 LIVE and the DEMO captures as NEED_SHARE (the same poverty value: 98,05, in the exact
  * order of the need-aligned normalized score). An undocumented field that flipped once is not a
- * basis for "better than X %". Change this only when the Data Hub contract states the orientation.
+ * basis for "better than X %". This stays the default for any response that does not state the
+ * orientation. Contract v2.4 states it per response (`meta.score_direction: higher_is_need` on region
+ * detail = a need percentile); the region panel then reads NEED_SHARE (see regionInsight).
  */
 export const DATA_HUB_PERCENTILE_ORIENTATION: PercentileOrientation = 'UNVERIFIED';
 

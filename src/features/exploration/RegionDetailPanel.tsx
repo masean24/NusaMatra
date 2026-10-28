@@ -114,6 +114,7 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
                   snapshotId: envelope.meta.snapshotId,
                 })}
                 catalog={catalog.state.status === 'success' ? catalog.state.data.data : null}
+                scoreDirection={envelope.meta.scoreDirection}
               />
             ) : (
               <StatusMessage kind="error" title="Data wilayah tidak cocok">
@@ -167,13 +168,16 @@ function ProfileBody({
   profile,
   passportTo,
   catalog,
+  scoreDirection,
 }: {
   readonly profile: RegionProfileDTO;
   /** Link to the Paspor Bukti of exactly this loaded profile. */
   readonly passportTo: string;
   readonly catalog: Parameters<typeof buildRegionInsight>[1];
+  /** The profile response's meta.score_direction: what its percentiles mean. */
+  readonly scoreDirection: string | null;
 }) {
-  const insight = buildRegionInsight(profile, catalog);
+  const insight = buildRegionInsight(profile, catalog, scoreDirection);
   const { region } = profile;
 
   if (insight.indicatorCount === 0) {
