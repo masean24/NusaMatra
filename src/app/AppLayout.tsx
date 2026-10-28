@@ -1,4 +1,4 @@
-import { useEffect, useRef, ViewTransition, type RefObject } from 'react';
+import { Suspense, useEffect, useRef, ViewTransition, type RefObject } from 'react';
 import { Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { AppBackground } from '@/components/layout/AppBackground';
 import { SiteFooter } from '@/components/layout/SiteFooter';
@@ -63,7 +63,10 @@ export function AppLayout() {
          */}
         <ViewTransition key={pathname} enter={PAGE_ENTER} exit={PAGE_EXIT} default="none">
           <div className={styles.routeEnter}>
-            <Outlet />
+            {/* Feature pages load per route (router.tsx); main keeps one screen of height meanwhile. */}
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
           </div>
         </ViewTransition>
       </main>

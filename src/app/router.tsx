@@ -5,12 +5,14 @@ import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
 import { COMPARISON_DETAIL_PATH } from '@/features/comparison';
 import { AccessibilityPage } from './pages/AccessibilityPage';
-import { ComparisonDetailPage } from './pages/ComparisonDetailPage';
-import { ComparisonPage } from './pages/ComparisonPage';
-import { EvidencePassportPage } from './pages/EvidencePassportPage';
-import { ExplorePage } from './pages/ExplorePage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PriorityLabPage } from './pages/PriorityLabPage';
+import {
+  ComparisonDetailPage,
+  ComparisonPage,
+  EvidencePassportPage,
+  ExplorePage,
+  PriorityLabPage,
+} from './lazyPages';
 
 /** Features that are built; every other shell is an honest "under development" page. */
 const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
