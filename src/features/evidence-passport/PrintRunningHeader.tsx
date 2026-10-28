@@ -19,7 +19,7 @@ export function PrintRunningHeader({
   readonly source: Pick<SourceStatus, 'dataMode' | 'snapshotId'>;
 }) {
   const snapshot = SAFE_IN_CSS_STRING.test(source.snapshotId) ? source.snapshotId : 'tidak dapat ditampilkan';
-  const text = `Nusa Matra · Paspor Bukti · Mode ${source.dataMode} · Snapshot ${snapshot} · ${BROWSER_ASSEMBLED_LABEL}`;
+  const text = `Nusa Matra · Paspor Bukti · Mode ${source.dataMode} · Versi data ${snapshot} · ${BROWSER_ASSEMBLED_LABEL}`;
   return (
     <>
       <style>{`@page { @top-left { content: "${text}"; font: 600 8pt sans-serif; color: #000; } @bottom-right { content: "Halaman " counter(page) " dari " counter(pages); font: 8pt sans-serif; color: #000; } }`}</style>

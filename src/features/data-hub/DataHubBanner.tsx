@@ -1,5 +1,6 @@
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Surface } from '@/components/ui/Surface/Surface';
+import { publicConfig } from '@/lib/publicConfig';
 import { INDONESIAN_ERROR_COPY } from '@/services/api';
 import { DataHubErrorMessage } from './DataHubErrorMessage';
 import { DataModeSwitch } from './DataModeSwitch';
@@ -7,14 +8,11 @@ import { useDataHub } from './useDataHub';
 import { useDataHubResource } from './useDataHubResource';
 import styles from './DataHubBanner.module.css';
 
-const CHECKSUM_PLACEHOLDER_NOTE =
-  'Checksum snapshot masih berupa placeholder dan belum diverifikasi, jadi belum dapat dipakai sebagai bukti keutuhan data.';
-
 /**
- * Says which data a page is showing: the mode, the active snapshot and, in DEMO, that nothing here
- * is official. The snapshot comes from the Data Hub for the chosen mode, so LIVE shows the blocked
- * state instead of a DEMO snapshot. `compact` puts it on one toolbar row: the DEMO disclaimer stays in view, the checksum caveat
- * folds into a disclosure.
+ * Says which data a page is showing only when there is something to say: DEMO (always labelled),
+ * the mode switch where it is enabled (tests), or a Data Hub that cannot be reached. In LIVE with
+ * everything working it renders nothing; the data version is not shown (owner decision 2026-10-27).
+ * `compact` puts it on one toolbar row.
  */
 export function DataHubBanner({ compact = false }: { readonly compact?: boolean }) {
   const { dataMode } = useDataHub();
@@ -23,8 +21,9 @@ export function DataHubBanner({ compact = false }: { readonly compact?: boolean 
   );
 
   const disclaimer = INDONESIAN_ERROR_COPY['data.demo_disclaimer'];
-  const checksumIsPlaceholder =
-    snapshots.state.status === 'success' && snapshots.state.data.data.some((s) => s.isChecksumPlaceholder);
+  const showRow = dataMode === 'DEMO' || publicConfig.modeSwitch;
+  const problem = snapshots.state.status === 'error' || snapshots.state.status === 'unconfigured';
+  if (!showRow && !problem) return null;
 
   return (
     <Surface
@@ -33,28 +32,16 @@ export function DataHubBanner({ compact = false }: { readonly compact?: boolean 
       data-compact={compact || undefined}
       aria-label="Sumber dan mode data"
     >
-      <div className={styles.row}>
-        <DataModeSwitch />
-        {dataMode === 'DEMO' && <Chip tone="warning">DEMO</Chip>}
-        {compact && dataMode === 'DEMO' && <span className="kk-small kk-body-strong">{disclaimer}</span>}
-        {snapshots.state.status === 'success' && (
-          <span className={`kk-small ${styles.snapshot}`}>
-            Snapshot <strong>{snapshots.state.data.meta.snapshotId}</strong>
-          </span>
-        )}
-        {compact && checksumIsPlaceholder && (
-          <details className={styles.noteDisclosure}>
-            <summary className="kk-small">Catatan snapshot</summary>
-            <p className={`kk-small ${styles.note}`}>{CHECKSUM_PLACEHOLDER_NOTE}</p>
-          </details>
-        )}
-      </div>
+      {showRow && (
+        <div className={styles.row}>
+          <DataModeSwitch />
+          {dataMode === 'DEMO' && <Chip tone="warning">DEMO</Chip>}
+          {compact && dataMode === 'DEMO' && <span className="kk-small kk-body-strong">{disclaimer}</span>}
+        </div>
+      )}
 
       {!compact && dataMode === 'DEMO' && (
         <p className={`kk-body-strong ${styles.disclaimer}`}>{disclaimer}</p>
-      )}
-      {!compact && checksumIsPlaceholder && (
-        <p className={`kk-small ${styles.note}`}>{CHECKSUM_PLACEHOLDER_NOTE}</p>
       )}
 
       {snapshots.state.status === 'error' && (

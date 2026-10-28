@@ -21,16 +21,16 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
   if (!record.source.consistent) {
     add(
       'Reproduksibilitas',
-      'Respons dari mode atau snapshot berbeda',
-      'Respons Data Hub untuk catatan ini berasal dari mode atau snapshot yang berbeda. Perbandingan antarwilayah tidak ditampilkan karena angkanya tidak setara.',
+      'Respons dari mode atau versi data berbeda',
+      'Respons Data Hub untuk catatan ini berasal dari mode atau versi data yang berbeda. Perbandingan antarwilayah tidak ditampilkan karena angkanya tidak setara.',
     );
   }
 
   add(
     'Reproduksibilitas',
     record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
-      ? 'Data terkunci, tetapi snapshot bisa hilang'
-      : 'Data tidak dikunci ke snapshot',
+      ? 'Data terkunci, tetapi versi data bisa hilang'
+      : 'Data tidak dikunci ke versi data',
     snapshotIdentityNote(record.source.reproducibility),
   );
 
@@ -47,7 +47,7 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
       add(
         'Cakupan',
         `${name}: ada indikator tanpa nilai`,
-        `${name}: ${String(coverage.indicatorsWithoutValue)} indikator tidak memiliki nilai pada snapshot ini. Nilai kosong tidak dihitung sebagai nol.`,
+        `${name}: ${String(coverage.indicatorsWithoutValue)} indikator tidak memiliki nilai pada versi data ini. Nilai kosong tidak dihitung sebagai nol.`,
       );
     }
     const unclassified = coverage.byClass.UNSPECIFIED ?? 0;

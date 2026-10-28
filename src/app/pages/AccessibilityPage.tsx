@@ -21,7 +21,7 @@ export function AccessibilityPage() {
         Nusa Matra dirancang agar dapat digunakan oleh sebanyak mungkin orang. Berikut yang sudah didukung
         pada versi prototipe ini.
       </p>
-      <Surface radius="card" className={styles.panel}>
+      <Surface radius="card" reading className={styles.panel}>
         <ul className={styles.list}>
           {SUPPORTED.map((item) => (
             <li key={item} className="kk-body">

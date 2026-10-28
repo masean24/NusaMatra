@@ -46,7 +46,7 @@ export function StatusPanel({
 }: StatusPanelProps) {
   const urgent = tone === 'blocked' || tone === 'error';
   return (
-    <div className={styles.status} data-tone={tone} role={urgent ? 'alert' : 'status'}>
+    <div className={`glass glass--read ${styles.status}`} data-tone={tone} role={urgent ? 'alert' : 'status'}>
       <span className={styles.statusIcon} aria-hidden="true">
         {tone === 'loading' ? <span className={styles.spinner} /> : <Icon name={ICON[tone]} size={20} />}
       </span>

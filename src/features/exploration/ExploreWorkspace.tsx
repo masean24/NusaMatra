@@ -25,6 +25,7 @@ import type { GeoCameraHandle } from '@/features/geo3d';
 import { BoundaryNotice } from './BoundaryNotice';
 import { ExplorationMapPanel, type MapOverlay } from './ExplorationMapPanel';
 import { MapControls } from './MapControls';
+import { MapGestureHint } from './MapGestureHint';
 import { RegionDetailPanel } from './RegionDetailPanel';
 import { RegionExplorer } from './RegionExplorer';
 import { useRegionBrowserParams } from './regionCode';
@@ -300,7 +301,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
   const statusCards = (
     <>
       {status}
-      <div className={styles.statusCard}>
+      <div className={`glass ${styles.statusCard}`}>
         <EarthquakeLayerControl
           enabled={quakeLayerOn}
           available={dataMode === 'LIVE'}
@@ -311,7 +312,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
         />
       </div>
       {/* Where the map's boundaries come from: always in view, its explanation on demand. */}
-      <div className={styles.statusCard}>
+      <div className={`glass ${styles.statusCard}`}>
         <BoundaryNotice compact />
       </div>
     </>
@@ -328,6 +329,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
     >
       {/* The real 3D map, filling the workspace behind every floating control. */}
       <div ref={stageRef} className={styles.mapStage}>
+        <MapGestureHint />
         {/*
          * The view is centred on the whole screen: the sidebar floats over the map like the status
          * cards do, so folding it never moves the map (no viewInsetLeft).
@@ -345,7 +347,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
           // Phones: the cards would cover the map, so they fold into one control that names the
           // data mode. Every card is still there, unchanged, one tap away.
           <details className={styles.statusDisclosure}>
-            <summary className={styles.statusSummary}>
+            <summary className={`glass ${styles.statusSummary}`}>
               {/* LIVE is the only mode visitors see, so it is not labelled; DEMO always is. */}
               {(dataMode === 'DEMO' || publicConfig.modeSwitch) && (
                 <span className={styles.modeBadge} data-mode={dataMode}>
@@ -372,6 +374,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
       <Surface
         as="aside"
         radius="card"
+        reading
         className={styles.panel}
         aria-label="Informasi wilayah"
         data-state={shown}

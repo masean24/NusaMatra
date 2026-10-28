@@ -1,6 +1,6 @@
 /*
- * 27:2 y=1820: band at x=64 (1312×820, radius 36, darat/2; glass in Kaca). Inside: 3D-3 zone
- * (540×740) 40px from the band edge; content column at x=700 (620px), 60px below the band top.
+ * 27:2 y=1820: band at x=64 (1312×820, radius 36, glass). Inside: the 3D-3 data columns on the left,
+ * the focus chooser, its weights and the way into the Lab on the right.
  */
 .section {
   padding-inline: var(--nm-gutter);
@@ -10,13 +10,9 @@
   display: grid;
   grid-template-columns: minmax(0, 540fr) minmax(0, 620fr);
   column-gap: clamp(24px, 4.2vw, 56px);
-  align-items: start;
+  align-items: center;
   padding: 40px clamp(20px, 4.5vw, 52px) 40px 40px;
-  border: 1px solid var(--c-band-border);
-  border-radius: var(--nm-radius-band);
-  background: var(--c-band);
-  box-shadow: var(--c-band-shadow);
-  backdrop-filter: var(--c-surface-blur);
+  border-radius: var(--nm-radius-band); /* the material is the global `glass` */
 }
 
 .visual {
@@ -27,79 +23,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-top: 20px;
-}
-
-.title {
-  text-wrap: balance;
-}
-
-.lead {
-  max-width: 37.5rem;
-  color: var(--c-text-muted);
-}
-
-.weights {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Weight row 41:255: padding 12px 16px, gap 8px; 6px bar on a darat/2 track. */
-.weight {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
-}
-
-.weightHeader {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  justify-content: space-between;
-}
-
-.percent {
-  color: var(--c-text-strong-accent);
-}
-
-.track {
-  display: block;
-  height: 6px;
-  overflow: hidden;
-  border-radius: 3px;
-  background: var(--c-surface-muted);
-}
-
-.bar {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 3px;
-  background: var(--nm-accent);
-  transform: scaleX(var(--fill));
-  transform-origin: left center;
-}
-
-/* G5: bars fill from 0 once the panel is in view; their value is readable as text from the start. */
-:global(html.js) .content[data-revealed='false'] .bar {
-  transform: scaleX(0);
-}
-
-.content[data-revealed='true'] .bar {
-  transition: transform 500ms var(--nm-ease-calm) calc(700ms + var(--fill-delay));
-}
-
-.demoNote {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 12px;
-  align-items: center;
-}
-
-.caption {
-  color: var(--c-text-muted);
+  min-width: 0;
 }
 
 .eyebrow {
@@ -108,6 +32,144 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  text-wrap: balance;
+}
+
+.lead {
+  max-width: 37.5rem;
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+/* The focus options: one segmented row, wrapping to two on narrow columns. */
+.focus {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 2px;
+}
+
+.focus button {
+  min-height: 44px;
+  padding: 6px 12px;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.focus button[aria-pressed='true'] {
+  box-shadow:
+    inset 0 0 0 1.5px var(--nm-accent),
+    var(--thumb-sh);
+}
+
+.focusBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.presetTitle {
+  margin: 0;
+}
+
+.weights {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.weight {
+  display: grid;
+  gap: 6px;
+}
+
+.weightHeader {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.9375rem;
+}
+
+.percent {
+  font-weight: 700;
+}
+
+.track {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--track);
+}
+
+/*
+ * The bar springs to its new length when another focus is chosen ("Halus", a transform, so no
+ * layout work), stretched a little so the larger change reads calmly.
+ */
+.bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--nm-accent);
+  transform: scaleX(var(--bar-fill));
+  transform-origin: left center;
+  transition: transform calc(var(--nm-spring-duration) * 1.4) var(--nm-spring-halus);
+}
+
+.weight:nth-child(2) .bar {
+  background: var(--nm-sea-shallow);
+}
+
+.weight:nth-child(3) .bar {
+  background: var(--c-bar, var(--nm-sea));
+}
+
+.weight:nth-child(4) .bar {
+  background: var(--nm-land-3);
+}
+
+.note,
+.explain {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+/* Loading: three quiet placeholder bars where the weights will be, never numbers. */
+.skeleton {
+  display: grid;
+  gap: 14px;
+}
+
+.skeleton span {
+  height: 34px;
+  border-radius: 10px;
+  background: var(--fill);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.problem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+}
+
+.problem p {
+  margin: 0;
 }
 
 /* The way in (Lab) and the way to check it (method), side by side. */
@@ -129,16 +191,14 @@
     max-width: 22.5rem;
     aspect-ratio: 540 / 460;
   }
-
-  .content {
-    padding-top: 0;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :global(html.js) .content[data-revealed='false'] .bar,
-  .content[data-revealed='true'] .bar {
-    transform: scaleX(var(--fill));
+  .bar {
     transition: none;
+  }
+
+  .skeleton span {
+    animation: none;
   }
 }

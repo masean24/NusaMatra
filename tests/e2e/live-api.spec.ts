@@ -19,9 +19,9 @@ test.describe('LIVE against the deployed Data Hub', () => {
     await page.goto('/jelajahi?kode=9507');
     // No click: LIVE is the production default.
     await expect(page.getByRole('radio', { name: 'LIVE' })).toBeChecked();
-    await expect(page.getByText(LIVE_SNAPSHOT).first()).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByLabel('Informasi wilayah')).toBeVisible({ timeout: 30_000 });
     const panel = page.getByLabel('Informasi wilayah');
-    await expect(panel.getByText('Data resmi LIVE')).toBeVisible({ timeout: 30_000 });
+    await expect(panel.getByText('Data resmi', { exact: true })).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
     // Lanny Jaya is among the worst-off regions: the undocumented percentile must not make it "better".
     await expect(panel.getByText(/Relatif lebih baik|Lebih baik daripada sekitar/)).toHaveCount(0);
@@ -29,7 +29,6 @@ test.describe('LIVE against the deployed Data Hub', () => {
     await page.locator('label', { hasText: 'DEMO' }).click();
     await expect(page.getByRole('radio', { name: 'DEMO' })).toBeChecked();
     await expect(page.getByText('Simulasi — bukan data atau rekomendasi resmi.').first()).toBeVisible();
-    await expect(page.getByText('2026.10.0-wia-demo').first()).toBeVisible({ timeout: 30_000 });
 
     // The choice holds across pages within the session. Lab keeps the switch folded under "Ganti data".
     await page.getByRole('link', { name: 'Lab Prioritas' }).first().click();
@@ -43,7 +42,7 @@ test.describe('LIVE against the deployed Data Hub', () => {
   }) => {
     await page.goto('/jelajahi');
     // The production build opens in LIVE and has no mode switch.
-    await expect(page.getByText(LIVE_SNAPSHOT)).toBeVisible();
+    await expect(page.getByText(LIVE_SNAPSHOT)).toHaveCount(0);
     await openRegionPanel(page);
 
     await page.getByRole('searchbox', { name: 'Cari kabupaten/kota' }).fill('Aceh Selatan');
@@ -183,7 +182,7 @@ test.describe('LIVE against the deployed Data Hub', () => {
 
     // Counts follow the live snapshot, so assert the shape of the summary, not its numbers.
     await expect(page.getByText(/Dari \d+ indikator wilayah, \d+ dapat dibandingkan/)).toBeVisible();
-    await expect(page.getByText(new RegExp(`Snapshot ${LIVE_SNAPSHOT.source} · mode LIVE`))).toBeVisible();
+    await expect(page.getByText(LIVE_SNAPSHOT)).toHaveCount(0);
     const imputed = page.getByRole('row', { name: /Pengguna Listrik/ });
     await expect(imputed.getByText('Tidak dibandingkan')).toBeVisible();
     await expect(page.getByRole('link', { name: 'Buat Paspor Bukti' })).toHaveAttribute(
@@ -233,9 +232,9 @@ test.describe('LIVE against the deployed Data Hub', () => {
     const passport = page.getByRole('article', { name: /^Bukti hasil Lab/ });
     await expect(passport).toBeVisible({ timeout: 30_000 });
     const status = passport.getByRole('region', { name: /Status sumber data/ });
-    await expect(status).toContainText('Dapat direproduksi: dikunci ke snapshot aktif saat dibuka.');
-    await expect(status).toContainText(LIVE_SNAPSHOT);
-    await expect(status).toContainText(/[0-9a-f]{64}/);
+    await expect(status).toContainText('Dapat direproduksi: tautan ini selalu membuka versi data yang sama.');
+    await expect(status).not.toContainText(LIVE_SNAPSHOT);
+    await expect(status).not.toContainText(/[0-9a-f]{64}/);
     await expect(passport).toContainText('Dirangkai di peramban, bukan arsip/sertifikat resmi.');
     // Whatever the current data, a ranking is either shown with its checks or withheld with a reason.
     await expect(passport.getByText(/Kabupaten Demo/)).toHaveCount(0);
@@ -255,7 +254,7 @@ test.describe('LIVE against the deployed Data Hub', () => {
     page,
   }) => {
     await page.goto('/paspor-bukti?jenis=wilayah&mode=live&snap=2026.10.0-official-live&kode=1101');
-    await expect(page.getByText('Snapshot pada tautan tidak tersedia')).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText('Versi data pada tautan tidak tersedia')).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole('article', { name: /^Bukti / })).toHaveCount(0);
   });
 });

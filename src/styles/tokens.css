@@ -88,6 +88,7 @@
   --nm-shadow-knob: 0 3px 8px 0 #121e5a33;
   --nm-blur-panel: 8px; /* the landing panels use 8px; KK/Kaca panel style is 16px */
   --nm-blur-strong: 16px;
+  --nm-blur-content: 30px; /* Kaca content cards: the dense, text-friendly material */
 
   /* Radii measured on the landing frames */
   --nm-radius-chip: 8px;
@@ -144,6 +145,40 @@
     1
   );
   --nm-duration-feedback: 140ms;
+  /*
+   * "Halus" spring (owner decision 2026-10-27, from the Wobble Motion Lab): a damped spring
+   * (ζ ≈ 0.78) with about 2% overshoot that comes to rest within --nm-spring-duration, no repeat.
+   * For transform only (hover lift, press, selection), on interactive elements; never on text,
+   * tables or the 3D map.
+   */
+  --nm-spring-halus: linear(
+    0,
+    0.0456,
+    0.1531,
+    0.2886,
+    0.4294,
+    0.5616,
+    0.6776,
+    0.774,
+    0.8507,
+    0.9092,
+    0.9518,
+    0.9813,
+    1.0005,
+    1.012,
+    1.0179,
+    1.0199,
+    1.0194,
+    1.0175,
+    1.0149,
+    1.012,
+    1.0094,
+    1.007,
+    1.0049,
+    1.0033,
+    1
+  );
+  --nm-spring-duration: 320ms;
   --nm-duration-reveal: 700ms;
   --nm-duration-knob: 420ms;
 

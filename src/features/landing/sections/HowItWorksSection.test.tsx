@@ -1,8 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router';
 import { DisplayModeProvider } from '@/features/theme';
-import { setMediaQueryMatches } from '@/test/browserMocks';
 import { HowItWorksSection } from './HowItWorksSection';
 
 function CurrentPath() {
@@ -24,68 +23,76 @@ function renderSection() {
   );
 }
 
-describe('HowItWorksSection', () => {
-  // Accessible names read "Langkah 1:Jelajahi…": the hidden prefix and the title are adjacent nodes.
-  const stepLink = (step: number, title: string) =>
-    screen.getByRole('link', { name: new RegExp(`^Langkah ${String(step)}:\\s*${title}`) });
+const tab = (question: RegExp) => screen.getByRole('tab', { name: question });
+// Every panel stays mounted for the crossfade (jsdom does not apply `inert`); the shown one is marked.
+const activePanel = () => {
+  const panel = screen.getAllByRole('tabpanel').find((item) => item.hasAttribute('data-active'));
+  if (!panel) throw new Error('no active panel');
+  return panel;
+};
+
+describe('HowItWorksSection (Guided Question Canvas)', () => {
+  it('offers the four questions, with Jelajahi selected first', () => {
+    renderSection();
+    expect(
+      screen.getAllByRole('tab').map((item) => item.querySelector('[class*="question"]')?.textContent),
+    ).toEqual([
+      'Bagaimana kondisi daerah saya?',
+      'Apa perbedaan dua daerah?',
+      'Daerah mana yang perlu perhatian lebih?',
+      'Dari mana angka dan hasilnya berasal?',
+    ]);
+    expect(tab(/Bagaimana kondisi daerah saya/)).toHaveAttribute('aria-selected', 'true');
+    expect(within(activePanel()).getByRole('heading')).toHaveTextContent(
+      'Pilih wilayah di peta, lalu baca indikatornya',
+    );
+  });
+
+  it('labels every preview as an example', () => {
+    renderSection();
+    expect(within(activePanel()).getByText('Contoh')).toBeInTheDocument();
+  });
 
   it.each([
-    [1, 'Jelajahi', '/jelajahi'],
-    [2, 'Bandingkan', '/bandingkan'],
-    [3, 'Putuskan', '/lab-prioritas'],
-    [4, 'Uji', '/uji-rekomendasi'],
-    [5, 'Verifikasi', '/paspor-bukti'],
-  ])('step %i "%s" opens %s', async (step, title, path) => {
+    [/Apa perbedaan dua daerah/, 'Bandingkan wilayah', '/bandingkan'],
+    [/Daerah mana yang perlu perhatian lebih/, 'Buka Lab Prioritas', '/lab-prioritas'],
+    [/Dari mana angka dan hasilnya berasal/, 'Buka Paspor Bukti', '/paspor-bukti'],
+  ])('selecting %s shows its preview, whose button opens %s', async (question, cta, path) => {
     renderSection();
-    await userEvent.click(stepLink(step, title));
+    await userEvent.click(tab(question));
+    expect(tab(question)).toHaveAttribute('aria-selected', 'true');
+    await userEvent.click(within(activePanel()).getByRole('link', { name: new RegExp(cta) }));
     expect(await screen.findByTestId('path')).toHaveTextContent(path);
   });
 
-  it('keeps real links, so a new tab or a keyboard user still works', () => {
+  it('keeps the other previews out of reach while hidden', () => {
     renderSection();
-    expect(stepLink(1, 'Jelajahi')).toHaveAttribute('href', '/jelajahi');
+    expect(document.getElementById('cara-kerja-panel-bandingkan')).toHaveAttribute('inert');
+    expect(document.getElementById('cara-kerja-panel-jelajahi')).not.toHaveAttribute('inert');
   });
 
-  it('keeps every explanation in the document, so screen readers read the whole card', () => {
+  it('moves between questions with the arrow keys, Home and End', async () => {
     renderSection();
-    expect(screen.getByText('Atur bobot kriteria dan lihat urutan bergeser.')).toBeInTheDocument();
-    expect(stepLink(3, 'Putuskan')).toHaveAccessibleDescription('');
+    await userEvent.click(tab(/Bagaimana kondisi daerah saya/));
+    await userEvent.keyboard('{ArrowDown}');
+    expect(tab(/Apa perbedaan dua daerah/)).toHaveFocus();
+    expect(tab(/Apa perbedaan dua daerah/)).toHaveAttribute('aria-selected', 'true');
+    await userEvent.keyboard('{End}');
+    expect(tab(/Dari mana angka/)).toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}');
+    expect(tab(/Bagaimana kondisi daerah saya/)).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    expect(tab(/Dari mana angka/)).toHaveFocus();
   });
 
-  it('names the three layers of the object, bottom to top', () => {
+  it('lets the visitor try the example markers on the Jelajahi map', async () => {
     renderSection();
-    const layers = screen.getAllByRole('listitem').filter((item) => item.hasAttribute('data-layer'));
-    expect(layers.map((item) => item.textContent)).toEqual([
-      'Data & Sumber',
-      'Analisis & Simulasi',
-      'Keputusan & Bukti',
-    ]);
-  });
-
-  describe('on a touch screen (no hover)', () => {
-    beforeEach(() => {
-      setMediaQueryMatches('(hover: none)', true);
-    });
-
-    it('opens a card on the first tap and only follows the link on the second', async () => {
-      renderSection();
-      const card = stepLink(1, 'Jelajahi');
-      expect(card).not.toHaveAttribute('data-open');
-
-      await userEvent.click(card);
-      expect(card).toHaveAttribute('data-open', 'true');
-      expect(screen.queryByTestId('path')).toBeNull();
-
-      await userEvent.click(card);
-      expect(await screen.findByTestId('path')).toHaveTextContent('/jelajahi');
-    });
-
-    it('keeps one card open: opening another closes the previous', async () => {
-      renderSection();
-      await userEvent.click(stepLink(1, 'Jelajahi'));
-      await userEvent.click(stepLink(2, 'Bandingkan'));
-      expect(stepLink(2, 'Bandingkan')).toHaveAttribute('data-open', 'true');
-      expect(stepLink(1, 'Jelajahi')).not.toHaveAttribute('data-open');
-    });
+    const panel = activePanel();
+    await userEvent.click(within(panel).getByRole('button', { name: 'Wilayah contoh A' }));
+    expect(within(panel).getByRole('button', { name: 'Wilayah contoh A' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(within(panel).getByText('Wilayah contoh A', { selector: 'p' })).toBeInTheDocument();
   });
 });

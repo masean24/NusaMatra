@@ -74,37 +74,6 @@ export const DEMO_DATA_STATUSES: readonly { kind: DataStatusKind; title: string;
   },
 ];
 
-/** Floating cards around the hero diorama (Figma 27:102, 27:107, 27:112). */
-export const DEMO_HERO_CARDS: readonly {
-  id: string;
-  title: string;
-  detail: string;
-  badge: string;
-  badgeTone: 'neutral' | 'warning';
-}[] = [
-  {
-    id: 'a',
-    title: 'Wilayah A · prioritas tinggi',
-    detail: 'Skor 0,82 dari 3 indikator',
-    badge: 'Data simulasi untuk prototipe',
-    badgeTone: 'neutral',
-  },
-  {
-    id: 'b',
-    title: 'Wilayah B · prioritas sedang',
-    detail: 'Paparan banjir naik dibanding 2021',
-    badge: 'Data simulasi untuk prototipe',
-    badgeTone: 'neutral',
-  },
-  {
-    id: 'c',
-    title: 'Wilayah C',
-    detail: 'Data kemiskinan 2021, risiko 2023',
-    badge: 'Tahun berbeda',
-    badgeTone: 'warning',
-  },
-];
-
 /** Sample Paspor Bukti preview (Figma 41:324). The identifier says CONTOH: no report has this number. */
 export const DEMO_PASSPORT_PREVIEW = {
   id: 'CONTOH-0412',

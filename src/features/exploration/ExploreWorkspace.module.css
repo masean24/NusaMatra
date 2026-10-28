@@ -7,7 +7,8 @@
 .workspace {
   --explore-edge: 20px;
   --explore-top: 96px; /* clears the floating navbar */
-  --explore-sidebar-width: clamp(320px, 26vw, 372px);
+  /* Wide enough to read a profile comfortably (owner revision 2026-10-28). */
+  --explore-sidebar-width: clamp(360px, 30vw, 440px);
   /*
    * Panels over the map use the site's reading surface: the kapur card in Normal, and in Kaca the
    * same glass card as Bandingkan, Lab and Paspor (tint, blur, hairline border, inset highlight).
@@ -58,14 +59,19 @@
   pointer-events: auto;
 }
 
-/* The BMKG switch and the boundary note have no card of their own; on the map they get one. */
+/* The BMKG switch and the boundary note have no card of their own; on the map they get a `glass` one. */
 .statusCard {
   padding: 8px 14px;
-  border: 1px solid var(--c-surface-border);
-  border-radius: var(--nm-radius-card);
-  background: var(--explore-reading-surface);
-  box-shadow: var(--c-surface-shadow);
-  backdrop-filter: var(--c-surface-blur);
+}
+
+/*
+ * Phones (< 600px): the map's boundary credit repeats "Info data" (which names the BIG source and
+ * edition), so it folds away and leaves the map clear.
+ */
+@media (width < 600px) {
+  .workspace {
+    --explore-map-credit-display: none;
+  }
 }
 
 /*
@@ -82,12 +88,7 @@
   align-items: center;
   min-height: 44px;
   padding: 6px 14px;
-  border: 1px solid var(--c-surface-border);
   border-radius: var(--nm-radius-pill);
-  background: var(--explore-reading-surface);
-  box-shadow: var(--c-surface-shadow);
-  backdrop-filter: var(--c-surface-blur);
-  color: var(--c-text);
   list-style: none;
   cursor: pointer;
 }
@@ -180,7 +181,7 @@
   min-height: 56px;
   padding: 12px 20px;
   border: 0;
-  border-bottom: 1px solid var(--c-surface-border);
+  border-bottom: 1px solid var(--hair);
   background: transparent;
   color: inherit;
   text-align: left;
@@ -278,7 +279,7 @@
 .section {
   min-width: 0;
   padding-block: 18px;
-  border-top: 1px solid var(--c-surface-border);
+  border-top: 1px solid var(--hair);
 }
 
 .section:first-child {

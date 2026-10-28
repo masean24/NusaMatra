@@ -4,40 +4,6 @@
   width: 100%;
 }
 
-.breadcrumb ol {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.8125rem;
-  font-weight: 500;
-}
-
-.breadcrumb li + li::before {
-  content: '/';
-  margin-right: 8px;
-  color: var(--c-text-muted);
-}
-
-.breadcrumb a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  color: var(--c-text);
-  text-decoration: none;
-}
-
-.breadcrumb a:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb [aria-current='page'] {
-  color: var(--c-text-muted);
-}
-
 .titleRow {
   display: flex;
   flex-wrap: wrap;

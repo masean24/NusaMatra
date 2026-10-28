@@ -1,22 +1,18 @@
 /*
- * Lab Prioritas surfaces. One translucent layer at most: in Kaca only the settings panel is glass;
- * every card with content (status, charts, details) is opaque, so text never sits on glass over
- * glass. All colours are local tokens, set once per display mode below.
+ * Lab Prioritas. Its surfaces are the shared iOS glass (styles/glass.css): the settings panel and
+ * short cards are `glass`, the ranking, status, details and other text-heavy cards `glass
+ * glass--read`. Lines inside them are the glass hairline. All other colours are local tokens, set
+ * once per display mode below.
  */
 .lab {
-  --lab-panel-bg: var(--c-card);
-  --lab-panel-border: var(--c-card-border);
-  --lab-panel-shadow: var(--c-card-shadow);
-  --lab-panel-blur: var(--c-card-filter);
-  --lab-card-bg: var(--c-card);
-  --lab-card-border: var(--c-card-border);
-  --lab-card-shadow: var(--c-card-shadow);
+  --lab-panel-border: var(--hair);
+  --lab-card-bg: var(--glass-read); /* separators that must read as the card's own colour */
+  --lab-card-border: var(--hair);
   --lab-ink: var(--c-text);
   --lab-muted: #4f5666;
   --lab-strong: var(--c-link);
   --lab-track: var(--c-track);
   --lab-bar: var(--c-bar);
-  --lab-input-bg: #ffffff;
   --lab-input-border: #d3ccbb;
   --lab-chip-bg: var(--c-chip);
   --lab-chip-ink: var(--c-chip-ink);
@@ -28,7 +24,6 @@
   --lab-series-3: var(--c-series-4);
   --lab-series-4: #9cb2ff;
   --lab-series-5: #f2b48a;
-  --lab-ok-bg: var(--c-ok-bg);
   --lab-ok-edge: var(--c-sel-line);
   --lab-ok-icon: var(--c-ok-ink);
   --lab-warn-bg: var(--c-warn);
@@ -50,7 +45,6 @@
 :global([data-display-mode='glass']) .lab {
   /* Kaca tinta cards: white text >= 4.5:1, also over the orange light. */
   --lab-muted: rgb(255 255 255 / 84%);
-  --lab-input-bg: var(--c-input-bg);
   --lab-input-border: var(--c-input-border);
   --lab-chip-on-bg: var(--nm-surface);
   --lab-chip-on-ink: #13286f;
@@ -65,32 +59,10 @@
 
 /* ---------------------------------------------------------------- surfaces */
 
-.panel {
-  border: 1px solid var(--lab-panel-border);
-  border-radius: var(--nm-radius-card);
-  background: var(--lab-panel-bg);
-  box-shadow: var(--lab-panel-shadow);
-  backdrop-filter: var(--lab-panel-blur);
-  -webkit-backdrop-filter: var(--lab-panel-blur);
-}
-
+/* Layout only: the material (background, rim, blur, fallbacks) comes from the global `glass`. */
 .card {
   min-width: 0;
   padding: 18px 20px;
-  border: 1px solid var(--lab-card-border);
-  border-radius: var(--nm-radius-card);
-  background: var(--lab-card-bg);
-  box-shadow: var(--lab-card-shadow);
-  backdrop-filter: var(--lab-panel-blur);
-  -webkit-backdrop-filter: var(--lab-panel-blur);
-}
-
-/* Glass only where it can stay legible: opaque without backdrop-filter or when asked to reduce it. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :global([data-display-mode='glass']) .lab {
-    --lab-panel-bg: #13286f;
-    --lab-card-bg: #13286f;
-  }
 }
 
 /* ---------------------------------------------------------------- layout */
@@ -100,6 +72,15 @@
   flex-direction: column;
   gap: 22px;
   padding: 20px;
+}
+
+/*
+ * The glass panel is its own stacking context, so the cards after it would paint over an open
+ * list; while one is open, the panel rises above them.
+ */
+.config:has([role='combobox'][aria-expanded='true']) {
+  position: relative;
+  z-index: var(--nm-z-popover);
 }
 
 /* The analysis' parts are placed straight on the Lab grid. */
@@ -116,10 +97,10 @@
 
 /*
  * Alternative A, desktop: settings in a fixed-width column on the left, the ranking (with each
- * region's breakdown opening inside its row) on the right; below the ranking, the unranked regions
- * and the methodology side by side. The settings span the lower row too, so their height never
- * pushes those cards down. In one column the DOM order is the reading order: status, top three,
- * settings (collapsible), ranking, then the notes.
+ * region's breakdown opening inside its row) on the right, both ending on one line. Below them, one
+ * full-width row: the unranked regions and the methodology side by side, equally tall (owner
+ * revision 2026-10-27: the edges line up). In one column the DOM order is the reading order:
+ * status, top three, settings (collapsible), ranking, then the notes.
  */
 @media (width >= 1024px) {
   .lab {
@@ -137,29 +118,30 @@
   }
 
   .analysis > .config {
-    grid-row: 2 / span 2;
+    grid-row: 2;
     grid-column: 1;
+    align-self: stretch;
   }
 
   .results > .rankingCard {
     grid-row: 2;
+    align-self: stretch;
   }
 
   .results > .insufficientCard {
     grid-row: 3;
-    grid-column: 2;
-    align-self: start;
+    grid-column: 1 / span 2;
+    align-self: stretch;
   }
 
-  /* Each lower card is as tall as its own content, so opening one never stretches the other. */
   .analysis > .details {
     grid-row: 3;
     grid-column: 3;
-    align-self: start;
+    align-self: stretch;
   }
 
   .lab:not(:has(.insufficientCard)) .details {
-    grid-column: 2 / -1;
+    grid-column: 1 / -1;
   }
 }
 
@@ -237,14 +219,7 @@
   font-weight: 600;
 }
 
-.segmented {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip,
-.segmented button {
+.chip {
   min-height: 40px;
   padding: 8px 14px;
   border: 1px solid var(--lab-input-border);
@@ -257,8 +232,7 @@
   transition: background-color var(--nm-duration-feedback) ease;
 }
 
-.chip[aria-pressed='true'],
-.segmented button[aria-pressed='true'] {
+.chip[aria-pressed='true'] {
   border-color: transparent;
   background: var(--lab-chip-on-bg);
   color: var(--lab-chip-on-ink);
@@ -292,71 +266,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Custom range: the filled part takes the criterion's colour (--fill is set inline). */
+/* The iOS slider (global `glass-range`); its fill takes the criterion's colour. --p is set inline. */
 .slider input[type='range'] {
+  --fill-c: var(--series, var(--lab-bar));
+
   grid-column: 2 / -1;
-  width: 100%;
-  height: 24px;
   margin: 0;
-  background: transparent;
-  cursor: pointer;
-  appearance: none;
-}
-
-.slider input[type='range']::-webkit-slider-runnable-track {
-  height: 6px;
-  border-radius: var(--nm-radius-pill);
-  background: linear-gradient(
-    to right,
-    var(--series, var(--lab-bar)) var(--fill, 0%),
-    var(--lab-track) var(--fill, 0%)
-  );
-}
-
-.slider input[type='range']::-moz-range-track {
-  height: 6px;
-  border-radius: var(--nm-radius-pill);
-  background: var(--lab-track);
-}
-
-.slider input[type='range']::-moz-range-progress {
-  height: 6px;
-  border-radius: var(--nm-radius-pill);
-  background: var(--series, var(--lab-bar));
-}
-
-.slider input[type='range']::-webkit-slider-thumb {
-  width: 20px;
-  height: 20px;
-  margin-top: -7px;
-  border: 2px solid var(--series, var(--lab-bar));
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgb(18 24 38 / 30%);
-  appearance: none;
-}
-
-.slider input[type='range']::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--series, var(--lab-bar));
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgb(18 24 38 / 30%);
-}
-
-.slider input[type='range']:focus-visible {
-  outline: none;
-}
-
-.slider input[type='range']:focus-visible::-webkit-slider-thumb {
-  outline: 3px solid var(--lab-bar);
-  outline-offset: 2px;
-}
-
-.slider input[type='range']:focus-visible::-moz-range-thumb {
-  outline: 3px solid var(--lab-bar);
-  outline-offset: 2px;
 }
 
 .slider input[type='range']:disabled {
@@ -385,21 +300,6 @@
 
 .iconButton:hover {
   background: var(--lab-chip-bg);
-}
-
-.input {
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid var(--lab-input-border);
-  border-radius: var(--nm-radius-control);
-  background: var(--lab-input-bg);
-  color: var(--lab-ink);
-  font: inherit;
-}
-
-.input::placeholder {
-  color: var(--lab-muted);
 }
 
 /* Criteria picker: a disclosure, so the sliders stay the first thing in the panel. */
@@ -506,21 +406,17 @@
 
 /* ---------------------------------------------------------------- status */
 
+/* A `glass glass--read` card; the tone shows as its left edge, and warnings also tint it. */
 .status {
   display: flex;
   gap: 14px;
   align-items: flex-start;
   padding: 14px 18px;
-  border: 1px solid var(--lab-card-border);
   border-left: 4px solid var(--lab-ok-edge);
-  border-radius: 16px;
-  background: var(--lab-ok-bg);
-  box-shadow: var(--lab-card-shadow);
 }
 
 .status[data-tone='loading'] {
   border-left-color: var(--lab-bar);
-  background: var(--lab-card-bg);
 }
 
 .status[data-tone='warning'],
@@ -542,7 +438,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--lab-card-bg);
+  background: var(--fill);
   color: var(--lab-ok-icon);
 }
 
@@ -750,44 +646,95 @@
   align-items: center;
 }
 
+/* Positioned, so row positions (offsetTop) are measured against the list for the move animation. */
 .rankChart {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
   margin: 0;
   padding: 0;
   list-style: none;
+  transition: opacity 220ms ease;
 }
 
+/*
+ * While a new calculation runs, the last ranking stays, quietly dimmed, with a thin light moving
+ * along the card's top edge (a 2px strip, so repainting it is negligible); the card never disappears.
+ */
+.rankingCard {
+  position: relative;
+}
+
+.rankingCard[data-refreshing] .rankChart {
+  opacity: 0.55;
+}
+
+.rankingCard[data-refreshing]::before {
+  position: absolute;
+  top: 0;
+  right: 24px;
+  left: 24px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: linear-gradient(90deg, transparent, var(--nm-accent), transparent) 0 0 / 40% 100% no-repeat;
+  content: '';
+  animation: ranking-refresh 1.2s var(--nm-ease-ui) infinite;
+}
+
+@keyframes ranking-refresh {
+  from {
+    background-position: -40% 0;
+  }
+
+  to {
+    background-position: 140% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rankingCard[data-refreshing]::before {
+    animation: none;
+    background-position: 50% 0;
+  }
+}
+
+/* Rows span the card: the reading measure of `glass--read li` is for prose, not table rows. */
+.rankChart > li {
+  max-width: none;
+  line-height: inherit;
+}
+
+/*
+ * A `glass-row` in the `glass-group` list. Rows span the group edge to edge, as in an iOS grouped
+ * list, so their highlight has no corners of its own; badges may wrap, hence the block padding.
+ */
 .rankRow {
   display: grid;
   grid-template-columns: 2rem minmax(0, 1.4fr) minmax(80px, 1fr) 3.5rem 12px;
   gap: 12px;
   align-items: center;
   width: 100%;
-  min-height: 44px;
-  padding: 6px 10px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: transparent;
+  padding-block: 8px;
+  border: 0;
+  border-radius: 0;
   color: inherit;
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
-.rankRow:hover {
-  background: var(--lab-chip-bg);
-}
-
 .rankChart > li[data-open] {
-  border: 1px solid var(--c-sel-line);
-  border-radius: 14px;
-  background: var(--c-sel);
+  background: var(--sel);
 }
 
 .rankChart > li[data-open] > .rankRow:hover {
   background: transparent;
+}
+
+/* The ring sits inside the row: the group clips anything drawn outside it. */
+.rankRow:focus-visible {
+  outline-offset: -3px;
 }
 
 .chevron {
@@ -978,15 +925,8 @@
 }
 
 @media (width < 600px) {
-  .segmented {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  .orderToggle {
     width: 100%;
-  }
-
-  .segmented button {
-    padding: 8px 10px;
-    font-size: 0.8125rem;
   }
 }
 
@@ -1064,8 +1004,7 @@
 
   .stackPart,
   .rankTrack span,
-  .chip,
-  .segmented button {
+  .chip {
     transition: none;
   }
 }
@@ -1223,30 +1162,18 @@
 }
 
 /* The icon sits inside the field, wherever the row wraps the count. */
+/* A `glass-field`: icon and input side by side on the field's fill. */
 .searchField {
-  display: block;
-  position: relative;
   min-width: 0;
 }
 
-.searchField .input {
-  width: 100%;
-}
-
-.searchRow {
-  position: relative;
-}
-
 .searchIcon {
-  position: absolute;
-  top: 50%;
-  left: 12px;
-  translate: 0 -50%;
-  pointer-events: none;
+  flex: none;
+  color: var(--ink3);
 }
 
-.searchInput {
-  padding-left: 36px;
+.searchField input {
+  min-height: 44px;
 }
 
 .whyActions {
@@ -1322,25 +1249,6 @@
   flex-direction: column;
   gap: 12px;
   padding-bottom: 14px;
-}
-
-/* Mockup: the order toggle is one pill track with the active option in orange. */
-.segmented {
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--lab-card-border);
-  border-radius: var(--nm-radius-pill);
-  background: var(--c-soft);
-}
-
-.segmented button {
-  border-color: transparent;
-  background: transparent;
-}
-
-.segmented button[aria-pressed='true'] {
-  background: var(--nm-accent);
-  color: var(--nm-accent-text);
 }
 
 /* Score and its rank chip on one line. */
@@ -1459,4 +1367,88 @@
 .statusBody {
   flex: 1 1 280px;
   min-width: 0;
+}
+
+/* ---------------------------------------------------------------- entrance */
+
+/*
+ * The Lab's parts arrive from different requests (catalog, presets, the calculation). Each card
+ * fades in rising 14px as it appears, cards that arrive together follow one another, and the first
+ * ranking rows cascade in, so loading ends as one calm composition rather than pieces popping in
+ * (owner revision 2026-10-27). Transform and opacity only; reduced motion shows everything at once.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .config,
+  .status,
+  .card {
+    animation: lab-enter 560ms var(--nm-ease-calm) both;
+  }
+
+  .rankingCard,
+  .topSummary {
+    animation-delay: 70ms;
+  }
+
+  .insufficientCard {
+    animation-delay: 150ms;
+  }
+
+  .details {
+    animation-delay: 220ms;
+  }
+
+  .rankChart > li {
+    animation: lab-row 420ms var(--nm-ease-calm) both;
+    animation-delay: calc(120ms + var(--row-step, 0) * 30ms);
+  }
+
+  .rankChart > li:nth-child(2) {
+    --row-step: 1;
+  }
+
+  .rankChart > li:nth-child(3) {
+    --row-step: 2;
+  }
+
+  .rankChart > li:nth-child(4) {
+    --row-step: 3;
+  }
+
+  .rankChart > li:nth-child(5) {
+    --row-step: 4;
+  }
+
+  .rankChart > li:nth-child(6) {
+    --row-step: 5;
+  }
+
+  .rankChart > li:nth-child(7) {
+    --row-step: 6;
+  }
+
+  .rankChart > li:nth-child(8) {
+    --row-step: 7;
+  }
+
+  .rankChart > li:nth-child(9) {
+    --row-step: 8;
+  }
+
+  .rankChart > li:nth-child(n + 10) {
+    --row-step: 9;
+  }
+}
+
+@keyframes lab-enter {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+@keyframes lab-row {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
 }

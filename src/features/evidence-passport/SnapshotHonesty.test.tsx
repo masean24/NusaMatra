@@ -74,24 +74,21 @@ afterEach(() => {
   Reflect.deleteProperty(navigator, 'clipboard');
 });
 
-describe('snapshot id is not proof that data is the same', () => {
-  it('says so in the source status and in the limitations, in a region passport', async () => {
+describe('versi data id is not proof that data is the same', () => {
+  // The source status no longer shows identifiers (owner decision 2026-10-27); the caveat stays in
+  // the limitations, the citation and the JSON.
+  it('says so in the limitations, in a region passport', async () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const article = await findRegionDocument();
 
-    const status = within(article).getByRole('region', { name: /Status sumber data/ });
-    expect(status).toHaveTextContent(SNAPSHOT_MUTABILITY_NOTE);
     const limits = within(article).getByRole('region', { name: /Batasan dan catatan/ });
     expect(limits).toHaveTextContent(SNAPSHOT_MUTABILITY_NOTE);
     expect(article).not.toHaveTextContent(/snapshot (yang sama )?menjamin|data tidak berubah/i);
   });
 
-  it('says so in the source status and in the limitations, in a Lab passport', async () => {
+  it('says so in the limitations, in a Lab passport', async () => {
     renderPassport(labUrl(), capturedJateng());
     const article = await findLabDocument();
-    expect(within(article).getByRole('region', { name: /Status sumber data/ })).toHaveTextContent(
-      SNAPSHOT_MUTABILITY_NOTE,
-    );
     expect(within(article).getByRole('region', { name: /Batasan dan catatan/ })).toHaveTextContent(
       SNAPSHOT_MUTABILITY_NOTE,
     );
@@ -103,7 +100,7 @@ describe('snapshot id is not proof that data is the same', () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     await userEvent.click(await screen.findByRole('button', { name: 'Salin kutipan' }));
     const citation = write.mock.calls[0]?.[0] ?? '';
-    expect(citation).toContain(`Snapshot Data Hub: ${SNAPSHOT}. ${SNAPSHOT_MUTABILITY_NOTE}`);
+    expect(citation).toContain(`Versi data Data Hub: ${SNAPSHOT}. ${SNAPSHOT_MUTABILITY_NOTE}`);
     expect(citation).toContain(BROWSER_ASSEMBLED_LABEL);
   });
 
@@ -116,7 +113,7 @@ describe('snapshot id is not proof that data is the same', () => {
     };
     expect(fieldNotes.snapshotId).toBe(SNAPSHOT_MUTABILITY_NOTE);
     expect(reproducibility.pinnedInputs).toBe(false);
-    expect(reproducibility.statement).toContain('tidak dikunci ke snapshot yang dapat direproduksi');
+    expect(reproducibility.statement).toContain('tidak dikunci ke versi data yang dapat direproduksi');
     expect(reproducibility.statement).toContain('tidak menjamin hasil yang sama');
   });
 
@@ -124,7 +121,9 @@ describe('snapshot id is not proof that data is the same', () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const article = await findRegionDocument();
     expect(
-      within(article).getByText(new RegExp(`Mode LIVE · Snapshot ${SNAPSHOT} · ${BROWSER_ASSEMBLED_LABEL}`)),
+      within(article).getByText(
+        new RegExp(`Mode LIVE · Versi data ${SNAPSHOT} · ${BROWSER_ASSEMBLED_LABEL}`),
+      ),
     ).toBeInTheDocument();
     const { json } = await downloadJson();
     expect((json as { notice: string }).notice.startsWith(BROWSER_ASSEMBLED_LABEL)).toBe(true);
@@ -132,13 +131,10 @@ describe('snapshot id is not proof that data is the same', () => {
 });
 
 describe('the manifest checksum is not a content digest', () => {
-  it('is labelled as such in "Detail teknis" and never as proof of integrity', async () => {
+  it('is not shown on the page, and nothing there claims proof of integrity', async () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const article = await findRegionDocument();
-    const status = within(article).getByRole('region', { name: /Status sumber data/ });
-    expect(status).toHaveTextContent(`Checksum manifest: ${MANIFEST_CHECKSUM_LABEL}`);
-    expect(status).toHaveTextContent(SERVER_CHECKSUM);
-    expect(status).toHaveTextContent('bukan sidik isi data');
+    expect(article).not.toHaveTextContent(SERVER_CHECKSUM);
     expect(article).not.toHaveTextContent(/bukti keutuhan|terverifikasi|menjamin keutuhan/i);
   });
 
@@ -153,18 +149,14 @@ describe('the manifest checksum is not a content digest', () => {
   });
 });
 
-describe('snapshot completeness is shown as the server claims it, beside what /indicators/coverage counts', () => {
+describe('versi data completeness is shown as the server claims it, beside what /indicators/coverage counts', () => {
   it('LIVE: shows both figures and a note that they can disagree, without computing a replacement', async () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const article = await findRegionDocument();
     const status = within(article).getByRole('region', { name: /Status sumber data/ });
-    expect(status).toHaveTextContent('Kelengkapan snapshot51,6%');
+    expect(status).toHaveTextContent('Kelengkapan data51,6%');
     // The captured coverage response (2026-10-23T15:19Z) counts 25 of 33.
     expect(status).toHaveTextContent('Indikator berdata25 dari 33');
-    // Where each figure comes from is stated in the technical details.
-    expect(status).toHaveTextContent(
-      'Indikator berdata dibaca dari /indicators/coverage; kelengkapan snapshot dinyatakan server',
-    );
     expect(status).toHaveTextContent(COMPLETENESS_CLAIM_NOTE);
   });
 
@@ -218,7 +210,7 @@ describe('snapshot completeness is shown as the server claims it, beside what /i
 });
 
 describe('the JSON preserves what was fetched and invents no identity', () => {
-  it('region: raw values, flags, units, years, provenance, snapshot metadata as sent, receive times and requests', async () => {
+  it('region: raw values, flags, units, years, provenance, versi data metadata as sent, receive times and requests', async () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const { json } = await downloadJson();
     const record = json.record as {

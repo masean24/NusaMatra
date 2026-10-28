@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { classifyCoverage } from '@/domain/prioritization';
 import { formatDecimalId } from '@/features/data-hub';
+import { prefersReducedMotion } from '@/features/motion';
 import type { ExploratoryRegionRankDTO } from '@/services/api';
 import { contributions, imputedCriteria, percentLabel, qualityFlagLabel } from './labModel';
 import styles from './PriorityLab.module.css';
@@ -34,6 +35,36 @@ interface RankingChartProps {
 }
 
 /**
+ * After a recalculation, rows that changed place glide from their old position to the new one
+ * (FLIP: measure, invert with a transform, play to none), on the "Halus" spring. Positions are
+ * read relative to the list, so scrolling never counts as a move; only rows whose region changed
+ * place animate, and the rows themselves are never re-created. Reduced motion jumps.
+ */
+function useRowMoves(listRef: RefObject<HTMLOListElement | null>, rows: readonly ExploratoryRegionRankDTO[]) {
+  const positions = useRef(new Map<string, number>());
+  const order = rows.map((row) => row.regionId).join(',');
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const easing =
+      getComputedStyle(document.documentElement).getPropertyValue('--nm-spring-halus').trim() || 'ease-out';
+    const next = new Map<string, number>();
+    for (const element of list.children) {
+      if (!(element instanceof HTMLElement) || !element.dataset.regionId) continue;
+      const top = element.offsetTop;
+      next.set(element.dataset.regionId, top);
+      const before = positions.current.get(element.dataset.regionId);
+      if (before === undefined || Math.abs(before - top) < 1 || prefersReducedMotion()) continue;
+      element.animate([{ transform: `translateY(${String(before - top)}px)` }, { transform: 'none' }], {
+        duration: 460,
+        easing,
+      });
+    }
+    positions.current = next;
+  }, [listRef, order]);
+}
+
+/**
  * Horizontal bars, one row per region, as an accordion: a row opens its breakdown right under it, one
  * region at a time. The rank is the Data Hub's own (1 = highest need; equal scores share a rank). A region
  * built from only some of the criteria, or using a province-level estimate, says so in words on its row.
@@ -47,8 +78,11 @@ export function RankingChart({
   moves,
   minCoveragePct,
 }: RankingChartProps) {
+  const listRef = useRef<HTMLOListElement>(null);
+  useRowMoves(listRef, rows);
+
   return (
-    <ol className={styles.rankChart}>
+    <ol ref={listRef} className={`glass-group ${styles.rankChart}`}>
       {rows.map((item) => {
         const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
         const move = moves.get(item.regionId) ?? 0;
@@ -57,10 +91,10 @@ export function RankingChart({
         const open = item.regionId === openId;
         const detailId = `rincian-${item.regionId}`;
         return (
-          <li key={item.regionId} data-open={open || undefined}>
+          <li key={item.regionId} data-region-id={item.regionId} data-open={open || undefined}>
             <button
               type="button"
-              className={styles.rankRow}
+              className={`glass-row ${styles.rankRow}`}
               aria-expanded={open}
               aria-controls={detailId}
               onClick={() => {

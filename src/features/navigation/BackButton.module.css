@@ -1,20 +1,30 @@
 /* Figma 62:1270: padding 9px 16px 9px 12px, gap 8px, cobalt pill (a quiet glass control in Kaca). */
-.link {
+.button {
   display: inline-flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
+  /* Its own width in a flex column or a grid (the Lab header), never stretched across. */
+  align-self: flex-start;
+  justify-self: start;
   min-height: 44px;
   padding: 9px 16px 9px 12px;
+  border: 0;
   border-radius: var(--nm-radius-pill);
   background: var(--nm-sea);
   color: var(--nm-text-on-sea);
+  font: inherit;
   font-size: 0.875rem;
   font-weight: 500;
-  text-decoration: none;
+  cursor: pointer;
   transition: background-color var(--nm-duration-feedback) ease;
 }
 
-:global([data-display-mode='glass']) .link {
+.button:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+:global([data-display-mode='glass']) .button {
   border: 1px solid var(--c-input-border);
   background: var(--c-input-bg);
   color: var(--nm-text-on-sea);
@@ -22,17 +32,17 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .link:hover {
+  .button:hover {
     background: var(--nm-sea-deep);
   }
 
-  :global([data-display-mode='glass']) .link:hover {
+  :global([data-display-mode='glass']) .button:hover {
     background: var(--c-control-hover);
   }
 }
 
 @media print {
-  .link {
+  .button {
     display: none;
   }
 }

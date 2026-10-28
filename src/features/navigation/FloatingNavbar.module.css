@@ -98,12 +98,12 @@
   overflow: hidden;
 }
 
+/*
+ * The links keep taking the free width in both states: at `max-content` there is none left, and while
+ * the width animates the mode switch rides the bar's right edge instead of jumping ahead of it.
+ */
 .desktop[data-compact] {
   width: max-content;
-}
-
-.desktop[data-compact] > nav {
-  flex: none;
 }
 
 .desktop[data-compact] [data-wordmark] {

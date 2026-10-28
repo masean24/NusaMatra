@@ -1,0 +1,129 @@
+/*
+ * First-visit map hint, centred over the part of the map the sidebar leaves free. It never takes
+ * pointer events, so the map underneath stays usable while it shows.
+ */
+.hint {
+  position: absolute;
+  top: 50%;
+  left: calc(50% + var(--explore-map-inset, 0px) / 2);
+  z-index: 3;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  max-width: min(360px, calc(100% - var(--explore-map-inset, 0px) - 48px));
+  padding: 16px 20px;
+  text-align: center;
+  pointer-events: none;
+  translate: -50% -50%;
+  animation: hint-in 320ms var(--nm-ease-ui) both;
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    scale: 0.96;
+  }
+}
+
+.text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  text-align: left;
+  list-style: none;
+}
+
+.key {
+  display: inline-block;
+  min-width: 84px;
+  padding: 2px 8px;
+  border: 1px solid var(--c-surface-border);
+  border-radius: 6px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Pinch: two fingertips move apart from the middle and back, twice, then rest. */
+.pinch {
+  position: relative;
+  width: 96px;
+  height: 56px;
+}
+
+.finger {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border: 2px solid var(--c-text);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c-text) 22%, transparent);
+  animation: 1.4s var(--nm-ease-ui) 2 both;
+}
+
+.finger[data-finger='a'] {
+  animation-name: pinch-a;
+}
+
+.finger[data-finger='b'] {
+  animation-name: pinch-b;
+}
+
+@keyframes pinch-a {
+  0%,
+  15% {
+    translate: -8px 6px;
+  }
+
+  65%,
+  100% {
+    translate: -36px 18px;
+  }
+}
+
+@keyframes pinch-b {
+  0%,
+  15% {
+    translate: 8px -6px;
+  }
+
+  65%,
+  100% {
+    translate: 36px -18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint {
+    animation: none;
+  }
+
+  /* The fingers rest apart: the gesture still reads, without movement. */
+  .finger {
+    animation: none;
+  }
+
+  .finger[data-finger='a'] {
+    translate: -30px 14px;
+  }
+
+  .finger[data-finger='b'] {
+    translate: 30px -14px;
+  }
+}
+
+/* While the map is still being built its own loader is in the middle; the hint waits unseen. */
+.hint[data-waiting='true'] {
+  visibility: hidden;
+}

@@ -116,7 +116,7 @@ describe.each<[LiveBehaviour, string]>([
     await userEvent.click(await screen.findByRole('button', { name: 'Beralih ke data DEMO' }));
 
     expect(await screen.findByText('Menampilkan 30 dari 514 wilayah')).toBeInTheDocument();
-    expect(await screen.findByText('2026.10.0-wia-demo')).toBeInTheDocument();
+    expect((await screen.findAllByText('DEMO')).length).toBeGreaterThan(0);
     expect(primaryMessages(container)).toHaveLength(0);
     expect(screen.queryByText('Tidak ada data LIVE untuk ditampilkan di sini.')).not.toBeInTheDocument();
     expect(screen.queryByText(PRIMARY_TITLES[0] ?? '')).not.toBeInTheDocument();
@@ -128,7 +128,7 @@ describe('switching from DEMO to LIVE', () => {
   it('drops the DEMO data already on screen at once and never shows it under LIVE', async () => {
     const { container } = renderWithDataHub(explorePage(), { fetchImpl: dataHub('http-503') });
     expect(await screen.findByText('Menampilkan 30 dari 514 wilayah')).toBeInTheDocument();
-    expect(await screen.findByText('2026.10.0-wia-demo')).toBeInTheDocument();
+    expect((await screen.findAllByText('DEMO')).length).toBeGreaterThan(0);
 
     await userEvent.click(screen.getByText('LIVE', { selector: 'label' }));
 

@@ -42,28 +42,29 @@ export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPick
         </h3>
       </div>
       {presets && presets.length > 0 && (
-        <select
-          id={fieldId}
-          className={styles.input}
-          value={active?.presetId ?? ''}
-          onChange={(event) => {
-            const preset = presets.find((entry) => entry.presetId === event.target.value);
-            if (preset) onApply({ ...preset.weightsBasisPoints });
-          }}
-        >
-          {/* "Bobot sendiri" is where any hand-set weights land; it is chosen by moving a slider. */}
-          <option value="" disabled={active !== null}>
-            Bobot sendiri
-          </option>
-          {presets.map((preset) => {
-            const presetNote = availabilityNote(preset);
-            return (
-              <option key={preset.presetId} value={preset.presetId}>
-                {presetNote ? `${preset.label} — ${presetNote}` : preset.label}
-              </option>
-            );
-          })}
-        </select>
+        <span className="glass-field glass-field--select">
+          <select
+            id={fieldId}
+            value={active?.presetId ?? ''}
+            onChange={(event) => {
+              const preset = presets.find((entry) => entry.presetId === event.target.value);
+              if (preset) onApply({ ...preset.weightsBasisPoints });
+            }}
+          >
+            {/* "Bobot sendiri" is where any hand-set weights land; it is chosen by moving a slider. */}
+            <option value="" disabled={active !== null}>
+              Bobot sendiri
+            </option>
+            {presets.map((preset) => {
+              const presetNote = availabilityNote(preset);
+              return (
+                <option key={preset.presetId} value={preset.presetId}>
+                  {presetNote ? `${preset.label} — ${presetNote}` : preset.label}
+                </option>
+              );
+            })}
+          </select>
+        </span>
       )}
       {active?.description && <p className={styles.hint}>{active.description}</p>}
       {activeNote && <p className={styles.hint}>{activeNote}</p>}
@@ -179,13 +180,14 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
                 <input
                   id={`bobot-${id}`}
                   type="range"
+                  className="glass-range"
                   min={0}
                   max={100}
                   step={1}
                   value={(weights[id] ?? 0) / 100}
                   disabled={ids.length === 1}
                   data-series={seriesOf(id)}
-                  style={{ '--fill': `${String((weights[id] ?? 0) / 100)}%` } as CSSProperties}
+                  style={{ '--p': `${String((weights[id] ?? 0) / 100)}%` } as CSSProperties}
                   aria-valuetext={percentLabel(weights[id] ?? 0)}
                   onChange={(event) => {
                     setLastChange({ id, before: weights });

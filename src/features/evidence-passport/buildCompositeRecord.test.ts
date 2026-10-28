@@ -194,7 +194,7 @@ describe('buildCompositeRecord, ranking withheld', () => {
     expect(record.integrity.issues.map((issue) => issue.code)).toContain('RANK_ORDER');
   });
 
-  it('SYNTHETIC: a result for a different snapshot than its presets is not shown as one record', async () => {
+  it('SYNTHETIC: a result for a different versi data than its presets is not shown as one record', async () => {
     const bodies = capturedJateng();
     const presets = bodies['/api/v1/indicators/composite-presets'] as { meta: { snapshot_id: string } };
     presets.meta.snapshot_id = 'another-snapshot';
@@ -265,7 +265,7 @@ describe('buildCompositeRecord, direction checked against CAPTURED source values
 });
 
 describe('buildCompositeRecord, link context and DEMO', () => {
-  it('warns when the snapshot in the link differs from the one received', async () => {
+  it('warns when the versi data in the link differs from the one received', async () => {
     const record = await build(capturedJateng(), JATENG_WEIGHTS, { provinceId: '33', snapshotId: 'old' });
     expect(record.linkWarnings).toMatchObject([{ code: 'SNAPSHOT_CHANGED', severity: 'warning' }]);
   });

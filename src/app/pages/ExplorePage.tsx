@@ -1,7 +1,7 @@
 import { DataHubBanner } from '@/features/data-hub';
 import { ExploreWorkspace, IndicatorPanel, useRegionBrowserParams } from '@/features/exploration';
 import { FeaturePageFrame, type FeatureShell } from '@/features/feature-shell';
-import { BackToHubLink } from '@/features/navigation';
+import { BackButton } from '@/features/navigation';
 
 /**
  * Jelajahi (Figma 29:34): a full-screen map application. The 3D map fills the viewport; the search,
@@ -15,7 +15,7 @@ export function ExplorePage({ shell }: { readonly shell: FeatureShell }) {
     <FeaturePageFrame shell={shell} immersive>
       <ExploreWorkspace
         title={shell.title}
-        backLink={<BackToHubLink />}
+        backLink={<BackButton />}
         status={<DataHubBanner compact />}
         indicators={<IndicatorPanel regionId={selectedCode} embedded />}
       />

@@ -19,6 +19,12 @@ async function openLiveLab(page: Page, composite: CompositeKind = 'v21') {
   return mock;
 }
 
+/** Chooses a province in "Cakupan wilayah" (a glass combobox with a listbox, not a native select). */
+async function chooseScope(page: Page, name: RegExp) {
+  await page.getByRole('combobox', { name: 'Cakupan wilayah' }).click();
+  await page.getByRole('option', { name }).click();
+}
+
 /** One column: the settings start folded behind "Atur prioritas". */
 async function openSettings(page: Page) {
   // The panel renders once the catalog has loaded; only then is the fold's visibility meaningful.
@@ -88,7 +94,7 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
     await expect(results(page)).toBeVisible();
     await chooseScenario(page, /Pengentasan Kemiskinan Ekstrem & Stunting/);
     await recompute(page);
-    await page.getByLabel('Cakupan wilayah').selectOption('33');
+    await chooseScope(page, /Jawa Tengah|Provinsi 33/);
     await expect.poll(() => mock.compositeRequests.at(-1)?.filter_province_id).toBe('33');
     await expect(page.getByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/)).toBeVisible();
     await expect(results(page).locator('ol > li').first()).toContainText('Kabupaten Wonosobo');
@@ -108,11 +114,11 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
     await expect(results(page)).toBeVisible();
     await chooseScenario(page, /Mitigasi Bencana & Ketahanan Infrastruktur/);
     await recompute(page);
-    await page.getByLabel('Cakupan wilayah').selectOption('12');
+    await chooseScope(page, /Sumatera Utara|Provinsi 12/);
     await expect(page.getByText(/^32 wilayah di Provinsi 12 dihitung dari data resmi LIVE/)).toBeVisible();
     const insufficient = page.getByRole('region', { name: /Tidak diperingkat: data belum cukup \(1\)/ });
     await expect(insufficient).toContainText('Kota Padangsidimpuan 1277');
-    await expect(insufficient).toContainText('COVERAGE_BELOW_THRESHOLD');
+    await expect(insufficient).not.toContainText('COVERAGE_BELOW_THRESHOLD');
     await expect(results(page)).not.toContainText('Padangsidimpuan');
   });
 
@@ -154,7 +160,7 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
   test('limits the ranking to one province', async ({ page }) => {
     const mock = await openLiveLab(page);
     await expect(results(page)).toBeVisible();
-    await page.getByLabel('Cakupan wilayah').selectOption('33');
+    await chooseScope(page, /Jawa Tengah|Provinsi 33/);
     await expect.poll(() => mock.compositeRequests.at(-1)?.filter_province_id).toBe('33');
     await expect(page.getByText(/wilayah di Provinsi 33 dihitung/)).toBeVisible();
   });
@@ -309,7 +315,7 @@ test.describe('Lab Prioritas against the deployed Data Hub (read-only)', () => {
   }) => {
     await openLive(page);
     await settledOutcome(page);
-    await page.getByLabel('Cakupan wilayah').selectOption('33');
+    await chooseScope(page, /Jawa Tengah|Provinsi 33/);
     // Either the province result (its status line names the province) or a withheld ranking.
     const provinceReady = page.getByText(/^\d+ wilayah di .+ dihitung dari data resmi LIVE/);
     await expect(provinceReady.or(page.getByText(WITHHELD))).toBeVisible({ timeout: SERVER_TIMEOUT });

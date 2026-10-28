@@ -65,7 +65,8 @@ test.describe('Jelajahi map-first layout', () => {
         const workspace = side.right - map.left;
         expect(map.width / workspace).toBeGreaterThanOrEqual(0.68);
         expect(side.width).toBeGreaterThanOrEqual(360);
-        expect(side.width).toBeLessThanOrEqual(420);
+        // Widened for readability (owner revision 2026-10-28): clamp(360px, 30vw, 440px).
+        expect(side.width).toBeLessThanOrEqual(440);
       });
     }
   }

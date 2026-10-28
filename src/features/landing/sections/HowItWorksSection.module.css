@@ -1,11 +1,10 @@
-/* 27:2 y=1000: copy at x=88 (600px), 3D-2 zone at x=760 (592×700). */
+/* Guided Question Canvas: heading, then the question list (left) and its preview card (right). */
 .section {
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-columns: minmax(0, 600fr) minmax(0, 592fr);
-  column-gap: clamp(24px, 5vw, 72px);
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3vw, 40px);
   padding-inline: var(--nm-gutter);
 }
 
@@ -14,225 +13,412 @@
   outline: none;
 }
 
-.copy {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .title {
-  max-width: 37.5rem;
+  max-width: 40rem;
+  margin: 0;
   text-wrap: balance;
 }
 
-/*
- * No gap: the spacing is padding on each item, so the pointer is always over some card while it
- * moves down the list and a card opening or closing never leaves a dead strip under the cursor.
- */
-.steps {
+/* The list and the card share one height: their tops and bottoms line up (owner revision 2026-10-27). */
+.canvas {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(20px, 3vw, 40px);
+  align-items: stretch;
+}
+
+/* ------------------------------------------------------------------ question list */
+
+/* The four questions share the column's height, so the last one ends where the card ends. */
+.tabs {
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
-.item {
-  padding-block: 10px;
-}
-
-/* Step card 41:200: padding 16px 18px, gap 16px, radius 18px. */
-.step {
+.tabs > * {
   display: flex;
-  gap: 16px;
-  align-items: flex-start;
+  flex: 1 1 auto;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
   padding: 16px 18px;
-  text-decoration: none;
-  transition:
-    transform var(--nm-duration-feedback) var(--nm-ease-ui),
-    opacity 260ms var(--nm-ease-calm),
-    box-shadow 260ms ease;
+  overflow: hidden;
+  border-radius: var(--nm-radius-card); /* the material is the global `glass` */
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  /* Hover lift and selection settle on the "Halus" spring. */
+  transition: transform var(--nm-spring-duration) var(--nm-spring-halus);
 }
 
-.step:active {
-  transform: scale(0.99);
+/* The active question's orange bar on its left edge. */
+.tab::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--nm-accent);
+  content: '';
+  transform: scaleY(0);
+  transition: transform 320ms var(--nm-ease-calm);
 }
 
-.badge {
+.tab[aria-selected='true']::before {
+  transform: none;
+}
+
+.tab:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.tab:active {
+  transform: scale(0.985);
+  transition-duration: var(--nm-duration-feedback);
+  transition-timing-function: var(--nm-ease-ui);
+}
+
+.tabIcon {
   display: grid;
   flex: none;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--nm-radius-step-badge);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   background: var(--c-surface-muted);
   color: var(--c-text);
   transition:
-    background-color 260ms ease,
-    color 260ms ease;
+    background-color 240ms ease,
+    color 240ms ease;
 }
 
-.badge[data-first] {
+.tab[aria-selected='true'] .tabIcon {
   background: var(--nm-accent);
   color: var(--nm-accent-text);
 }
 
-.stepText {
+.tabText {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
-/* The title row is as tall as the badge, so a closed card stays one calm line. */
-.stepTitle {
-  display: flex;
-  align-items: center;
-  min-height: 40px;
+.eyebrow {
+  color: var(--c-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/*
- * The explanation. Its height animates from 0 to its natural size (a grid row going 0fr → 1fr),
- * so nothing is measured in JavaScript. It stays in the document when closed.
- */
-.reveal {
+.question {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* The one-line summary drops open under the selected question only. */
+.summaryReveal {
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
   transition:
-    grid-template-rows 280ms var(--nm-ease-calm),
-    opacity 200ms ease;
+    grid-template-rows 320ms var(--nm-ease-calm),
+    opacity 220ms ease;
 }
 
-.stepDescription {
-  min-height: 0;
-  overflow: hidden;
-  padding-top: 0;
-  color: var(--c-text-muted);
-  transform: translateY(-6px);
-  transition:
-    transform 280ms var(--nm-ease-calm),
-    padding-top 280ms var(--nm-ease-calm);
-}
-
-/* Open: hover (mouse), keyboard focus, or the first tap (data-open). */
-.step:focus-visible .reveal,
-.step[data-open] .reveal {
+.tab[aria-selected='true'] .summaryReveal {
   grid-template-rows: 1fr;
   opacity: 1;
 }
 
-.step:focus-visible .stepDescription,
-.step[data-open] .stepDescription {
-  padding-top: 2px;
-  transform: none;
+.summary {
+  min-height: 0;
+  overflow: hidden;
+  padding-top: 0;
+  color: var(--c-text-muted);
+  transition: padding-top 320ms var(--nm-ease-calm);
+}
+
+.tab[aria-selected='true'] .summary {
+  padding-top: 4px;
+}
+
+.arrow {
+  flex: none;
+  align-self: center;
+  color: var(--c-text-muted);
+  transition:
+    translate 240ms var(--nm-ease-ui),
+    color 240ms ease;
+}
+
+.tab[aria-selected='true'] .arrow {
+  color: var(--nm-accent);
+  translate: 3px 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .step:hover {
+  .tab:hover {
     transform: translateY(-2px);
   }
 
-  .step:hover .reveal {
-    grid-template-rows: 1fr;
-    opacity: 1;
-  }
-
-  .step:hover .stepDescription {
-    padding-top: 2px;
-    transform: none;
-  }
-
-  .step:hover .badge {
-    background: var(--nm-accent);
-    color: var(--nm-accent-text);
-  }
-
-  /* While one card is the focus, the others recede (never below readable). */
-  .steps:has(.step:hover) .step:not(:hover) {
-    opacity: 0.62;
+  .tab:hover .arrow {
+    translate: 3px 0;
   }
 }
 
-.steps:has(.step[data-open]) .step:not([data-open]) {
-  opacity: 0.7;
+/* ------------------------------------------------------------------ preview card */
+
+/* Every panel shares one grid cell: the card is as tall as the tallest, so switching never jumps. */
+.preview {
+  display: grid;
+  padding: clamp(18px, 2.2vw, 28px);
+  border-radius: var(--nm-radius-card); /* the material is the global `glass glass--read` */
 }
 
-.visualColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  justify-self: end;
-  width: 100%;
-  max-width: 37rem;
+/*
+ * Crossfade: the outgoing panel fades out while the incoming one fades in and settles 8px; the
+ * outgoing one turns invisible only once its fade ends (the visibility delay).
+ */
+/* Desktop: the title across the top, then the picture beside the explanation, steps and button. */
+.panel {
+  display: grid;
+  grid-area: 1 / 1;
+  grid-template-areas:
+    'head head'
+    'picture body';
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 20px clamp(18px, 2vw, 28px);
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 8px;
+  transition:
+    opacity 220ms ease,
+    translate 220ms ease,
+    visibility 0s linear 220ms;
 }
 
-.scene {
-  width: 100%;
-  /*
-   * On wide but short screens the object would grow taller than the space under the navbar, and
-   * the section could not rest mid-screen; it stays within that space (minus its legend and air).
-   */
-  max-height: calc(100svh - 96px - 120px); /* 96px: the navbar band (scroll-padding-top in global.css) */
+.panel[data-active] {
+  opacity: 1;
+  visibility: visible;
+  translate: none;
+  transition:
+    opacity 360ms ease 80ms,
+    translate 480ms var(--nm-ease-calm) 80ms,
+    visibility 0s;
 }
 
-/* Data → analysis → decision, named once, quietly, under the object (bottom layer first). */
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
-  justify-content: center;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+.panelHead {
+  grid-area: head;
+}
+
+.answers {
+  margin: 0 0 6px;
   color: var(--c-text-muted);
 }
 
-.legend li {
-  display: inline-flex;
+.panelTitle {
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* The picture: a soft cobalt-tinted stage with a faint grid, as tall as the text beside it. */
+.picture {
+  --qp-grid: color-mix(in srgb, var(--nm-sea) 7%, transparent);
+
+  position: relative;
+  grid-area: picture;
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--hair);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      120% 90% at 85% 0%,
+      color-mix(in srgb, var(--nm-sea-shallow) 22%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(var(--qp-grid) 1px, transparent 1px) 0 0 / 100% 25%,
+    linear-gradient(90deg, var(--qp-grid) 1px, transparent 1px) 0 0 / 12.5% 100%,
+    var(--fill2);
+}
+
+.tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  padding: 3px 10px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--fill);
+  color: var(--ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.panelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  grid-area: body;
+  min-width: 0;
+}
+
+.description {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.stepsLabel {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.steps {
+  display: grid;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  gap: 10px;
   align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
-.legend li::before {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--nm-land-4);
-  content: '';
+.stepNumber {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--c-surface-muted);
+  font-size: 0.8125rem;
 }
 
-.legend li[data-layer='analisis']::before {
-  background: var(--nm-sea-shallow);
-}
-
-.legend li[data-layer='keputusan']::before {
+.steps li:first-child .stepNumber {
   background: var(--nm-accent);
+  color: var(--nm-accent-text);
 }
 
+/* The button sits at the bottom of the text column, level with the bottom of the picture. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.hint {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+/* ------------------------------------------------------------------ tablet and phone */
+
+/*
+ * Below 960px: the questions become a 2×2 grid of tiles above the card, and inside the card the
+ * picture comes first, then the title, the steps and a full-width button.
+ */
 @media (width < 960px) {
-  .section {
+  .canvas {
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 32px;
   }
 
-  .visualColumn {
-    justify-self: center;
-    max-width: 26.25rem;
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
-  .scene {
-    aspect-ratio: 4 / 3;
+  .tabs > * {
+    display: grid;
+    flex: none;
+  }
+
+  .tab {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .tab::before {
+    inset: 0 auto 0 0;
+  }
+
+  .tabIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .question {
+    font-size: 0.9375rem;
+  }
+
+  .tab {
+    align-items: flex-start;
+  }
+
+  .summaryReveal,
+  .arrow {
+    display: none;
+  }
+
+  .panel {
+    grid-template-areas:
+      'picture'
+      'head'
+      'body';
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  /* Taller than wide on a phone: the map, its tag and the info bar all need their own room. */
+  .picture {
+    min-height: 0;
+    aspect-ratio: 1 / 1.05;
+  }
+
+  .cta {
+    flex: 1 1 100%;
+    justify-content: center;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .step,
-  .step:hover,
-  .step:active {
-    transform: none;
+  .tab,
+  .tab::before,
+  .tabIcon,
+  .arrow,
+  .summaryReveal,
+  .summary,
+  .panel,
+  .panel[data-active] {
+    transition-duration: 1ms;
+    transition-delay: 0s;
   }
 
-  .reveal,
-  .stepDescription,
-  .badge,
-  .step {
-    transition-duration: 1ms;
+  .panel {
+    translate: none;
   }
 }

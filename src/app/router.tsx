@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { FEATURE_SHELLS, FeatureShellPage, type FeatureShell } from '@/features/feature-shell';
 import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
@@ -14,6 +14,8 @@ import { PriorityLabPage } from './pages/PriorityLabPage';
 
 /** Features that are built; every other shell is an honest "under development" page. */
 const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
+  // "Peta Utama" was retired (owner decision 2026-10-28): its address opens Jelajahi.
+  '/peta': () => <Navigate to="/jelajahi" replace />,
   '/jelajahi': (shell) => <ExplorePage shell={shell} />,
   '/bandingkan': (shell) => <ComparisonPage shell={shell} />,
   '/lab-prioritas': (shell) => <PriorityLabPage shell={shell} />,

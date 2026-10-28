@@ -1,0 +1,80 @@
+/* The map area while it waits: centred, filling the map's own box (loader card: MapLoader). */
+.placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+/*
+ * LIVE loader, centred in the part of the map the sidebar leaves free: a glass card with the
+ * country's outline and a light sweeping across it, then the status in words. The sweep is a
+ * translated gradient (compositor-only), so it keeps moving while the main thread builds the map.
+ */
+.loader {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  width: min(320px, calc(100% - 48px));
+  margin-left: var(--explore-map-inset, 0px);
+  padding: 20px 22px 18px;
+  border-radius: 20px;
+  text-align: center;
+  animation: loader-in 360ms var(--nm-ease-calm) both;
+}
+
+.loaderMap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1000 / 375;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  mask: var(--silhouette) center / contain no-repeat;
+}
+
+.loaderSweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, var(--nm-accent) 50%, transparent 80%);
+  opacity: 0.85;
+  transform: translateX(-100%);
+  animation: loader-sweep 1.6s var(--nm-ease-ui) infinite;
+}
+
+.loaderTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.loaderText {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+@keyframes loader-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes loader-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    animation: none;
+  }
+
+  /* No travelling light: the outline glows gently instead. */
+  .loaderSweep {
+    transform: none;
+    opacity: 0.35;
+    animation: none;
+  }
+}

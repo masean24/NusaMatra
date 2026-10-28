@@ -93,7 +93,7 @@ function reproducibilityOf(
       pinnedSnapshotId: pin.snapshotId,
       contentSha256: pin.contentSha256,
       origin,
-      statement: `Snapshot ${pin.snapshotId} tidak dinyatakan immutable, atau respons tidak sepakat soal sidik isinya. ${NOT_PINNED_CONSEQUENCE}`,
+      statement: `Versi data ${pin.snapshotId} tidak dinyatakan immutable, atau respons tidak sepakat soal sidik isinya. ${NOT_PINNED_CONSEQUENCE}`,
     };
   }
   return {
@@ -192,14 +192,14 @@ export function assessLinkContext(
       code: 'SNAPSHOT_NOT_PINNED',
       severity: 'info',
       message: pinned
-        ? `Tautan yang dibuka tidak mencantumkan snapshot, jadi Paspor ini dikunci ke snapshot aktif saat dibuka (${source.snapshotId}). Belum dapat diperiksa apakah itu data yang dilihat pembuat tautan; tautan untuk disalin dan dibagikan sudah mencantumkan snapshot ini.`
-        : 'Tautan tidak mencantumkan snapshot, jadi tidak dapat diperiksa apakah data ini sama dengan yang dilihat pembuat tautan.',
+        ? `Tautan yang dibuka tidak mencantumkan versi data, jadi Paspor ini dikunci ke versi data aktif saat dibuka (${source.snapshotId}). Belum dapat diperiksa apakah itu data yang dilihat pembuat tautan; tautan untuk disalin dan dibagikan sudah mencantumkan versi data ini.`
+        : 'Tautan tidak mencantumkan versi data, jadi tidak dapat diperiksa apakah data ini sama dengan yang dilihat pembuat tautan.',
     });
   } else if (link.snapshotId !== source.snapshotId) {
     warnings.push({
       code: 'SNAPSHOT_CHANGED',
       severity: 'warning',
-      message: `Tautan dibuat saat snapshot ${link.snapshotId}, sedangkan Data Hub kini memberi snapshot ${source.snapshotId}. Angka di bawah berasal dari snapshot ${source.snapshotId} dan dapat berbeda dari yang dilihat pembuat tautan; catatan ini tidak sama dengan tautan.`,
+      message: `Tautan dibuat saat versi data ${link.snapshotId}, sedangkan Data Hub kini memberi versi data ${source.snapshotId}. Angka di bawah berasal dari versi data ${source.snapshotId} dan dapat berbeda dari yang dilihat pembuat tautan; catatan ini tidak sama dengan tautan.`,
     });
   }
   return warnings;
@@ -319,7 +319,7 @@ function compareIndicator(
   if (!consistent) {
     return {
       allowed: false,
-      blockers: ['Kedua wilayah berasal dari mode atau snapshot yang berbeda, jadi tidak dibandingkan.'],
+      blockers: ['Kedua wilayah berasal dari mode atau versi data yang berbeda, jadi tidak dibandingkan.'],
       warnings: [],
       differenceText: null,
     };
@@ -376,8 +376,8 @@ function coverageOf(
       label: item.labelId,
       reason:
         item.availabilityStatus === 'UNAVAILABLE'
-          ? 'Belum ada data resmi untuk indikator ini pada snapshot ini (status katalog: UNAVAILABLE).'
-          : 'Tidak ada nilai untuk wilayah ini pada snapshot ini.',
+          ? 'Belum ada data resmi untuk indikator ini pada versi data ini (status katalog: UNAVAILABLE).'
+          : 'Tidak ada nilai untuk wilayah ini pada versi data ini.',
     });
   }
   const known = new Set([...present.keys(), ...(catalogItems ?? []).map((item) => item.indicatorId)]);
@@ -387,7 +387,7 @@ function coverageOf(
         indicatorId: id,
         label: id,
         reason: catalogItems
-          ? 'Indikator ini tidak dikenal pada snapshot ini.'
+          ? 'Indikator ini tidak dikenal pada versi data ini.'
           : 'Indikator ini tidak ada pada profil wilayah.',
       });
     }
@@ -560,7 +560,7 @@ export function buildEvidenceRecord(query: SupportedQuery, raw: RawEvidenceSourc
   const unavailableSources = [
     ...(raw.catalog ? [] : ['katalog indikator']),
     ...(raw.datasets ? [] : ['daftar dataset']),
-    ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar snapshot']),
+    ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar versi data']),
     ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : ['cakupan indikator (/indicators/coverage)']),
   ];
 

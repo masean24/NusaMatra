@@ -5,6 +5,7 @@ import { Chip } from '@/components/ui/Chip/Chip';
 import { DEMO_GEO_REGIONS } from '@/data/fixtures/demoGeoRegions';
 import {
   Explore3DMapSlot,
+  MapLoader,
   type GeoCameraHandle,
   type GeoOverlayPoint,
   type GeoRegionSelection,
@@ -125,9 +126,10 @@ function LiveMapWorkspace({
       {boundaries.state.status === 'loading' ? (
         // The map's own size, so the page does not jump when the map replaces this.
         <div className={`${styles.map} ${styles.loadingFrame}`}>
-          <StatusMessage kind="loading" title="Mengunduh batas wilayah resmi…">
-            Sekitar 5 MB dari BIG lewat Data Hub; hanya sekali per sesi.
-          </StatusMessage>
+          <MapLoader
+            title="Mengunduh batas wilayah resmi…"
+            text="Sekitar 5 MB dari BIG lewat Data Hub; hanya sekali per sesi."
+          />
         </div>
       ) : (
         <ResourceView

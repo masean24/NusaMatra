@@ -59,7 +59,7 @@ export function EarthquakeLayerControl({
         {shown.length > 0 && (
           <details ref={listRef} className={styles.disclosure}>
             <summary className="kk-small">Daftar gempa ({shown.length})</summary>
-            <div className={styles.popover}>
+            <div className={`glass ${styles.popover}`}>
               <p className={`kk-small ${styles.legend}`}>
                 Ukuran titik mengikuti magnitudo, bukan luas wilayah terdampak. Warna dan ukuran tidak
                 menunjukkan kerusakan, risiko, atau potensi tsunami; ikuti keterangan resmi BMKG.

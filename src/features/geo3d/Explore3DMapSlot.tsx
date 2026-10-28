@@ -8,6 +8,7 @@ import { publicConfig } from '@/lib/publicConfig';
 import type { Explore3DMapProps, GeoCameraHandle, GeoDataMode } from './contract';
 import { EngineSlot, type EngineSlotState } from './EngineSlot';
 import { geoEngineRegistry } from './engineRegistry';
+import { MapLoader } from './MapLoader';
 import styles from './Explore3DMapSlot.module.css';
 
 const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
@@ -104,11 +105,14 @@ export function Explore3DMapSlot({
         }}
         placeholder={(state) =>
           dataMode === 'LIVE' ? (
-            // Official geometry is on its way: no illustration that could pass for the map, just a quiet
-            // skeleton of the same size, so nothing jumps when the map appears.
-            <div className={`${styles.placeholder} ${styles.skeleton}`}>
-              <StatusMessage className={styles.status} {...LIVE_STATUS[state]} />
-            </div>
+            state === 'loading' ? (
+              // Official geometry is on its way: the map's loader, in the middle of the map area.
+              <MapLoader title={LIVE_STATUS.loading.title} text={LIVE_STATUS.loading.children} />
+            ) : (
+              <div className={`${styles.placeholder} ${styles.skeleton}`}>
+                <StatusMessage className={styles.status} {...LIVE_STATUS[state]} />
+              </div>
+            )
           ) : (
             <div className={styles.placeholder}>
               <img

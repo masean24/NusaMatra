@@ -51,9 +51,9 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
     // The name is there before the profile arrives.
     expect(screen.getByRole('heading', { name: 'Kabupaten Aceh Selatan' })).toBeInTheDocument();
     // No evidence link while the profile is still loading.
-    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Paspor Bukti wilayah ini/ })).not.toBeInTheDocument();
 
-    expect(await screen.findByText('Data resmi LIVE')).toBeInTheDocument();
+    expect(await screen.findByText('Data resmi')).toBeInTheDocument();
     expect(screen.getByText(/Provinsi Aceh/)).toBeInTheDocument();
     expect(screen.getByText(/luas wilayah dari sumber tidak valid \(0 km²\)/)).toBeInTheDocument();
     const summary = within(screen.getByRole('region', { name: 'Ringkasan' }));
@@ -76,7 +76,7 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
         set('soc_poverty_rate', null);
       }),
     );
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
 
     const summary = within(screen.getByRole('region', { name: 'Ringkasan' }));
     const card = (label: string) => within(summary.getByText(label).closest('li') as HTMLElement);
@@ -98,7 +98,7 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
 
   it('keeps indicators grouped by theme and the precise values one tap away, raw apart from normalized', async () => {
     renderLive(liveFetch());
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
 
     await userEvent.click(screen.getByText('Risiko bencana'));
     const item = within(await openIndicator('Indeks Bahaya Banjir (Rata-rata Wilayah)'));
@@ -115,7 +115,7 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
 
   it('corrects no value but flags the 0.0–1.0 hazard unit that the data contradicts', async () => {
     renderLive(liveFetch());
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
     await userEvent.click(screen.getByText('Risiko bencana'));
 
     const item = within(await openIndicator('Indeks Bahaya Gempabumi (Rata-rata Wilayah)'));
@@ -127,7 +127,7 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
 
   it('does not judge a value imputed from the province and says so', async () => {
     renderLive(liveFetch());
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
     await userEvent.click(screen.getByText('Infrastruktur'));
 
     const item = within(await openIndicator('Persentase Rumah Tangga Pengguna Listrik (PLN & Non-PLN)'));
@@ -143,7 +143,7 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
         present(second, 'second').raw_value = null;
       }),
     );
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
     await userEvent.click(screen.getByText('Risiko bencana'));
 
     const row = (name: string) => within(screen.getByText(name).closest('summary') as HTMLElement);
@@ -154,20 +154,19 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
     expect(row('Indeks Bahaya Banjir (Rata-rata Wilayah)').queryByText('0')).not.toBeInTheDocument();
   });
 
-  it('lists the evidence: each source agency with its years, and links the Paspor Bukti page', async () => {
+  it('opens with the Paspor Bukti card, which links the passport of exactly this profile', async () => {
     renderLive(liveFetch());
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
 
-    const evidence = within(screen.getByRole('region', { name: 'Bukti dan sumber' }));
-    expect(evidence.getByRole('link', { name: 'BNPB' })).toBeInTheDocument();
-    const link = evidence.getByRole('link', { name: 'Buka Paspor Bukti' });
+    // The sources live in the passport now; the panel has no separate evidence section.
+    expect(screen.queryByRole('region', { name: 'Bukti dan sumber' })).toBeNull();
+    const link = await screen.findByRole('link', { name: /^Paspor Bukti wilayah ini/ });
     const href = new URL(link.getAttribute('href') ?? '', 'https://x.test');
     expect(href.pathname).toBe('/paspor-bukti');
     expect(href.searchParams.get('jenis')).toBe('wilayah');
     expect(href.searchParams.get('kode')).toBe('1101');
     expect(href.searchParams.get('mode')).toBe('live');
     expect(href.searchParams.get('snap')).toBe('2026.10.0-official-live');
-    expect(evidence.getByText(/Data Hub belum menerbitkan dokumen metodologi/)).toBeInTheDocument();
   });
 
   it('links only real web sources and leaves anything else as plain text', async () => {
@@ -176,7 +175,7 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
         present(detail.data.indicators[0], 'first').provenance.official_url = 'internal://nusamatra-data-hub';
       }),
     );
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
     await userEvent.click(screen.getByText('Risiko bencana'));
     await openIndicator('Indeks Bahaya Gempabumi (Rata-rata Wilayah)');
 
@@ -218,7 +217,7 @@ describe('RegionDetailPanel on the captured LIVE v2.2 profile of Lanny Jaya (950
       '/api/v1/indicators': () => jsonResponse(fixtureJson('live-v2.2/catalog')),
     });
     renderWithDataHub(<RegionDetailPanel regionId="9507" />, { fetchImpl, dataMode: 'LIVE' });
-    await screen.findByText('Data resmi LIVE');
+    await screen.findByText('Data resmi');
 
     const summary = within(screen.getByRole('region', { name: 'Ringkasan' }));
     const card = (label: string) => within(summary.getByText(label).closest('li') as HTMLElement);
@@ -268,8 +267,8 @@ describe('RegionDetailPanel in DEMO', () => {
     });
 
     expect(await screen.findByText('Wilayah tidak ditemukan')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
-    expect(screen.getByText(/Kode 9999 tidak ada pada snapshot data ini/)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Paspor Bukti wilayah ini/ })).not.toBeInTheDocument();
+    expect(screen.getByText(/Kode 9999 tidak ada pada versi data ini/)).toBeInTheDocument();
     expect(screen.queryByText(/memuat provinsi dan indikator/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Coba lagi' })).not.toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Pilih wilayah lain' }));
@@ -285,7 +284,7 @@ describe('RegionDetailPanel in DEMO', () => {
 
     expect(screen.getByRole('heading', { name: 'Wilayah uji' })).toBeInTheDocument();
     expect(await screen.findByText('Data belum dapat dimuat')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Paspor Bukti wilayah ini/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Coba lagi' })).toBeInTheDocument();
   });
 
@@ -301,7 +300,7 @@ describe('RegionDetailPanel in DEMO', () => {
     renderWithDataHub(<RegionDetailPanel regionId="1101" />, { fetchImpl, dataMode: 'LIVE' });
 
     expect(await screen.findByText('Data wilayah tidak cocok')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Buka Paspor Bukti' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^Paspor Bukti wilayah ini/ })).not.toBeInTheDocument();
     expect(screen.queryByText(/Semua indikator/)).not.toBeInTheDocument();
   });
 });

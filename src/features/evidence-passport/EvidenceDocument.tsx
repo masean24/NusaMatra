@@ -63,12 +63,7 @@ export function EvidenceDocument({ record }: { readonly record: EvidenceRecord }
         </>
       }
     >
-      <SourceStatusSection
-        record={record}
-        agencies={agencies}
-        link={link}
-        onCopyDigest={actions.copyDigest}
-      />
+      <SourceStatusSection record={record} agencies={agencies} />
       <RegionsSection record={record} />
     </PassportLayout>
   );

@@ -14,15 +14,15 @@ export const BROWSER_ASSEMBLED_NOTICE =
  * legacy id `2026.10.0-official-live` with different data (25/33 to 29/33 indicators, 2026-10-23).
  */
 export const SNAPSHOT_MUTABILITY_NOTE =
-  'ID snapshot dapat dipublikasikan ulang dengan isi berbeda; ID ini bukan bukti bahwa data sama.';
+  'ID versi data dapat dipublikasikan ulang dengan isi berbeda; ID ini bukan bukti bahwa data sama.';
 
 /** What an unpinned record cannot promise. Follows the reason it is unpinned. */
 export const NOT_PINNED_CONSEQUENCE =
-  'Data diambil dari snapshot yang aktif saat halaman dibuka, tanpa penguncian; membuka tautan yang sama lagi dapat memberi data berbeda.';
+  'Data diambil dari versi data yang aktif saat halaman dibuka, tanpa penguncian; membuka tautan yang sama lagi dapat memberi data berbeda.';
 
 /** Exported with an unpinned record. */
 export const NOT_PINNED_STATEMENT =
-  'Data pada berkas ini tidak dikunci ke snapshot yang dapat direproduksi, jadi berkas ini tidak menjamin hasil yang sama di kemudian hari; ia hanya merekam apa yang diterima peramban pada saat itu (lihat "fetched" untuk permintaan dan waktu terima).';
+  'Data pada berkas ini tidak dikunci ke versi data yang dapat direproduksi, jadi berkas ini tidak menjamin hasil yang sama di kemudian hari; ia hanya merekam apa yang diterima peramban pada saat itu (lihat "fetched" untuk permintaan dan waktu terima).';
 
 /**
  * A reproducible DATA snapshot is not an archived REPORT, and immutable is not retained: the legacy
@@ -30,7 +30,7 @@ export const NOT_PINNED_STATEMENT =
  * (observed 2026-10-24). So a pinned link can stop working; it never switches to newer data.
  */
 export const REPRODUCIBLE_SNAPSHOT_STATEMENT =
-  'Data dapat direproduksi: setiap respons dikunci ke snapshot ini dan membawa sidik isi SHA-256 yang sama, dan Data Hub menyatakan snapshot ini immutable. Tautan Paspor ini (Salin tautan, Bagikan, berkas JSON) menyebut snapshot tersebut, jadi membukanya lagi meminta snapshot yang sama. Ini menyangkut data, bukan laporan: Paspor ini tidak diarsipkan, dan Data Hub tidak menjamin snapshot lama tetap tersedia setelah pembaruan server (snapshot lama sudah pernah hilang, teramati 2026-10-24). Bila snapshot tidak lagi tersedia, tautan akan gagal dan tidak beralih ke data terbaru.';
+  'Data dapat direproduksi: setiap respons dikunci ke versi data ini dan membawa sidik isi SHA-256 yang sama, dan Data Hub menyatakan versi data ini immutable. Tautan Paspor ini (Salin tautan, Bagikan, berkas JSON) menyebut versi data tersebut, jadi membukanya lagi meminta versi data yang sama. Ini menyangkut data, bukan laporan: Paspor ini tidak diarsipkan, dan Data Hub tidak menjamin versi data lama tetap tersedia setelah pembaruan server (versi data lama sudah pernah hilang, teramati 2026-10-24). Bila versi data tidak lagi tersedia, tautan akan gagal dan tidak beralih ke data terbaru.';
 
 /**
  * The one sentence about snapshot identity a record carries (limitations, citation, export notes):
@@ -48,7 +48,7 @@ export function snapshotIdentityNote(reproducibility: {
 
 /** Exported with a pinned, reproducible record. */
 export const PINNED_STATEMENT =
-  'Semua permintaan pada berkas ini dikunci ke satu snapshot (parameter "snapshot" pada "fetched") dengan sidik isi SHA-256 yang sama menurut Data Hub. Sidik itu tidak dihitung ulang di peramban, dan ketersediaan snapshot di kemudian hari tidak dijamin.';
+  'Semua permintaan pada berkas ini dikunci ke satu versi data (parameter "versi data" pada "fetched") dengan sidik isi SHA-256 yang sama menurut Data Hub. Sidik itu tidak dihitung ulang di peramban, dan ketersediaan versi data di kemudian hari tidak dijamin.';
 
 /**
  * The manifest checksum stayed identical while the data behind the same snapshot id changed
@@ -59,6 +59,6 @@ export const MANIFEST_CHECKSUM_LABEL =
 
 /** The snapshot's own completeness figure is a server claim; it can disagree with `/indicators/coverage`. */
 export const COMPLETENESS_CLAIM_NOTE =
-  'Angka kelengkapan snapshot adalah klaim server dan dapat tidak sejalan dengan cakupan indikator dari /indicators/coverage; paspor tidak menghitung angka pengganti.';
+  'Angka kelengkapan versi data adalah klaim server dan dapat tidak sejalan dengan cakupan indikator dari /indicators/coverage; paspor tidak menghitung angka pengganti.';
 
 export const NOT_AVAILABLE_TEXT = 'belum tersedia';

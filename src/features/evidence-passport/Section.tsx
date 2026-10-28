@@ -70,7 +70,7 @@ export function Section({
     );
   }
   return (
-    <Surface as="section" radius="card" className={styles.section} aria-labelledby={id}>
+    <Surface as="section" radius="card" reading className={styles.section} aria-labelledby={id}>
       {head}
       {children}
     </Surface>

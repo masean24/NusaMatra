@@ -24,7 +24,7 @@ export function buildCitation(
     record.sources.length > 0 ? record.sources.map(describeSource).join('; ') : 'sumber belum tersedia';
   return [
     `Nusa Matra, Paspor Bukti: ${record.title}.`,
-    `Mode data: ${mode}. Snapshot Data Hub: ${source.snapshotId}. ${snapshotIdentityNote(source.reproducibility)}`,
+    `Mode data: ${mode}. Versi data Data Hub: ${source.snapshotId}. ${snapshotIdentityNote(source.reproducibility)}`,
     `Sumber data: ${sources}.`,
     ...details,
     `Diterima peramban: ${formatBrowserTime(source.receivedByBrowserAt)}.`,

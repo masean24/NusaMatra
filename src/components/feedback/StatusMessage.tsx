@@ -28,7 +28,11 @@ export function StatusMessage({ kind, title, children, action, className }: Stat
   // Errors interrupt (alert); everything else is announced politely.
   const role = kind === 'error' ? 'alert' : 'status';
   return (
-    <div role={role} className={[styles.status, className].filter(Boolean).join(' ')} data-kind={kind}>
+    <div
+      role={role}
+      className={['glass', styles.status, className].filter(Boolean).join(' ')}
+      data-kind={kind}
+    >
       <span className={styles.icon} aria-hidden="true">
         {kind === 'loading' ? (
           <span className={styles.spinner} />

@@ -111,8 +111,15 @@ function SingleRegionTable({
 }) {
   return (
     <ScrollRegion label={categoryCaption(category, indicators.length)}>
-      <table className={styles.table}>
+      <table className={`${styles.table} ${styles.fixedTable}`}>
         <caption className="kk-body-strong">{categoryCaption(category, indicators.length)}</caption>
+        {/* One set of column widths for every category's table, so the columns line up down the page. */}
+        <colgroup>
+          <col style={{ width: '34%' }} />
+          <col style={{ width: '22%' }} />
+          <col style={{ width: '18%' }} />
+          <col style={{ width: '26%' }} />
+        </colgroup>
         <thead>
           <tr>
             <th scope="col">Indikator</th>
@@ -215,8 +222,16 @@ function ComparisonTable({
 }) {
   return (
     <ScrollRegion label={categoryCaption(category, indicators.length)}>
-      <table className={styles.table}>
+      <table className={`${styles.table} ${styles.fixedTable}`}>
         <caption className="kk-body-strong">{categoryCaption(category, indicators.length)}</caption>
+        {/* One set of column widths for every category's table, so the columns line up down the page. */}
+        <colgroup>
+          <col style={{ width: '28%' }} />
+          <col style={{ width: '17%' }} />
+          <col style={{ width: '17%' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '18%' }} />
+        </colgroup>
         <thead>
           <tr>
             <th scope="col">Indikator</th>

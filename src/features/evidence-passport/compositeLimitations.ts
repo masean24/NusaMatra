@@ -28,8 +28,8 @@ export function buildCompositeLimitationNotes(
   add(
     'Reproduksibilitas',
     record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
-      ? 'Data terkunci, tetapi snapshot bisa hilang'
-      : 'Data tidak dikunci ke snapshot',
+      ? 'Data terkunci, tetapi versi data bisa hilang'
+      : 'Data tidak dikunci ke versi data',
     snapshotIdentityNote(record.source.reproducibility),
   );
 
@@ -56,8 +56,8 @@ export function buildCompositeLimitationNotes(
   } else if (record.withheldReason === 'MIXED_SOURCES') {
     add(
       'Reproduksibilitas',
-      'Peringkat ditahan: respons dari snapshot berbeda',
-      'Peringkat ditahan karena respons Data Hub untuk catatan ini berasal dari mode atau snapshot yang berbeda.',
+      'Peringkat ditahan: respons dari versi data berbeda',
+      'Peringkat ditahan karena respons Data Hub untuk catatan ini berasal dari mode atau versi data yang berbeda.',
     );
   } else {
     add(

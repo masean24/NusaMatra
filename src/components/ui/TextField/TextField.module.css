@@ -37,8 +37,26 @@
   border-color: var(--nm-accent);
 }
 
+/* The `glass` variant: the global `glass-field` draws the fill and the focus ring. */
+.glassField {
+  position: relative;
+  overflow: hidden;
+}
+
+.glassField[data-invalid] {
+  box-shadow: inset 0 0 0 1px var(--nm-accent);
+}
+
 .icon {
   color: var(--c-input-placeholder);
+}
+
+.glassField .icon {
+  color: var(--ink3);
+}
+
+.glassField .input::placeholder {
+  color: var(--ink3);
 }
 
 .input {

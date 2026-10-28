@@ -28,9 +28,16 @@
   max-width: 35rem;
 }
 
-/* In both modes the CTA field is the opaque surface from 41:425, so it reads against cobalt. */
 .search {
   flex: 0 1 470px;
+}
+
+/*
+ * Normal: the field is the opaque surface from 41:425, so it reads against the cobalt band. Kaca
+ * keeps the site's glass field (owner revision 2026-10-27: no solid white block on glass). Only the
+ * field is retinted: the suggestions popup sets its own colours.
+ */
+:global([data-display-mode='normal']) .search {
   --c-input-bg: var(--nm-surface);
   --c-input-border: var(--nm-surface);
   --c-input-shadow: none;

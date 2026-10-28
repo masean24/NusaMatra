@@ -15,7 +15,7 @@ export function FeatureShellPage({ shell }: FeatureShellPageProps) {
     <FeaturePageFrame shell={shell} wide={shell.hasMap === true}>
       {shell.hasMap && <ExplorationMapPanel />}
 
-      <Surface radius="card" className={styles.panel}>
+      <Surface radius="card" reading className={styles.panel}>
         <p className={styles.status}>Sedang dikembangkan</p>
         <h2 className="kk-h3">Yang akan bisa Anda lakukan di sini</h2>
         <ul className={styles.capabilities}>
@@ -33,9 +33,9 @@ export function FeatureShellPage({ shell }: FeatureShellPageProps) {
 
       <div className={styles.actions}>
         <ButtonLink to="/">Kembali ke beranda</ButtonLink>
-        {shell.path !== '/peta' && (
-          <ButtonLink to="/peta" variant="secondary">
-            Buka Peta Utama
+        {shell.path !== '/jelajahi' && (
+          <ButtonLink to="/jelajahi" variant="secondary">
+            Buka Jelajahi
           </ButtonLink>
         )}
       </div>

@@ -15,7 +15,7 @@ import {
   type LabEvidenceQuery,
   type RegionEvidenceQuery,
 } from './evidenceQuery';
-import { Breadcrumb } from './PassportLayout';
+import { BackButton } from '@/features/navigation';
 import { InvalidLink } from './PassportMessages';
 import { useCompositeSources, useEvidenceSources } from './useEvidenceSources';
 import type { SourcesState } from './useSourceLoader';
@@ -25,24 +25,24 @@ function snapshotFailureCopy(code: string): { readonly title: string; readonly b
   switch (code) {
     case 'SNAPSHOT_NOT_FOUND':
       return {
-        title: 'Snapshot pada tautan tidak tersedia',
-        body: 'Data Hub tidak lagi menyimpan snapshot yang disebut tautan ini (snapshot lama dapat hilang setelah pembaruan server).',
+        title: 'Versi data pada tautan tidak tersedia',
+        body: 'Data Hub tidak lagi menyimpan versi data yang disebut tautan ini (versi data lama dapat hilang setelah pembaruan server).',
       };
     case 'SNAPSHOT_NOT_REPRODUCIBLE':
       return {
-        title: 'Snapshot pada tautan tidak dapat direproduksi',
-        body: 'Data Hub menyatakan snapshot pada tautan ini tidak dapat direproduksi, dan snapshot itu bukan lagi snapshot aktif.',
+        title: 'Versi data pada tautan tidak dapat direproduksi',
+        body: 'Data Hub menyatakan versi data pada tautan ini tidak dapat direproduksi, dan versi data itu bukan lagi versi data aktif.',
       };
     case 'SNAPSHOT_MODE_MISMATCH':
       return {
-        title: 'Snapshot pada tautan berasal dari mode lain',
-        body: 'Snapshot pada tautan ini milik mode data yang berbeda (DEMO/LIVE).',
+        title: 'Versi data pada tautan berasal dari mode lain',
+        body: 'Versi data pada tautan ini milik mode data yang berbeda (DEMO/LIVE).',
       };
     case 'SNAPSHOT_MISMATCH':
     case 'SNAPSHOT_DIGEST_MISMATCH':
       return {
-        title: 'Respons tidak berasal dari snapshot yang dikunci',
-        body: 'Salah satu respons Data Hub membawa ID snapshot atau sidik isi data (SHA-256) yang berbeda dari snapshot yang dikunci, jadi tidak dipakai.',
+        title: 'Respons tidak berasal dari versi data yang dikunci',
+        body: 'Salah satu respons Data Hub membawa ID versi data atau sidik isi data (SHA-256) yang berbeda dari versi data yang dikunci, jadi tidak dipakai.',
       };
     default:
       return null;
@@ -109,7 +109,7 @@ function LoadFailure({
 function WithoutRecord({ children }: { readonly children: ReactNode }) {
   return (
     <>
-      <Breadcrumb subject={null} />
+      <BackButton />
       <h1 className="kk-h1">Paspor Bukti</h1>
       {children}
     </>

@@ -132,7 +132,9 @@ describe('RegionExplorer in LIVE mode with a successful answer', () => {
     renderWithDataHub(<RegionExplorer />, { fetchImpl, dataMode: 'LIVE' });
     expect(await screen.findByText('Menampilkan 3 dari 3 wilayah')).toBeInTheDocument();
 
-    await userEvent.selectOptions(screen.getByLabelText('Provinsi'), 'Provinsi Jawa Barat');
+    // The province list is the site's glass combobox, not a native select.
+    await userEvent.click(screen.getByRole('combobox', { name: 'Provinsi' }));
+    await userEvent.click(screen.getByRole('option', { name: 'Provinsi Jawa Barat' }));
 
     expect(screen.getByText('Menampilkan 2 dari 2 wilayah')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Kota Bogor.*kode 3271/ })).toBeInTheDocument();

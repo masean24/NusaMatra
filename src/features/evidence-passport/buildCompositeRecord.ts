@@ -394,7 +394,7 @@ export function buildCompositeRecord(
       ...(raw.presets ? [] : ['daftar skenario (preset)']),
       ...(raw.catalog ? [] : ['katalog indikator']),
       ...(raw.datasets ? [] : ['daftar dataset']),
-      ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar snapshot']),
+      ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar versi data']),
       ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : ['cakupan indikator (/indicators/coverage)']),
       ...(query.provinceId && !raw.regions ? ['daftar wilayah (nama provinsi)'] : []),
     ],

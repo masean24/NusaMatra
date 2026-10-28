@@ -161,6 +161,19 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
     [result, nationalRankWithheld],
   );
 
+  // While new weights are being calculated (and, in LIVE, checked), the last ranking that passed
+  // every check stays on screen, dimmed and marked busy, instead of disappearing; when the new
+  // result is validated its rows move into place (owner revision 2026-10-28). An error or a
+  // blocked result never keeps the old ranking.
+  const fresh =
+    current && validated && shownResult ? { result: shownResult, integrity, passportAllowed } : null;
+  const [kept, setKept] = useState(fresh);
+  if (fresh && (kept?.result !== fresh.result || kept.passportAllowed !== fresh.passportAllowed)) {
+    setKept(fresh);
+  }
+  const refreshing = !fresh && (ranking.state.status === 'loading' || checking);
+  const display = fresh ?? (refreshing ? kept : null);
+
   // Rank moves are described against the result shown before (same scope only).
   const [history, setHistory] = useState<ShownHistory>({ current: null, previous: null });
   const recordShown = useCallback((shown: ExploratoryCompositeResultDTO) => {
@@ -188,30 +201,33 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
         labelOf={labelOf}
       />
 
-      {current && validated && shownResult && <TopSummary result={shownResult} />}
+      {display && <TopSummary result={display.result} />}
 
       {controls}
 
-      {current && validated && shownResult && (
+      {display && (
         <RankingWorkspace
-          result={shownResult}
-          integrity={integrity}
-          previous={history.current === result ? history.previous : history.current}
+          result={display.result}
+          integrity={display.integrity}
+          previous={history.current === display.result ? history.previous : history.current}
           onShown={recordShown}
           labelOf={labelOf}
           seriesOf={seriesOf}
           stale={stale}
+          refreshing={refreshing}
           canRecompute={canRecompute}
           onRecompute={onRecompute}
           passportHrefFor={
-            passportAllowed
+            // No passport from a ranking that is being replaced: its weights are no longer the
+            // ones on screen.
+            display.passportAllowed && !refreshing
               ? (focusRegionId) =>
                   passportHref({
                     kind: 'lab',
                     weights,
-                    provinceId: shownResult.filterProvinceId,
-                    mode: shownResult.dataMode,
-                    snapshotId: shownResult.snapshotId,
+                    provinceId: display.result.filterProvinceId,
+                    mode: display.result.dataMode,
+                    snapshotId: display.result.snapshotId,
                     focusRegionId,
                   })
               : null
@@ -421,7 +437,7 @@ function AnalysisStatus(props: AnalysisStatusProps) {
         ) : undefined
       }
     >
-      {counted} dari data resmi LIVE (snapshot {result.snapshotId}).
+      {counted} dari data resmi LIVE.
       {result.insufficient.length > 0 &&
         ` ${String(result.insufficient.length)} wilayah tidak diperingkat karena datanya belum cukup.`}
       {unlisted && ` ${String(unlisted.count)} wilayah lain tidak tercantum di hasil Data Hub.`}
@@ -497,6 +513,8 @@ interface RankingWorkspaceProps {
   readonly labelOf: (id: string) => string;
   readonly seriesOf: (id: string) => number;
   readonly stale: boolean;
+  /** A new calculation is running; this is the last validated ranking, kept on screen meanwhile. */
+  readonly refreshing: boolean;
   readonly canRecompute: boolean;
   readonly onRecompute: () => void;
   /** Paspor Bukti for a focused region, or `null` when no passport may be made from this result. */
@@ -515,6 +533,7 @@ function RankingWorkspace({
   labelOf,
   seriesOf,
   stale,
+  refreshing,
   canRecompute,
   onRecompute,
   passportHrefFor,
@@ -547,12 +566,17 @@ function RankingWorkspace({
 
   return (
     <div className={styles.results}>
-      <section className={`${styles.card} ${styles.rankingCard}`} aria-labelledby="lab-peringkat">
+      <section
+        className={`glass glass--read ${styles.card} ${styles.rankingCard}`}
+        aria-labelledby="lab-peringkat"
+        aria-busy={refreshing || undefined}
+        data-refreshing={refreshing || undefined}
+      >
         <div className={styles.rankingHead}>
           <h2 id="lab-peringkat" className={styles.cardTitle}>
             Peringkat wilayah
           </h2>
-          <div className={styles.segmented} role="group" aria-label="Urutan tampilan">
+          <div className={`glass-seg ${styles.orderToggle}`} role="group" aria-label="Urutan tampilan">
             {(['high', 'low'] as const).map((value) => (
               <button
                 key={value}
@@ -582,12 +606,11 @@ function RankingWorkspace({
           <label htmlFor={searchId} className={styles.visuallyHidden}>
             Cari wilayah dalam peringkat
           </label>
-          <span className={styles.searchField}>
+          <span className={`glass-field ${styles.searchField}`}>
             <Icon name="search" size={16} className={styles.searchIcon} />
             <input
               id={searchId}
               type="search"
-              className={`${styles.input} ${styles.searchInput}`}
               value={query}
               placeholder="Cari kabupaten/kota"
               onChange={(event) => {
@@ -659,13 +682,7 @@ function RankingWorkspace({
           </Button>
         )}
       </section>
-      {result.insufficient.length > 0 && (
-        <InsufficientCard
-          result={result}
-          requestedWeightPct={integrity.requestedWeightAvailabilityPct}
-          labelOf={labelOf}
-        />
-      )}
+      {result.insufficient.length > 0 && <InsufficientCard result={result} labelOf={labelOf} />}
     </div>
   );
 }
@@ -679,7 +696,7 @@ function TopSummary({ result }: { readonly result: ExploratoryCompositeResultDTO
   const top = result.items.filter((item) => item.rankPosition !== null).slice(0, 3);
   if (top.length === 0) return null;
   return (
-    <section className={`${styles.card} ${styles.topSummary}`} aria-labelledby="lab-teratas">
+    <section className={`glass ${styles.card} ${styles.topSummary}`} aria-labelledby="lab-teratas">
       <h2 id="lab-teratas" className={styles.cardTitle}>
         Tiga prioritas teratas
       </h2>
@@ -702,33 +719,22 @@ function TopSummary({ result }: { readonly result: ExploratoryCompositeResultDTO
 /** Regions the Data Hub declined to rank: named, with the coverage that fell short. They never get a rank. */
 function InsufficientCard({
   result,
-  requestedWeightPct,
   labelOf,
 }: {
   readonly result: ExploratoryCompositeResultDTO;
-  readonly requestedWeightPct: number | null;
   readonly labelOf: (id: string) => string;
 }) {
-  const threshold =
-    result.minCoveragePct === null
-      ? 'ambang cakupannya'
-      : `cakupan minimal ${String(result.minCoveragePct)}% dari bobot`;
+  // The explanation under the heading and the Data Hub's per-region reason are not shown (owner
+  // decision 2026-10-27); coverage, the threshold and the missing criteria stay on each row.
   return (
-    <section id="tidak" className={`${styles.card} ${styles.insufficientCard}`} aria-labelledby="lab-kurang">
+    <section
+      id="tidak"
+      className={`glass glass--read ${styles.card} ${styles.insufficientCard}`}
+      aria-labelledby="lab-kurang"
+    >
       <h2 id="lab-kurang" className={styles.cardTitle}>
         Tidak diperingkat: data belum cukup ({result.insufficient.length})
       </h2>
-      <p className={styles.cardLead}>
-        Data Hub hanya memeringkat wilayah yang memenuhi {threshold}
-        {result.minComponents === null
-          ? ''
-          : ` dan sedikitnya ${String(result.minComponents)} kriteria berdata`}
-        . Wilayah di bawah ini tidak diberi skor maupun peringkat; datanya yang kosong tidak dihitung sebagai
-        0. Cakupan di sini adalah bagian bobot yang punya data di wilayah itu
-        {requestedWeightPct === null
-          ? '.'
-          : `, berbeda dari ketersediaan data nasional atas bobot pilihan Anda (${requestedWeightPct.toFixed(0)}%).`}
-      </p>
       <ul role="list" className={styles.insufficientList}>
         {result.insufficient.map((region) => (
           <li key={region.regionId}>
@@ -759,7 +765,6 @@ function InsufficientCard({
                 </span>
               )}
             </span>
-            <span className={styles.code}>Alasan dari Data Hub: {region.reason}</span>
           </li>
         ))}
       </ul>

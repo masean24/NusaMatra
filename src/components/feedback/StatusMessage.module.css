@@ -4,12 +4,7 @@
   gap: 14px;
   align-items: flex-start;
   padding: 14px 16px;
-  border: 1px solid var(--c-surface-border);
-  border-radius: var(--nm-radius-control);
-  background: var(--c-surface);
-  box-shadow: var(--c-surface-shadow);
-  backdrop-filter: var(--c-surface-blur);
-  color: var(--c-text);
+  border-radius: var(--nm-radius-control); /* the material is the global `glass` */
 }
 
 .icon {

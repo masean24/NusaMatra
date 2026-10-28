@@ -1,6 +1,6 @@
 import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { useStaggeredEnter } from '@/features/motion';
-import { BackToHubLink } from '@/features/navigation';
+import { BackButton } from '@/features/navigation';
 import type { FeatureShell } from './featureShells';
 import styles from './FeaturePageFrame.module.css';
 
@@ -40,7 +40,7 @@ export function FeaturePageFrame({
 
   const heading = (
     <>
-      {shell.path !== '/peta' && <BackToHubLink />}
+      <BackButton />
       <h1 className="kk-h1">{shell.title}</h1>
       <p className={`kk-lead ${styles.summary}`}>{shell.summary}</p>
     </>

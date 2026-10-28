@@ -3,30 +3,24 @@ import { Reveal } from '@/features/motion';
 import styles from './SourcesSection.module.css';
 
 /**
- * Figma 41:406. Status as served by the LIVE Data Hub v2.2 dataset list (captured 2026-10-24,
+ * Figma 41:406. The two sources the Data Hub ingests (LIVE v2.2 dataset list, captured 2026-10-24,
  * src/services/api/__fixtures__/live-v2.2/datasets.json): BNPB (IRBI, DIBI) and BPS (SDGs,
- * Susenas) are ingested; DJPK is not. Static copy, so it names the mode and points to the
- * per-page snapshot instead of claiming freshness or completeness.
+ * Susenas). Only sources actually in use are listed (owner decision 2026-10-27).
  */
 const SOURCES = [
   {
     name: 'BNPB · InaRISK',
     description: 'Indeks dan kelas risiko bencana per kabupaten/kota.',
-    status: 'Terhubung lewat Data Hub (mode LIVE)',
+    status: 'Terhubung lewat Data Hub',
   },
   {
     name: 'Badan Pusat Statistik',
     description: 'Kemiskinan, kependudukan, dan layanan dasar.',
-    status: 'Terhubung lewat Data Hub (mode LIVE)',
-  },
-  {
-    name: 'DJPK Kemenkeu',
-    description: 'Anggaran dan realisasi APBD.',
-    status: 'Direncanakan · belum terhubung',
+    status: 'Terhubung lewat Data Hub',
   },
 ] as const;
 
-/* G10: three source cards rise one after another, 90ms apart. */
+/* G10: the source cards rise one after another, 90ms apart. */
 const G10_STAGGER_MS = 90;
 
 export function SourcesSection() {
@@ -56,8 +50,8 @@ export function SourcesSection() {
         ))}
       </ul>
       <p className={`kk-small ${styles.note}`}>
-        Belum semua indikator punya data. Ketersediaan tiap indikator, tahunnya, dan snapshot data yang
-        dipakai ditampilkan di Jelajahi dan Lab Prioritas.
+        Belum semua indikator punya data. Ketersediaan dan tahun tiap indikator ditampilkan di Jelajahi dan
+        Lab Prioritas.
       </p>
     </section>
   );

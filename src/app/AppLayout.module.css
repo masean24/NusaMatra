@@ -49,8 +49,12 @@
 
 .main {
   display: block;
-  /* Takes the spare height on short pages, pushing the footer to the bottom of the screen. */
+  /*
+   * At least one full screen, so the footer always starts below the fold, also while a page is
+   * still empty (Bandingkan before two regions are chosen, Paspor Bukti before its content loads).
+   */
   flex: 1 0 auto;
+  min-height: 100svh;
   /* Soft background lights may spill past the page column; they must never widen the page. */
   overflow-x: clip;
   outline: none;

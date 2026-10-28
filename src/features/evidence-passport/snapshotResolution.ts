@@ -66,7 +66,7 @@ export async function resolvePassportSnapshot(
     return {
       pinning: {
         status: 'UNPINNED',
-        reason: `Data Hub menyatakan snapshot ${data.snapshotId} tidak dapat direproduksi (tanpa sidik isi data).`,
+        reason: `Data Hub menyatakan versi data ${data.snapshotId} tidak dapat direproduksi (tanpa sidik isi data).`,
       },
       list: null,
     };
@@ -80,7 +80,7 @@ export async function resolvePassportSnapshot(
     return {
       pinning: {
         status: 'UNPINNED',
-        reason: 'Daftar snapshot tidak dapat dimuat, jadi tidak ada snapshot yang dapat dikunci.',
+        reason: 'Daftar versi data tidak dapat dimuat, jadi tidak ada versi data yang dapat dikunci.',
       },
       list: null,
     };
@@ -91,7 +91,7 @@ export async function resolvePassportSnapshot(
       pinning: {
         status: 'UNPINNED',
         reason:
-          'Data Hub tidak menandai tepat satu snapshot aktif yang dapat direproduksi dengan sidik isi data.',
+          'Data Hub tidak menandai tepat satu versi data aktif yang dapat direproduksi dengan sidik isi data.',
       },
       list,
     };

@@ -1,6 +1,6 @@
 /*
  * Hero: a copy column (~42%) beside the map zone (~58%) as one composition. The zone keeps its 720×660
- * proportions; cards sit relative to it: A (+58.3%, −10), B (−20, +25.8%), C (+63.9%, +66.7%).
+ * proportions.
  *
  * The composition is the page column (fluid --nm-page-max, minus the gutters): 1264px at 1440, about
  * 1600px at 1920, 2060px at 2560, at most 2400px. --hero-w is that width; --hero-u is one laptop pixel
@@ -18,7 +18,6 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
-  /* Card B hangs 20px left of the map, so the gap keeps it clear of the copy. */
   column-gap: clamp(36px, 48 * var(--hero-u), 112px);
   align-items: center;
   min-height: 100svh;
@@ -157,32 +156,6 @@
   width: 100%;
 }
 
-.cards {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.cardSlot {
-  position: absolute;
-  pointer-events: auto;
-}
-
-.cardSlot[data-card='a'] {
-  top: -10px;
-  left: 58.3%;
-}
-
-.cardSlot[data-card='b'] {
-  top: 25.8%;
-  left: -20px;
-}
-
-.cardSlot[data-card='c'] {
-  top: 66.7%;
-  left: 63.9%;
-}
-
 .caption {
   margin-top: 20px;
   text-align: center;
@@ -202,20 +175,6 @@
     justify-self: center;
     width: min(100%, 720px);
   }
-
-  .cardSlot[data-card='a'] {
-    left: auto;
-    right: 0;
-  }
-
-  .cardSlot[data-card='b'] {
-    left: 0;
-  }
-
-  .cardSlot[data-card='c'] {
-    left: auto;
-    right: 0;
-  }
 }
 
 @media (width < 640px) {
@@ -223,35 +182,13 @@
     padding-top: 96px;
   }
 
-  /*
-   * On phones the copy leads (heading, lead, search, actions), the map stage follows, and the cards
-   * and caption sit under the map as a list.
-   */
+  /* On phones the copy leads (heading, lead, search, actions), then the map and its caption. */
   .visual {
     display: contents;
-  }
-
-  .cards {
-    position: static;
-    display: grid;
-    gap: 10px;
-    margin-top: 16px;
-  }
-
-  .cardSlot {
-    position: static;
   }
 
   .caption {
     margin-top: 12px;
     text-align: left;
   }
-}
-
-/*
- * Cards are always laid out (the connector lines measure them) but stay hidden until the map has
- * finished its entrance. Reduced motion shows them without the rise.
- */
-.cardHold {
-  opacity: 0;
 }

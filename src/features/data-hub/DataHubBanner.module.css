@@ -13,7 +13,6 @@
   align-items: center;
 }
 
-.snapshot,
 .note {
   color: var(--c-text-muted);
 }
@@ -32,19 +31,4 @@
   gap: 6px;
   width: auto;
   padding: 6px 14px 6px 6px;
-}
-
-.noteDisclosure > summary {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--c-text-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
-.noteDisclosure > .note {
-  max-width: 48ch;
-  margin-top: 6px;
 }

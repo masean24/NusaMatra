@@ -80,7 +80,7 @@ export function LabDetails({
   const comparison = result ? compareWeights(result) : [];
 
   return (
-    <section className={`${styles.card} ${styles.details}`} aria-labelledby="lab-rincian">
+    <section className={`glass glass--read ${styles.card} ${styles.details}`} aria-labelledby="lab-rincian">
       <h2 id="lab-rincian" className={styles.cardTitle}>
         Sumber, metodologi &amp; pemeriksaan
       </h2>

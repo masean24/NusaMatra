@@ -16,7 +16,7 @@ import {
 } from '@/features/data-hub';
 import { passportHref } from '@/features/evidence-passport';
 import { ApiError, type RegionProfileDTO } from '@/services/api';
-import { buildRegionInsight, type EvidenceSource, type InsightIndicator } from './regionInsight';
+import { buildRegionInsight, type InsightIndicator } from './regionInsight';
 import styles from './RegionDetailPanel.module.css';
 
 const TONE_OF: Readonly<Record<ConditionVerdict, ConditionTone>> = {
@@ -81,10 +81,7 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
               ? `Kode ${regionId} · memuat provinsi dan indikator…`
               : `Kode ${regionId}`}
         </p>
-        <DataStatus
-          dataMode={dataMode}
-          snapshotId={detail.state.status === 'success' ? detail.state.data.meta.snapshotId : null}
-        />
+        <DataStatus dataMode={dataMode} />
       </header>
 
       {isNotFound(detail.state) ? (
@@ -99,8 +96,8 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
             )
           }
         >
-          Kode {regionId} tidak ada pada snapshot data ini. Tautan mungkin berasal dari mode data lain atau
-          dari kode yang keliru.
+          Kode {regionId} tidak ada pada versi data ini. Tautan mungkin berasal dari mode data lain atau dari
+          kode yang keliru.
         </StatusMessage>
       ) : (
         <ResourceView state={detail.state} onRetry={detail.retry} loadingTitle="Memuat indikator wilayah…">
@@ -153,17 +150,10 @@ function describeRegion(profile: RegionProfileDTO): string {
   return codes ? `${parts.join(' · ')} · kode ${codes}` : parts.join(' · ');
 }
 
-function DataStatus({
-  dataMode,
-  snapshotId,
-}: {
-  readonly dataMode: 'DEMO' | 'LIVE';
-  readonly snapshotId: string | null;
-}) {
+function DataStatus({ dataMode }: { readonly dataMode: 'DEMO' | 'LIVE' }) {
   return dataMode === 'LIVE' ? (
     <p className={`kk-small ${styles.status}`}>
-      <Chip>Data resmi LIVE</Chip>
-      {snapshotId && <span className={styles.muted}>snapshot {snapshotId}</span>}
+      <Chip>Data resmi</Chip>
     </p>
   ) : (
     <p className={`kk-small ${styles.status}`}>
@@ -189,7 +179,7 @@ function ProfileBody({
   if (insight.indicatorCount === 0) {
     return (
       <p className="kk-body">
-        Belum ada data indikator untuk wilayah ini pada snapshot ini. Wilayahnya terdaftar, tetapi Data Hub
+        Belum ada data indikator untuk wilayah ini pada versi data ini. Wilayahnya terdaftar, tetapi Data Hub
         belum memuat datanya, jadi wilayah ini tidak ikut dalam perbandingan dan peringkat.
       </p>
     );
@@ -198,6 +188,20 @@ function ProfileBody({
   return (
     <>
       {region.isSyntheticDemoName && <Chip tone="warning">Nama sintetis (DEMO), bukan nama resmi</Chip>}
+
+      {/*
+       * The way to the evidence, first and in the accent colour (owner revision 2026-10-28): the
+       * Paspor Bukti holds the sources, years and limitations, so the panel no longer repeats them.
+       */}
+      <Link to={passportTo} className={styles.passportCard}>
+        <span className={styles.passportText}>
+          <span className="kk-body-strong">Paspor Bukti wilayah ini</span>
+          <span className="kk-small">Sumber, tahun data, dan batasan setiap angka</span>
+        </span>
+        <span className={styles.passportArrow} aria-hidden="true">
+          →
+        </span>
+      </Link>
 
       <section aria-labelledby="ringkasan-wilayah" className={styles.section}>
         <h3 id="ringkasan-wilayah" className="kk-body-strong">
@@ -248,24 +252,6 @@ function ProfileBody({
             </ul>
           </details>
         ))}
-      </section>
-
-      <section aria-labelledby="bukti-wilayah" className={styles.section}>
-        <h3 id="bukti-wilayah" className="kk-body-strong">
-          Bukti dan sumber
-        </h3>
-        <ul role="list" className={styles.evidence}>
-          {insight.evidence.map((source) => (
-            <EvidenceItem key={source.datasetId} source={source} />
-          ))}
-        </ul>
-        <p className={`kk-small ${styles.muted}`}>
-          Data Hub belum menerbitkan dokumen metodologi per indikator; rumus turunan tertera pada rincian
-          indikator bila ada. Nilai asli selalu ditampilkan apa adanya, terpisah dari skor ternormalisasi.
-        </p>
-        <Link to={passportTo} className={styles.link}>
-          Buka Paspor Bukti
-        </Link>
       </section>
     </>
   );
@@ -364,32 +350,6 @@ function IndicatorItem({
           </dl>
         </div>
       </details>
-    </li>
-  );
-}
-
-function EvidenceItem({ source }: { readonly source: EvidenceSource }) {
-  const url = publicHttpUrl(source.portalUrl);
-  const years =
-    source.years.length === 0
-      ? 'tahun belum tersedia'
-      : source.years.length === 1
-        ? `tahun ${String(source.years[0])}`
-        : `tahun ${String(source.years[0])}–${String(source.years[source.years.length - 1])}`;
-  return (
-    <li className={styles.evidenceItem}>
-      <span className="kk-body-strong">
-        {url ? (
-          <a href={url} target="_blank" rel="noreferrer noopener">
-            {source.agencyCode}
-          </a>
-        ) : (
-          source.agencyCode
-        )}
-      </span>
-      <span className={`kk-small ${styles.muted}`}>
-        {source.datasetTitle ?? source.datasetId} · {years} · {source.indicatorCount} indikator
-      </span>
     </li>
   );
 }

@@ -4,6 +4,7 @@ import { AppBackground } from '@/components/layout/AppBackground';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { FloatingNavbar } from '@/features/navigation';
 import { useScrollbarCompensation } from '@/hooks/useScrollbarCompensation';
+import { useSmoothHashLinks } from '@/hooks/useSmoothHashLinks';
 import styles from './AppLayout.module.css';
 
 /**
@@ -42,6 +43,7 @@ export function AppLayout() {
   const { pathname } = useLocation();
   useRouteFocus(mainRef);
   useScrollbarCompensation(pathname);
+  useSmoothHashLinks();
 
   return (
     <>

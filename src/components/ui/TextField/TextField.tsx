@@ -14,6 +14,8 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'cl
   readonly className?: string | undefined;
   /** Extra class on the bordered field box, for effects like the G11 shimmer. */
   readonly fieldClassName?: string | undefined;
+  /** Inside a glass container: the borderless iOS `glass-field` instead of the outlined box. */
+  readonly glass?: boolean;
 }
 
 /** Text input from Figma 27:90 "Kolom cari": 14px 18px padding, 16px radius, token-driven per mode. */
@@ -25,6 +27,7 @@ export function TextField({
   trailing,
   className,
   fieldClassName,
+  glass = false,
   ...inputProps
 }: TextFieldProps) {
   const inputId = useId();
@@ -36,7 +39,9 @@ export function TextField({
         {label}
       </label>
       <div
-        className={[styles.field, fieldClassName].filter(Boolean).join(' ')}
+        className={[glass ? `glass-field ${styles.glassField}` : styles.field, fieldClassName]
+          .filter(Boolean)
+          .join(' ')}
         data-invalid={error ? true : undefined}
       >
         {icon && <Icon name={icon} size={24} className={styles.icon} />}

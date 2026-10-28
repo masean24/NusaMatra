@@ -1,0 +1,434 @@
+/*
+ * iOS-style glass for CONTENT only (cards, panels, tables, text blocks), from the owner's
+ * ios-glass.css (artboard "Lab Prioritas — kaca gaya iOS", 2026-10-26). The navbar never uses these
+ * classes, and the page backgrounds (Tinta dan Kobalt in Kaca, Kapur in Normal) stay as they are.
+ *
+ * Adapted to this project: the mode selectors are [data-display-mode], and every control gets a
+ * visible keyboard focus ring (the source file removes the input outline and has no focus styles).
+ */
+
+/* ---------- 1. Tokens ---------- */
+:root,
+[data-display-mode='normal'] {
+  --ink: #121826;
+  --ink2: rgb(18 24 38 / 62%);
+  --ink3: rgb(18 24 38 / 42%);
+
+  /* One shade for every surface; reading cards differ only by their lighter blur. */
+  --glass-bg: rgb(255 255 255 / 60%);
+  --glass-read: var(--glass-bg);
+  --glass-side: rgb(255 255 255 / 26%);
+  --glass-info: rgb(255 255 255 / 16%);
+  --glass-blur: blur(50px);
+
+  --edge: rgb(255 255 255 / 75%);
+  --hl: rgb(255 255 255 / 90%);
+  --hair: rgb(18 24 38 / 8%);
+  --glass-shadow: 0 40px 100px -32px rgb(18 30 90 / 35%), 0 0 0 0.5px rgb(18 30 90 / 8%);
+
+  --fill: rgb(118 118 128 / 13%);
+  --fill2: rgb(255 255 255 / 55%);
+  --sel: rgb(47 91 255 / 10%);
+  --hover: rgb(18 24 38 / 4%);
+  --thumb: #ffffff;
+  --thumb-sh: 0 3px 8px rgb(18 30 90 / 14%), 0 0 0 0.5px rgb(18 30 90 / 6%);
+  --track: rgb(18 24 38 / 10%);
+  --tint: #2f5bff;
+  --accent: #ff8a3d;
+}
+
+[data-display-mode='glass'] {
+  --ink: #ffffff;
+  --ink2: rgb(235 235 245 / 68%); /* secondary text */
+  --ink3: rgb(235 235 245 / 42%); /* placeholder, dim icons */
+
+  /*
+   * Main surface (owner decision 2026-10-27): the light frosted look of the Paspor snapshot card, a
+   * white veil over a little ink, with a bright rim. Worst case over the brightest page point:
+   * white text 6.5:1, --c-text-muted 5.1:1. One shade for every surface (owner revision
+   * 2026-10-28: cards must not look darker or lighter than each other), so --glass-read is the same
+   * colour; reading cards differ only by their lighter blur.
+   */
+  --glass-bg: linear-gradient(rgb(255 255 255 / 10%), rgb(255 255 255 / 10%)), rgb(8 14 60 / 30%);
+  --glass-read: var(--glass-bg);
+  --glass-side: rgb(8 12 28 / 20%); /* side pane tint over --glass-bg */
+  --glass-info: rgb(8 12 28 / 12%); /* third pane tint */
+  /* Blur only, no saturate(): a page-change snapshot cannot draw backdrop filters, and without a
+   * colour shift in the filter the glass keeps one colour before, during and after the change. */
+  --glass-blur: blur(40px);
+
+  --edge: rgb(255 255 255 / 30%);
+  --hl: rgb(255 255 255 / 22%);
+  --hair: rgb(255 255 255 / 9%);
+  --glass-shadow: 0 40px 100px -24px rgb(0 0 0 / 60%), 0 0 0 0.5px rgb(0 0 0 / 35%);
+
+  --fill: rgb(118 118 128 / 24%);
+  --fill2: rgb(255 255 255 / 6%);
+  --sel: rgb(255 255 255 / 12%);
+  --hover: rgb(255 255 255 / 6%);
+  --thumb: rgb(255 255 255 / 24%);
+  --thumb-sh: 0 3px 8px rgb(0 0 0 / 25%);
+  --track: rgb(255 255 255 / 14%);
+  --tint: #a9bbff;
+  --accent: #ff8a3d;
+}
+
+/* ---------- 2. Material ---------- */
+.glass {
+  border: 1px solid var(--edge);
+  border-radius: 24px;
+  background: var(--glass-bg);
+  box-shadow:
+    inset 0 1px 0 var(--hl),
+    var(--glass-shadow);
+  color: var(--ink);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* Multi-pane window: one glass surface, panes divided by hairlines. */
+.glass-window {
+  display: grid;
+  overflow: hidden;
+}
+
+.glass-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.glass-pane--side {
+  border-right: 1px solid var(--hair);
+  background: var(--glass-side);
+}
+
+.glass-pane--info {
+  border-left: 1px solid var(--hair);
+  background: var(--glass-info);
+}
+
+.glass-pane__head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.glass-pane__body {
+  flex: 1;
+  padding: 18px 20px 22px;
+  overflow-y: auto;
+}
+
+/*
+ * Text-heavy content (long paragraphs, tables, methodology): the same colour as every glass
+ * surface, with a lighter blur and lower saturation, so text does not "swim" over a busy background.
+ */
+.glass--read {
+  background: var(--glass-read);
+  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+}
+
+/*
+ * The reading measure is for prose: paragraphs and bulleted lists. Lists used as layout (rows,
+ * source cards, rankings) carry role="list" in this project and keep the container's full width.
+ */
+.glass--read p,
+.glass--read :not([role='list']) > li {
+  max-width: 72ch;
+  line-height: 1.65;
+}
+
+/* ---------- 3. Components on glass ---------- */
+/* Inset grouped list */
+.glass-group {
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--fill2);
+}
+
+.glass-group > * + * {
+  border-top: 1px solid var(--hair);
+}
+
+/* Field: input, select, search. No border, only a fill. */
+.glass-field {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--ink);
+}
+
+.glass-field input,
+.glass-field select {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.glass-field input::placeholder {
+  color: var(--ink3);
+}
+
+/* Project addition: a `glass-field` around a native select draws its own chevron. */
+.glass-field--select {
+  position: relative;
+}
+
+.glass-field--select select {
+  min-height: 44px;
+  padding-right: 24px;
+  cursor: pointer;
+}
+
+.glass-field--select::after {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  content: '';
+  opacity: 0.7;
+  pointer-events: none;
+  transform: translateY(-70%) rotate(45deg);
+}
+
+/* The options of a native select open on the system's own surface: keep them readable. */
+.glass-field select option {
+  background: #1a2050;
+  color: #ffffff;
+}
+
+[data-display-mode='normal'] .glass-field select option {
+  background: #ffffff;
+  color: #121826;
+}
+
+/* Segmented control: grey track, neutral thumb */
+.glass-seg {
+  display: grid;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
+  padding: 2px;
+  border-radius: 10px;
+  background: var(--fill);
+}
+
+.glass-seg button {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform var(--nm-spring-duration) var(--nm-spring-halus);
+}
+
+/* Project addition, "Halus" spring: a press sinks a little; the chosen option settles in. */
+.glass-seg button:active {
+  transform: scale(0.96);
+  transition-duration: 0.2s, 0.2s, var(--nm-duration-feedback);
+}
+
+.glass-seg button[aria-pressed='true'] {
+  background: var(--thumb);
+  box-shadow: var(--thumb-sh);
+  font-weight: 600;
+  animation: glass-seg-settle var(--nm-spring-duration) var(--nm-spring-halus);
+}
+
+@keyframes glass-seg-settle {
+  from {
+    transform: scale(0.94);
+  }
+}
+
+/* List row: soft highlight */
+.glass-row {
+  min-height: 52px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.glass-row:hover {
+  background: var(--hover);
+}
+
+.glass-row[aria-pressed='true'],
+.glass-row.is-selected {
+  background: var(--sel);
+}
+
+/*
+ * iOS slider: 4px track, 24px white thumb. Set --p (percent) and --fill-c (colour) per slider.
+ */
+.glass-range {
+  width: 100%;
+  height: 30px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.glass-range::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--fill-c) 0 var(--p), var(--track) var(--p) 100%);
+}
+
+.glass-range::-webkit-slider-thumb {
+  width: 24px;
+  height: 24px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow:
+    0 3px 8px rgb(0 0 0 / 25%),
+    0 0 0 0.5px rgb(0 0 0 / 6%);
+  -webkit-appearance: none;
+}
+
+.glass-range::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--track);
+}
+
+.glass-range::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--fill-c);
+}
+
+.glass-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 25%);
+}
+
+/* Buttons */
+.glass-btn {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--fill);
+  color: var(--ink);
+}
+
+.glass-btn:hover {
+  background: var(--sel);
+}
+
+.glass-btn--accent {
+  background: var(--accent);
+  box-shadow: 0 10px 24px -12px rgb(255 116 32 / 90%);
+  color: #ffffff;
+}
+
+/* Text */
+.glass .t-secondary {
+  color: var(--ink2);
+}
+
+.glass .t-tertiary {
+  color: var(--ink3);
+}
+
+/* ---------- Keyboard focus (project addition) ---------- */
+.glass-field:focus-within,
+.glass-seg button:focus-visible,
+.glass-row:focus-visible,
+.glass-btn:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.glass-range:focus-visible {
+  outline: none;
+}
+
+.glass-range:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    0 0 0 3px var(--c-focus-ring),
+    0 3px 8px rgb(0 0 0 / 25%);
+}
+
+.glass-range:focus-visible::-moz-range-thumb {
+  box-shadow:
+    0 0 0 3px var(--c-focus-ring),
+    0 3px 8px rgb(0 0 0 / 25%);
+}
+
+/* ---------- 4. Safeguards ---------- */
+/* Without backdrop-filter: a denser glass, so text stays readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  [data-display-mode='glass'] .glass {
+    background: rgb(22 28 56 / 92%);
+  }
+
+  [data-display-mode='normal'] .glass {
+    background: rgb(251 250 246 / 96%);
+  }
+}
+
+/* People who ask for less transparency */
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  [data-display-mode='glass'] .glass {
+    background: #1a2050;
+  }
+
+  [data-display-mode='normal'] .glass {
+    background: #fbfaf6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-seg button,
+  .glass-row {
+    transition: none;
+  }
+
+  .glass-seg button:active {
+    transform: none;
+  }
+
+  .glass-seg button[aria-pressed='true'] {
+    animation: none;
+  }
+}

@@ -54,10 +54,10 @@
   --c-surface-muted: rgb(255 255 255 / 0.1);
   --c-input-border: rgb(255 255 255 / 0.22);
   --c-text-muted: rgb(255 255 255 / 0.84);
-  /* The hero and banner hold sentences, so they are tinta too: white on kapur over the gradient is ~3.6:1. */
-  --pp-hero-bg: var(--c-card);
-  --pp-hero-border: var(--nm-glass-stroke);
-  --pp-hero-blur: var(--c-card-filter);
+  /* The hero and banner hold sentences, so they take the iOS reading glass (glass--read). */
+  --pp-hero-bg: var(--glass-read);
+  --pp-hero-border: var(--edge);
+  --pp-hero-blur: blur(30px);
   --pp-inset: rgb(255 255 255 / 0.07);
   --pp-inset-border: rgb(255 255 255 / 0.16);
   --pp-mono-bg: rgb(255 255 255 / 0.12);
@@ -69,8 +69,8 @@
   --pp-trust-chip-text: var(--nm-text-on-sea);
   --pp-meter-track: rgb(255 255 255 / 0.22);
   --pp-meter-fill: var(--nm-text-on-sea);
-  --pp-banner-bg: var(--c-card);
-  --pp-banner-border: rgb(255 255 255 / 0.35);
+  --pp-banner-bg: var(--glass-read);
+  --pp-banner-border: var(--edge);
   --pp-tile-bg: var(--nm-surface);
   --pp-tile-text: var(--nm-sea-deep);
   --pp-row-tint: rgb(255 138 61 / 0.18);
@@ -167,13 +167,6 @@
 
 .hero > * {
   position: relative;
-}
-
-@media (width >= 900px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr) minmax(16.25rem, 21.25rem);
-    align-items: center;
-  }
 }
 
 .heroMain {
@@ -284,84 +277,6 @@
   display: grid;
   gap: 6px;
   font-size: 0.8125rem;
-}
-
-/* "Cap paspor": a dashed stamp frame around the snapshot's identity. */
-.snapshotCard {
-  position: relative;
-  display: grid;
-  gap: 16px;
-  padding: 20px;
-  border: 1.5px dashed rgb(255 255 255 / 0.55);
-  border-radius: var(--nm-radius-control);
-  background: rgb(255 255 255 / 0.1);
-}
-
-.stamp {
-  position: absolute;
-  top: -14px;
-  right: -10px;
-  width: 64px;
-  height: 64px;
-  color: var(--nm-accent);
-  transform: rotate(-14deg);
-}
-
-.snapshotFacts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px 16px;
-  margin: 0;
-}
-
-.snapshotFacts > div {
-  display: grid;
-  align-content: start;
-  gap: 4px;
-  min-width: 0;
-}
-
-.snapshotWide {
-  grid-column: 1 / -1;
-}
-
-.snapshotFacts dt {
-  color: rgb(255 255 255 / 0.78);
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.snapshotFacts dd {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  overflow-wrap: anywhere;
-}
-
-.snapshotDigest {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.heroNote {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  margin: 0;
-  padding-top: 12px;
-  border-top: 1px dashed rgb(255 255 255 / 0.35);
-  font-size: 0.75rem;
-  line-height: 1.45;
-}
-
-.heroNote svg {
-  flex: none;
-  margin-top: 1px;
 }
 
 .mono,
@@ -1408,6 +1323,20 @@
   border-collapse: collapse;
   font-size: 0.875rem;
   text-align: left;
+}
+
+/* Category tables share their column widths (set by <colgroup>), so every table lines up. */
+.fixedTable {
+  table-layout: fixed;
+}
+
+.fixedTable th,
+.fixedTable td {
+  overflow-wrap: anywhere;
+}
+
+.fixedTable thead th {
+  white-space: normal;
 }
 
 .table caption {

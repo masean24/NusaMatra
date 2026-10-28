@@ -173,14 +173,14 @@ describe('Paspor Bukti for Lab, CAPTURED LIVE Jawa Tengah (kemiskinan + stunting
     expect(links.every((link) => link.getAttribute('href')?.startsWith('https://'))).toBe(true);
   });
 
-  it('refuses a link to a snapshot the Data Hub no longer has, without falling back to the latest', async () => {
+  it('refuses a link to a versi data the Data Hub no longer has, without falling back to the latest', async () => {
     const fetchImpl = hubFetch({
       ...capturedJateng(),
       // CAPTURED shape: production answered exactly this 404 for an unknown snapshot (2026-10-24).
       '/api/v1/snapshots/2026.09.0-older': withStatus(404, fixtureJson('live-v2.2/snapshot_404')),
     });
     renderWithDataHub(<EvidencePassport />, { fetchImpl, path: jatengUrl('3372', '2026.09.0-older') });
-    expect(await screen.findByText('Snapshot pada tautan tidak tersedia')).toBeVisible();
+    expect(await screen.findByText('Versi data pada tautan tidak tersedia')).toBeVisible();
     expect(screen.getByText(/tidak beralih diam-diam ke snapshot terbaru/)).toBeVisible();
     expect(screen.queryByRole('article', { name: /^Bukti hasil Lab/ })).not.toBeInTheDocument();
     expect(requestedUrls(fetchImpl).map((url) => url.pathname)).toEqual([
@@ -417,7 +417,7 @@ describe('Paspor Bukti for Lab, actions', () => {
     });
     const citation = write.mock.calls[0]?.[0] ?? '';
     expect(citation).toContain('Mode data: LIVE');
-    expect(citation).toContain(`Snapshot Data Hub: ${SNAPSHOT}`);
+    expect(citation).toContain(`Versi data Data Hub: ${SNAPSHOT}`);
     expect(citation).toContain('Bobot diminta:');
     expect(citation).toContain('dikutip apa adanya dari Data Hub');
     expect(citation).toContain('bukan arsip resmi');

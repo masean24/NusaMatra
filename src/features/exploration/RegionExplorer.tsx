@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
+import { GlassSelect } from '@/components/ui/GlassSelect/GlassSelect';
 import { Surface } from '@/components/ui/Surface/Surface';
 import { TextField } from '@/components/ui/TextField/TextField';
 import { ResourceView, adminLevelLabel, useDataHub, useDataHubResource } from '@/features/data-hub';
@@ -61,6 +62,7 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
   const [expanded, setExpanded] = useState<{ readonly key: string; readonly count: number } | null>(null);
   // Province narrowing is made on the list already received (it names every region's province).
   const [province, setProvince] = useState('');
+  const provinceLabelId = useId();
   const pageKey = `${searchKey}|${province}`;
   const visibleCount = expanded?.key === pageKey ? expanded.count : PAGE_SIZE;
 
@@ -70,6 +72,7 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
         {compact ? 'Cari wilayah lain' : 'Cari wilayah'}
       </h2>
       <TextField
+        glass
         label="Cari kabupaten/kota"
         icon="search"
         type="search"
@@ -83,12 +86,11 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
 
       {showResults && (
         <>
-          <div role="group" aria-label="Jenis wilayah" className={styles.filters}>
+          <div role="group" aria-label="Jenis wilayah" className="glass-seg">
             {LEVEL_FILTERS.map((filter) => (
               <button
                 key={filter.value}
                 type="button"
-                className={styles.filter}
                 aria-pressed={level === filter.value}
                 onClick={() => {
                   setLevel(filter.value);
@@ -148,22 +150,20 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
               return (
                 <>
                   {provinces.length > 1 && (
-                    <label className={styles.province}>
-                      <span className="kk-small">Provinsi</span>
-                      <select
+                    <div className={styles.province}>
+                      <span id={provinceLabelId} className="kk-small">
+                        Provinsi
+                      </span>
+                      <GlassSelect
+                        labelledBy={provinceLabelId}
                         value={activeProvince}
-                        onChange={(event) => {
-                          setProvince(event.target.value);
-                        }}
-                      >
-                        <option value="">Semua provinsi</option>
-                        {provinces.map((name) => (
-                          <option key={name} value={name}>
-                            {name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
+                        options={[
+                          { value: '', label: 'Semua provinsi' },
+                          ...provinces.map((name) => ({ value: name, label: name })),
+                        ]}
+                        onChange={setProvince}
+                      />
+                    </div>
                   )}
                   <div className={styles.summary}>
                     <p className="kk-small" role="status">
@@ -173,12 +173,12 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                       <Chip tone="warning">Nama sintetis (DEMO), bukan nama resmi</Chip>
                     )}
                   </div>
-                  <ul role="list" className={styles.list}>
+                  <ul role="list" className={`glass-group ${styles.list}`}>
                     {items.slice(0, visibleCount).map((region) => (
                       <li key={region.regionId}>
                         <button
                           type="button"
-                          className={styles.region}
+                          className={`glass-row ${styles.region}`}
                           aria-pressed={region.regionId === selectedCode}
                           onClick={() => {
                             choose(region.regionId, region.displayName);

@@ -104,12 +104,7 @@
   width: min(420px, 100%);
   margin: 0;
   padding: 12px;
-  border: 1px solid var(--c-surface-border, transparent);
-  border-radius: var(--nm-radius-card);
-  background: var(--c-surface);
-  box-shadow: var(--c-surface-shadow);
-  color: var(--c-text);
-  backdrop-filter: var(--c-surface-blur, none);
+  border-radius: var(--nm-radius-card); /* the material is the global `glass` */
 }
 
 .legend {

@@ -28,7 +28,13 @@
   width: 100%;
   min-width: 720px;
   border-collapse: collapse;
+  table-layout: fixed;
   text-align: left;
+}
+
+.table th,
+.table td {
+  overflow-wrap: anywhere;
 }
 
 .table thead th {

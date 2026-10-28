@@ -64,6 +64,8 @@
 
 /* STREAMING_CHUNK:Styling attribution badge and viewport-bounded tooltip... */
 .attributionBadge {
+  /* A host can fold the credit away where it repeats what its own panels already say. */
+  display: var(--explore-map-credit-display, block);
   pointer-events: none;
   position: absolute;
   /* A host with panels floating over the map's left edge or bottom moves the credit clear of them. */

@@ -21,7 +21,7 @@ test.describe('landing', () => {
     ).toBeVisible();
     for (const name of [
       'Dari pertanyaan sederhana ke keputusan yang bisa diperiksa',
-      'Wilayah mana yang perlu didahulukan?',
+      'Bagaimana pilihanmu mengubah prioritas wilayah?',
       'Kami juga menunjukkan yang belum kami ketahui',
       'Sumber dan metodologi',
       'Mulai dari wilayah Anda',
@@ -32,7 +32,8 @@ test.describe('landing', () => {
     await expect(
       page.getByRole('heading', { name: 'Banyak orang tinggal tepat di tempat air berkumpul' }),
     ).toHaveCount(0);
-    await expect(page.getByText('Data simulasi untuk prototipe').first()).toBeVisible();
+    // Examples are labelled "Contoh"; prototype and simulation wording is gone (owner decision 2026-10-27).
+    await expect(page.getByText('Data simulasi untuk prototipe')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 
@@ -75,60 +76,38 @@ test.describe('landing', () => {
     expect(barBox.x + barBox.width).toBeLessThanOrEqual((viewport?.width ?? 0) - 16);
   });
 
-  test('hero hexagon map: pins drop after the entrance and highlight their region card', async ({ page }) => {
-    await page.goto('/');
-    const pinB = page.getByRole('button', { name: /Sorot kartu Wilayah B/ });
-    await expect(page.locator('canvas').first()).toBeVisible();
-    // Pins and cards stay hidden until the hexagons have settled, then appear in order.
-    await expect(pinB).toHaveCSS('opacity', '1', { timeout: 10_000 });
-    const cardB = page.locator('[data-card="b"]');
-    await expect(cardB.locator('[data-card-hold]')).toHaveCSS('opacity', '1', { timeout: 10_000 });
-
-    await pinB.click();
-    await expect(pinB).toHaveAttribute('aria-pressed', 'true');
-    await expect(cardB.locator('[data-highlighted]')).toBeVisible();
-    await pinB.click();
-    await expect(pinB).toHaveAttribute('aria-pressed', 'false');
-  });
-
-  test('hero map stays in the hero: right of the copy, over its pins, above the next section', async ({
+  test('hero map stays in the hero: right of the copy, above the next section, with no region cards', async ({
     page,
     isMobile,
   }) => {
     await page.goto('/');
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible();
-    const pin = page.getByRole('button', { name: /Sorot kartu Wilayah B/ });
-    await expect(pin).toHaveCSS('opacity', '1', { timeout: 10_000 });
+    // The "Wilayah A/B/C" cards and their pins were removed (owner decision 2026-10-27).
+    const hero = page.locator('section', { has: page.getByRole('heading', { level: 1 }) });
+    await expect(hero.getByText(/Wilayah [ABC]\b/)).toHaveCount(0);
 
     const rect = (locator: typeof canvas) =>
       locator.evaluate((element) => {
         const box = element.getBoundingClientRect();
         return { left: box.left, right: box.right, top: box.top + scrollY, bottom: box.bottom + scrollY };
       });
-    const [map, copy, next, pinBox] = await Promise.all([
+    const [map, copy, next] = await Promise.all([
       rect(canvas),
       rect(page.getByRole('heading', { level: 1 })),
       rect(page.locator('main section').nth(1)),
-      rect(pin),
     ]);
 
-    // Never spills into the next section, and every pin sits inside the map's own box.
+    // Never spills into the next section.
     expect(map.bottom).toBeLessThanOrEqual(next.top);
-    expect(pinBox.left).toBeGreaterThanOrEqual(map.left);
-    expect(pinBox.right).toBeLessThanOrEqual(map.right);
-    expect(pinBox.top).toBeGreaterThanOrEqual(map.top);
-    expect(pinBox.bottom).toBeLessThanOrEqual(map.bottom);
     if (!isMobile) {
       // Two columns: the headline on the left, the whole map on the right, both on the first screen.
       expect(map.left).toBeGreaterThanOrEqual(copy.right - 40);
       expect(map.top).toBeLessThan(page.viewportSize()?.height ?? 0);
     }
-    // The cards are on screen, and the tiles were really painted into the map's own box: count
-    // orange pixels in a screenshot of it (a blank or misplaced canvas leaves none).
-    await expect(page.locator('[data-card="a"] [data-card-hold]')).toHaveCSS('opacity', '1', {
-      timeout: 10_000,
-    });
+    // The tiles were really painted into the map's own box: count orange pixels in a screenshot of
+    // it (a blank or misplaced canvas leaves none). The hexagons settle a moment after load.
+    await page.waitForTimeout(2500);
     await canvas.scrollIntoViewIfNeeded();
     await page.waitForTimeout(500);
     const png = (await canvas.screenshot()).toString('base64');
@@ -153,25 +132,24 @@ test.describe('landing', () => {
     expect(orange).toBeGreaterThan(300);
   });
 
-  test('how-it-works cards show only number and title until hovered (or tapped on touch)', async ({
+  test('how-it-works questions swap the preview with a crossfade, and its button opens the feature', async ({
     page,
-    isMobile,
   }) => {
     await page.goto('/');
-    const card = page.getByRole('link', { name: /Langkah 3/ });
-    await card.scrollIntoViewIfNeeded();
-    const description = card.getByText('Atur bobot kriteria dan lihat urutan bergeser.');
-    const reveal = description.locator('xpath=..');
-    await expect(reveal).toHaveCSS('opacity', '0');
+    const labTab = page.getByRole('tab', { name: /Daerah mana yang perlu perhatian lebih/ });
+    await labTab.scrollIntoViewIfNeeded();
+    const explorePanel = page.locator('#cara-kerja-panel-jelajahi');
+    const labPanel = page.locator('#cara-kerja-panel-lab');
+    await expect(explorePanel).toHaveCSS('opacity', '1');
+    await expect(labPanel).toHaveCSS('visibility', 'hidden');
 
-    if (isMobile) {
-      await card.tap();
-      await expect(card).toHaveAttribute('data-open', 'true');
-      await expect(page).toHaveURL(/\/$/); // the first tap only opens the card
-    } else {
-      await card.hover();
-    }
-    await expect(reveal).toHaveCSS('opacity', '1');
+    await labTab.click();
+    await expect(labTab).toHaveAttribute('aria-selected', 'true');
+    await expect(labPanel).toHaveCSS('opacity', '1');
+    await expect(explorePanel).toHaveCSS('visibility', 'hidden');
+
+    await labPanel.getByRole('link', { name: /Buka Lab Prioritas/ }).click();
+    await expect(page).toHaveURL(/\/lab-prioritas$/);
   });
 
   test('Kaca background lights never make the page scroll sideways', async ({ page }) => {
@@ -198,14 +176,10 @@ test.describe('landing', () => {
 
   test('primary CTA and navbar lead to honest destinations with an active state', async ({ page }) => {
     await page.goto('/');
+    // "Mulai jelajahi" opens Jelajahi directly ("Peta Utama" was retired, owner decision 2026-10-28).
     await page.getByRole('link', { name: 'Mulai jelajahi' }).first().click();
-    await expect(page).toHaveURL(/\/peta$/);
-    await expect(page.getByRole('heading', { level: 1, name: 'Peta Utama' })).toBeVisible();
-    // External 3D engine on Peta Utama, with the keyboard alternative owned by the host.
+    await expect(page).toHaveURL(/\/jelajahi$/);
     await expect(page.getByRole('region', { name: 'Peta 3D wilayah' })).toBeVisible();
-    await page.getByRole('button', { name: 'Gugus Pulau Jawa & Madura (Simulasi)' }).click();
-    await expect(page).toHaveURL(/\/peta\?wilayah=ID-DEMO-JAWA$/);
-    await expect(page.getByText('Gugus Pulau Jawa & Madura (Simulasi) dipilih')).toBeVisible();
 
     const nav = visibleNav(page);
     // Only the four working features are primary destinations; unfinished pages are not offered.
@@ -220,7 +194,7 @@ test.describe('landing', () => {
     await expect(nav.getByRole('link', { name: 'Bandingkan' })).toHaveAttribute('aria-current', 'page');
 
     await page.goBack();
-    await expect(page).toHaveURL(/\/peta\?wilayah=ID-DEMO-JAWA$/);
+    await expect(page).toHaveURL(/\/jelajahi$/);
     await expect(nav.getByRole('link', { name: 'Bandingkan' })).not.toHaveAttribute('aria-current', 'page');
     await page.goForward();
     await expect(page).toHaveURL(/\/bandingkan$/);

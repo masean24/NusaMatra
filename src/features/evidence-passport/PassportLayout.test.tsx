@@ -83,29 +83,18 @@ afterEach(() => {
 });
 
 describe('region passport layout (CAPTURED v2.2, Lanny Jaya pinned)', () => {
-  it('reads breadcrumb, hero, limitations banner, trust overview, then the evidence', async () => {
+  it('reads the back button, hero, limitations banner, trust overview, then the evidence', async () => {
     renderRegion();
     const article = await findRegion();
 
-    const crumbs = screen.getByRole('navigation', { name: 'Jejak navigasi' });
-    expect(within(crumbs).getByRole('link', { name: 'Peta utama' })).toHaveAttribute('href', '/peta');
-    expect(within(crumbs).getByRole('link', { name: 'Kabupaten Lanny Jaya' })).toHaveAttribute(
-      'href',
-      '/jelajahi?kode=9507',
-    );
-    expect(within(crumbs).getByText('Paspor Bukti')).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Kembali' })).toBeInTheDocument();
 
     const hero = present(article.querySelector('header'));
     expect(within(hero).getByRole('heading', { level: 1 })).toHaveTextContent('Kabupaten Lanny Jaya');
     expect(hero).toHaveTextContent('LIVE');
     expect(hero).toHaveTextContent('Satu wilayah');
     expect(hero).toHaveTextContent('29 / 33 indikator berdata');
-    expect(hero).toHaveTextContent(SNAPSHOT_22);
-    expect(hero).toHaveTextContent(DIGEST_22); // full digest for assistive technology, shortened on screen
-    expect(hero).toHaveTextContent('BIG-20260601');
-    expect(within(hero).getByRole('note')).toHaveTextContent(
-      'Dirangkai di peramban, bukan arsip/sertifikat resmi.',
-    );
+    expect(hero).not.toHaveTextContent(SNAPSHOT_22);
     expect(hero).not.toHaveTextContent('http');
 
     const headings = [...article.querySelectorAll('section[aria-labelledby] h2')].map((h) => h.textContent);
@@ -125,10 +114,10 @@ describe('region passport layout (CAPTURED v2.2, Lanny Jaya pinned)', () => {
     const trust = within(article).getByRole('region', { name: /Seberapa bisa dipercaya/ });
     const cards = within(trust).getAllByRole('listitem');
     expect(cards[0]).toHaveTextContent('87,9%');
-    expect(cards[0]).toHaveTextContent('29 dari 33 indikator berdata di snapshot ini.');
+    expect(cards[0]).toHaveTextContent('29 dari 33 indikator berdata di versi data ini.');
     expect(cards[1]).toHaveTextContent('100%');
     expect(cards[2]).toHaveTextContent('Terkunci');
-    expect(cards[2]).toHaveTextContent('Ke snapshot di tautan');
+    expect(cards[2]).toHaveTextContent('Ke versi data di tautan');
     expect(cards[3]).toHaveTextContent('Konsisten');
     expect(article).not.toHaveTextContent(/lolos/i);
   });
@@ -147,7 +136,7 @@ describe('region passport layout (CAPTURED v2.2, Lanny Jaya pinned)', () => {
     const items = [...limits.querySelectorAll('li')];
     expect(items.map((item) => item.querySelector('p:last-child')?.textContent)).toEqual(texts);
     expect(items[0]).toHaveTextContent('Reproduksibilitas');
-    expect(items[0]).toHaveTextContent('Data terkunci, tetapi snapshot bisa hilang');
+    expect(items[0]).toHaveTextContent('Data terkunci, tetapi versi data bisa hilang');
 
     const more = within(limits).getByRole('button', {
       name: `Tampilkan ${String(texts.length - 3)} batasan lainnya`,
@@ -182,15 +171,13 @@ describe('region passport layout (CAPTURED v2.2, Lanny Jaya pinned)', () => {
     );
   });
 
-  it('copies the full digest, and the full citation shown in the side column', async () => {
+  it('keeps the data version and digest off the page, and copies the citation shown in the side column', async () => {
     const write = vi.fn<(text: string) => Promise<void>>(() => Promise.resolve());
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: write }, configurable: true });
     renderRegion();
     const article = await findRegion();
-    await userEvent.click(
-      within(present(article.querySelector('header'))).getByRole('button', { name: 'Salin sidik isi data' }),
-    );
-    expect(write).toHaveBeenLastCalledWith(DIGEST_22);
+    expect(within(article).queryByRole('button', { name: 'Salin sidik isi data' })).toBeNull();
+    expect(present(article.querySelector('header'))).not.toHaveTextContent(DIGEST_22.slice(0, 12));
 
     const shown = within(article).getByRole('region', { name: 'Teks kutipan' }).textContent;
     await userEvent.click(within(article).getByRole('button', { name: 'Salin kutipan' }));
@@ -300,12 +287,12 @@ describe('a withheld ranking (CAPTURED v2.2, non-rankable request)', () => {
   });
 });
 
-describe('a response from another snapshot (SYNTHETIC digest mismatch)', () => {
+describe('a response from another versi data (SYNTHETIC digest mismatch)', () => {
   it('shows no passport, only the page title and the refusal', async () => {
     const bodies = captured22NationalKms();
     (bodies['/api/v1/indicators'] as { meta: Json }).meta.content_sha256 = 'b'.repeat(64);
     renderLab(KMS_WEIGHTS, bodies);
-    expect(await screen.findByText('Respons tidak berasal dari snapshot yang dikunci')).toBeInTheDocument();
+    expect(await screen.findByText('Respons tidak berasal dari versi data yang dikunci')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Paspor Bukti');
     expect(screen.queryByRole('article')).not.toBeInTheDocument();
     expect(screen.queryByText('Seberapa bisa dipercaya?')).not.toBeInTheDocument();
@@ -336,17 +323,15 @@ describe('long explanations are closed disclosures', () => {
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('keeps the snapshot explanation, technical details and page address behind labelled headings', async () => {
+  it('keeps the long explanation behind a labelled heading and shows no technical identifiers', async () => {
     renderLab(KMS_WEIGHTS, captured22NationalKms());
     const article = await findLab();
-    for (const name of [/Apa arti Paspor Bukti ini/, /Arti reproduksibilitas snapshot/, /Detail teknis/]) {
-      const toggle = within(article).getByRole('button', { name });
-      expect(toggle).toHaveAttribute('aria-expanded', 'false');
-      expect(toggle.closest('h3')).not.toBeNull();
-    }
-    expect(within(article).getByRole('region', { name: /Status sumber data/ })).toHaveTextContent(
-      `snap=${SNAPSHOT_22}`,
-    );
+    const toggle = within(article).getByRole('button', { name: /Apa arti Paspor Bukti ini/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(toggle.closest('h3')).not.toBeNull();
+    const status = within(article).getByRole('region', { name: /Status sumber data/ });
+    expect(status).not.toHaveTextContent(SNAPSHOT_22);
+    expect(within(article).queryByRole('button', { name: /Detail teknis/ })).toBeNull();
   });
 });
 
@@ -407,10 +392,11 @@ describe('Kaca readability structure', () => {
   it('puts every reading card directly on the page: no glass panel inside another', async () => {
     renderLab(KMS_WEIGHTS, captured22NationalKms());
     const article = await findLab();
-    const panels = [...article.querySelectorAll('[class*="surface"]')];
+    // Every shared panel is the global `glass` material (styles/glass.css).
+    const panels = [...article.querySelectorAll('.glass')];
     expect(panels.length).toBeGreaterThan(8);
     for (const panel of panels) {
-      expect(panel.parentElement?.closest('[class*="surface"]'), panel.className).toBeNull();
+      expect(panel.parentElement?.closest('.glass'), panel.className).toBeNull();
     }
   });
 });

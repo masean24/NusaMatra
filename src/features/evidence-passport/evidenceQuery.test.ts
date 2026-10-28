@@ -58,7 +58,7 @@ describe('parseEvidenceQuery', () => {
     ['?jenis=wilayah', 'kode wilayah'],
     ['?jenis=wilayah&kode=../etc', 'tidak valid'],
     ['?jenis=wilayah&kode=1101&mode=prod', 'live'],
-    ['?jenis=wilayah&kode=1101&snap=a b', 'snapshot'],
+    ['?jenis=wilayah&kode=1101&snap=a b', 'versi data'],
     ['?jenis=wilayah&kode=1101&ind=ok,bad id', 'indikator'],
     ['?jenis=bandingkan&a=1101', 'dua kode'],
     ['?jenis=bandingkan&a=1101&b=1101', 'berbeda'],

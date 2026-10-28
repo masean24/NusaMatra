@@ -6,10 +6,69 @@
   padding: 18px 20px;
 }
 
+/* The field and its floating suggestions; the card keeps its size while results come and go. */
+.searchBox {
+  position: relative;
+}
+
+/*
+ * Suggestions: the nearly opaque menu glass of the home page search, floating over the cards
+ * below. Shown while the search is active (focus inside the box), so a click elsewhere closes it.
+ */
+.popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  z-index: var(--nm-z-popover);
+  max-height: min(360px, 60vh);
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  background: rgb(251 250 246 / 94%);
+  box-shadow:
+    inset 0 1px 0 var(--hl),
+    var(--glass-shadow);
+  color: var(--ink);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  transform-origin: top;
+  transition:
+    opacity 180ms var(--nm-ease-ui),
+    transform 180ms var(--nm-ease-ui);
+}
+
+@starting-style {
+  .popup {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+:global([data-display-mode='glass']) .popup {
+  background: rgb(20 26 62 / 94%);
+}
+
+.searchBox:not(:focus-within) .popup {
+  display: none;
+}
+
+.popup > :global(p) {
+  margin: 0;
+  padding: 8px 10px;
+}
+
+/* The card is its own stacking context (glass): while searching it rises above its neighbours. */
+.picker:focus-within {
+  position: relative;
+  z-index: var(--nm-z-popover);
+}
+
 .suggestions {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -21,20 +80,34 @@
   gap: 2px;
   align-items: flex-start;
   width: 100%;
-  min-height: 52px;
-  padding: 10px 14px;
-  border: 1px solid var(--c-surface-border, transparent);
-  border-radius: 14px;
-  background: var(--c-surface-muted);
-  color: var(--c-text);
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
+.suggestion > :last-child {
+  opacity: 0.8;
+}
+
+.suggestion:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: -3px;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .suggestion:hover {
-    background: var(--c-nav-hover-fill);
-    color: var(--c-nav-hover-text);
+    background: var(--hover);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popup {
+    transition: none;
   }
 }
 

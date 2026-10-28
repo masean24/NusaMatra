@@ -56,6 +56,18 @@
   stroke-width: 1.8;
 }
 
+/* Phones: one short row instead of a tall column, so the buttons cover far less of the map. */
+@media (width < 600px) {
+  .controls {
+    flex-direction: row;
+  }
+
+  .button + .button {
+    border-top: 0;
+    border-left: 1px solid var(--c-surface-border);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .button {
     transition: none;

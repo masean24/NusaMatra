@@ -1,0 +1,139 @@
+.root {
+  position: relative;
+  width: 100%;
+}
+
+/* The field: a `glass-field` button showing the chosen option, with a chevron. */
+.field {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail {
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+.chevron {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  opacity: 0.7;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform var(--nm-duration-feedback) var(--nm-ease-ui);
+}
+
+.field[aria-expanded='true'] .chevron {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+/* The list: a glass panel under the field, scrolling when it is long. */
+.list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: var(--nm-z-popover);
+  max-height: min(320px, 55vh);
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 16px;
+  /* It floats over other text, so the glass is nearly opaque (as iOS menus are). */
+  background: rgb(251 250 246 / 94%);
+  list-style: none;
+  scrollbar-width: thin;
+  transform-origin: top;
+  transition:
+    opacity 160ms var(--nm-ease-ui),
+    transform 160ms var(--nm-ease-ui);
+}
+
+/* Opening: the panel drops a few pixels from under the field as it fades in; closing is instant. */
+@starting-style {
+  .list {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+.list[hidden] {
+  display: none;
+}
+
+:global([data-display-mode='glass']) .list {
+  background: rgb(20 26 62 / 94%);
+}
+
+.option {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.option[data-active] {
+  background: var(--hover);
+}
+
+.option[aria-selected='true'] {
+  background: var(--sel);
+  font-weight: 600;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.optionText .detail {
+  font-weight: 400;
+}
+
+/* A tick beside the chosen option. */
+.tick {
+  flex: none;
+  width: 6px;
+  height: 11px;
+  border-right: 2px solid var(--nm-accent);
+  border-bottom: 2px solid var(--nm-accent);
+  opacity: 0;
+  transform: rotate(45deg) translate(-2px, -2px);
+}
+
+.option[aria-selected='true'] .tick {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list,
+  .chevron {
+    transition: none;
+  }
+
+  @starting-style {
+    .list {
+      transform: none;
+    }
+  }
+}

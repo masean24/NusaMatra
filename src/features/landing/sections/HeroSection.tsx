@@ -1,35 +1,21 @@
-import { animate, stagger } from 'motion';
-import { useEffect, useRef, useState } from 'react';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { buttonClassName } from '@/components/ui/Button/buttonClassName';
-import { DEMO_HERO_CARDS } from '@/data/fixtures/landingDemo';
 import { HeroDioramaSlot } from '@/features/geo3d';
-import { Reveal, STAGGER_ITEM_PROPS, useReducedMotion } from '@/features/motion';
-import { FloatingCard } from '../components/FloatingCard';
-import { HeroMapLayer } from '../components/HeroMapLayer';
+import { Reveal, useReducedMotion } from '@/features/motion';
 import { RegionSearchForm } from '../components/RegionSearchForm';
-import type { HeroCardId } from '../heroMapPins';
-import { useHeroMapSequence } from '../useHeroMapSequence';
 import styles from './HeroSection.module.css';
 
 /* G1: heading, lead, search, buttons rise 28px, ~90ms apart, 700ms on the "Tenang" curve. */
 const G1_STAGGER_MS = 90;
 const G1_DISTANCE = 28;
-/* G2: the diorama rises 60px over 1.1s. The cards then follow the map's own entrance (see useHeroMapSequence). */
+/* G2: the diorama rises 60px over 1.1s. */
 const G2_DELAY_MS = 100;
-const CARD_STAGGER_S = 0.13;
-const CARD_RISE_PX = 18;
-const EASE_CALM = [0.16, 1, 0.3, 1] as const;
 
-/** Where "Mulai jelajahi" leads (3D-1 note: the CTA opens the map). */
-const EXPLORE_PATH = '/peta';
+/** Where "Mulai jelajahi" leads: straight into Jelajahi (the "Peta Utama" hub was retired). */
+const EXPLORE_PATH = '/jelajahi';
 
 /** The "Cara kerja" section (HowItWorksSection) that the secondary hero button leads to. */
 const HOW_IT_WORKS_ID = 'cara-kerja';
-
-function isHeroCardId(id: string): id is HeroCardId {
-  return id === 'a' || id === 'b' || id === 'c';
-}
 
 /**
  * Glides to a section and rests it in the middle of the screen (a section taller than the screen
@@ -46,28 +32,7 @@ function scrollToCentre(section: HTMLElement, reducedMotion: boolean) {
 }
 
 export function HeroSection() {
-  const { outcome, pinsVisible, cardsVisible, handleOutcome } = useHeroMapSequence();
   const reducedMotion = useReducedMotion();
-  const [activeCard, setActiveCard] = useState<HeroCardId | null>(null);
-  const cardsRef = useRef<HTMLUListElement>(null);
-
-  // The cards are laid out from the start (the connector lines measure them) but fade in one after
-  // another once the map has finished its entrance.
-  useEffect(() => {
-    const cards = cardsRef.current;
-    if (!cards || !cardsVisible) return;
-    const holds = cards.querySelectorAll<HTMLElement>('[data-card-hold]');
-    const playback = reducedMotion
-      ? animate(holds, { opacity: [0, 1] }, { duration: 0.2 })
-      : animate(
-          holds,
-          { opacity: [0, 1], y: [CARD_RISE_PX, 0] },
-          { duration: 0.6, ease: EASE_CALM, delay: stagger(CARD_STAGGER_S) },
-        );
-    return () => {
-      playback.stop();
-    };
-  }, [cardsVisible, reducedMotion]);
 
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
@@ -118,44 +83,13 @@ export function HeroSection() {
             delay={G2_DELAY_MS}
             className={styles.dioramaReveal}
           >
-            {/* Hexagon map (default engine); the relief diorama and the Figma illustration are its fallbacks. */}
+            {/* Hexagon map (default engine); its still poster is the fallback. */}
             <HeroDioramaSlot
               scene="hero"
-              description="Peta hexagon Indonesia (ilustrasi, data simulasi): setiap sel hexagon mewakili sebagian daratan, diberi warna dari putih ke oranye tua sesuai nilai simulasi, dengan tiga titik penanda oranye."
-              onHeroMapOutcome={handleOutcome}
+              description="Peta hexagon Indonesia (ilustrasi dekoratif): setiap sel hexagon mewakili sebagian daratan, diwarnai dari putih ke oranye tua."
             />
           </Reveal>
-          {outcome !== 'unavailable' && (
-            <HeroMapLayer
-              visible={pinsVisible}
-              activeId={activeCard}
-              reducedMotion={reducedMotion}
-              onToggle={(id) => {
-                setActiveCard((current) => (current === id ? null : id));
-              }}
-            />
-          )}
         </div>
-        <ul
-          ref={cardsRef}
-          role="list"
-          className={styles.cards}
-          aria-label="Contoh kartu wilayah (data simulasi)"
-        >
-          {DEMO_HERO_CARDS.map((card) => (
-            <li key={card.id} className={styles.cardSlot} data-card={card.id}>
-              <div className={styles.cardHold} data-card-hold {...STAGGER_ITEM_PROPS}>
-                <FloatingCard
-                  title={card.title}
-                  detail={card.detail}
-                  badge={card.badge}
-                  badgeTone={card.badgeTone}
-                  highlighted={isHeroCardId(card.id) && activeCard === card.id}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
         <p className={`kk-caption ${styles.caption}`}>Ilustrasi, bukan peta geografis akurat.</p>
       </div>
     </section>

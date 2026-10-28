@@ -140,7 +140,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
     const row = within(rowOf(POVERTY));
     expect(row.getByText(/Dataset bps_susenas_sakernas_2025/)).toBeInTheDocument();
     expect(row.getByRole('link', { name: 'Sumber resmi' })).toHaveAttribute('href');
-    expect(screen.getByText('2026.10.0-official-live')).toBeInTheDocument();
+    expect(screen.queryByText('2026.10.0-official-live')).toBeNull();
   });
 
   it('explains a lower-is-better gap in words and names the better side, from the catalog polarity', async () => {
@@ -406,7 +406,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
       },
     });
 
-    expect(screen.getByRole('alert')).toHaveTextContent(/snapshot atau mode berbeda/);
+    expect(screen.getByRole('alert')).toHaveTextContent(/versi data yang berbeda/);
   });
 
   it('says plainly when neither region has indicators', async () => {
@@ -600,7 +600,6 @@ describe('RegionComparison in DEMO mode', () => {
 
     // The summary marks the whole result; each value carries its own label on the detail page.
     expect(await screen.findByText(/DEMO · simulasi, bukan observasi resmi/)).toBeInTheDocument();
-    expect(screen.getByText('2026.10.0-wia-demo')).toBeInTheDocument();
     unmount();
 
     renderWithDataHub(<RegionComparison view="detail" />, {

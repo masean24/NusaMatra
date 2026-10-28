@@ -39,8 +39,10 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
   return (
     <Surface radius="card" className={styles.picker}>
       {selectedCode === null ? (
-        <>
+        // The suggestions float under the field (as on the home page) instead of growing the card.
+        <div className={styles.searchBox}>
           <TextField
+            glass
             label={`Cari ${slot}`}
             icon="search"
             type="search"
@@ -52,46 +54,48 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
             }}
           />
           {isSearching && (
-            <ResourceView state={results.state} onRetry={results.retry} loadingTitle="Mencari wilayah…">
-              {(envelope) => {
-                const candidates = envelope.data.filter(
-                  (region) =>
-                    (region.adminLevel === 'REGENCY' || region.adminLevel === 'CITY') &&
-                    region.regionId !== excludeCode,
-                );
-                return candidates.length === 0 ? (
-                  <p className="kk-small" role="status">
-                    Tidak ada kabupaten/kota yang cocok dengan “{debounced}”
-                    {excludeCode ? ` (wilayah yang sudah dipilih di slot lain tidak ditawarkan lagi)` : ''}.
-                  </p>
-                ) : (
-                  <ul role="list" className={styles.suggestions} aria-label={`Hasil pencarian ${slot}`}>
-                    {candidates.slice(0, MAX_SUGGESTIONS).map((region) => (
-                      <li key={region.regionId}>
-                        <button
-                          type="button"
-                          className={styles.suggestion}
-                          onClick={() => {
-                            setQuery('');
-                            onSelect(region.regionId);
-                          }}
-                        >
-                          <span className="kk-body-strong">{region.displayName}</span>
-                          <span className="kk-small">
-                            {adminLevelLabel(region.adminLevel)} ·{' '}
-                            {region.provinceName ?? 'provinsi tidak diketahui'}
-                            {' · kode '}
-                            {region.regionId}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                );
-              }}
-            </ResourceView>
+            <div className={styles.popup}>
+              <ResourceView state={results.state} onRetry={results.retry} loadingTitle="Mencari wilayah…">
+                {(envelope) => {
+                  const candidates = envelope.data.filter(
+                    (region) =>
+                      (region.adminLevel === 'REGENCY' || region.adminLevel === 'CITY') &&
+                      region.regionId !== excludeCode,
+                  );
+                  return candidates.length === 0 ? (
+                    <p className="kk-small" role="status">
+                      Tidak ada kabupaten/kota yang cocok dengan “{debounced}”
+                      {excludeCode ? ` (wilayah yang sudah dipilih di slot lain tidak ditawarkan lagi)` : ''}.
+                    </p>
+                  ) : (
+                    <ul role="list" className={styles.suggestions} aria-label={`Hasil pencarian ${slot}`}>
+                      {candidates.slice(0, MAX_SUGGESTIONS).map((region) => (
+                        <li key={region.regionId}>
+                          <button
+                            type="button"
+                            className={styles.suggestion}
+                            onClick={() => {
+                              setQuery('');
+                              onSelect(region.regionId);
+                            }}
+                          >
+                            <span className="kk-body-strong">{region.displayName}</span>
+                            <span className="kk-small">
+                              {adminLevelLabel(region.adminLevel)} ·{' '}
+                              {region.provinceName ?? 'provinsi tidak diketahui'}
+                              {' · kode '}
+                              {region.regionId}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                }}
+              </ResourceView>
+            </div>
           )}
-        </>
+        </div>
       ) : (
         <div className={styles.chosen}>
           <div>

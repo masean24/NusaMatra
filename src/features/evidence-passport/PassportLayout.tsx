@@ -2,69 +2,16 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
+import { BackButton } from '@/features/navigation';
 import type { LimitationNote } from './limitationNote';
-import { BROWSER_ASSEMBLED_LABEL } from './notices';
 import { PassportIcon } from './PassportIcons';
-import {
-  PASSPORT_CRUMB,
-  formatReceived,
-  heroTitle,
-  relatedLinks,
-  shortDigest,
-  subjectCrumb,
-  type AnyEvidenceRecord,
-} from './passportFormat';
+import { heroTitle, relatedLinks, type AnyEvidenceRecord } from './passportFormat';
 import { PrintRunningHeader } from './PrintRunningHeader';
 import { ModeTag, Section } from './Section';
 import type { PassportActions } from './usePassportActions';
 import styles from './EvidencePassport.module.css';
 
 const formatPercent = (value: number) => `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
-
-/** "Peta utama / Kota Langsa / Paspor Bukti"; the last step is this page. */
-export function Breadcrumb({
-  subject,
-}: {
-  readonly subject: { readonly label: string; readonly to: string } | null;
-}) {
-  return (
-    <nav aria-label="Jejak navigasi" className={styles.breadcrumb}>
-      <ol role="list">
-        <li>
-          <Link to="/peta">Peta utama</Link>
-        </li>
-        {subject && (
-          <li>
-            <Link to={subject.to}>{subject.label}</Link>
-          </li>
-        )}
-        <li>
-          <span aria-current="page">{PASSPORT_CRUMB.label}</span>
-        </li>
-      </ol>
-    </nav>
-  );
-}
-
-/** Orange stamp on the snapshot card: shown only when every response is pinned to one digest. */
-function LockStamp() {
-  return (
-    <svg className={styles.stamp} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <defs>
-        <path id="paspor-stamp-arc" d="M32 32 m-23 0 a23 23 0 1 1 46 0 a23 23 0 1 1 -46 0" />
-      </defs>
-      <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" strokeWidth="2" />
-      <circle cx="32" cy="32" r="16" fill="currentColor" opacity="0.9" />
-      <text fontSize="6.4" fontWeight="700" letterSpacing="1.6" fill="currentColor">
-        <textPath href="#paspor-stamp-arc">TERKUNCI · TERKUNCI · TERKUNCI ·</textPath>
-      </text>
-      <g fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="25.5" y="30" width="13" height="9" rx="2" />
-        <path d="M28.5 30v-3a3.5 3.5 0 0 1 7 0v3" />
-      </g>
-    </svg>
-  );
-}
 
 interface HeroProps {
   readonly record: AnyEvidenceRecord;
@@ -74,9 +21,7 @@ interface HeroProps {
 
 function Hero({ record, kindLabel, actions }: HeroProps) {
   const { source } = record;
-  const digest = source.snapshot?.contentSha256 ?? null;
   const coverage = source.observedCoverage;
-  const pinned = source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT';
 
   return (
     <header id="paspor-atas" className={styles.hero}>
@@ -137,54 +82,6 @@ function Hero({ record, kindLabel, actions }: HeroProps) {
           )}
         </div>
       </div>
-
-      <div className={styles.snapshotCard}>
-        {pinned && <LockStamp />}
-        <dl className={styles.snapshotFacts}>
-          <div className={styles.snapshotWide}>
-            <dt>No. snapshot</dt>
-            <dd className={styles.mono}>{source.snapshotId}</dd>
-          </div>
-          <div className={styles.snapshotWide}>
-            <dt>Sidik isi data · SHA-256</dt>
-            <dd className={styles.snapshotDigest}>
-              {digest ? (
-                <>
-                  <span className={styles.mono}>
-                    <span aria-hidden="true">{shortDigest(digest)}</span>
-                    <span className={styles.srOnly}>{digest}</span>
-                  </span>
-                  <button
-                    type="button"
-                    className={`${styles.inlineButton} ${styles.noPrint}`}
-                    aria-label="Salin sidik isi data"
-                    onClick={() => {
-                      actions.copyDigest(digest);
-                    }}
-                  >
-                    <PassportIcon name="copy" size={14} />
-                    Salin
-                  </button>
-                </>
-              ) : (
-                'tidak ada'
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>Batas wilayah</dt>
-            <dd className={styles.mono}>{source.snapshot?.boundaryVersion ?? 'belum tersedia'}</dd>
-          </div>
-          <div>
-            <dt>Dirangkai</dt>
-            <dd>{formatReceived(source.receivedByBrowserAt)}</dd>
-          </div>
-        </dl>
-        <p className={styles.heroNote} role="note">
-          <PassportIcon name="info" size={14} />
-          <span>{BROWSER_ASSEMBLED_LABEL}</span>
-        </p>
-      </div>
     </header>
   );
 }
@@ -209,8 +106,8 @@ function bannerHint(record: AnyEvidenceRecord): string {
   if (record.source.dataMode === 'DEMO')
     return 'termasuk: semua angka adalah data simulasi, bukan observasi resmi.';
   return record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
-    ? 'termasuk risiko snapshot tidak tersedia lagi setelah pembaruan server.'
-    : 'termasuk: data tidak dikunci ke snapshot, jadi membuka tautan lagi dapat memberi data berbeda.';
+    ? 'termasuk risiko versi data tidak tersedia lagi setelah pembaruan server.'
+    : 'termasuk: data tidak dikunci ke versi data, jadi membuka tautan lagi dapat memberi data berbeda.';
 }
 
 /** The whole callout is one link to the limitations, so the hit area is the full row. */
@@ -270,7 +167,7 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
             {completeness !== null && <Meter value={completeness} />}
             <p className={styles.trustText}>
               {coverage
-                ? `${String(coverage.availableIndicators)} dari ${String(coverage.totalIndicators)} indikator berdata di snapshot ini.`
+                ? `${String(coverage.availableIndicators)} dari ${String(coverage.totalIndicators)} indikator berdata di versi data ini.`
                 : 'Jumlah indikator berdata belum tersedia.'}
               {disagree && ' Persentase server berbeda dari jumlah ini.'}
             </p>
@@ -302,9 +199,9 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
               <PassportIcon name={pinned ? 'check' : 'alert'} size={12} />
               {pinned
                 ? source.reproducibility.origin === 'LINK'
-                  ? 'Ke snapshot di tautan'
-                  : 'Ke snapshot aktif saat dibuka'
-                : 'Tanpa penguncian snapshot'}
+                  ? 'Ke versi data di tautan'
+                  : 'Ke versi data aktif saat dibuka'
+                : 'Tanpa penguncian versi data'}
             </span>
             <p className={styles.trustText}>
               {pinned
@@ -326,8 +223,8 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
             </span>
             <p className={styles.trustText}>
               {source.consistent
-                ? 'Mode, snapshot, dan sidik sama di semua respons.'
-                : 'Mode, snapshot, atau sidik berbeda antarrespons; perbandingan ditahan.'}
+                ? 'Mode, versi data, dan sidik sama di semua respons.'
+                : 'Mode, versi data, atau sidik berbeda antarrespons; perbandingan ditahan.'}
             </p>
           </Surface>
         </li>
@@ -374,7 +271,11 @@ function Aside({
           ))}
         </ol>
       </Surface>
-      <Surface radius="control" className={`${styles.asideCard} ${styles.citationCard} ${styles.noPrint}`}>
+      <Surface
+        radius="control"
+        reading
+        className={`${styles.asideCard} ${styles.citationCard} ${styles.noPrint}`}
+      >
         <h2 className={styles.asideTitle}>Kutip paspor ini</h2>
         {/* The full citation, scrollable; a keyboard user can reach and scroll it. */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
@@ -447,7 +348,7 @@ export function PassportLayout({
 }: PassportLayoutProps) {
   return (
     <>
-      <Breadcrumb subject={subjectCrumb(record)} />
+      <BackButton />
       <article className={styles.document} aria-label={record.title}>
         <PrintRunningHeader source={record.source} />
         <Hero record={record} kindLabel={kindLabel} actions={actions} />

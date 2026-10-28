@@ -43,7 +43,7 @@ function RegionCard({
                 {coverage.indicatorsWithValue} indikator bernilai
                 {coverage.catalogIndicatorCount === null
                   ? ' (jumlah indikator di katalog belum tersedia)'
-                  : ` dari ${String(coverage.catalogIndicatorCount)} indikator di katalog snapshot ini`}
+                  : ` dari ${String(coverage.catalogIndicatorCount)} indikator di katalog versi data ini`}
                 ; {coverage.indicatorsWithoutValue} tanpa nilai.
               </dd>
             </div>

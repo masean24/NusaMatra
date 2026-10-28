@@ -188,20 +188,18 @@ function ComparisonResult({
   const snapshotsDiffer = a.snapshotId !== b.snapshotId || a.dataMode !== b.dataMode;
 
   return (
-    <Surface radius="card" className={styles.result}>
+    <Surface radius="card" reading className={styles.result}>
       <h2 className="kk-h3">
         {a.region.displayName} dan {b.region.displayName}
       </h2>
-      <div className={styles.context}>
-        {dataMode === 'DEMO' && <Chip tone="warning">DEMO · simulasi, bukan observasi resmi</Chip>}
-        <span className="kk-small">
-          Snapshot <strong>{a.snapshotId}</strong>
-        </span>
-      </div>
+      {dataMode === 'DEMO' && (
+        <div className={styles.context}>
+          <Chip tone="warning">DEMO · simulasi, bukan observasi resmi</Chip>
+        </div>
+      )}
       {snapshotsDiffer && (
         <p className={`kk-small ${styles.warning}`} role="alert">
-          Kedua wilayah berasal dari snapshot atau mode berbeda ({a.snapshotId} dan {b.snapshotId}). Muat
-          ulang sebelum membandingkan.
+          Data kedua wilayah berasal dari versi data yang berbeda. Muat ulang sebelum membandingkan.
         </p>
       )}
       {view === 'summary' ? (
@@ -242,6 +240,13 @@ function ComparisonResult({
           <caption className="visually-hidden">
             Perbandingan indikator {a.region.displayName} dan {b.region.displayName}
           </caption>
+          {/* Fixed column widths: every indicator group lines up under the same four columns. */}
+          <colgroup>
+            <col style={{ width: '34%' }} />
+            <col style={{ width: '20%' }} />
+            <col style={{ width: '20%' }} />
+            <col style={{ width: '26%' }} />
+          </colgroup>
           <thead>
             <tr>
               <th scope="col">{view === 'summary' ? 'Indikator' : 'Indikator · tahun · sumber'}</th>

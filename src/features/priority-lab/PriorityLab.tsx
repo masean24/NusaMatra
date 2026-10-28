@@ -1,5 +1,7 @@
-import { useId, useState } from 'react';
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Button } from '@/components/ui/Button/Button';
+import { GlassSelect } from '@/components/ui/GlassSelect/GlassSelect';
 import { TOTAL_BASIS_POINTS, addCriterion, removeCriterion, type WeightsBps } from '@/domain/prioritization';
 import { ResourceView, useDataHub, useDataHubResource, type ResourceState } from '@/features/data-hub';
 import type { CompositePresetsDTO, DataHubRegionDTO } from '@/services/api';
@@ -97,9 +99,27 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
     setWeights(next);
   };
 
+  // `?skenario=<preset id>` (the landing's focus chooser) starts the Lab on that Data Hub preset,
+  // once, as soon as the presets have loaded; an unknown id leaves the default weights.
+  const [searchParams] = useSearchParams();
+  const presetFromLink = useRef(searchParams.get('skenario'));
+  const applyPresetFromLink = useEffectEvent((loaded: CompositePresetsDTO) => {
+    const wanted = presetFromLink.current;
+    presetFromLink.current = null;
+    const preset = loaded.presets.find((entry) => entry.presetId === wanted);
+    if (!preset) return;
+    const next = { ...preset.weightsBasisPoints };
+    changeWeights(next);
+    setAppliedWeights(next);
+  });
+  useEffect(() => {
+    if (presets.state.status === 'success' && presetFromLink.current)
+      applyPresetFromLink(presets.state.data.data);
+  }, [presets.state]);
+
   const controls = (
     <aside
-      className={`${styles.panel} ${styles.config}`}
+      className={`glass glass--read ${styles.config}`}
       aria-label="Pengaturan"
       data-collapsed={settingsOpen ? undefined : true}
     >
@@ -146,23 +166,23 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
               <span className={styles.stepNumber} aria-hidden="true">
                 3
               </span>
-              <label htmlFor={provinceFieldId}>Cakupan wilayah</label>
+              <span id={provinceFieldId}>Cakupan wilayah</span>
             </div>
-            <select
-              id={provinceFieldId}
-              className={styles.input}
+            <GlassSelect
+              labelledBy={provinceFieldId}
               value={provinceId ?? ''}
-              onChange={(event) => {
-                setProvinceId(event.target.value === '' ? null : event.target.value);
+              options={[
+                { value: '', label: 'Seluruh Indonesia' },
+                ...provinces.map((province) => ({
+                  value: province.id,
+                  label: province.name,
+                  detail: `${String(province.regionCount)} kab/kota`,
+                })),
+              ]}
+              onChange={(next) => {
+                setProvinceId(next === '' ? null : next);
               }}
-            >
-              <option value="">Seluruh Indonesia</option>
-              {provinces.map((province) => (
-                <option key={province.id} value={province.id}>
-                  {province.name} ({province.regionCount} kab/kota)
-                </option>
-              ))}
-            </select>
+            />
           </section>
         )}
         {regions === null && registry.state.status === 'error' && (

@@ -14,14 +14,19 @@
   --c-text-strong-accent: var(--nm-sea); /* lab percentages, rank numbers, story kicker */
   --c-note: var(--nm-sea-deep); /* "Direncanakan · belum terhubung" */
 
-  --c-surface: var(--nm-surface);
-  --c-surface-border: transparent;
-  --c-surface-shadow: var(--nm-shadow-normal);
-  --c-surface-blur: none;
+  /*
+   * Every surface is the iOS glass of styles/glass.css (owner decision 2026-10-27): --c-surface is
+   * the light glass, --c-card the denser reading glass (glass--read). Components that still read
+   * these tokens therefore match the elements that carry the glass classes.
+   */
+  --c-surface: var(--glass-bg);
+  --c-surface-border: var(--edge);
+  --c-surface-shadow: inset 0 1px 0 var(--hl), var(--glass-shadow);
+  --c-surface-blur: var(--glass-blur);
   --c-surface-muted: var(--nm-land-2); /* chips, step badges, icon tiles, bar tracks */
-  --c-band: var(--nm-land-2); /* Lab section background */
-  --c-band-border: transparent;
-  --c-band-shadow: none;
+  --c-band: var(--glass-bg);
+  --c-band-border: var(--edge);
+  --c-band-shadow: inset 0 1px 0 var(--hl), var(--glass-shadow);
 
   --c-input-bg: var(--nm-surface);
   --c-input-border: var(--nm-land-3);
@@ -80,10 +85,10 @@
    * that white body text stays >= 4.5:1 over the orange light. "Kaca kapur" (--nm-glass-surface)
    * reaches only ~3.3:1 with white text, so it stays on toggles, chips and large type.
    */
-  --c-card: var(--nm-surface);
-  --c-card-border: #e2ddd0;
-  --c-card-filter: none;
-  --c-card-shadow: 0 1px 0 rgb(18 30 90 / 4%), 0 18px 40px -26px rgb(18 30 90 / 25%);
+  --c-card: var(--glass-read);
+  --c-card-border: var(--edge);
+  --c-card-filter: blur(30px);
+  --c-card-shadow: inset 0 1px 0 var(--hl), var(--glass-shadow);
   --c-chip: var(--nm-land-2);
   --c-chip-ink: var(--nm-text);
   --c-link: var(--nm-sea-deep);
@@ -129,14 +134,14 @@
    * One glass recipe for every reading surface (cards, bands, panels): kaca tinta, as on Bandingkan,
    * Lab and Paspor. Kaca kapur (--nm-glass-surface) stays only on small controls and chips.
    */
-  --c-surface: var(--c-card);
-  --c-surface-border: var(--c-card-border);
-  --c-surface-shadow: var(--c-card-shadow);
-  --c-surface-blur: var(--c-card-filter);
+  --c-surface: var(--glass-bg);
+  --c-surface-border: var(--edge);
+  --c-surface-shadow: inset 0 1px 0 var(--hl), var(--glass-shadow);
+  --c-surface-blur: var(--glass-blur);
   --c-surface-muted: rgb(255 255 255 / 10%);
-  --c-band: var(--c-card);
-  --c-band-border: var(--c-card-border);
-  --c-band-shadow: var(--c-card-shadow);
+  --c-band: var(--glass-bg);
+  --c-band-border: var(--edge);
+  --c-band-shadow: inset 0 1px 0 var(--hl), var(--glass-shadow);
 
   --c-input-bg: rgb(255 255 255 / 8%);
   --c-input-border: rgb(255 255 255 / 28%);
@@ -204,21 +209,21 @@
 
   /*
    * Kaca surface levels, one family on every page:
-   *   1 --c-card            primary surface (cards, panels, bands): a light ink tint, blurred, rimmed
-   *   2 --c-soft            secondary surface nested in a card (rows, insets, code)
-   *   3 --c-control-hover   interactive hover / pressed
-   *   4 --c-sel             selected / active, with --c-sel-line
-   * The tint is light enough to read as glass on the dark page; white text stays >= 7:1 and muted
-   * text >= 4.5:1 even over the page's brightest cobalt and its orange glow.
+   *   1 --c-surface / --c-card   the iOS glass of styles/glass.css: light glass, and the denser
+   *                              reading glass for long text (owner decision 2026-10-27)
+   *   2 --c-soft                 secondary surface nested in a card (rows, insets, code)
+   *   3 --c-control-hover        interactive hover / pressed
+   *   4 --c-sel                  selected / active, with --c-sel-line
+   * The navbar and controls keep their own lighter glass.
    */
-  --c-card: rgb(18 24 38 / 26%);
-  --c-card-border: rgb(255 255 255 / 16%);
-  --c-card-filter: blur(var(--nm-blur-strong)) saturate(140%);
-  --c-card-shadow: inset 0 1px 0 rgb(255 255 255 / 35%), 0 8px 32px rgb(0 0 0 / 30%);
+  --c-card: var(--glass-read);
+  --c-card-border: var(--edge);
+  --c-card-filter: blur(30px);
+  --c-card-shadow: inset 0 1px 0 var(--hl), var(--glass-shadow);
   --c-chip: rgb(255 255 255 / 10%);
   --c-chip-ink: var(--nm-land-1);
   --c-link: var(--nm-text-on-sea);
-  --c-soft: rgb(255 255 255 / 6%);
+  --c-soft: rgb(255 255 255 / 7%);
   --c-code: rgb(18 30 90 / 38%);
   --c-track: rgb(255 255 255 / 14%);
   --c-bar: #a9bbff;

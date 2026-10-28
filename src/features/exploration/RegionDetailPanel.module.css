@@ -166,27 +166,79 @@
   overflow-wrap: anywhere;
 }
 
-.evidence {
+/*
+ * The Paspor Bukti card at the top of a profile, in the accent colour: Kaca is orange glass (a
+ * translucent orange tint with an orange rim, white text); Normal is the same card on kapur (a
+ * soft orange tint, dark text). It lifts on the "Halus" spring when hovered or pressed.
+ */
+.passportCard {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--nm-accent) 70%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--nm-accent) 14%, var(--glass-bg));
+  box-shadow: 0 10px 24px -14px rgb(255 116 32 / 60%);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform var(--nm-spring-duration) var(--nm-spring-halus);
 }
 
-.evidenceItem {
+:global([data-display-mode='glass']) .passportCard {
+  background: rgb(255 138 61 / 24%);
+}
+
+.passportCard:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.passportCard:active {
+  transform: scale(0.98);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .passportCard:hover {
+    transform: translateY(-2px);
+  }
+
+  .passportCard:hover .passportArrow {
+    translate: 3px 0;
+  }
+}
+
+.passportText {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
-.link {
-  align-self: flex-start;
-  color: var(--c-text-strong-accent);
-  font-size: 0.875rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.passportArrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+  color: var(--nm-accent-text);
+  font-weight: 700;
+  transition: translate var(--nm-spring-duration) var(--nm-spring-halus);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .passportCard,
+  .passportArrow {
+    transition: none;
+  }
+
+  .passportCard:hover,
+  .passportCard:active {
+    transform: none;
+  }
 }
 
 @media (width < 420px) {

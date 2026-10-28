@@ -1,11 +1,35 @@
 import { useRef } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { useRefractiveGlass } from '@/lib/glass';
 import { Logo } from '@/components/brand/Logo';
+import { prefersReducedMotion } from '@/features/motion';
 import { DisplayModeSwitch } from '@/features/theme';
 import { NavLinkList } from './NavLinkList';
 import { useCompactOnScroll } from './useCompactOnScroll';
 import styles from './FloatingNavbar.module.css';
+
+/**
+ * The brand, linking home. Already on the home page, it glides back to the very top (owner
+ * decision 2026-10-28) instead of doing nothing; reduced motion jumps.
+ */
+function HomeLink() {
+  const { pathname } = useLocation();
+  return (
+    <Link
+      to="/"
+      className={styles.home}
+      aria-label="Nusa Matra — Beranda"
+      onClick={(event) => {
+        if (pathname !== '/') return;
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+        if (window.location.hash) window.history.replaceState(window.history.state, '', '/');
+      }}
+    >
+      <Logo size="nav" surface="auto" />
+    </Link>
+  );
+}
 
 /**
  * Figma 49:447: floating, fixed 16px from the top, centred. On narrow screens Figma turns it
@@ -25,9 +49,7 @@ export function FloatingNavbar() {
   return (
     <header className={styles.header}>
       <div ref={desktopRef} className={`${styles.bar} ${styles.desktop}`}>
-        <Link to="/" className={styles.home} aria-label="Nusa Matra — Beranda">
-          <Logo size="nav" surface="auto" />
-        </Link>
+        <HomeLink />
         <span className={styles.divider} aria-hidden="true" />
         <nav aria-label="Navigasi utama">
           <NavLinkList layout="pill" />
@@ -37,9 +59,7 @@ export function FloatingNavbar() {
       </div>
 
       <div ref={compactRef} className={`${styles.bar} ${styles.compactTop}`}>
-        <Link to="/" className={styles.home} aria-label="Nusa Matra — Beranda">
-          <Logo size="nav" surface="auto" />
-        </Link>
+        <HomeLink />
         <DisplayModeSwitch size="compact" />
       </div>
 

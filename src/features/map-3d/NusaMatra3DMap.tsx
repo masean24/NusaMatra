@@ -28,6 +28,7 @@ const EXPLORE_FOG_NEAR = 32;
 const EXPLORE_FOG_FAR = 118;
 /** Extra room around the official geography when it is fitted to the canvas width. */
 const EXPLORE_FIT_MARGIN = 1.2;
+const EXPLORE_FIT_MARGIN_PORTRAIT = 1.1;
 
 /**
  * Host fix: how far the camera must be for a ground strip of `width` to fit the canvas. LIVE
@@ -79,7 +80,10 @@ function keepFitReachable(controls: OrbitControls | null, fitDistance: number): 
 function exploreFitDistance(camera: THREE.PerspectiveCamera, width: number, scene?: THREE.Scene): number {
   const halfFov = THREE.MathUtils.degToRad(camera.fov / 2);
   const visibleAspect = camera.aspect * (VISIBLE_WIDTH_SHARE.get(camera) ?? 1);
-  const fitting = (width * EXPLORE_FIT_MARGIN) / (2 * Math.tan(halfFov) * visibleAspect);
+  // A portrait phone shows the archipelago only as wide as the screen: almost no margin there, so
+  // the islands are as large as they can be while every coast stays in view.
+  const margin = camera.aspect < 0.8 ? EXPLORE_FIT_MARGIN_PORTRAIT : EXPLORE_FIT_MARGIN;
+  const fitting = (width * margin) / (2 * Math.tan(halfFov) * visibleAspect);
   const distance = Math.max(EXPLORE_CAMERA_DISTANCE, fitting);
   // The haze was tuned for the start-up distance; keep it in proportion when the camera backs off,
   // or the land washes out toward the sea colour.

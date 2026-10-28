@@ -182,7 +182,7 @@ export function parseEvidenceQuery(params: URLSearchParams): ParsedEvidenceQuery
 
   const rawSnapshot = params.get(PARAM.snapshot);
   if (rawSnapshot !== null && !SNAPSHOT_ID.test(rawSnapshot)) {
-    return invalid('ID snapshot pada tautan tidak valid.');
+    return invalid('ID versi data pada tautan tidak valid.');
   }
   const context: QueryContext = { mode, snapshotId: rawSnapshot };
 

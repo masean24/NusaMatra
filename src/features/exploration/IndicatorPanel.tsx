@@ -217,8 +217,8 @@ function IndicatorRegionValue({
             if (Object.keys(envelope.data.valuesByRegion).length === 0) {
               return (
                 <p className="kk-body">
-                  Data Hub tidak memuat nilai untuk indikator ini pada snapshot {envelope.data.snapshotId}.
-                  Indikatornya terdaftar di katalog, tetapi belum ada datanya.
+                  Data Hub tidak memuat nilai untuk indikator ini pada versi data ini. Indikatornya terdaftar
+                  di katalog, tetapi belum ada datanya.
                 </p>
               );
             }

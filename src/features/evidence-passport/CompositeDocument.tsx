@@ -85,12 +85,7 @@ export function CompositeDocument({ record }: { readonly record: CompositeEviden
     >
       <CompositeSummary record={record} />
       <FocusSection record={record} />
-      <SourceStatusSection
-        record={record}
-        agencies={agencies}
-        link={link}
-        onCopyDigest={actions.copyDigest}
-      />
+      <SourceStatusSection record={record} agencies={agencies} />
       <IntegritySection record={record} />
       <ScopeSection record={record} />
       <CriteriaSection record={record} />

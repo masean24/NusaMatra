@@ -24,7 +24,7 @@ function valueOf(record: EvidenceRecord, indicatorId: string) {
 }
 
 describe('buildEvidenceRecord, CAPTURED LIVE region 1101', () => {
-  it('reads mode, snapshot and snapshot details from the responses', async () => {
+  it('reads mode, versi data and versi data details from the responses', async () => {
     const { source } = await liveRecord();
     expect(source).toMatchObject({
       dataMode: 'LIVE',
@@ -94,7 +94,7 @@ describe('buildEvidenceRecord, CAPTURED LIVE region 1101', () => {
     expect(text).not.toContain('simulasi');
   });
 
-  it('builds a record for a limited indicator list and names a requested indicator the snapshot lacks', async () => {
+  it('builds a record for a limited indicator list and names a requested indicator the versi data lacks', async () => {
     const record = await liveRecord({
       kind: 'wilayah',
       regionId: '1101',
@@ -128,7 +128,7 @@ describe('buildEvidenceRecord, gaps', () => {
     expect(record.unavailableSources).toEqual([
       'katalog indikator',
       'daftar dataset',
-      'daftar snapshot',
+      'daftar versi data',
       'cakupan indikator (/indicators/coverage)',
     ]);
     expect(record.source.snapshot).toBeNull();
@@ -213,7 +213,7 @@ describe('buildEvidenceRecord, comparison', () => {
     if (hdi && !hdi.allowed) expect(hdi.differenceText).toBeNull();
   });
 
-  it('refuses to compare regions whose responses disagree on snapshot', async () => {
+  it('refuses to compare regions whose responses disagree on versi data', async () => {
     const bodies = capturedLiveBodies();
     const b = relabelledProfile(bodies['/api/v1/regions/1101'], '1102', 'Kabupaten Uji');
     b.meta.snapshot_id = 'another-snapshot';
@@ -223,7 +223,7 @@ describe('buildEvidenceRecord, comparison', () => {
 
     expect(record.source.consistent).toBe(false);
     expect(record.indicators.every((indicator) => indicator.comparison?.allowed === false)).toBe(true);
-    expect(record.limitations.join('\n')).toContain('mode atau snapshot yang berbeda');
+    expect(record.limitations.join('\n')).toContain('mode atau versi data yang berbeda');
   });
 });
 
@@ -234,7 +234,7 @@ describe('assessLinkContext', () => {
     expect(assessLinkContext({ mode: 'live', snapshotId: 'snap-now' }, source)).toEqual([]);
   });
 
-  it('warns that the record is not the one the link was made from when the snapshot changed', () => {
+  it('warns that the record is not the one the link was made from when the versi data changed', () => {
     const [warning] = assessLinkContext({ mode: 'LIVE', snapshotId: 'snap-old' }, source);
     expect(warning).toMatchObject({ code: 'SNAPSHOT_CHANGED', severity: 'warning' });
     expect(warning?.message).toContain('snap-old');
@@ -246,7 +246,7 @@ describe('assessLinkContext', () => {
     expect(codes).toEqual(['MODE_DIFFERS']);
   });
 
-  it('notes, without alarm, a link that pins no snapshot', () => {
+  it('notes, without alarm, a link that pins no versi data', () => {
     expect(assessLinkContext({}, source)).toMatchObject([{ code: 'SNAPSHOT_NOT_PINNED', severity: 'info' }]);
   });
 });

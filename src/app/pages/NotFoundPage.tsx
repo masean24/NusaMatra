@@ -9,8 +9,8 @@ export function NotFoundPage() {
       <p className={`kk-lead ${styles.muted}`}>Alamat ini tidak ada atau sudah dipindahkan.</p>
       <div className={styles.actions}>
         <ButtonLink to="/">Kembali ke beranda</ButtonLink>
-        <ButtonLink to="/peta" variant="secondary">
-          Buka Peta Utama
+        <ButtonLink to="/jelajahi" variant="secondary">
+          Buka Jelajahi
         </ButtonLink>
       </div>
     </div>

@@ -32,7 +32,7 @@ function sectionsOf(document_: HTMLElement) {
 }
 
 describe('Paspor Bukti for a region, CAPTURED LIVE responses', () => {
-  it('shows LIVE in every section, the verified snapshot, provenance and quality classes', async () => {
+  it('shows LIVE in every section, the verified versi data, provenance and quality classes', async () => {
     renderPassport(LIVE_URL, capturedLiveBodies());
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Kabupaten Aceh Selatan' })).toBeVisible();
@@ -49,11 +49,8 @@ describe('Paspor Bukti for a region, CAPTURED LIVE responses', () => {
     expect(screen.queryByText(/DEMO/)).not.toBeInTheDocument();
 
     const status = screen.getByRole('region', { name: /Status sumber data/ });
-    expect(within(status).getByText('2026.10.0-official-live')).toBeVisible();
+    expect(status).not.toHaveTextContent('2026.10.0-official-live');
     expect(within(status).getByText('BIG-20260601')).toBeVisible();
-    expect(within(article).getByRole('note')).toHaveTextContent(
-      'Dirangkai di peramban, bukan arsip/sertifikat resmi.',
-    );
     // The full explanation is one click away, and stays in the document (and in print).
     const explain = within(article).getByRole('button', { name: /Apa arti Paspor Bukti ini/ });
     expect(explain).toHaveAttribute('aria-expanded', 'false');
@@ -79,7 +76,7 @@ describe('Paspor Bukti for a region, CAPTURED LIVE responses', () => {
     );
   });
 
-  it('refuses a link to a snapshot the Data Hub no longer has instead of showing newer data', async () => {
+  it('refuses a link to a versi data the Data Hub no longer has instead of showing newer data', async () => {
     const fetchImpl = hubFetch({
       ...capturedLiveBodies(),
       // CAPTURED: production's 404 for an unknown snapshot (2026-10-24).
@@ -89,7 +86,7 @@ describe('Paspor Bukti for a region, CAPTURED LIVE responses', () => {
       fetchImpl,
       path: '/paspor-bukti?jenis=wilayah&mode=live&snap=2026.09.0-older&kode=1101',
     });
-    expect(await screen.findByText('Snapshot pada tautan tidak tersedia')).toBeVisible();
+    expect(await screen.findByText('Versi data pada tautan tidak tersedia')).toBeVisible();
     expect(screen.queryByRole('article', { name: /^Bukti / })).not.toBeInTheDocument();
     // Nothing but the snapshot lookup was asked for: no region data from another snapshot.
     expect(requestedUrls(fetchImpl).map((url) => url.pathname)).toEqual([
@@ -211,14 +208,14 @@ describe('Paspor Bukti actions', () => {
     expect(print).toHaveBeenCalledTimes(1);
   });
 
-  it('copies a citation that names the mode, the snapshot and that this is not an official archive', async () => {
+  it('copies a citation that names the mode, the versi data and that this is not an official archive', async () => {
     renderPassport(LIVE_URL, capturedLiveBodies());
     await userEvent.click(await screen.findByRole('button', { name: 'Salin kutipan' }));
 
     expect(clipboardWrite).toHaveBeenCalledTimes(1);
     const citation = clipboardWrite.mock.calls[0]?.[0] ?? '';
     expect(citation).toContain('Mode data: LIVE');
-    expect(citation).toContain('Snapshot Data Hub: 2026.10.0-official-live');
+    expect(citation).toContain('Versi data Data Hub: 2026.10.0-official-live');
     expect(citation).toContain('BPS');
     expect(citation).toContain('bukan arsip resmi');
     expect(citation).toContain(LIVE_URL);
@@ -315,11 +312,11 @@ describe('Paspor Bukti actions', () => {
 });
 
 describe('Paspor Bukti print layout', () => {
-  it('repeats the mode and snapshot as a print header and is announced to nobody on screen', async () => {
+  it('repeats the mode and versi data as a print header and is announced to nobody on screen', async () => {
     renderPassport(LIVE_URL, capturedLiveBodies());
     await findDocument();
     expect(
-      screen.getByText(/Nusa Matra · Paspor Bukti · Mode LIVE · Snapshot 2026.10.0-official-live/),
+      screen.getByText(/Nusa Matra · Paspor Bukti · Mode LIVE · Versi data 2026.10.0-official-live/),
     ).toBeInTheDocument();
   });
 

@@ -43,6 +43,12 @@ async function chooseScenario(name: RegExp) {
   fireEvent.change(screen.getByLabelText('Skenario awal'), { target: { value: option.value } });
 }
 
+/** Chooses a province in "Cakupan wilayah" (a glass combobox with a listbox, not a native select). */
+async function chooseScope(name: RegExp) {
+  fireEvent.click(await screen.findByRole('combobox', { name: 'Cakupan wilayah' }));
+  fireEvent.pointerUp(await screen.findByRole('option', { name }));
+}
+
 /** Chooses a Data Hub scenario and applies it with "Hitung ulang peringkat". */
 async function applyScenario(name: RegExp) {
   await chooseScenario(name);
@@ -437,7 +443,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     renderLive();
     await screen.findByText('Hasil siap dan sudah diperiksa');
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
-    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+    await chooseScope(/Jawa Tengah|Provinsi 33/);
 
     expect(
       await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/),
@@ -479,7 +485,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     renderLive();
     await screen.findByText('Hasil siap dan sudah diperiksa');
     await applyScenario(/Mitigasi Bencana & Ketahanan Infrastruktur/);
-    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '12' } });
+    await chooseScope(/Sumatera Utara|Provinsi 12/);
 
     expect(
       await screen.findByText(/^32 wilayah di Provinsi 12 dihitung dari data resmi LIVE/),
@@ -489,10 +495,8 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
       'Kota Padangsidimpuan 1277',
     );
     expect(within(insufficient).getByText(/^Cakupan 33,3%/)).toBeInTheDocument();
-    // The raw reason code stays, as a small note rather than the main text.
-    expect(
-      within(insufficient).getByText('Alasan dari Data Hub: COVERAGE_BELOW_THRESHOLD'),
-    ).toBeInTheDocument();
+    // The Data Hub's raw reason code is not shown (owner decision 2026-10-27).
+    expect(insufficient).not.toHaveTextContent('COVERAGE_BELOW_THRESHOLD');
     expect(screen.getByText(/1 wilayah tidak diperingkat karena datanya belum cukup/)).toBeInTheDocument();
     const ranking = await rankingRegion();
     fireEvent.change(within(ranking).getByLabelText('Cari wilayah dalam peringkat'), {
@@ -601,7 +605,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     if (surakarta) surakarta.composite_score = 12.57;
     renderLive({ '/api/v1/indicators/composite-query': () => jsonResponse(tampered) });
     await chooseScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
-    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+    await chooseScope(/Jawa Tengah|Provinsi 33/);
     await waitFor(() => {
       expect(screen.getAllByText(/\[SCORE_MISMATCH\]/).length).toBeGreaterThan(0);
     });
@@ -653,7 +657,7 @@ describe('Paspor Bukti link in the calculation notes', () => {
     renderLive();
     await screen.findByText('Hasil siap dan sudah diperiksa');
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
-    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+    await chooseScope(/Jawa Tengah|Provinsi 33/);
     await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/);
 
     const cta = await screen.findByRole('link', { name: 'Buat Paspor Bukti' });
@@ -673,7 +677,7 @@ describe('Paspor Bukti link in the calculation notes', () => {
     renderLive({ '/api/v1/indicators/composite-query': () => jsonResponse(other) });
     await chooseScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     recompute();
-    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+    await chooseScope(/Jawa Tengah|Provinsi 33/);
     const cta = await screen.findByRole('link', { name: 'Buat Paspor Bukti' });
     expect(cta.getAttribute('href')).toContain('snap=2026.10.9-other-snapshot');
     expect(cta.getAttribute('href')).toContain('mode=live');
@@ -816,7 +820,7 @@ describe('A province filter keeps its own ranking when the anomaly lies outside 
     renderLive();
     await screen.findByText('Hasil siap dan sudah diperiksa');
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
-    fireEvent.change(screen.getByLabelText('Cakupan wilayah'), { target: { value: '33' } });
+    await chooseScope(/Jawa Tengah|Provinsi 33/);
     await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/);
 
     expect(screen.getByRole('region', { name: 'Peringkat wilayah' })).toBeInTheDocument();

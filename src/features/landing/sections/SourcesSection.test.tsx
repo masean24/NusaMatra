@@ -3,17 +3,15 @@ import { DEMO_PASSPORT_PREVIEW } from '@/data/fixtures/landingDemo';
 import { SourcesSection } from './SourcesSection';
 
 describe('SourcesSection', () => {
-  it('marks BNPB and BPS as connected through the LIVE Data Hub and DJPK as planned', () => {
+  it('lists only the sources in use, BNPB and BPS, both through the Data Hub', () => {
     render(<SourcesSection />);
     const card = (name: string) =>
       within(screen.getByRole('heading', { name }).closest('article') as HTMLElement);
 
-    expect(card('BNPB · InaRISK').getByText('Terhubung lewat Data Hub (mode LIVE)')).toBeInTheDocument();
-    expect(
-      card('Badan Pusat Statistik').getByText('Terhubung lewat Data Hub (mode LIVE)'),
-    ).toBeInTheDocument();
-    expect(card('DJPK Kemenkeu').getByText('Direncanakan · belum terhubung')).toBeInTheDocument();
-    expect(screen.queryByText(/belum terhubung di prototipe/)).not.toBeInTheDocument();
+    expect(card('BNPB · InaRISK').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
+    expect(card('Badan Pusat Statistik').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(2);
+    expect(screen.queryByText(/DJPK/)).not.toBeInTheDocument();
   });
 
   it('does not imply every indicator has data', () => {

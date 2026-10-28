@@ -1,5 +1,6 @@
 export { HeroDioramaSlot } from './HeroDioramaSlot';
 export { Explore3DMapSlot } from './Explore3DMapSlot';
+export { MapLoader } from './MapLoader';
 export type {
   Explore3DMapProps,
   GeoCameraHandle,

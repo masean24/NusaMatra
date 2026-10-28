@@ -53,7 +53,7 @@ async function failure(promise: Promise<unknown>): Promise<ApiError> {
 }
 
 describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', () => {
-  it('pins every data request to the active reproducible snapshot; only the snapshot lookup is unpinned', async () => {
+  it('pins every data request to the active reproducible versi data; only the versi data lookup is unpinned', async () => {
     const fetchImpl = hubFetch(captured22NationalKms());
     const raw = await loadCompositeSources(repositoryOver(fetchImpl), KMS_WEIGHTS, null, 'LIVE', null);
     expect(raw.pinning).toMatchObject({
@@ -71,7 +71,7 @@ describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', 
     expect(urls.map((url) => url.pathname)).toEqual(expect.arrayContaining([COMPOSITE_PATH, ...lookups]));
   });
 
-  it('records a reproducible data snapshot, shows the corrected ranking and the observation source of Lanny Jaya', async () => {
+  it('records a reproducible data versi data, shows the corrected ranking and the observation source of Lanny Jaya', async () => {
     const raw = await loadCompositeSources(
       repositoryOver(hubFetch(captured22NationalKms())),
       KMS_WEIGHTS,
@@ -130,18 +130,18 @@ describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', 
       passportHref(labQuery(KMS_WEIGHTS, SNAPSHOT_22)),
     );
     expect(record.linkWarnings[0]?.message).toContain(
-      `dikunci ke snapshot aktif saat dibuka (${SNAPSHOT_22})`,
+      `dikunci ke versi data aktif saat dibuka (${SNAPSHOT_22})`,
     );
   });
 
-  it('pins to the snapshot named in the link, without asking for the list', async () => {
+  it('pins to the versi data named in the link, without asking for the list', async () => {
     const fetchImpl = hubFetch(captured22NationalKms());
     const raw = await loadCompositeSources(repositoryOver(fetchImpl), KMS_WEIGHTS, null, 'LIVE', SNAPSHOT_22);
     expect(raw.pinning).toMatchObject({ status: 'PINNED', origin: 'LINK' });
     expect(requestedUrls(fetchImpl).some((url) => url.pathname === '/api/v1/snapshots')).toBe(false);
     const record = buildCompositeRecord(labQuery(KMS_WEIGHTS, SNAPSHOT_22), raw);
     expect(record.source.reproducibility.status).toBe('REPRODUCIBLE_SNAPSHOT');
-    expect(record.unavailableSources).not.toContain('daftar snapshot');
+    expect(record.unavailableSources).not.toContain('daftar versi data');
     expect(record.linkWarnings).toEqual([]);
   });
 
@@ -155,7 +155,7 @@ describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', 
     expect(error.code).toBe('SNAPSHOT_DIGEST_MISMATCH');
   });
 
-  it('SYNTHETIC: a snapshot detail that disagrees with the list on the digest is refused', async () => {
+  it('SYNTHETIC: a versi data detail that disagrees with the list on the digest is refused', async () => {
     const bodies = captured22NationalKms();
     const list = bodies['/api/v1/snapshots'] as { data: Json[] };
     const [entry] = list.data;
@@ -167,7 +167,7 @@ describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', 
     expect(error.code).toBe('SNAPSHOT_DIGEST_MISMATCH');
   });
 
-  it('a linked snapshot the Data Hub does not have fails with 404 and asks for nothing else', async () => {
+  it('a linked versi data the Data Hub does not have fails with 404 and asks for nothing else', async () => {
     const fetchImpl = hubFetch({
       ...captured22NationalKms(),
       '/api/v1/snapshots/2026.10.0-official-live': withStatus(404, fixtureJson('live-v2.2/snapshot_404')),
@@ -179,7 +179,7 @@ describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', 
     expect(requestedUrls(fetchImpl)).toHaveLength(1);
   });
 
-  it('SYNTHETIC: a linked snapshot that is neither reproducible nor active is refused', async () => {
+  it('SYNTHETIC: a linked versi data that is neither reproducible nor active is refused', async () => {
     const detail = fixtureJson('live-v2.2/snapshot_detail') as { meta: Json; data: Json };
     const legacy = '2026.10.0-official-live';
     detail.meta = { ...detail.meta, snapshot_id: legacy, content_sha256: null };
@@ -219,7 +219,7 @@ describe('non-rankable composite (CAPTURED v2.2: multihazard 5000 + school trave
 });
 
 describe('unpinned passports', () => {
-  it('DEMO: the linked DEMO snapshot is active but not reproducible, so nothing is pinned or claimed', async () => {
+  it('DEMO: the linked DEMO versi data is active but not reproducible, so nothing is pinned or claimed', async () => {
     const fetchImpl = hubFetch(capturedDemoComposite());
     const raw = await loadCompositeSources(
       repositoryOver(fetchImpl),
@@ -241,7 +241,7 @@ describe('unpinned passports', () => {
 });
 
 describe('pinned region passport (CAPTURED v2.2 region 9507)', () => {
-  it('shows the observation-level dataset of the imputed water value, pinned to the snapshot', async () => {
+  it('shows the observation-level dataset of the imputed water value, pinned to the versi data', async () => {
     const bodies = captured22NationalKms();
     const fetchImpl = hubFetch({
       '/api/v1/snapshots': bodies['/api/v1/snapshots'],
@@ -270,7 +270,7 @@ describe('pinned region passport (CAPTURED v2.2 region 9507)', () => {
 });
 
 describe('Paspor Bukti page on v2.2 (CAPTURED)', () => {
-  it('states the reproducible snapshot and its digest, and names the observation source of Lanny Jaya', async () => {
+  it('states the reproducible versi data and its digest, and names the observation source of Lanny Jaya', async () => {
     const path = passportHref({
       kind: 'lab',
       mode: 'LIVE',
@@ -285,9 +285,8 @@ describe('Paspor Bukti page on v2.2 (CAPTURED)', () => {
     });
     const article = await screen.findByRole('article', { name: /^Bukti hasil Lab/ });
     const status = within(article).getByRole('region', { name: /Status sumber data/ });
-    expect(status).toHaveTextContent('Dapat direproduksi: dikunci ke snapshot pada tautan.');
-    expect(status).toHaveTextContent(DIGEST_22);
-    expect(status).toHaveTextContent('Paspor ini tidak diarsipkan');
+    expect(status).toHaveTextContent('Dapat direproduksi: tautan ini selalu membuka versi data yang sama.');
+    expect(status).not.toHaveTextContent(DIGEST_22);
     expect(article).toHaveTextContent('sumber observasi: bps_provincial_sdgs_2025');
     expect(article).toHaveTextContent('Dirangkai di peramban, bukan arsip/sertifikat resmi.');
     expect(screen.queryByText('Peringkat ditahan: skor sumber tidak konsisten')).not.toBeInTheDocument();

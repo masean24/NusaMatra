@@ -1,4 +1,4 @@
-/* 27:2 y=4220: heading + three 410px cards, 16px apart, from x=88 (the column split in three at 1440). */
+/* 27:2 y=4220: heading + the source cards, 16px apart, across the full column (two equal halves). */
 .section {
   display: flex;
   flex-direction: column;
@@ -8,7 +8,7 @@
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
