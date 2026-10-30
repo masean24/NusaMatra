@@ -29,9 +29,38 @@ Nusa Matra Web adalah antarmuka React untuk membaca kondisi wilayah Indonesia, m
 
 ---
 
+## 📋 Profil Proyek
+
+**Judul:** Nusa Matra Web — *Memahami wilayah, menentukan arah* (WIA 2026)
+
+**Deskripsi:** Frontend React untuk menjelajahi kondisi 514 kabupaten/kota, membandingkan wilayah, dan menyusun prioritas pembangunan dengan bobot yang transparan. Semua data resmi, batas wilayah, skor, dan feed gempa berasal dari Nusa Matra Data Hub melalui REST API `/api/v1`.
+
+**Tech stack:** React 19, TypeScript strict, Vite 8, React Router 8, Three.js/React Three Fiber, Motion, CSS Modules, Vitest, Testing Library, Playwright, Docker, dan nginx.
+
+**Cara menjalankan:** clone repo → `npm install` → `npm run dev` (Node.js 24 LTS). Detail lengkap ada di [Menjalankan Secara Lokal](#menjalankan-secara-lokal).
+
+**Progress saat ini:** Landing, Jelajahi, Bandingkan, Rincian Perbandingan, Lab Prioritas, Paspor Bukti, dan Aksesibilitas sudah **implemented**. Uji Rekomendasi, Cerita Wilayah, Batasan Data, dan Metodologi masih berupa halaman *in development*; tidak ada data palsu yang ditampilkan.
+
+---
+
 ## Preview
 
---
+<p align="center">
+  <img src="docs/integration/screenshots/after-desktop-normal.png" width="49%" alt="Landing Nusa Matra mode Normal" />
+  <img src="docs/integration/screenshots/after-desktop-glass.png" width="49%" alt="Landing Nusa Matra mode Kaca" />
+</p>
+
+<p align="center">
+  <sub>Landing page: mode Normal (kiri) dan mode Kaca (kanan).</sub>
+</p>
+
+<p align="center">
+  <img src="docs/integration/screenshots/after-mobile-normal.png" width="280" alt="Tampilan mobile Nusa Matra" />
+</p>
+
+<p align="center">
+  <sub>Tampilan mobile dengan panel yang menyesuaikan layar.</sub>
+</p>
 
 > Screenshot berasal dari build prototipe di repo ini; angka dan tampilan dapat berubah setelah integrasi data berikutnya.
 
@@ -39,6 +68,7 @@ Nusa Matra Web adalah antarmuka React untuk membaca kondisi wilayah Indonesia, m
 
 ## Daftar Isi
 
+- [Profil Proyek](#profil-proyek)
 - [Mengapa Nusa Matra](#mengapa-nusa-matra)
 - [Status dan Fitur](#status-dan-fitur)
 - [Product Tour](#product-tour)
