@@ -8,8 +8,10 @@ Platform web untuk menjelajahi kondisi 514 kabupaten/kota di Indonesia, membandi
 
 [Buka situs](https://nm.orangkeren.me) · [Data Hub (backend)](https://github.com/masean24/NusaMatra-DataHub) · [Dokumentasi API](https://api.orangkeren.me/docs)
 
-<img src="docs/integration/screenshots/after-desktop-normal.png" width="49%" alt="Landing Nusa Matra mode Normal" />
-<img src="docs/integration/screenshots/after-desktop-glass.png" width="49%" alt="Landing Nusa Matra mode Kaca" />
+<img src="docs/screenshots/landing-normal.jpg" width="49%" alt="Beranda Nusa Matra, tampilan Normal" />
+<img src="docs/screenshots/landing-kaca.jpg" width="49%" alt="Beranda Nusa Matra, tampilan Kaca" />
+<img src="docs/screenshots/jelajahi.jpg" width="49%" alt="Jelajahi: peta 3D dan profil wilayah" />
+<img src="docs/screenshots/lab-prioritas.jpg" width="49%" alt="Lab Prioritas: bobot kriteria dan peringkat wilayah" />
 
 </div>
 
