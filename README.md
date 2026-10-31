@@ -1,248 +1,43 @@
 <div align="center">
 
-# Nusa Matra Web
+# Nusa Matra
 
-### Memahami wilayah, menentukan arah.
+**Memahami wilayah, menentukan arah.**
 
-Platform eksplorasi dan pendukung keputusan geospasial untuk **514 kabupaten/kota** dan **38 provinsi** di Indonesia.
+Platform web untuk menjelajahi kondisi 514 kabupaten/kota di Indonesia, membandingkan dua wilayah, dan menguji prioritas pembangunan dengan bobot yang dapat diatur, lengkap dengan sumber dan tahun setiap angka.
 
-[![WIA 2026](https://img.shields.io/badge/WIA-2026-1F3A5F?style=flat)](https://github.com/masean24/NusaMatra)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite&logoColor=white)](https://vite.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-24%20LTS-339933?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Status](https://img.shields.io/badge/Status-Prototype-2EA44F?style=flat)](#status-dan-fitur)
-[![API](https://img.shields.io/badge/API-LIVE-0EA5E9?style=flat&logo=fastapi&logoColor=white)](https://api.orangkeren.me)
-[![Data Hub](https://img.shields.io/badge/Data%20Hub-NusaMatra--DataHub-111827?style=flat&logo=github&logoColor=white)](https://github.com/masean24/NusaMatra-DataHub)
+[Buka situs](https://nm.orangkeren.me) · [Data Hub (backend)](https://github.com/masean24/NusaMatra-DataHub) · [Dokumentasi API](https://api.orangkeren.me/docs)
 
-**Frontend resmi untuk [Nusa Matra Data Hub](https://github.com/masean24/NusaMatra-DataHub).**
-
-**[Lihat preview](#preview) · [Jalankan lokal](#menjalankan-secara-lokal) · [API Docs](https://api.orangkeren.me/docs) · [Data Hub](https://github.com/masean24/NusaMatra-DataHub)**
+<img src="docs/integration/screenshots/after-desktop-normal.png" width="49%" alt="Landing Nusa Matra mode Normal" />
+<img src="docs/integration/screenshots/after-desktop-glass.png" width="49%" alt="Landing Nusa Matra mode Kaca" />
 
 </div>
 
-Nusa Matra Web adalah antarmuka React untuk membaca kondisi wilayah Indonesia, membandingkan kabupaten/kota, dan menguji prioritas pembangunan dengan bobot yang transparan. Frontend ini **tidak memiliki database sendiri**: data resmi, snapshot, skor, batas wilayah, dan feed gempa berasal dari **Nusa Matra Data Hub** melalui REST API `/api/v1`.
+Nusa Matra dibuat untuk Web In Action (WIA) 2026 dengan tema _Designing Digital Futures: Powering Public Transparency_. Data pembangunan dan kebencanaan dari BPS, BNPB, Kemenkes, Kemendikdasmen, BIG, dan BMKG tersebar dengan format dan kode wilayah yang berbeda. Nusa Matra menyatukannya, menandai data yang kosong, dan menahan perbandingan yang tidak setara, sehingga hasilnya dapat diperiksa.
 
-> **Status repo:** prototipe frontend dengan lima halaman fitur utama yang sudah dibangun—Landing, Jelajahi, Bandingkan, Lab Prioritas, dan Paspor Bukti. Empat tujuan lain masih berupa halaman *in development* yang jujur. Repo ini hanya frontend; backend, database, ingestion, dan integrasi data resmi berada di repo Data Hub. Semua angka contoh pada landing diberi label **DEMO**.
-
-> README ini menggunakan Bahasa Indonesia agar sejalan dengan README Data Hub.
-
----
-
-## 📋 Profil Proyek
-
-**Judul:** Nusa Matra Web — *Memahami wilayah, menentukan arah* (WIA 2026)
-
-**Deskripsi:** Frontend React untuk menjelajahi kondisi 514 kabupaten/kota, membandingkan wilayah, dan menyusun prioritas pembangunan dengan bobot yang transparan. Semua data resmi, batas wilayah, skor, dan feed gempa berasal dari Nusa Matra Data Hub melalui REST API `/api/v1`.
-
-**Tech stack:** React 19, TypeScript strict, Vite 8, React Router 8, Three.js/React Three Fiber, Motion, CSS Modules, Vitest, Testing Library, Playwright, Docker, dan nginx.
-
-**Cara menjalankan:** clone repo → `npm install` → `npm run dev` (Node.js 24 LTS). Detail lengkap ada di [Menjalankan Secara Lokal](#menjalankan-secara-lokal).
-
-**Progress saat ini:** Landing, Jelajahi, Bandingkan, Rincian Perbandingan, Lab Prioritas, Paspor Bukti, dan Aksesibilitas sudah **implemented**. Uji Rekomendasi, Cerita Wilayah, Batasan Data, dan Metodologi masih berupa halaman *in development*; tidak ada data palsu yang ditampilkan.
-
----
-
-## Preview
-
-<p align="center">
-  <img src="docs/integration/screenshots/after-desktop-normal.png" width="49%" alt="Landing Nusa Matra mode Normal" />
-  <img src="docs/integration/screenshots/after-desktop-glass.png" width="49%" alt="Landing Nusa Matra mode Kaca" />
-</p>
-
-<p align="center">
-  <sub>Landing page: mode Normal (kiri) dan mode Kaca (kanan).</sub>
-</p>
-
-<p align="center">
-  <img src="docs/integration/screenshots/after-mobile-normal.png" width="280" alt="Tampilan mobile Nusa Matra" />
-</p>
-
-<p align="center">
-  <sub>Tampilan mobile dengan panel yang menyesuaikan layar.</sub>
-</p>
-
-> Screenshot berasal dari build prototipe di repo ini; angka dan tampilan dapat berubah setelah integrasi data berikutnya.
-
----
-
-## Daftar Isi
-
-- [Profil Proyek](#profil-proyek)
-- [Mengapa Nusa Matra](#mengapa-nusa-matra)
-- [Status dan Fitur](#status-dan-fitur)
-- [Product Tour](#product-tour)
-- [Identitas Visual](#identitas-visual)
-- [Tech Stack](#tech-stack)
-- [Arsitektur Integrasi](#arsitektur-integrasi)
-- [Kontrak API](#kontrak-api)
-- [Menjalankan Secara Lokal](#menjalankan-secara-lokal)
-- [Konfigurasi Environment](#konfigurasi-environment)
-- [Deployment](#deployment)
-- [Kualitas dan Pengujian](#kualitas-dan-pengujian)
-- [Aksesibilitas dan Performa](#aksesibilitas-dan-performa)
-- [Struktur Proyek](#struktur-proyek)
-- [Prinsip Integritas Data](#prinsip-integritas-data)
-- [Dokumentasi](#dokumentasi)
-
----
-
-## Mengapa Nusa Matra
-
-Dashboard wilayah sering menampilkan angka, tetapi tidak selalu menjelaskan apakah angka itu layak dipercaya, berasal dari tahun yang sama, atau boleh dibandingkan.
-
-| Masalah yang sering terjadi | Pendekatan Nusa Matra |
-|---|---|
-| Data tersebar di banyak instansi dan kode wilayahnya berbeda. | Crosswalk 514 kabupaten/kota dan 38 provinsi, dengan batas resmi BIG 2026. |
-| Data kosong diisi angka nol, sehingga wilayah yang tidak punya data terlihat “baik”. | Data kosong tetap kosong; indikator ditandai `UNAVAILABLE`, dan coverage gate mencegah ranking palsu. |
-| Skor prioritas terlihat seperti kotak hitam. | Bobot dalam basis points, normalisasi yang dijelaskan, dan komponen yang bisa diperiksa. |
-| Hasil analisis berubah tanpa jejak. | Snapshot immutable, checksum SHA-256, dan Paspor Bukti yang merangkai sumber di browser. |
-| Perbandingan antarwilayah mencampur definisi yang berbeda. | Perbandingan hanya dilakukan bila definisi, satuan, dan metodenya setara; jika tidak, selisih ditahan. |
-
-Nusa Matra tidak menggantikan keputusan kebijakan. Karya ini menyediakan **bahan bukti** agar keputusan bisa dibaca, diuji, dan dipertanggungjawabkan.
-
----
-
-## Status dan Fitur
-
-Status di bawah mengikuti route dan modul yang benar-benar ada di repo ini.
-
-| Modul | Route | Status | Yang sudah ada |
-|---|---|---|---|
-| Landing | `/` | **Implemented** | Hero, cara kerja, pratinjau Lab, transparansi, sumber data, CTA, mode Normal/Kaca. |
-| Jelajahi | `/jelajahi` | **Implemented** | Peta 3D, pencarian wilayah, panel profil, indikator, layer gempa BMKG, dan catatan batas wilayah. |
-| Bandingkan | `/bandingkan` | **Implemented** | Perbandingan dua wilayah, indikator yang setara, dan penanganan data yang tidak dapat dibandingkan. |
-| Rincian Perbandingan | `/bandingkan/rincian` | **Implemented** | Tahun, sumber, dataset, penjelasan selisih, dan alasan indikator ditahan. |
-| Lab Prioritas | `/lab-prioritas` | **Implemented** | Bobot kriteria, preset, cakupan provinsi, ranking, grafik, dan penjelasan kontribusi. |
-| Paspor Bukti | `/paspor-bukti` | **Implemented** | Catatan bukti yang dirangkai di browser, snapshot pinning, ekspor JSON, dan cetak. |
-| Aksesibilitas | `/aksesibilitas` | **Implemented** | Daftar dukungan keyboard, mode tampilan, reduced motion, dan fallback 3D. |
-| Uji Rekomendasi | `/uji-rekomendasi` | **In development** | Halaman shell yang menjelaskan uji sensitivitas dan ketahanan peringkat. |
-| Cerita Wilayah | `/cerita-wilayah` | **In development** | Halaman shell untuk narasi wilayah per bab. |
-| Batasan Data | `/titik-buta-data` | **In development** | Halaman shell untuk data kosong, basi, dan tidak sebanding. |
-| Metodologi | `/metodologi` | **In development** | Halaman shell untuk rumus skor dan kebijakan data hilang. |
-| Peta Utama | `/peta` | **Redirect** | Dialihkan ke `/jelajahi` (keputusan owner 2026-10-28). |
-
-> Halaman *in development* sengaja tidak menampilkan data palsu. Mereka menjelaskan apa yang akan dibangun dan tetap mengikuti gaya visual produk.
-
----
-
-## Product Tour
-
-1. **Landing** — pengguna memahami masalah, melihat sumber data, dan memilih jalur: menjelajah, membandingkan, atau membuka Lab Prioritas.
-2. **Jelajahi** — cari kabupaten/kota, pilih lewat peta, lalu baca nilai, satuan, tahun, definisi, dan sumber setiap indikator.
-3. **Bandingkan** — sandingkan dua wilayah; hanya indikator yang setara yang dihitung selisihnya.
-4. **Lab Prioritas** — atur bobot kriteria dan cakupan wilayah, lalu lihat ranking beserta komponen yang menyusunnya.
-5. **Paspor Bukti** — bawa hasil analisis menjadi catatan bukti yang menyebut snapshot, sumber, dan batasannya.
-
-Alur ini sengaja dibuat berlapis: dari cerita, ke eksplorasi, ke analisis, lalu ke bukti.
-
----
-
-## Identitas Visual
-
-- **Nama produk:** Nusa Matra. File Figma memakai judul historis **PrioritasKita**, yang bukan brand publik.
-- **Design system:** Kapur & Kobalt; font utama Lexend; mode Normal dan Kaca.
-- **Figma utama:** [PrioritasKita — UI/UX WIA 2026](https://www.figma.com/design/D8fuOoDZAGeBPG6nzxfFx4/PrioritasKita-%E2%80%94-UI-UX-WIA-2026?node-id=25-2)
-- **Referensi animasi:** [21st.dev](https://21st.dev/) dan [Fuselab Cyberdefend](https://fuselabcreative.com/our-projects/cyberdefend/), digunakan sebagai inspirasi visual.
+Repositori ini hanya berisi frontend. Data, snapshot, skor, batas wilayah, dan feed gempa datang dari Nusa Matra Data Hub lewat REST API.
 
 ---
 
 ## Tech Stack
 
-| Lapisan | Teknologi |
-|---|---|
-| UI | React 19, TypeScript strict, React Router 8 |
-| Build | Vite 8, Node.js 24 LTS |
-| Peta 3D | Three.js, React Three Fiber |
-| Animasi | Motion |
-| Styling | CSS Modules dan design token dari Figma |
-| Tipografi | Lexend dan JetBrains Mono melalui Fontsource |
-| Data | REST `/api/v1` ke Data Hub; service layer dan typed mapper |
-| Testing | Vitest, Testing Library, Playwright |
-| Kualitas | ESLint 9, Prettier 3, TypeScript strict |
-| Deployment | Docker multi-stage dan nginx |
-
-Frontend **tidak menghitung ulang skor komposit**. Data Hub yang menghitung; frontend memvalidasi kontrak, menampilkan hasil, dan menjelaskan komponennya.
+| Bagian      | Teknologi                                                                      |
+| ----------- | ------------------------------------------------------------------------------ |
+| Framework   | React 19, TypeScript 6 (strict), Vite 8                                        |
+| Routing     | React Router 8                                                                 |
+| Gaya        | CSS Modules dan CSS custom properties (palet Kapur & Kobalt, font Lexend)      |
+| Peta dan 3D | Three.js dan React Three Fiber, batas wilayah resmi BIG                        |
+| Animasi     | Motion                                                                         |
+| Data        | Nusa Matra Data Hub (FastAPI), diakses lewat klien API dengan validasi respons |
+| Pengujian   | Vitest, Testing Library, Playwright                                            |
+| Mutu kode   | ESLint (strictTypeChecked, jsx-a11y), Prettier                                 |
+| Deploy      | Docker, nginx, Coolify                                                         |
 
 ---
 
-## Arsitektur Integrasi
+## Cara Menjalankan
 
-```mermaid
-flowchart LR
-    U[Browser] --> FE[Nusa Matra Web<br/>React + TypeScript + Vite]
-    FE -->|REST /api/v1| API[Nusa Matra Data Hub<br/>FastAPI]
-    API --> DB[(SQLite<br/>DEMO / LIVE snapshots)]
-    API --> BIG[BIG boundaries]
-    API --> BMKG[BMKG earthquake feed]
-```
-
-Prinsip integrasi:
-
-- Frontend tidak menyimpan data resmi dan tidak melakukan ingestion.
-- Semua request data melewati `/api/v1`; base URL hanya berisi origin.
-- Mode `DEMO` dan `LIVE` dipilih melalui environment, bukan ditebak dari respons.
-- Snapshot aktif ditentukan oleh API (`data[].is_active_default`), bukan di-hardcode di frontend.
-- Data kosong ditampilkan sebagai kosong, bukan angka nol.
-- Jika respons LIVE tidak dapat dibaca, frontend tidak diam-diam beralih ke DEMO.
-
----
-
-## Kontrak API
-
-### Endpoint yang dipakai
-
-| Endpoint | Kegunaan |
-|---|---|
-| `GET /api/v1/health` | Health check backend. |
-| `GET /api/v1/snapshots` | Daftar snapshot dan penanda snapshot aktif. |
-| `GET /api/v1/regions` | Daftar 514 kabupaten/kota dan 38 provinsi. |
-| `GET /api/v1/regions/{kode}` | Detail satu wilayah. |
-| `GET /api/v1/indicators` | Kamus indikator dan metadata. |
-| `GET /api/v1/indicators/{id}/values` | Nilai indikator per wilayah. |
-| `GET /api/v1/indicators/coverage` | Matriks ketersediaan indikator. |
-| `GET /api/v1/indicators/composite-presets` | Preset bobot untuk Lab Prioritas. |
-| `POST /api/v1/indicators/composite-query` | Perhitungan skor prioritas. |
-| `GET /api/v1/boundaries/kabupaten` | GeoJSON batas kabupaten/kota. |
-| `GET /api/v1/earthquakes/geojson` | Gempa BMKG siap render 3D. |
-| `GET /api/v1/earthquakes/latest` | Gempa terbaru. |
-| `GET /api/v1/earthquakes/recent` | Gempa M ≥ 5.0 terbaru. |
-| `GET /api/v1/earthquakes/felt` | Gempa yang dirasakan. |
-| `GET /api/v1/earthquakes/summary` | Ringkasan dan status cache BMKG. |
-
-### Aturan kontrak
-
-| Ketentuan | Keterangan |
-|---|---|
-| `VITE_API_BASE_URL` hanya berisi origin, misalnya `http://localhost:8000`. | Frontend menambahkan `/api/v1` sendiri dan membuang suffix `/api/v1` yang tidak sengaja dimasukkan. |
-| `meta.score_direction = "higher_is_need"`. | Persentil/skor tinggi berarti kebutuhan intervensi lebih tinggi. |
-| Snapshot aktif ditandai `data[].is_active_default`. | Frontend selalu memakai snapshot aktif dari API. |
-| Error `422`/`404`/`429` memakai envelope `{status, code, message, detail?}`. | Penanganan error dan pesan pengguna konsisten. |
-| Origin frontend sama persis dengan `NM_CORS_ORIGINS`. | Request tidak diblokir oleh CORS di browser. |
-| `boundary_version` dan `content_sha256` disertakan pada metadata. | Hasil dapat direproduksi dan diaudit. |
-
-Kontrak lengkap: [`FRONTEND_HANDOFF_V2_4.md`](https://github.com/masean24/NusaMatra-DataHub/blob/main/docs/FRONTEND_HANDOFF_V2_4.md).
-
-Contoh cepat:
-
-```bash
-curl -s "https://api.orangkeren.me/api/v1/health"
-curl -s "https://api.orangkeren.me/api/v1/indicators/coverage?mode=live" | head -c 500
-```
-
----
-
-## Menjalankan Secara Lokal
-
-### Prasyarat
-
-- **Node.js 24 LTS** (lihat `.nvmrc`) dan npm
-- **Git**
-- **Python 3.11+**, hanya jika menjalankan Data Hub secara lokal
-
-### 1. Frontend saja
-
-Repo ini tidak menyertakan `.env`; tanpa konfigurasi tambahan, frontend memakai **LIVE** dan API publik `https://api.orangkeren.me`.
+**Prasyarat:** Node.js 24 atau lebih baru dan npm.
 
 ```bash
 git clone https://github.com/masean24/NusaMatra.git
@@ -251,176 +46,60 @@ npm install
 npm run dev
 ```
 
-Buka `http://localhost:5173`.
+Buka `http://localhost:5173`. Tanpa konfigurasi tambahan, situs memakai data LIVE dari API publik `https://api.orangkeren.me`.
 
-### 2. Frontend + backend lokal
+### Konfigurasi opsional
 
-Clone dan jalankan Data Hub:
+Buat file `.env.local` bila perlu. Semua nilai `VITE_*` bersifat publik; jangan menaruh secret di sini.
 
-```bash
-git clone https://github.com/masean24/NusaMatra-DataHub.git
-cd NusaMatra-DataHub
+| Variabel            | Default                     | Fungsi                                                            |
+| ------------------- | --------------------------- | ----------------------------------------------------------------- |
+| `VITE_API_BASE_URL` | `https://api.orangkeren.me` | Alamat Data Hub, tanpa `/api/v1` dan tanpa garis miring di akhir. |
+| `VITE_DATA_MODE`    | `live`                      | `live` atau `demo`.                                               |
 
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# macOS/Linux
-# source .venv/bin/activate
+### Perintah lain
 
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
+| Perintah               | Fungsi                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `npm run build`        | Cek tipe lalu build produksi ke `dist/`.                                              |
+| `npm run preview`      | Menjalankan hasil build secara lokal.                                                 |
+| `npm test`             | Menjalankan uji unit dan komponen (Vitest).                                           |
+| `npm run test:e2e`     | Menjalankan uji alur pengguna (Playwright; jalankan `npx playwright install` sekali). |
+| `npm run lint`         | Menjalankan ESLint.                                                                   |
+| `npm run typecheck`    | Memeriksa tipe TypeScript.                                                            |
+| `npm run format:check` | Memeriksa format Prettier.                                                            |
 
-Cek health:
-
-```bash
-curl http://localhost:8000/api/v1/health
-```
-
-Lalu buat `.env.local` di repo frontend:
-
-```env
-VITE_DATA_MODE=live
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-Jalankan ulang `npm run dev`.
-
-### 3. CORS lokal
-
-`localhost` biasanya sudah diizinkan oleh regex backend. Untuk konfigurasi eksplisit, set di backend:
-
-```env
-NM_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
-```
-
----
-
-## Konfigurasi Environment
-
-Vite menyuntikkan environment saat build. Setelah mengubah `.env.local`, jalankan ulang `npm run dev`.
-
-### Frontend
-
-| Variabel | Default | Catatan |
-|---|---|---|
-| `VITE_DATA_MODE` | `live` | Nilai valid: `live` atau `demo`. Nilai lain dianggap error konfigurasi. |
-| `VITE_API_BASE_URL` | `https://api.orangkeren.me` | Origin saja, tanpa `/api/v1` dan tanpa trailing slash. |
-| `VITE_DATA_MODE_SWITCH` | mati | `1` hanya untuk pengujian/reviewer; pengunjung normal melihat LIVE saja. |
-| `VITE_EARTHQUAKE_PREVIEW` | mati | `1` hanya untuk reviewer; data gempa yang tidak menyatakan statusnya akan diberi label “belum terverifikasi”. |
-
-### Backend (Data Hub)
-
-| Variabel | Contoh | Catatan |
-|---|---|---|
-| `NM_CORS_ORIGINS` | `https://domain-frontend-production` | Sama persis dengan origin frontend. |
-| `NM_ENABLE_LIVE_MODE` | `true` | Mengaktifkan mode LIVE di Data Hub. |
-
-Semua nilai `VITE_*` bersifat publik. Jangan menaruh API key atau secret di frontend.
-
----
-
-## Deployment
-
-Repo menyertakan `Dockerfile` multi-stage (`node:24-alpine` → `nginx:1.27-alpine`) dan `nginx.conf` dengan history fallback untuk route seperti `/jelajahi`, `/bandingkan`, dan `/paspor-bukti`.
+### Docker
 
 ```bash
-docker build \
-  --build-arg VITE_API_BASE_URL=https://api.orangkeren.me \
-  -t nusa-matra-web .
-
-docker run --rm -p 8080:80 nusa-matra-web
+docker build -t nusa-matra .
+docker run -p 8080:80 nusa-matra
 ```
 
-Konfigurasi produksi:
-
-- `dist/` disajikan sebagai static files.
-- `nginx.conf` mengarahkan semua path yang tidak dikenal ke `index.html`.
-- Asset ber-hash di-cache lama; HTML tidak di-cache.
-- `/healthz` tersedia untuk health check.
-- `NM_CORS_ORIGINS` di backend diatur ke origin frontend production, tanpa trailing slash.
-- Jika memakai Data Hub lain, ubah `VITE_API_BASE_URL` sebagai build argument.
+Buka `http://localhost:8080`. Pemeriksaan kesehatan tersedia di `/healthz`.
 
 ---
 
-## Kualitas dan Pengujian
+## Progress Saat Ini
 
-```bash
-npm run typecheck     # TypeScript strict
-npm run lint          # ESLint, max-warnings=0
-npm run format:check  # Prettier check
-npm run test          # Vitest + Testing Library
-npm run build         # type-check lalu build ke dist/
-npm run test:e2e      # Playwright smoke test
-```
+Status per 31 Oktober 2026. Situs sudah berjalan di https://nm.orangkeren.me dengan data LIVE.
 
-Quality gate yang diterapkan:
+| Fitur                            | Status       | Keterangan                                                                                             |
+| -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------ |
+| Beranda                          | Selesai      | Pencarian wilayah, empat jalur fitur, pratinjau Lab Prioritas, sumber data.                            |
+| Jelajahi                         | Selesai      | Peta 3D batas BIG, pencarian, profil wilayah dengan penilaian relatif, 29 indikator beserta sumbernya. |
+| Gempa BMKG                       | Selesai      | Layer gempa terkini pada peta Jelajahi.                                                                |
+| Bandingkan                       | Selesai      | Dua wilayah berdampingan; selisih hanya dihitung bila definisi dan periodenya setara.                  |
+| Lab Prioritas                    | Selesai      | Atur bobot kriteria, peringkat 514 wilayah dihitung ulang, rincian kontribusi tiap kriteria.           |
+| Paspor Bukti                     | Selesai      | Rangkuman sumber, tahun, kelas bukti, dan batasan; dapat disalin, diunduh sebagai JSON, atau dicetak.  |
+| Tampilan Normal dan Kaca, ponsel | Selesai      | Dua tampilan yang tersimpan, tata letak ponsel, halaman Aksesibilitas.                                 |
+| Uji Rekomendasi                  | Direncanakan | Uji sensitivitas bobot. Halaman sudah ada dan ditandai "dalam pengembangan".                           |
+| Titik Buta Data                  | Direncanakan | Laporan kualitas data dari hasil validasi.                                                             |
+| Cerita Wilayah                   | Direncanakan | Narasi per wilayah.                                                                                    |
+| Metodologi                       | Direncanakan | Penjelasan cara skor dihitung.                                                                         |
 
-- Type-check, lint, dan format check
-- Unit/component test
-- Build production
-- E2E smoke test
-- Label DEMO pada semua angka simulasi
-- Pemeriksaan keyboard, kontras, reduced motion, dan fallback WebGL
+**Data:** 514 kabupaten/kota dan 30 indikator, 29 di antaranya sudah berdata. Satu indikator (persentase desa dengan jalan beraspal) belum tersedia karena mikrodatanya belum dapat diakses, dan situs menandainya, tidak mengisinya dengan nol.
 
-Kontrak API juga diuji secara terpisah, termasuk snapshot pinning, error envelope, dan sample respons v2.4.
+**Kualitas:** TypeScript strict, ESLint tanpa peringatan, dan lebih dari 700 uji otomatis lulus.
 
----
-
-## Aksesibilitas dan Performa
-
-Beberapa keputusan engineering yang sudah diterapkan:
-
-- **Route-level code splitting** agar halaman fitur tidak membebani landing.
-- **3D lazy-loaded** hanya saat zona 3D mendekati viewport; ponsel dan perangkat tanpa WebGL mendapat gambar statis.
-- **Mode Normal/Kaca** dengan preferensi tersimpan; mode Kaca dimatikan otomatis bila perangkat meminta kontras tinggi atau transparansi rendah.
-- **Reduced motion** menghentikan animasi tanpa menghilangkan isi.
-- **Keyboard-first**: skip link, focus management setelah navigasi, dan kontrol peta yang dapat digunakan dengan papan ketik.
-- **Warna bukan satu-satunya penanda status**; setiap status juga memakai ikon dan teks.
-
-Audit aksesibilitas menyeluruh belum dilakukan. Halaman `/aksesibilitas` mencatat dukungan yang benar-benar ada, bukan klaim konformansi.
-
----
-
-## Struktur Proyek
-
-```text
-src/
-  app/                  # router, layout, halaman route
-  components/           # komponen UI bersama
-  features/             # landing, exploration, comparison, priority-lab, evidence-passport
-  domain/               # aturan skor dan logika murni
-  services/api/         # HTTP client, repository, mapper, kontrak
-  hooks/                # hook bersama
-  lib/                  # utilitas, WebGL, glass, format
-  styles/               # token desain dari Figma
-  test/                 # setup dan fixture
-
-tests/                  # Playwright E2E
-docs/
-  integration/screenshots/   # tangkapan layar untuk README
-```
-
----
-
-## Prinsip Integritas Data
-
-1. **DEMO bukan LIVE.** Ranking dan contoh sintetis diberi label simulasi yang jelas.
-2. Setiap nilai terukur disertai ID wilayah/indikator, satuan, periode, definisi, dan metadata sumber yang stabil.
-3. Data kosong **bukan** angka nol.
-4. Pengukuran dengan definisi tidak kompatibel tidak dibandingkan dengan delta terhitung.
-5. Hasil analisis menyematkan snapshot dataset, cohort, model, dan parameter input.
-6. Rekomendasi kebijakan produksi memerlukan metodologi yang telah ditinjau; model bobot DEMO bukan rekomendasi resmi.
-7. Syarat API, lisensi, dan ketentuan penyedia data resmi diverifikasi secara independen.
-
----
-
-<div align="center">
-
-**Nusa Matra Web — Wilayah Indonesia (WIA) 2026**
-
-*Membangun antarmuka yang terukur, transparan, dan tepercaya untuk pengambilan keputusan geospasial Indonesia.*
-
-Frontend: repo ini · Data Hub: [masean24/NusaMatra-DataHub](https://github.com/masean24/NusaMatra-DataHub) · API: [api.orangkeren.me](https://api.orangkeren.me)
-
-</div>
+**Batasan:** skor prioritas adalah alat bantu menyaring, bukan rekomendasi kebijakan resmi, dan metodenya belum divalidasi lembaga yang berwenang.
