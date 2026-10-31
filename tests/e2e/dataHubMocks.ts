@@ -35,7 +35,7 @@ export interface DataHubMock {
 export async function mockDataHub(page: Page): Promise<DataHubMock> {
   const mock: DataHubMock = { compositeRequests: [], requests: [] };
 
-  await page.route('https://api.orangkeren.me/**', async (route: Route) => {
+  await page.route('https://api.nusamatra.site/**', async (route: Route) => {
     const request = route.request();
     if (request.method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers: CORS_HEADERS });

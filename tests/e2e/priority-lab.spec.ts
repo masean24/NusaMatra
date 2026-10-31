@@ -206,7 +206,7 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
  * never a particular region, count or flag. Which branch applies is decided from the live presets read
  * inside the test.
  */
-const API = 'https://api.orangkeren.me/api/v1';
+const API = 'https://api.nusamatra.site/api/v1';
 const READY = 'Hasil siap dan sudah diperiksa';
 // Withheld by a blocking check, or by a known direction anomaly in the source scores it ranks.
 const WITHHELD = /Peringkat belum dapat ditampilkan|Peringkat ditahan: skor sumber tidak konsisten/;

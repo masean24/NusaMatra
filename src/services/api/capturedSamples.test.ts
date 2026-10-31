@@ -187,7 +187,7 @@ describe('error captures through the real HTTP client', () => {
       ),
     );
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: fetchMock,
     });
     return { repository: new NusaMatraDataHubRepository(client), fetchMock };

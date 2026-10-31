@@ -1,5 +1,5 @@
 # Nusa Matra frontend: a static Vite build served by nginx (Coolify: build pack "Dockerfile", port 80).
-# No .env is needed: production defaults (LIVE, https://api.orangkeren.me) live in src/lib/publicConfig.ts.
+# No .env is needed: production defaults (LIVE, https://api.nusamatra.site) live in src/lib/publicConfig.ts.
 # To point at another Data Hub, pass VITE_API_BASE_URL as a build argument in Coolify.
 
 FROM node:24-alpine AS build

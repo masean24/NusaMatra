@@ -106,7 +106,7 @@ export async function mockLiveLab(page: Page, composite: CompositeKind = 'v21'):
     inf_safe_water_pct: v21('values_inf_safe_water_pct'),
   };
 
-  await page.route('https://api.orangkeren.me/**', async (route: Route) => {
+  await page.route('https://api.nusamatra.site/**', async (route: Route) => {
     const request = route.request();
     const url = new URL(request.url());
     if (request.method() === 'OPTIONS' || url.searchParams.get('mode') !== 'live') return route.fallback();

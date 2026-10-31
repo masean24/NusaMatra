@@ -5,9 +5,9 @@ import { DataHubHttpClient, normalizeBaseOrigin } from './httpClient';
 
 describe('DataHubHttpClient & Error Handling', () => {
   it('strips accidental /api/v1 suffix and trailing slashes from baseUrl', () => {
-    expect(normalizeBaseOrigin('https://api.orangkeren.me/')).toBe('https://api.orangkeren.me');
-    expect(normalizeBaseOrigin('https://api.orangkeren.me/api/v1')).toBe('https://api.orangkeren.me');
-    expect(normalizeBaseOrigin('https://api.orangkeren.me/api/v1/')).toBe('https://api.orangkeren.me');
+    expect(normalizeBaseOrigin('https://api.nusamatra.site/')).toBe('https://api.nusamatra.site');
+    expect(normalizeBaseOrigin('https://api.nusamatra.site/api/v1')).toBe('https://api.nusamatra.site');
+    expect(normalizeBaseOrigin('https://api.nusamatra.site/api/v1/')).toBe('https://api.nusamatra.site');
   });
 
   it('handles HTTP 503 LIVE_UNAVAILABLE with X-Data-Fallback: UNAVAILABLE and never falls back to DEMO', async () => {
@@ -30,7 +30,7 @@ describe('DataHubHttpClient & Error Handling', () => {
     );
 
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: mockFetch,
     });
 
@@ -61,7 +61,7 @@ describe('DataHubHttpClient & Error Handling', () => {
     );
 
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: mockFetch,
     });
 
@@ -84,7 +84,7 @@ describe('DataHubHttpClient & Error Handling', () => {
     );
 
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: mockFetch,
     });
 
@@ -99,7 +99,7 @@ describe('DataHubHttpClient & Error Handling', () => {
 
     const mockFetch = vi.fn().mockRejectedValue(abortErr);
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: mockFetch,
     });
 
@@ -113,7 +113,7 @@ describe('DataHubHttpClient & Error Handling', () => {
       const mockFetch = vi.fn(() =>
         Promise.resolve(new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } })),
       );
-      const client = new DataHubHttpClient({ baseUrl: 'https://api.orangkeren.me', fetchImpl: mockFetch });
+      const client = new DataHubHttpClient({ baseUrl: 'https://api.nusamatra.site', fetchImpl: mockFetch });
       const firstCall = () => {
         const [url, init] = mockFetch.mock.calls[0] as unknown as [
           string,
@@ -138,15 +138,15 @@ describe('DataHubHttpClient & Error Handling', () => {
         { dataMode: 'LIVE', query: { q: 'jabar' } },
       );
 
-      expect(demo.firstCall().url).toBe('https://api.orangkeren.me/api/v1/regions?q=jabar&mode=demo');
-      expect(live.firstCall().url).toBe('https://api.orangkeren.me/api/v1/regions?q=jabar&mode=live');
+      expect(demo.firstCall().url).toBe('https://api.nusamatra.site/api/v1/regions?q=jabar&mode=demo');
+      expect(live.firstCall().url).toBe('https://api.nusamatra.site/api/v1/regions?q=jabar&mode=live');
       expect(live.firstCall().headers['X-Data-Mode']).toBe('LIVE');
     });
 
     it('cannot be overridden by the caller query', async () => {
       const { client, firstCall } = clientWithFetch();
       await client.get('/api/v1/health', { parse: (x) => x }, { dataMode: 'LIVE', query: { mode: 'demo' } });
-      expect(firstCall().url).toBe('https://api.orangkeren.me/api/v1/health?mode=live');
+      expect(firstCall().url).toBe('https://api.nusamatra.site/api/v1/health?mode=live');
     });
 
     it('applies to POST requests as well', async () => {

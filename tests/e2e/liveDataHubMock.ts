@@ -72,7 +72,7 @@ export interface Mock {
 
 export async function mockLiveDataHub(page: Page, feed: FeedKind = 'cache'): Promise<Mock> {
   const mock: Mock = { earthquakeRequests: [], feed };
-  await page.route('https://api.orangkeren.me/**', async (route: Route) => {
+  await page.route('https://api.nusamatra.site/**', async (route: Route) => {
     const request = route.request();
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS });
     const url = new URL(request.url());

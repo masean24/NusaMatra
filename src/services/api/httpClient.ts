@@ -33,7 +33,7 @@ export interface RequestOptions {
 
 export interface DataHubHttpClientConfig {
   /**
-   * API origin such as "https://api.orangkeren.me" or "" for same-origin proxy. Supplied by the
+   * API origin such as "https://api.nusamatra.site" or "" for same-origin proxy. Supplied by the
    * caller (the app reads it once in `publicConfig`); this module never reads the environment.
    * If a trailing "/api/v1" or "/" is accidentally supplied, the constructor strips it
    * so "/api/v1" is never duplicated in request URLs.

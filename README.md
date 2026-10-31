@@ -6,7 +6,7 @@
 
 Platform web untuk menjelajahi kondisi 514 kabupaten/kota di Indonesia, membandingkan dua wilayah, dan menguji prioritas pembangunan dengan bobot yang dapat diatur, lengkap dengan sumber dan tahun setiap angka.
 
-[Buka situs](https://nm.orangkeren.me) · [Data Hub (backend)](https://github.com/masean24/NusaMatra-DataHub) · [Dokumentasi API](https://api.orangkeren.me/docs)
+[Buka situs](https://nusamatra.site) · [Data Hub (backend)](https://github.com/masean24/NusaMatra-DataHub) · [Dokumentasi API](https://api.nusamatra.site/docs)
 
 <img src="docs/screenshots/landing-normal.jpg" width="49%" alt="Beranda Nusa Matra, tampilan Normal" />
 <img src="docs/screenshots/landing-kaca.jpg" width="49%" alt="Beranda Nusa Matra, tampilan Kaca" />
@@ -46,16 +46,16 @@ npm install
 npm run dev
 ```
 
-Buka `http://localhost:5173`. Tanpa konfigurasi tambahan, situs memakai data LIVE dari API publik `https://api.orangkeren.me`.
+Buka `http://localhost:5173`. Tanpa konfigurasi tambahan, situs memakai data LIVE dari API publik `https://api.nusamatra.site`.
 
 ### Konfigurasi opsional
 
 Buat file `.env.local` bila perlu. Semua nilai `VITE_*` bersifat publik; jangan menaruh secret di sini.
 
-| Variabel            | Default                     | Fungsi                                                            |
-| ------------------- | --------------------------- | ----------------------------------------------------------------- |
-| `VITE_API_BASE_URL` | `https://api.orangkeren.me` | Alamat Data Hub, tanpa `/api/v1` dan tanpa garis miring di akhir. |
-| `VITE_DATA_MODE`    | `live`                      | `live` atau `demo`.                                               |
+| Variabel            | Default                      | Fungsi                                                            |
+| ------------------- | ---------------------------- | ----------------------------------------------------------------- |
+| `VITE_API_BASE_URL` | `https://api.nusamatra.site` | Alamat Data Hub, tanpa `/api/v1` dan tanpa garis miring di akhir. |
+| `VITE_DATA_MODE`    | `live`                       | `live` atau `demo`.                                               |
 
 ### Perintah lain
 
@@ -82,7 +82,7 @@ Buka `http://localhost:8080`. Pemeriksaan kesehatan tersedia di `/healthz`.
 
 ## Progress Saat Ini
 
-Status per 31 Oktober 2026. Situs sudah berjalan di https://nm.orangkeren.me dengan data LIVE.
+Status per 31 Oktober 2026. Situs sudah berjalan di https://nusamatra.site dengan data LIVE.
 
 | Fitur                            | Status       | Keterangan                                                                                             |
 | -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------ |

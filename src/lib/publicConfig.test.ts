@@ -4,7 +4,7 @@ describe('build defaults (the repository ships no .env file)', () => {
   it('opens in LIVE against the public Data Hub, without the DEMO switch', () => {
     expect(parsePublicConfig({})).toEqual({
       dataMode: 'LIVE',
-      apiBaseUrl: 'https://api.orangkeren.me',
+      apiBaseUrl: 'https://api.nusamatra.site',
       earthquakePreview: false,
       modeSwitch: false,
     });
@@ -13,7 +13,7 @@ describe('build defaults (the repository ships no .env file)', () => {
   it('treats empty variables as unset', () => {
     expect(parsePublicConfig({ VITE_DATA_MODE: ' ', VITE_API_BASE_URL: '' })).toMatchObject({
       dataMode: 'LIVE',
-      apiBaseUrl: 'https://api.orangkeren.me',
+      apiBaseUrl: 'https://api.nusamatra.site',
     });
   });
 });

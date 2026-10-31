@@ -39,7 +39,7 @@ interface RawEnv {
  * Coolify) uses these unless an environment variable overrides them. Both are public, not secrets.
  */
 const DEFAULT_DATA_MODE = 'live';
-const DEFAULT_API_BASE_URL = 'https://api.orangkeren.me';
+const DEFAULT_API_BASE_URL = 'https://api.nusamatra.site';
 
 export function parsePublicConfig(env: RawEnv): PublicConfig {
   const rawMode = (env.VITE_DATA_MODE?.trim() || DEFAULT_DATA_MODE).toLowerCase();

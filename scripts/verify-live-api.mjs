@@ -1,7 +1,7 @@
 // Independent check of the deployed Data Hub's LIVE mode. Read-only; it never changes anything.
 // Usage:  node scripts/verify-live-api.mjs [baseUrl] [expectedSnapshotId]
 // Exit code 0 only when every check passes, so it can gate trusting LIVE rankings in the frontend.
-const base = (process.argv[2] ?? 'https://api.orangkeren.me').replace(/\/$/, '');
+const base = (process.argv[2] ?? 'https://api.nusamatra.site').replace(/\/$/, '');
 const expectedSnapshot = process.argv[3] ?? '2026.10.0-official-live';
 const API = `${base}/api/v1`;
 const ORIGIN = 'https://nusamatra.example';

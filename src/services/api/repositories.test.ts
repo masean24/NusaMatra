@@ -24,7 +24,7 @@ describe('NusaMatraDataHubRepository', () => {
   it('rejects invalid composite weights client-side before invoking network fetch', async () => {
     const mockFetch = vi.fn();
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: mockFetch,
     });
     const repo = new NusaMatraDataHubRepository(client);
@@ -59,7 +59,7 @@ describe('NusaMatraDataHubRepository', () => {
     );
 
     const client = new DataHubHttpClient({
-      baseUrl: 'https://api.orangkeren.me',
+      baseUrl: 'https://api.nusamatra.site',
       fetchImpl: mockFetch,
     });
     const repo = new NusaMatraDataHubRepository(client);
