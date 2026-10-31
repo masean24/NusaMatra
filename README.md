@@ -31,8 +31,6 @@ Repositori ini hanya berisi frontend. Data, snapshot, skor, batas wilayah, dan f
 | Peta dan 3D | Three.js dan React Three Fiber, batas wilayah resmi BIG                        |
 | Animasi     | Motion                                                                         |
 | Data        | Nusa Matra Data Hub (FastAPI), diakses lewat klien API dengan validasi respons |
-| Pengujian   | Vitest, Testing Library, Playwright                                            |
-| Mutu kode   | ESLint (strictTypeChecked, jsx-a11y), Prettier                                 |
 | Deploy      | Docker, nginx, Coolify                                                         |
 
 ---
