@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   {
-    // `integrations/` holds temporary external handoff packages; their host copies under src/ are linted.
+    // `integrations/` holds local third-party packages; their copies under src/ are linted.
     ignores: ['dist', 'coverage', 'playwright-report', 'test-results', '.taste-skill', 'integrations'],
   },
   {
@@ -57,7 +57,7 @@ export default tseslint.config(
   },
   {
     /*
-     * External 3D engine (Gemini handoff, copied per its INTEGRATION-FOR-CLAUDE.md). It is held to
+     * External 3D engine, developed separately and copied into this repository. It is held to
      * the strict TypeScript compiler settings, but not to the host's stylistic lint profile: these
      * rules would force a rewrite of code the engine team owns. Correctness rules stay on.
      */

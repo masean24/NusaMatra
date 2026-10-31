@@ -25,7 +25,7 @@ Nusa Matra Web adalah antarmuka React untuk membaca kondisi wilayah Indonesia, m
 
 > **Status repo:** prototipe frontend dengan lima halaman fitur utama yang sudah dibangun—Landing, Jelajahi, Bandingkan, Lab Prioritas, dan Paspor Bukti. Empat tujuan lain masih berupa halaman *in development* yang jujur. Repo ini hanya frontend; backend, database, ingestion, dan integrasi data resmi berada di repo Data Hub. Semua angka contoh pada landing diberi label **DEMO**.
 
-> README ini menggunakan Bahasa Indonesia agar sejalan dengan README Data Hub. Spesifikasi teknis di `docs/` tetap berbahasa Inggris.
+> README ini menggunakan Bahasa Indonesia agar sejalan dengan README Data Hub.
 
 ---
 
@@ -398,10 +398,7 @@ src/
 
 tests/                  # Playwright E2E
 docs/
-  adr/                  # architecture decision records
-  implementation-notes/ # catatan implementasi
-  integration/          # catatan integrasi dan screenshot
-  01-13                 # spesifikasi produk, API, desain, testing, security
+  integration/screenshots/   # tangkapan layar untuk README
 ```
 
 ---
@@ -415,36 +412,6 @@ docs/
 5. Hasil analisis menyematkan snapshot dataset, cohort, model, dan parameter input.
 6. Rekomendasi kebijakan produksi memerlukan metodologi yang telah ditinjau; model bobot DEMO bukan rekomendasi resmi.
 7. Syarat API, lisensi, dan ketentuan penyedia data resmi diverifikasi secara independen.
-
----
-
-## Dokumentasi
-
-[`project_guidelines.md`](./project_guidelines.md) memuat nilai engineering produk, sedangkan dokumen `01–13` menjadi kontrak implementasi per fitur.
-
-<details>
-<summary><strong>Lihat 13 dokumen spesifikasi</strong></summary>
-
-| File | Tujuan |
-|---|---|
-| [`project_guidelines.md`](./project_guidelines.md) | Branding, React, Clean Code, dan persyaratan animasi orisinal. |
-| [`docs/01-PRODUCT-REQUIREMENTS.md`](./docs/01-PRODUCT-REQUIREMENTS.md) | Requirement, prioritas, dan non-goals. |
-| [`docs/02-USER-FLOWS.md`](./docs/02-USER-FLOWS.md) | Navigasi, interaksi, state, dan perjalanan pengguna. |
-| [`docs/03-UI-UX-DESIGN-SYSTEM.md`](./docs/03-UI-UX-DESIGN-SYSTEM.md) | Node Figma, warna, tipografi, komponen, dan UX responsif. |
-| [`docs/04-TECH-STACK-ARCHITECTURE.md`](./docs/04-TECH-STACK-ARCHITECTURE.md) | Arsitektur React dan pilihan library. |
-| [`docs/05-DATA-SOURCES.md`](./docs/05-DATA-SOURCES.md) | Penyedia data resmi, lisensi, dan provenance. |
-| [`docs/06-DATA-MODEL.md`](./docs/06-DATA-MODEL.md) | Relasi entitas, persistensi, dan desain snapshot. |
-| [`docs/07-DECISION-ENGINE.md`](./docs/07-DECISION-ENGINE.md) | Bobot, normalisasi, ranking, explainability, dan sensitivitas. |
-| [`docs/08-API-SPECIFICATION.md`](./docs/08-API-SPECIFICATION.md) | Endpoint dan kontrak API. |
-| [`docs/09-ANIMATION-GUIDELINES.md`](./docs/09-ANIMATION-GUIDELINES.md) | Figma G1–G11, animasi 3D, transisi tema, dan performa. |
-| [`docs/10-TESTING-STRATEGY.md`](./docs/10-TESTING-STRATEGY.md) | Test pyramid, fixture, QA, dan CI. |
-| [`docs/11-SECURITY-AND-PRIVACY.md`](./docs/11-SECURITY-AND-PRIVACY.md) | Threat model, secret, privasi, lisensi, dan proteksi. |
-| [`docs/12-IMPLEMENTATION-ROADMAP.md`](./docs/12-IMPLEMENTATION-ROADMAP.md) | Milestone, dependensi, rilis, dan ownership. |
-| [`docs/13-ACCEPTANCE-CRITERIA.md`](./docs/13-ACCEPTANCE-CRITERIA.md) | Kriteria yang dapat diuji, release gate, dan sign-off. |
-
-</details>
-
-**Status dokumentasi:** seluruh 13 dokumen spesifikasi sudah tersedia. Ini menunjukkan cakupan dokumentasi, bukan status implementasi produk.
 
 ---
 

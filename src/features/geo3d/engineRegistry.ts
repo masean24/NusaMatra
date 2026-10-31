@@ -7,9 +7,8 @@ import type { Explore3DMapProps, HeroDioramaProps, HeroHexMapProps } from './con
  * three.js and the engine download only when a slot that needs them mounts. Setting an entry
  * to `null` returns its slot to the static Figma placeholder (e.g. to ship without the engine).
  *
- * The engine (Gemini handoff, host copy in `src/features/map-3d/`) provides the landing hero and
+ * The engine (developed separately, host copy in `src/features/map-3d/`) provides the landing hero and
  * the exploration map. It has no story scene, so the 3D-5 story band keeps its Figma illustration.
- * See docs/integration/geo3d-engine.md.
  */
 export interface GeoEngineRegistry {
   /** Hexagon map: the default landing hero. */
