@@ -69,6 +69,17 @@ function applyViewInset(camera: THREE.PerspectiveCamera, w: number, h: number, i
 /** OrbitControls' farthest zoom on a wide canvas. */
 const EXPLORE_MAX_DISTANCE = 85.0;
 
+/*
+ * On-demand drawing: the map draws frames only while something can be changing (input, a camera
+ * glide, a prop change, a resize) and for this long after it, which also covers the orbit damping
+ * settling and the overlay's appear ripple. A still map draws nothing.
+ */
+const AWAKE_AFTER_CHANGE_MS = 2500;
+/** Input that can move the camera or change the hover highlight. */
+const WAKE_EVENTS = ['pointerdown', 'pointermove', 'pointerup', 'pointerleave', 'wheel', 'keydown', 'touchstart'];
+/** Upper bound on the drawing-buffer pixel ratio (sharp on HiDPI screens without 3x the pixels). */
+const MAX_PIXEL_RATIO = 1.75;
+
 /**
  * Host fix: a tall, narrow canvas (a phone's full screen) needs the camera farther away than the
  * controls' usual limit to fit the whole archipelago; let the limit follow the fitted distance.
@@ -1262,6 +1273,11 @@ export function createIllustrativeTextures(): ProceduralSurfaceSet {
 // 6. GPU SCENE DISPOSAL HELPER
 // ============================================================================
 
+/** Keeps the map drawing for a while: something on it may change. */
+function wakeEngine(eng: InternalEngineState, ms = AWAKE_AFTER_CHANGE_MS): void {
+  eng.awakeUntil = Math.max(eng.awakeUntil, performance.now() + ms);
+}
+
 export function disposeObjectTree(root: THREE.Object3D): void {
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
@@ -1312,6 +1328,8 @@ interface InternalEngineState {
   introProgress: number;
   pointerParallax: { x: number; y: number };
   isVisible: boolean;
+  /** Frames are drawn until this time (performance.now()); see AWAKE_AFTER_CHANGE_MS. */
+  awakeUntil: number;
   /** Hero only: coastline relief scene and the camera pose that frames it. */
   heroTerrain: HeroTerrain | null;
   heroPose: CameraPose | null;
@@ -1546,8 +1564,11 @@ export const NusaMatra3DMap = forwardRef<
     const width = Math.max(320, rect.width);
     const height = Math.max(360, rect.height);
 
+    const applyPixelRatio = () => {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
+    };
+    applyPixelRatio();
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.shadowMap.enabled = true;
     // Host integration fix: PCFSoftShadowMap is deprecated since three r186 (the host's version).
     renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -1764,6 +1785,7 @@ export const NusaMatra3DMap = forwardRef<
       introProgress: isMotionReducedRef.current ? 1 : 0,
       pointerParallax: { x: 0, y: 0 },
       isVisible: true,
+      awakeUntil: performance.now() + AWAKE_AFTER_CHANGE_MS,
       heroTerrain,
       heroPose,
       exploreFrame: null,
@@ -1793,7 +1815,9 @@ export const NusaMatra3DMap = forwardRef<
       } else {
         camera.updateProjectionMatrix();
       }
+      applyPixelRatio(); // the window may have moved to a screen with another pixel ratio
       renderer.setSize(w, h);
+      if (eng) wakeEngine(eng);
       if (mode === 'explore' && eng?.exploreFrame && fitBefore !== null) {
         keepFitReachable(eng.controls, exploreFitDistance(camera, eng.exploreFrame.width, scene));
         // Refit to the new canvas shape, keeping the direction the user is looking from.
@@ -1834,11 +1858,32 @@ export const NusaMatra3DMap = forwardRef<
       (entries) => {
         if (engineRef.current && entries[0]) {
           engineRef.current.isVisible = entries[0].isIntersecting;
+          if (entries[0].isIntersecting) wakeEngine(engineRef.current);
         }
       },
       { threshold: 0.05 }
     );
     intersectionObserver.observe(container);
+
+    const wake = () => {
+      if (engineRef.current) wakeEngine(engineRef.current);
+    };
+    for (const type of WAKE_EVENTS) container.addEventListener(type, wake, { passive: true });
+    controls?.addEventListener('change', wake);
+
+    // A screen with another pixel ratio (window dragged across monitors) fires no resize.
+    let pixelRatioQuery: MediaQueryList | null = null;
+    const onPixelRatioChange = () => {
+      const rect = container.getBoundingClientRect();
+      relayout(rect.width, rect.height);
+      watchPixelRatio();
+    };
+    const watchPixelRatio = () => {
+      pixelRatioQuery?.removeEventListener('change', onPixelRatioChange);
+      pixelRatioQuery = window.matchMedia(`(resolution: ${String(window.devicePixelRatio || 1)}dppx)`);
+      pixelRatioQuery.addEventListener('change', onPixelRatioChange);
+    };
+    watchPixelRatio();
 
     let rafId = 0;
     let lastTime = performance.now();
@@ -1858,6 +1903,13 @@ export const NusaMatra3DMap = forwardRef<
       rafId = requestAnimationFrame(animate);
       const eng = engineRef.current;
       if (!eng || !eng.isVisible) {
+        lastTime = now;
+        return;
+      }
+
+      // The hero always moves (bobbing, parallax); Explore draws only while awake or gliding.
+      const changing = mode === 'hero' || eng.cameraTargetPos !== null || now < eng.awakeUntil;
+      if (!changing) {
         lastTime = now;
         return;
       }
@@ -1929,6 +1981,9 @@ export const NusaMatra3DMap = forwardRef<
       relayoutRef.current = null;
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
+      for (const type of WAKE_EVENTS) container.removeEventListener(type, wake);
+      controls?.removeEventListener('change', wake);
+      pixelRatioQuery?.removeEventListener('change', onPixelRatioChange);
       controls?.dispose();
       overlay.dispose();
       disposeObjectTree(rootGroup);
@@ -2206,6 +2261,11 @@ export const NusaMatra3DMap = forwardRef<
   useEffect(() => {
     engineRef.current?.overlay.setSelected(selectedOverlayId);
   }, [selectedOverlayId, overlayPoints, mode, dataValidationError]);
+
+  // Runs after every render, after the effects above have changed the scene for new props.
+  useEffect(() => {
+    if (engineRef.current) wakeEngine(engineRef.current);
+  });
 
   const pointerDownRef = useRef<{ x: number; y: number; time: number } | null>(
     null
