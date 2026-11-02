@@ -1,6 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
 import type { HeroHexMapProps } from '@/features/geo3d';
+import { useQualityProfile } from '@/features/graphics-quality';
 import { useRevealOnce } from '@/features/motion';
 import { HERO_CAMERA_POSITION, HERO_FOV, HERO_TARGET } from '@/lib/heroMapCamera';
 import { supportsWebGL } from '@/lib/webglSupport';
@@ -52,6 +53,7 @@ export function HexIndonesiaMap({
   useLayoutEffect(() => {
     errorRef.current = onError;
   });
+  const quality = useQualityProfile();
   const reportError = useEffectEvent((error: unknown) => {
     onError?.(error);
   });
@@ -107,7 +109,7 @@ export function HexIndonesiaMap({
             shadows="variance"
             flat
             frameloop="demand"
-            dpr={[1, 2]}
+            dpr={[1, quality.maxPixelRatio]}
             gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
             camera={{ position: [...HERO_CAMERA_POSITION], fov: HERO_FOV, near: 1, far: 400 }}
             onCreated={({ camera, gl }) => {

@@ -135,6 +135,19 @@
 }
 
 /*
+ * Graphics level "Ringan" (<html data-quality="lite">): a lighter blur on every glass surface, which
+ * costs the GPU far less on large panels. Colours and borders stay, so both modes look the same.
+ */
+:root[data-quality='lite'] {
+  --glass-blur: blur(16px);
+}
+
+:root[data-quality='lite'] .glass--read {
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+/*
  * The reading measure is for prose: paragraphs and bulleted lists. Lists used as layout (rows,
  * source cards, rankings) carry role="list" in this project and keep the container's full width.
  */

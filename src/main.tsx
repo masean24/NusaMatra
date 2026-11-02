@@ -4,6 +4,7 @@ import './styles/global.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
+import { applyQualityToDocument } from './features/graphics-quality';
 
 /*
  * A page chunk that fails to download usually means a new version was deployed while this tab was
@@ -31,6 +32,9 @@ window.addEventListener('load', () => {
     }
   }, 10_000);
 });
+
+// The graphics quality level goes on <html> before the first paint, where the glass styles read it.
+applyQualityToDocument();
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root is missing from index.html.');

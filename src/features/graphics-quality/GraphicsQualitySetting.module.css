@@ -1,0 +1,58 @@
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.setting legend {
+  padding: 0;
+}
+
+.muted {
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+  gap: 10px;
+}
+
+/* Radio in the first column; the option's name and its explanation stacked in the second. */
+.option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border: 1px solid var(--c-card-border);
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.option:has(input:checked) {
+  border-color: var(--nm-accent);
+  box-shadow: inset 0 0 0 1px var(--nm-accent);
+}
+
+.option input {
+  grid-row: 1 / span 2;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--nm-accent);
+}
+
+.label {
+  font-weight: 600;
+}
+
+.detail {
+  grid-column: 2;
+  color: var(--c-text-muted);
+}

@@ -1,7 +1,11 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { useEffect, useEffectEvent, type ReactNode } from 'react';
+import { useQualityProfile } from '@/features/graphics-quality';
 
 import { ISOMETRIC_CAMERA_POSITION } from './sceneConstants';
+
+/** The landing scenes' own pixel-ratio cap; the graphics level may lower it further. */
+const LANDING_MAX_PIXEL_RATIO = 1.75;
 
 interface SceneCanvasProps {
   readonly children: ReactNode;
@@ -46,12 +50,13 @@ function ReadySignal({ onReady }: { readonly onReady: () => void }) {
  * transparent background so the page and its display mode show through.
  */
 export function SceneCanvas({ children, fitWidth, onReady }: SceneCanvasProps) {
+  const quality = useQualityProfile();
   return (
     <Canvas
       orthographic
       flat
       frameloop="demand"
-      dpr={[1, 1.75]}
+      dpr={[1, Math.min(LANDING_MAX_PIXEL_RATIO, quality.maxPixelRatio)]}
       gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
       camera={{ position: [...ISOMETRIC_CAMERA_POSITION], near: 0.1, far: 200, zoom: 40 }}
       style={{ width: '100%', height: '100%' }}

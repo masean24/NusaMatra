@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
+import { getQualityProfile, subscribeQuality } from '@/features/graphics-quality';
 import styles from './NusaMatra3DMap.module.css';
 import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
 import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
@@ -1565,7 +1566,9 @@ export const NusaMatra3DMap = forwardRef<
     const height = Math.max(360, rect.height);
 
     const applyPixelRatio = () => {
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
+      renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO, getQualityProfile().maxPixelRatio),
+      );
     };
     applyPixelRatio();
     renderer.setSize(width, height);
@@ -1884,6 +1887,11 @@ export const NusaMatra3DMap = forwardRef<
       pixelRatioQuery.addEventListener('change', onPixelRatioChange);
     };
     watchPixelRatio();
+    // A new graphics level applies at once: new pixel ratio, decoration on or off.
+    const unsubscribeQuality = subscribeQuality(() => {
+      const rect = container.getBoundingClientRect();
+      relayout(rect.width, rect.height);
+    });
 
     let rafId = 0;
     let lastTime = performance.now();
@@ -1955,7 +1963,7 @@ export const NusaMatra3DMap = forwardRef<
         }
       }
 
-      if (!isMotionReducedRef.current) {
+      if (!isMotionReducedRef.current && getQualityProfile().decorativeMotion) {
         eng.textures.oceanBumpMap.offset.x = (now * 0.00004) % 1;
         eng.textures.oceanBumpMap.offset.y = (now * 0.00003) % 1;
 
@@ -1984,6 +1992,7 @@ export const NusaMatra3DMap = forwardRef<
       for (const type of WAKE_EVENTS) container.removeEventListener(type, wake);
       controls?.removeEventListener('change', wake);
       pixelRatioQuery?.removeEventListener('change', onPixelRatioChange);
+      unsubscribeQuality();
       controls?.dispose();
       overlay.dispose();
       disposeObjectTree(rootGroup);

@@ -8,7 +8,10 @@ import {
 
 function subscribeToDisplayMode(onChange: () => void): () => void {
   const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-display-mode'] });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-display-mode', 'data-quality'],
+  });
   return () => {
     observer.disconnect();
   };
@@ -21,9 +24,13 @@ export function useGlassMode(): boolean {
   return useSyncExternalStore(subscribeToDisplayMode, isGlassMode, () => false);
 }
 
-/** Refraction is drawn only where Chromium can render it, and only in Kaca. */
+/** The "Ringan" graphics level (<html data-quality="lite">) asks for the cheaper glass. */
+const isLiteQuality = () => document.documentElement.getAttribute('data-quality') === 'lite';
+
+/** Refraction is drawn only where Chromium can render it, only in Kaca, and not at the "Ringan" level. */
 export function useRefractionEnabled(): boolean {
-  return useGlassMode() && supportsBackdropRefraction();
+  const lite = useSyncExternalStore(subscribeToDisplayMode, isLiteQuality, () => false);
+  return useGlassMode() && !lite && supportsBackdropRefraction();
 }
 
 export function cornerRadius(element: HTMLElement): number {
