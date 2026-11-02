@@ -6,6 +6,7 @@ import { AppLayout } from './AppLayout';
 import { COMPARISON_DETAIL_PATH } from '@/features/comparison';
 import { AccessibilityPage } from './pages/AccessibilityPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { RouteErrorPage } from './pages/RouteErrorPage';
 import {
   ComparisonDetailPage,
   ComparisonPage,
@@ -35,12 +36,20 @@ function pageFor(shell: FeatureShell): ReactElement {
 export const routes = [
   {
     element: <AppLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
-      { index: true, element: <LandingPage /> },
-      ...FEATURE_SHELLS.map((shell) => ({ path: shell.path, element: pageFor(shell) })),
-      { path: COMPARISON_DETAIL_PATH, element: <ComparisonDetailPage /> },
-      { path: '/aksesibilitas', element: <AccessibilityPage /> },
-      { path: '*', element: <NotFoundPage /> },
+      {
+        // A page that fails to load or render shows the error page inside the layout, so the
+        // navigation stays usable.
+        errorElement: <RouteErrorPage />,
+        children: [
+          { index: true, element: <LandingPage /> },
+          ...FEATURE_SHELLS.map((shell) => ({ path: shell.path, element: pageFor(shell) })),
+          { path: COMPARISON_DETAIL_PATH, element: <ComparisonDetailPage /> },
+          { path: '/aksesibilitas', element: <AccessibilityPage /> },
+          { path: '*', element: <NotFoundPage /> },
+        ],
+      },
     ],
   },
 ];
