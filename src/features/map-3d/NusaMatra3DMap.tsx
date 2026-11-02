@@ -1843,6 +1843,17 @@ export const NusaMatra3DMap = forwardRef<
     let rafId = 0;
     let lastTime = performance.now();
 
+    // A lost GL context (GPU reset, driver crash, too many contexts) leaves a blank canvas: stop
+    // drawing and report it, so the slot shows its status and the region list instead.
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      cancelAnimationFrame(rafId);
+      const msg = 'Konteks WebGL hilang. Peta 3D tidak dapat ditampilkan.';
+      setWebglError(msg);
+      onError?.(new Error(msg));
+    };
+    renderer.domElement.addEventListener('webglcontextlost', handleContextLost);
+
     const animate = (now: number) => {
       rafId = requestAnimationFrame(animate);
       const eng = engineRef.current;
@@ -1914,6 +1925,7 @@ export const NusaMatra3DMap = forwardRef<
 
     return () => {
       cancelAnimationFrame(rafId);
+      renderer.domElement.removeEventListener('webglcontextlost', handleContextLost);
       relayoutRef.current = null;
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
