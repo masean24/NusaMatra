@@ -47,33 +47,46 @@
   gap: 6px;
 }
 
-.select {
-  width: 100%;
-  min-height: 48px;
-  padding: 10px 14px;
-  border: 1px solid var(--c-surface-border, transparent);
-  border-radius: 16px;
-  background: var(--c-surface-muted);
-  color: var(--c-text);
-  font: inherit;
-  font-size: 0.9375rem;
-}
-
-.select:focus-visible {
-  outline: 3px solid var(--c-focus-ring);
-  outline-offset: 2px;
-}
-
-.definition,
-.value {
+.definition {
   display: flex;
   flex-direction: column;
   gap: 8px;
   align-items: flex-start;
 }
 
+/*
+ * The selected region's value is what the reader came for, so it stands in its own card, tinted with
+ * the sea colour (the passport card above uses the accent), with the way to the method underneath.
+ */
+.valueCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 14px 16px 16px;
+  border: 1px solid color-mix(in srgb, var(--c-text-strong-accent) 45%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--c-text-strong-accent) 10%, var(--glass-bg));
+  box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--c-text-strong-accent) 70%, transparent);
+  color: var(--ink);
+}
+
+.valueTitle {
+  margin: 0;
+  color: var(--c-text-strong-accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.methodLink {
+  margin-top: 4px;
+}
+
 .definition p,
-.value p {
+.valueCard p {
   margin: 0;
 }
 

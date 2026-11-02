@@ -14,7 +14,9 @@ describe('IndicatorPanel', () => {
   it('opens the poverty indicator with its definition, direction and source', async () => {
     renderWithDataHub(<IndicatorPanel regionId={null} />, { fetchImpl: indicatorFetch() });
 
-    expect(await screen.findByLabelText('Pilih indikator')).toHaveValue('soc_poverty_rate');
+    expect(await screen.findByRole('combobox', { name: 'Pilih indikator' })).toHaveTextContent(
+      'Persentase Penduduk Miskin (P0)',
+    );
     expect(screen.getByRole('heading', { name: 'Persentase Penduduk Miskin (P0)' })).toBeInTheDocument();
     expect(screen.getByText(/Semakin tinggi, semakin buruk/)).toBeInTheDocument();
     expect(screen.getByText(/Sumber: BPS/)).toBeInTheDocument();

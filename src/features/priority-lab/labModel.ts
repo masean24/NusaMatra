@@ -159,6 +159,18 @@ export function percentLabel(basisPoints: number): string {
   return `${(basisPoints / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`;
 }
 
+/**
+ * What a ranking is based on, for its heading: the criteria with a weight, largest weight first
+ * (ties by id, so the order is stable).
+ */
+export function rankingBasis(
+  weightsUsed: Readonly<Record<string, number>>,
+): readonly (readonly [string, number])[] {
+  return Object.entries(weightsUsed)
+    .filter(([, basisPoints]) => basisPoints > 0)
+    .sort(([idA, a], [idB, b]) => b - a || idA.localeCompare(idB));
+}
+
 export interface WeightComparisonRow {
   readonly id: string;
   /** What the user chose. */

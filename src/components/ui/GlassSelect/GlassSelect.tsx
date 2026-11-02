@@ -6,6 +6,28 @@ export interface GlassSelectOption {
   readonly label: string;
   /** A quieter second part of the label, e.g. "35 kab/kota". */
   readonly detail?: string | undefined;
+  /**
+   * Heading of the group this option belongs to (e.g. a theme). Options of one group must be next to
+   * each other; the list then shows them under that heading, as an <optgroup> would.
+   */
+  readonly group?: string | undefined;
+}
+
+interface OptionGroup {
+  readonly label: string | null;
+  readonly items: readonly { readonly option: GlassSelectOption; readonly index: number }[];
+}
+
+/** Consecutive options with the same `group`, keeping each option's index in the flat list. */
+function groupOptions(options: readonly GlassSelectOption[]): readonly OptionGroup[] {
+  const groups: { label: string | null; items: { option: GlassSelectOption; index: number }[] }[] = [];
+  options.forEach((option, index) => {
+    const label = option.group ?? null;
+    const last = groups[groups.length - 1];
+    if (last && last.label === label) last.items.push({ option, index });
+    else groups.push({ label, items: [{ option, index }] });
+  });
+  return groups;
 }
 
 interface GlassSelectProps {
@@ -68,17 +90,18 @@ export function GlassSelect({ labelledBy, value, options, onChange }: GlassSelec
   }, [open]);
 
   // Keep the active option in view while moving through a long list. Only the list scrolls (the
-  // page never does), so its scrollTop is set directly; the list is the options' offset parent.
+  // page never does), so its scrollTop is set directly; the list is the options' offset parent (group
+  // wrappers are not positioned). Found by id, since group headings sit between the options.
   useEffect(() => {
     const list = listRef.current;
     if (!open || !list) return;
-    const option = list.children[active];
+    const option = list.querySelector(`[id="${listId}-${String(active)}"]`);
     if (!(option instanceof HTMLElement)) return;
     const top = option.offsetTop;
     const bottom = top + option.offsetHeight;
     if (top < list.scrollTop) list.scrollTop = top;
     else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight;
-  }, [open, active]);
+  }, [open, active, listId]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     const last = options.length - 1;
@@ -153,33 +176,46 @@ export function GlassSelect({ labelledBy, value, options, onChange }: GlassSelec
         hidden={!open}
         tabIndex={-1}
       >
-        {options.map((option, index) => (
-          <div
-            key={option.value}
-            id={optionId(index)}
-            role="option"
-            aria-selected={index === selectedIndex}
-            className={styles.option}
-            data-active={(open && index === active) || undefined}
-            // Focus stays on the field (aria-activedescendant pattern), so the option takes the
-            // pointer only: pressing it does not move focus, releasing it chooses it.
-            onPointerEnter={() => {
-              setActive(index);
-            }}
-            onPointerDown={(event) => {
-              event.preventDefault();
-            }}
-            onPointerUp={() => {
-              choose(index);
-            }}
-          >
-            <span className={styles.optionText}>
-              {option.label}
-              {option.detail && <span className={styles.detail}>{option.detail}</span>}
-            </span>
-            <span className={styles.tick} aria-hidden="true" />
-          </div>
-        ))}
+        {groupOptions(options).map((group, groupIndex) => {
+          const items = group.items.map(({ option, index }) => (
+            <div
+              key={option.value}
+              id={optionId(index)}
+              role="option"
+              aria-selected={index === selectedIndex}
+              className={styles.option}
+              data-active={(open && index === active) || undefined}
+              // Focus stays on the field (aria-activedescendant pattern), so the option takes the
+              // pointer only: pressing it does not move focus, releasing it chooses it.
+              onPointerEnter={() => {
+                setActive(index);
+              }}
+              onPointerDown={(event) => {
+                event.preventDefault();
+              }}
+              onPointerUp={() => {
+                choose(index);
+              }}
+            >
+              <span className={styles.optionText}>
+                {option.label}
+                {option.detail && <span className={styles.detail}>{option.detail}</span>}
+              </span>
+              <span className={styles.tick} aria-hidden="true" />
+            </div>
+          ));
+          if (group.label === null) return items;
+          const headingId = `${listId}-group-${String(groupIndex)}`;
+          // WAI-ARIA grouped listbox: role="group" named by a presentational heading.
+          return (
+            <div key={headingId} role="group" aria-labelledby={headingId} className={styles.group}>
+              <div id={headingId} role="presentation" className={styles.groupLabel}>
+                {group.label}
+              </div>
+              {items}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

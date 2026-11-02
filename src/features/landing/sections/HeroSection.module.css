@@ -4,8 +4,10 @@
  *
  * The composition is the page column (fluid --nm-page-max, minus the gutters): 1264px at 1440, about
  * 1600px at 1920, 2060px at 2560, at most 2400px. --hero-w is that width; --hero-u is one laptop pixel
- * at the composition's scale (1px at 1264px wide). Type, gaps and controls are sized from it, so the
- * whole hero grows in proportion with the column, within readable bounds.
+ * at the composition's scale: 1px for the 1264 × 900 reference screen. It follows the width, but never
+ * grows faster than the screen's height (100svh / 900), so a wide but short window (a 1920px laptop
+ * under browser bars, or display scaling at 125–150%) keeps the whole copy on the first screen instead
+ * of pushing the buttons and the note below it.
  *
  * The hero fills the first screen (100svh, so mobile browser bars never cut it), and the next
  * section starts below the fold. The navbar floats (position: fixed), so the top padding only clears
@@ -13,7 +15,7 @@
  */
 .hero {
   --hero-w: calc(min(100vw, var(--nm-page-max)) - 2 * var(--nm-gutter));
-  --hero-u: calc(var(--hero-w) / 1264);
+  --hero-u: min(calc(var(--hero-w) / 1264), calc(100svh / 900));
 
   position: relative;
   display: grid;
@@ -60,8 +62,8 @@
 }
 
 /*
- * Two columns: everything scales with the composition. The heading is 4% of its width (about 10.5em
- * per copy column), so it wraps the same way at every desktop size; 8svh keeps it on short screens.
+ * Two columns: everything scales with the composition. The heading is 4% of the reference width
+ * (50.56 units), so it wraps the same way at every desktop size; 8svh keeps it on short screens.
  * Text blocks span the copy column, which keeps their line length constant as the type grows. The
  * copy sits a little above the map's centre (optical centring).
  */
@@ -73,7 +75,7 @@
 
   .title {
     max-width: none;
-    font-size: min(clamp(2.5rem, var(--hero-w) * 0.04, 6rem), 8svh);
+    font-size: min(clamp(2.5rem, 50.56 * var(--hero-u), 6rem), 8svh);
   }
 
   .lead {

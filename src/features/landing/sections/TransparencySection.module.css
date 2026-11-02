@@ -114,6 +114,22 @@
   align-items: center;
 }
 
+/* Short laptop screens (two columns, under 820px tall): tighter spacing so the section fits one screen. */
+@media (width >= 960px) and (height < 820px) {
+  .copy,
+  .statuses {
+    gap: 10px;
+  }
+
+  .status {
+    padding: 10px 14px;
+  }
+
+  .passport {
+    gap: 20px;
+  }
+}
+
 @media (width < 960px) {
   .section {
     grid-template-columns: minmax(0, 1fr);

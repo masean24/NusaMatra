@@ -74,6 +74,13 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
                           <button
                             type="button"
                             className={styles.suggestion}
+                            // The list is shown only while focus is inside the search box. iOS Safari
+                            // does not focus a tapped button, so the field's blur would hide the list
+                            // before the tap's click arrives; keeping focus in the field lets it land
+                            // (as the home page search does).
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                            }}
                             onClick={() => {
                               setQuery('');
                               onSelect(region.regionId);

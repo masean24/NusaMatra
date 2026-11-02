@@ -16,14 +16,20 @@ const FOOTER_GROUPS = [
     title: 'Transparansi',
     links: [
       { label: 'Sumber data', to: '/#sumber' },
-      { label: 'Metodologi', to: '/metodologi' },
+      { label: 'Cara skor dihitung', to: '/metodologi' },
       { label: 'Batasan data', to: '/titik-buta-data' },
       { label: 'Aksesibilitas', to: '/aksesibilitas' },
     ],
   },
 ] as const;
 
-/** Figma 41:433: dark band (cobalt-deep in Kaca), brand statement and two link groups. */
+/** The team that built Nusa Matra for Web In Action 2026. */
+const TEAM = {
+  name: 'Sedang Mengetik...',
+  members: ['Mgs. M. Fahim Rahmatullah', 'Khalil Amin Adillah', 'Raihan Daris Ramadhan'],
+} as const;
+
+/** Figma 41:433: dark band (cobalt-deep in Kaca), brand statement, two link groups and the team. */
 export function SiteFooter() {
   return (
     <footer className={styles.footer}>
@@ -51,6 +57,18 @@ export function SiteFooter() {
             </ul>
           </nav>
         ))}
+        <section className={styles.group} aria-labelledby="footer-tim">
+          <h2 id="footer-tim" className="kk-body-strong">
+            Tim {TEAM.name}
+          </h2>
+          <ul role="list" className={styles.links}>
+            {TEAM.members.map((member) => (
+              <li key={member} className={`kk-small ${styles.member}`}>
+                {member}
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </footer>
   );

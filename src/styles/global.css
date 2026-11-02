@@ -14,8 +14,12 @@ html {
    * The rem scale grows gently with the wider page column on large monitors: 16px up to 1440px wide,
    * about 18.6px at 1920 and 22px from 2560. In percent, so the reader's own default size still sets
    * the base. Media queries are unaffected (they use the initial font size).
+   *
+   * It never grows faster than the screen's height (16px per 900px, 1.7778svh), so a wide but short
+   * window, a 1920px laptop under browser bars or a laptop at 125–150% display scaling, keeps 16px
+   * type and sections that fit its screen instead of type sized for a tall monitor.
    */
-  font-size: clamp(100%, 51.76% + 0.536vw, 137.5%);
+  font-size: clamp(100%, min(51.76% + 0.536vw, 1.7778svh), 137.5%);
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   /* Anchor targets clear the floating navbar. */

@@ -8,8 +8,7 @@
 
 /*
  * LIVE loader, centred in the part of the map the sidebar leaves free: a glass card with the
- * country's outline and a light sweeping across it, then the status in words. The sweep is a
- * translated gradient (compositor-only), so it keeps moving while the main thread builds the map.
+ * country's coastline being traced and filling in, then the status in words.
  */
 .loader {
   display: grid;
@@ -23,23 +22,27 @@
   animation: loader-in 360ms var(--nm-ease-calm) both;
 }
 
-.loaderMap {
-  position: relative;
+/*
+ * The coastline lights up slowly: the stroke is drawn along each island's outline (the dash pattern
+ * restarts at every subpath) while the land fills in, then both ease back. The stroke keeps 1.2px at
+ * any card size (non-scaling stroke).
+ */
+.coast {
+  display: block;
   width: 100%;
   aspect-ratio: 1000 / 375;
   margin-bottom: 8px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--ink) 22%, transparent);
-  mask: var(--silhouette) center / contain no-repeat;
+  overflow: visible;
+  color: var(--c-text-strong-accent);
 }
 
-.loaderSweep {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(100deg, transparent 20%, var(--nm-accent) 50%, transparent 80%);
-  opacity: 0.85;
-  transform: translateX(-100%);
-  animation: loader-sweep 1.6s var(--nm-ease-ui) infinite;
+.coast path {
+  fill: currentcolor;
+  stroke: currentcolor;
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+  stroke-dasharray: 600;
+  animation: trace-coast 3.5s ease-in-out infinite;
 }
 
 .loaderTitle {
@@ -53,9 +56,16 @@
   font-size: 0.8125rem;
 }
 
-@keyframes loader-sweep {
-  to {
-    transform: translateX(100%);
+@keyframes trace-coast {
+  0%,
+  100% {
+    fill-opacity: 0.35;
+    stroke-dashoffset: 600;
+  }
+
+  50% {
+    fill-opacity: 0.95;
+    stroke-dashoffset: 0;
   }
 }
 
@@ -71,10 +81,10 @@
     animation: none;
   }
 
-  /* No travelling light: the outline glows gently instead. */
-  .loaderSweep {
-    transform: none;
-    opacity: 0.35;
+  /* No tracing: the whole coastline is drawn, the land half filled. */
+  .coast path {
+    fill-opacity: 0.6;
+    stroke-dasharray: none;
     animation: none;
   }
 }

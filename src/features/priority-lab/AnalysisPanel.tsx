@@ -27,13 +27,16 @@ import {
   matchingPreset,
   directionVerdictText,
   isDirectionUnverified,
+  percentLabel,
   rankMovement,
+  rankingBasis,
   regionLabel,
   type IndicatorOption,
 } from './labModel';
 import { StatusPanel } from './StatusPanel';
 import { impactRowsOf } from './directionChecks';
 import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
+import { useRankScroll } from './useRankScroll';
 import styles from './PriorityLab.module.css';
 
 const PAGE_SIZE = 10;
@@ -563,6 +566,8 @@ function RankingWorkspace({
     ? ordered.filter((item) => item.regionDisplayName.toLowerCase().includes(needle))
     : ordered;
   const rows = matching.slice(0, shown);
+  const basis = rankingBasis(integrity.weightsUsed);
+  const { scrollRef, style: scrollStyle, revealFrom, resetScroll } = useRankScroll(rows.length, PAGE_SIZE);
 
   return (
     <div className={styles.results}>
@@ -573,9 +578,27 @@ function RankingWorkspace({
         data-refreshing={refreshing || undefined}
       >
         <div className={styles.rankingHead}>
-          <h2 id="lab-peringkat" className={styles.cardTitle}>
-            Peringkat wilayah
-          </h2>
+          <div className={styles.rankingTitleBlock}>
+            <h2 id="lab-peringkat" className={styles.cardTitle}>
+              Peringkat wilayah
+            </h2>
+            {basis.length > 0 && (
+              // What the ranking is based on: the weights actually used, largest first, one per line.
+              <>
+                <p id="lab-peringkat-dasar" className={styles.rankingBasisLead}>
+                  Berdasarkan bobot:
+                </p>
+                <ul role="list" className={styles.rankingBasis} aria-labelledby="lab-peringkat-dasar">
+                  {basis.map(([id, basisPoints]) => (
+                    <li key={id} className={styles.basisItem}>
+                      <span>{labelOf(id)}</span>
+                      <strong className="kk-number">{percentLabel(basisPoints)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
           <div className={`glass-seg ${styles.orderToggle}`} role="group" aria-label="Urutan tampilan">
             {(['high', 'low'] as const).map((value) => (
               <button
@@ -586,6 +609,7 @@ function RankingWorkspace({
                   setOrder(value);
                   setShown(PAGE_SIZE);
                   setOpenId(null);
+                  resetScroll();
                 }}
               >
                 {ORDER_LABEL[value]}
@@ -616,6 +640,7 @@ function RankingWorkspace({
               onChange={(event) => {
                 setQuery(event.target.value);
                 setShown(PAGE_SIZE);
+                resetScroll();
               }}
             />
           </span>
@@ -635,6 +660,7 @@ function RankingWorkspace({
                 setCompleteOnly(event.target.checked);
                 setShown(PAGE_SIZE);
                 setOpenId(null);
+                resetScroll();
               }}
             />
             <label htmlFor={completeId}>Hanya data lengkap</label>
@@ -652,29 +678,33 @@ function RankingWorkspace({
               : 'Tidak ada wilayah untuk ditampilkan.'}
           </p>
         ) : (
-          <RankingChart
-            rows={rows}
-            openId={openId}
-            onToggle={(regionId) => {
-              setOpenId((current) => (current === regionId ? null : regionId));
-            }}
-            renderDetail={(item) => (
-              <ContributionChart
-                item={item}
-                weightsUsed={integrity.weightsUsed}
-                labelOf={labelOf}
-                seriesOf={seriesOf}
-                passportHref={passportHrefFor?.(item.regionId) ?? null}
-              />
-            )}
-            moves={moves}
-            minCoveragePct={result.minCoveragePct}
-          />
+          // The card keeps the height of the first page: further rows scroll inside it.
+          <div ref={scrollRef} className={styles.rankScroll} style={scrollStyle}>
+            <RankingChart
+              rows={rows}
+              openId={openId}
+              onToggle={(regionId) => {
+                setOpenId((current) => (current === regionId ? null : regionId));
+              }}
+              renderDetail={(item) => (
+                <ContributionChart
+                  item={item}
+                  weightsUsed={integrity.weightsUsed}
+                  labelOf={labelOf}
+                  seriesOf={seriesOf}
+                  passportHref={passportHrefFor?.(item.regionId) ?? null}
+                />
+              )}
+              moves={moves}
+              minCoveragePct={result.minCoveragePct}
+            />
+          </div>
         )}
         {shown < matching.length && (
           <Button
             variant="secondary"
             onClick={() => {
+              revealFrom(shown);
               setShown((current) => current + PAGE_SIZE);
             }}
           >

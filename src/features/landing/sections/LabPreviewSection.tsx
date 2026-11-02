@@ -24,6 +24,62 @@ function weightRows(preset: CompositePresetDTO, names: ReadonlyMap<string, strin
     .map(([id, bps]) => ({ id, name: names.get(id) ?? id, bps, unavailable: unavailable.has(id) }));
 }
 
+type WeightRow = ReturnType<typeof weightRows>[number];
+
+/**
+ * One focus: its name, its weights as bars and what its largest weight means. The `live` panel is the
+ * one shown (its bars spring to new lengths); the others only reserve their height, hidden.
+ */
+function FocusPanel({
+  preset,
+  rows,
+  live = false,
+}: {
+  readonly preset: CompositePresetDTO;
+  readonly rows: readonly WeightRow[];
+  readonly live?: boolean;
+}) {
+  const top = rows[0];
+  return (
+    <div
+      className={styles.focusBody}
+      data-sizer={live ? undefined : true}
+      aria-live={live ? 'polite' : undefined}
+      aria-hidden={live ? undefined : true}
+    >
+      <p className={`kk-body-strong ${styles.presetTitle}`}>{preset.label}</p>
+      <ul role="list" className={styles.weights} aria-label={`Bobot fokus ${preset.label}`}>
+        {rows.map((row) => (
+          <li
+            key={row.id}
+            className={styles.weight}
+            style={{ '--bar-fill': row.bps / 10000 } as CSSProperties}
+          >
+            <span className={styles.weightHeader}>
+              <span>{row.name}</span>
+              <span className={`kk-number ${styles.percent}`}>{percent(row.bps)}</span>
+            </span>
+            <span className={styles.track} aria-hidden="true">
+              <span className={styles.bar} />
+            </span>
+            {row.unavailable && (
+              <span className={`kk-caption ${styles.note}`}>
+                Belum ada data · bobotnya dialihkan ke indikator lain
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+      {top && (
+        <p className={`kk-small ${styles.explain}`}>
+          {top.name} mendapat bobot terbesar ({percent(top.bps)}). Di Lab Prioritas, bobot ini dipakai untuk
+          mengurutkan kabupaten/kota, dan setiap skor bisa diurai menjadi sumbangan tiap indikator.
+        </p>
+      )}
+    </div>
+  );
+}
+
 /**
  * "Bagaimana pilihanmu mengubah prioritas wilayah?" (owner revision 2026-10-27): the visitor picks a
  * development focus, which is one of the Data Hub's own composite presets, and sees the weights it
@@ -47,7 +103,6 @@ export function LabPreviewSection() {
     ? (loaded.presets.find((item) => item.presetId === chosenId) ?? loaded.presets[0])
     : null;
   const rows = preset && loaded ? weightRows(preset, loaded.names) : [];
-  const top = rows[0];
 
   return (
     <section id="lab-prioritas" className={styles.section} aria-labelledby="lab-title">
@@ -103,37 +158,16 @@ export function LabPreviewSection() {
                 ))}
               </div>
 
-              <div className={styles.focusBody} aria-live="polite">
-                <p className={`kk-body-strong ${styles.presetTitle}`}>{preset.label}</p>
-                <ul role="list" className={styles.weights} aria-label={`Bobot fokus ${preset.label}`}>
-                  {rows.map((row) => (
-                    <li
-                      key={row.id}
-                      className={styles.weight}
-                      style={{ '--bar-fill': row.bps / 10000 } as CSSProperties}
-                    >
-                      <span className={styles.weightHeader}>
-                        <span>{row.name}</span>
-                        <span className={`kk-number ${styles.percent}`}>{percent(row.bps)}</span>
-                      </span>
-                      <span className={styles.track} aria-hidden="true">
-                        <span className={styles.bar} />
-                      </span>
-                      {row.unavailable && (
-                        <span className={`kk-caption ${styles.note}`}>
-                          Belum ada data · bobotnya dialihkan ke indikator lain
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-                {top && (
-                  <p className={`kk-small ${styles.explain}`}>
-                    {top.name} mendapat bobot terbesar ({percent(top.bps)}). Di Lab Prioritas, bobot ini
-                    dipakai untuk mengurutkan kabupaten/kota, dan setiap skor bisa diurai menjadi sumbangan
-                    tiap indikator.
-                  </p>
-                )}
+              {/*
+               * The card keeps one size whichever focus is chosen: every focus is also laid out,
+               * invisibly, in the same grid cell, so the cell is as tall as the tallest one and only
+               * the content changes.
+               */}
+              <div className={styles.focusStack}>
+                <FocusPanel preset={preset} rows={rows} live />
+                {loaded.presets.map((item) => (
+                  <FocusPanel key={item.presetId} preset={item} rows={weightRows(item, loaded.names)} />
+                ))}
               </div>
             </>
           )}

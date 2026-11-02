@@ -11,6 +11,7 @@ import {
   ComparisonPage,
   EvidencePassportPage,
   ExplorePage,
+  MethodologyPage,
   PriorityLabPage,
 } from './lazyPages';
 
@@ -22,6 +23,7 @@ const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement
   '/bandingkan': (shell) => <ComparisonPage shell={shell} />,
   '/lab-prioritas': (shell) => <PriorityLabPage shell={shell} />,
   '/paspor-bukti': (shell) => <EvidencePassportPage shell={shell} />,
+  '/metodologi': (shell) => <MethodologyPage shell={shell} />,
 };
 
 function pageFor(shell: FeatureShell): ReactElement {

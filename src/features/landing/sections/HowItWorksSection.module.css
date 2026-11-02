@@ -337,6 +337,72 @@
 /* ------------------------------------------------------------------ tablet and phone */
 
 /*
+ * Short laptop screens (two columns, under 820px tall): tighter spacing and a shorter picture, so the
+ * heading, the four questions and the card fit one screen.
+ */
+@media (width >= 960px) and (height < 820px) {
+  .section {
+    gap: 20px;
+  }
+
+  .tabs {
+    gap: 10px;
+  }
+
+  .tab {
+    padding: 12px 16px;
+  }
+
+  .tabIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .question {
+    font-size: 1rem;
+  }
+
+  .preview {
+    padding: 18px;
+  }
+
+  .panel {
+    gap: 14px 20px;
+  }
+
+  .picture {
+    min-height: 220px;
+  }
+
+  .panelBody {
+    gap: 10px;
+  }
+}
+
+/* Very short screens (e.g. 1366 × 768 under browser bars): one more step tighter. */
+@media (width >= 960px) and (height < 700px) {
+  .section {
+    gap: 16px;
+  }
+
+  .tabs {
+    gap: 8px;
+  }
+
+  .tab {
+    padding-block: 10px;
+  }
+
+  .preview {
+    padding: 16px;
+  }
+
+  .picture {
+    min-height: 200px;
+  }
+}
+
+/*
  * Below 960px: the questions become a 2×2 grid of tiles above the card, and inside the card the
  * picture comes first, then the title, the steps and a full-width button.
  */

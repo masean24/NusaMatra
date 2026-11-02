@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createFixtureFetch,
@@ -537,6 +537,25 @@ describe('RegionPicker inside the comparison', () => {
     expect(await screen.findByRole('button', { name: /Kota Semarang/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Provinsi Jawa Barat/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Aceh Selatan/ })).not.toBeInTheDocument();
+  });
+
+  it('keeps focus in the field when a suggestion is pressed, so a tap on iOS reaches it', async () => {
+    const { router } = renderWithDataHub(<RegionComparison />, {
+      fetchImpl: searchFetch(),
+      dataMode: 'LIVE',
+      path: '/bandingkan',
+    });
+
+    await userEvent.type(screen.getByLabelText('Cari Wilayah A'), 'sem');
+    const suggestion = await screen.findByRole('button', { name: /Kota Semarang/ });
+    // iOS Safari does not focus a tapped button: the press must not take focus from the field, or the
+    // list (shown while focus is inside the search box) would vanish before the click arrives.
+    expect(fireEvent.mouseDown(suggestion)).toBe(false);
+    expect(screen.getByLabelText('Cari Wilayah A')).toHaveFocus();
+    fireEvent.click(suggestion);
+    await waitFor(() => {
+      expect(router.state.location.search).toContain('a=');
+    });
   });
 
   it('selects a suggestion with the keyboard alone', async () => {

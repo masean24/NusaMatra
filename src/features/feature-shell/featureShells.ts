@@ -106,11 +106,13 @@ export const FEATURE_SHELLS: readonly FeatureShell[] = [
   },
   {
     path: '/metodologi',
-    title: 'Metodologi',
-    summary: 'Cara Nusa Matra menormalkan indikator, menghitung skor, dan menangani data yang hilang.',
+    title: 'Cara Skor Dihitung',
+    summary:
+      'Dari angka resmi sampai peringkat dalam tiga langkah, dengan contoh angka sungguhan dari Data Hub. Semua skor dihitung oleh Data Hub; halaman ini menjelaskan caranya.',
     plannedCapabilities: [
-      'Membaca rumus skor dan kebijakan data hilang yang sudah disetujui.',
-      'Melihat versi model yang dipakai setiap analisis.',
+      'Membaca rumus skor kebutuhan 0–100 dan skor gabungan Lab Prioritas.',
+      'Melihat contoh perhitungan satu indikator untuk satu wilayah.',
+      'Memahami cara data yang kosong ditangani.',
     ],
     figmaNode: null,
   },

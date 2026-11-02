@@ -68,6 +68,20 @@
   margin: 0;
 }
 
+/* The indicator's name leads the card: strong ink, so it reads as the card's heading. */
+.cardTitle {
+  color: var(--c-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.justified {
+  text-align: justify;
+  hyphens: auto;
+}
+
 .bigValue {
   font-size: 1.375rem;
   font-weight: 600;

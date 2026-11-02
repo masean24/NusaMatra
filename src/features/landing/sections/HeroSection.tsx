@@ -23,10 +23,13 @@ const HOW_IT_WORKS_ID = 'cara-kerja';
  * jump would; the URL hash is kept for sharing. Reduced motion jumps without the glide.
  */
 function scrollToCentre(section: HTMLElement, reducedMotion: boolean) {
-  // The space a section can rest in is the screen under the floating navbar's band.
+  // The space a section can rest in is the screen under the floating navbar's band, so it is centred
+  // in that space (not in the whole screen, which would slide its top under the navbar).
   const navBand = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
-  const fits = section.offsetHeight <= window.innerHeight - navBand;
-  section.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: fits ? 'center' : 'start' });
+  const room = window.innerHeight - navBand;
+  const spare = Math.max(0, room - section.offsetHeight) / 2;
+  const top = section.getBoundingClientRect().top + window.scrollY - navBand - spare;
+  window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion ? 'auto' : 'smooth' });
   section.focus({ preventScroll: true });
   window.history.replaceState(window.history.state, '', `#${section.id}`);
 }

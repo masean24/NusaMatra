@@ -43,6 +43,10 @@
   gap: 10px;
 }
 
+.member {
+  color: var(--c-on-footer-muted);
+}
+
 .link {
   color: var(--c-on-footer-muted);
   text-decoration: none;

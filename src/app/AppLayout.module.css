@@ -9,10 +9,19 @@
   color: var(--nm-text-on-sea);
   font-weight: 500;
   text-decoration: none;
+  /*
+   * Out of sight until a keyboard focuses it. Moving it up alone is not enough: iOS Safari draws the
+   * page under its translucent status bar and toolbar, where the moved link still showed, so it is
+   * also transparent and unclickable until focused.
+   */
+  opacity: 0;
+  pointer-events: none;
   transform: translateY(-200%);
 }
 
 .skipLink:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
   transform: none;
   outline-color: var(--nm-accent);
 }

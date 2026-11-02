@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { ButtonLink } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
+import { GlassSelect } from '@/components/ui/GlassSelect/GlassSelect';
 import { Surface } from '@/components/ui/Surface/Surface';
 import {
   ResourceView,
@@ -19,8 +21,10 @@ import type {
   RegionIndicatorMeasurementDTO,
 } from '@/services/api';
 
-type IndicatorValuesEnvelope = AdaptedEnvelope<IndicatorValuesMapDTO>;
+import { scoreMethodHref } from './scoreMethodHref';
 import styles from './IndicatorPanel.module.css';
+
+type IndicatorValuesEnvelope = AdaptedEnvelope<IndicatorValuesMapDTO>;
 
 /** Opened first when the catalog has it; otherwise the first indicator the Data Hub lists. */
 const PREFERRED_INDICATOR_ID = 'soc_poverty_rate';
@@ -53,6 +57,7 @@ export function IndicatorPanel({ regionId, embedded = false }: IndicatorPanelPro
     repository.getIndicatorCatalog({ dataMode, signal }),
   );
   const [chosenId, setChosenId] = useState<string | null>(null);
+  const pickerLabelId = useId();
   const Frame = embedded ? 'section' : Surface;
   const frameProps = embedded
     ? { className: styles.embedded, 'aria-labelledby': 'indikator-judul' }
@@ -70,27 +75,22 @@ export function IndicatorPanel({ regionId, embedded = false }: IndicatorPanelPro
           return (
             <>
               <div className={styles.picker}>
-                <label htmlFor="indikator-pilihan" className="kk-body-strong">
+                <span id={pickerLabelId} className="kk-body-strong">
                   Pilih indikator
-                </label>
-                <select
-                  id="indikator-pilihan"
-                  className={styles.select}
+                </span>
+                {/* The glass combobox, grouped by theme as the native <optgroup> list was. */}
+                <GlassSelect
+                  labelledBy={pickerLabelId}
                   value={indicator.indicatorId}
-                  onChange={(event) => {
-                    setChosenId(event.target.value);
-                  }}
-                >
-                  {envelope.data.categories.map((category) => (
-                    <optgroup key={category} label={categoryLabel(category)}>
-                      {(envelope.data.byCategory[category] ?? []).map((item) => (
-                        <option key={item.indicatorId} value={item.indicatorId}>
-                          {item.labelId}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
+                  options={envelope.data.categories.flatMap((category) =>
+                    (envelope.data.byCategory[category] ?? []).map((item) => ({
+                      value: item.indicatorId,
+                      label: item.labelId,
+                      group: categoryLabel(category),
+                    })),
+                  )}
+                  onChange={setChosenId}
+                />
               </div>
               <IndicatorDetail indicator={indicator} regionId={regionId} />
             </>
@@ -206,9 +206,12 @@ function IndicatorRegionValue({
   readonly regionId: string | null;
   readonly values: ReturnType<typeof useDataHubResource<IndicatorValuesEnvelope>>;
 }) {
+  const titleId = useId();
   return (
-    <section aria-label="Nilai pada wilayah terpilih" className={styles.value}>
-      <h3 className="kk-body-strong">Nilai pada wilayah terpilih</h3>
+    <section aria-labelledby={titleId} className={styles.valueCard}>
+      <h3 id={titleId} className={styles.valueTitle}>
+        Nilai pada wilayah terpilih
+      </h3>
       {regionId === null ? (
         <p className="kk-body">Pilih wilayah pada daftar untuk melihat nilainya.</p>
       ) : (
@@ -236,6 +239,13 @@ function IndicatorRegionValue({
           }}
         </ResourceView>
       )}
+      <ButtonLink
+        to={scoreMethodHref(indicator.indicatorId, regionId)}
+        variant="secondary"
+        className={styles.methodLink}
+      >
+        Bagaimana skor tersebut dihitung
+      </ButtonLink>
     </section>
   );
 }

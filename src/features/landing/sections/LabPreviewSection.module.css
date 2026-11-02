@@ -15,8 +15,14 @@
   border-radius: var(--nm-radius-band); /* the material is the global `glass` */
 }
 
+/*
+ * The data-columns zone is taller than wide (540:740), so its width is also capped by the screen's
+ * height: the band never grows taller than a laptop screen because of the picture.
+ */
 .visual {
-  max-width: 33.75rem;
+  justify-self: center;
+  width: 100%;
+  max-width: min(33.75rem, calc((100svh - 220px) * 540 / 740));
 }
 
 .content {
@@ -48,8 +54,23 @@
 /* The focus options: one segmented row, wrapping to two on narrow columns. */
 .focus {
   grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(9.5rem, 100%), 1fr));
   gap: 2px;
+  min-width: 0;
+}
+
+/* Phones: two by two, never wider than the card. */
+@media (width < 640px) {
+  .focus {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .focus button {
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 0.8125rem;
+    overflow-wrap: anywhere;
+  }
 }
 
 .focus button {
@@ -65,10 +86,26 @@
     var(--thumb-sh);
 }
 
+/* All focuses share one grid cell: the visible one, and the hidden ones that only reserve height. */
+.focusStack {
+  display: grid;
+  min-width: 0;
+}
+
+.focusStack > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
 .focusBody {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.focusBody[data-sizer] {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .presetTitle {
@@ -177,6 +214,75 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+}
+
+/*
+ * Short laptop screens (two columns, under 820px tall): a tighter band so the whole section fits one
+ * screen; the four focus options stay on one row.
+ */
+@media (width >= 960px) and (height < 820px) {
+  /* The picture is capped by the height, so the text takes the room it leaves (fewer wrapped lines). */
+  .band {
+    grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+    padding: 28px clamp(20px, 3vw, 36px) 28px 28px;
+  }
+
+  .content {
+    gap: 10px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .focus {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .focus button {
+    min-height: 40px;
+    padding: 4px 8px;
+  }
+
+  .focusBody {
+    gap: 10px;
+  }
+
+  .weights {
+    gap: 8px;
+  }
+
+  .weight {
+    gap: 4px;
+  }
+
+  .weightHeader {
+    font-size: 0.875rem;
+  }
+}
+
+/* Very short screens (e.g. 1366 × 768 under browser bars): one more step tighter. */
+@media (width >= 960px) and (height < 700px) {
+  .band {
+    padding-block: 22px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .focusBody,
+  .content {
+    gap: 8px;
+  }
+
+  .weights {
+    gap: 6px;
+  }
+
+  .explain {
+    font-size: 0.8125rem;
+  }
 }
 
 @media (width < 960px) {

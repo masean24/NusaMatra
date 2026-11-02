@@ -15,5 +15,7 @@ export type {
   IndicatorReadingInput,
   PercentileOrientation,
 } from './interpretIndicator';
+export { needEndOf, needScore } from './needScore';
+export type { NeedEnd, NeedScoreInput } from './needScore';
 export { readComparison } from './interpretComparison';
 export type { ComparisonReading, ComparisonReadingInput, ComparisonVerdict } from './interpretComparison';

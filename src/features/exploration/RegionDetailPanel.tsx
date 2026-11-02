@@ -212,9 +212,11 @@ function ProfileBody({
           Ringkasan
         </h3>
         <ul role="list" className={styles.summary}>
+          {/* The essentials only: what is measured, its value and the verdict; the reasoning behind
+              the verdict stays in each indicator's details below. */}
           {insight.summary.map((indicator) => (
             <li key={indicator.id} className={styles.card}>
-              <p className={`kk-small ${styles.muted}`}>{indicator.label}</p>
+              <p className={styles.cardTitle}>{indicator.label}</p>
               <p className={styles.bigValue}>
                 {indicator.valueText}
                 {indicator.unit.label ? (
@@ -225,11 +227,10 @@ function ProfileBody({
                 {indicator.reading.label}
               </ConditionBadge>
               {indicator.isDemoExample && <Chip tone="warning">DEMO_EXAMPLE</Chip>}
-              <p className={`kk-small ${styles.muted}`}>{indicator.reading.explanation}</p>
             </li>
           ))}
         </ul>
-        <p className={`kk-small ${styles.muted}`}>
+        <p className={`kk-small ${styles.muted} ${styles.justified}`}>
           Penilaian membandingkan wilayah ini dengan wilayah lain yang datanya tersedia, satu indikator sekali
           waktu. Itu bukan penilaian atas seluruh kondisi wilayah.
         </p>

@@ -39,6 +39,7 @@ export function BoundaryNotice({ compact = false }: { readonly compact?: boolean
           state={boundaries.state}
           onRetry={boundaries.retry}
           loadingTitle="Memeriksa data batas wilayah…"
+          loadingIcon="layers"
         >
           {(envelope) => {
             const readiness = describeBoundaryReadiness(envelope.data);

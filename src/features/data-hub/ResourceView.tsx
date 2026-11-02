@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { StatusMessage } from '@/components/feedback/StatusMessage';
+import { StatusMessage, type LoadingIcon } from '@/components/feedback/StatusMessage';
 import { DataHubErrorMessage } from './DataHubErrorMessage';
 import { isLiveBlockedError } from './liveBlocked';
 import { useDataHub } from './useDataHub';
@@ -10,6 +10,8 @@ interface ResourceViewProps<T> {
   readonly state: ResourceState<T>;
   readonly onRetry?: (() => void) | undefined;
   readonly loadingTitle: string;
+  /** The loading mark (see StatusMessage); the turning ring unless a page asks for another. */
+  readonly loadingIcon?: LoadingIcon | undefined;
   readonly children: (data: T) => ReactNode;
 }
 
@@ -20,14 +22,20 @@ interface ResourceViewProps<T> {
  * for that reason therefore shows a quiet note instead of repeating the unavailable card, which
  * would stack one card per request.
  */
-export function ResourceView<T>({ state, onRetry, loadingTitle, children }: ResourceViewProps<T>) {
+export function ResourceView<T>({
+  state,
+  onRetry,
+  loadingTitle,
+  loadingIcon,
+  children,
+}: ResourceViewProps<T>) {
   const { dataMode } = useDataHub();
 
   switch (state.status) {
     case 'idle':
       return null;
     case 'loading':
-      return <StatusMessage kind="loading" title={loadingTitle} />;
+      return <StatusMessage kind="loading" title={loadingTitle} loadingIcon={loadingIcon} />;
     case 'unconfigured':
       return (
         <StatusMessage kind="unavailable" title="Data Hub belum dihubungkan">

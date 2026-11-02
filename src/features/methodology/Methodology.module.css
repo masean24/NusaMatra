@@ -1,0 +1,960 @@
+/*
+ * "Cara skor dihitung": a heading, three summary cards, the example's control bar, then the sections
+ * beside a sticky "Di halaman ini" column. Brand colours only where the meaning is the brand's (sea =
+ * the example, orange = need); every surface follows the Normal / Kaca theme tokens.
+ */
+
+/* ---------------------------------------------------------------- heading */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.header h1,
+.header p {
+  margin: 0;
+}
+
+.header > a:first-child {
+  margin-bottom: 12px;
+}
+
+.headerSummary {
+  max-width: 62ch;
+  color: var(--c-text-muted);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--c-text-strong-accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------- page */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+  margin-top: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+
+.section h2,
+.section h3,
+.section h4,
+.section p {
+  margin: 0;
+}
+
+.sectionHead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lead {
+  max-width: 68ch;
+  color: var(--c-text-muted);
+}
+
+.muted {
+  color: var(--c-text-muted);
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.rule {
+  width: 100%;
+  height: 1px;
+  margin: 4px 0;
+  border: 0;
+  background: var(--c-card-border);
+}
+
+/* ---------------------------------------------------------------- summary */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summaryCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 22px;
+  border-radius: 22px;
+}
+
+.summaryCard p,
+.summaryCard h3 {
+  margin: 0;
+}
+
+.stepBadge {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--nm-radius-step-badge);
+  background: var(--nm-accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.summaryFigure {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+  margin-top: 6px !important;
+  color: var(--c-text-strong-accent);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.summaryUnit {
+  color: var(--c-text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* The arrow between cards sits in the gap, centred on the card's edge. */
+.summaryArrow {
+  position: absolute;
+  top: 50%;
+  right: -26px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--c-text-muted);
+  transform: translateY(-50%);
+}
+
+/* ---------------------------------------------------------------- control bar */
+
+.controlBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: center;
+  padding: 16px 20px;
+  border: 1.5px dashed var(--c-card-border);
+  border-radius: 18px;
+}
+
+.modeChip {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--nm-positive-soft);
+  color: var(--nm-positive);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.modeChip[data-mode='DEMO'] {
+  background: var(--nm-land-2);
+  color: var(--nm-text);
+}
+
+.modeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+
+.controlPicker {
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 420px;
+}
+
+.controlRegion {
+  flex: 1 1 260px;
+  margin: 0;
+  color: var(--c-text-muted);
+}
+
+/* ---------------------------------------------------------------- layout and table of contents */
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  min-width: 0;
+}
+
+.toc {
+  position: sticky;
+  top: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tocTitle {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tocList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border-left: 2px solid var(--c-card-border);
+  list-style: none;
+}
+
+.tocLink {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-left: -2px;
+  padding: 8px 12px;
+  border-left: 2px solid transparent;
+  color: var(--c-text-muted);
+  font-size: 0.875rem;
+  line-height: 1.3;
+  text-decoration: none;
+  transition:
+    color 160ms var(--nm-ease-calm),
+    border-color 160ms var(--nm-ease-calm);
+}
+
+.tocLink:hover {
+  color: var(--c-text);
+}
+
+.tocLink[aria-current='location'] {
+  border-left-color: var(--nm-accent);
+  color: var(--c-text-strong-accent);
+  font-weight: 600;
+}
+
+.tocKicker {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ---------------------------------------------------------------- shared cards */
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cardGridTwo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.iconCard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 18px;
+}
+
+.iconTile {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--nm-radius-icon);
+  background: color-mix(in srgb, var(--c-text-strong-accent) 12%, transparent);
+  color: var(--c-text-strong-accent);
+}
+
+.infoNote {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--c-text-strong-accent) 9%, transparent);
+  color: var(--c-text);
+}
+
+.infoNote .icon {
+  margin-top: 1px;
+  color: var(--c-text-strong-accent);
+}
+
+.chipRow,
+.pillRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+
+.chip {
+  padding: 4px 10px;
+  border-radius: var(--nm-radius-pill);
+  background: var(--c-surface-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.chip[data-tone='sea'] {
+  background: color-mix(in srgb, var(--c-text-strong-accent) 14%, transparent);
+  color: var(--c-text-strong-accent);
+}
+
+.pill {
+  padding: 6px 12px;
+  border: 1px solid var(--c-card-border);
+  border-radius: var(--nm-radius-pill);
+  font-size: 0.8125rem;
+}
+
+.exampleNote {
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--c-surface-muted);
+}
+
+/* ---------------------------------------------------------------- langkah 1 */
+
+.valueCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.valueFigure {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--c-text-strong-accent);
+  font-size: clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.valueUnit {
+  color: var(--c-text-muted);
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------- langkah 2 */
+
+.formulas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.formulaCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border-left: 4px solid var(--c-text-strong-accent);
+  border-radius: 18px;
+}
+
+.formulaCard[data-direction='low'] {
+  border-left-color: var(--nm-accent);
+}
+
+.formula {
+  max-width: 100%;
+  margin: 0;
+  padding: 10px 14px;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--c-surface-muted);
+  font-family: var(--nm-font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.formulaWide {
+  font-size: 1rem;
+  text-align: center;
+}
+
+.miniScale {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.miniTrack {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.miniTrack[data-need-end='high'],
+.rangeTrack[data-need-end='high'] {
+  background: linear-gradient(90deg, var(--nm-land-3), var(--nm-accent));
+}
+
+.miniTrack[data-need-end='low'],
+.rangeTrack[data-need-end='low'] {
+  background: linear-gradient(90deg, var(--nm-accent), var(--nm-land-3));
+}
+
+.miniLabels,
+.rangeLabels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+}
+
+/* The worked example is a link target under the floating navbar. */
+.anchor {
+  scroll-margin-top: 104px;
+}
+
+.exampleCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--c-card-border);
+}
+
+.rowLabel {
+  padding-top: 3px;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+/* A range with a marker and the value in a bubble above it. */
+.range {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 560px;
+  padding-top: 34px;
+}
+
+.rangeTrack {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+}
+
+.rangeMarker,
+.verdictMarker,
+.stackMarker {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--nm-sea);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 25%);
+  transform: translate(-50%, -50%);
+}
+
+.rangeMarker[data-tone='accent'] {
+  background: var(--nm-accent);
+}
+
+.rangeBubble {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--nm-text);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+/* ---------------------------------------------------------------- hasil */
+
+.positionCard,
+.verdictCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.positionHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--c-surface-muted);
+}
+
+.stat dt {
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+.stat dd {
+  margin: 0;
+  color: var(--c-text-muted);
+  font-size: 0.875rem;
+}
+
+.stat strong {
+  color: var(--c-text-strong-accent);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.facts li::marker {
+  color: var(--nm-accent);
+}
+
+.verdictLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Three verdict bands on the need percentile, with ticks at their bounds. */
+.verdictBar {
+  position: relative;
+  padding: 34px 0 24px;
+}
+
+.verdictTrack {
+  display: block;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--nm-positive) 0 var(--favorable-end),
+    var(--nm-sea-shallow) var(--favorable-end) var(--unfavorable-start),
+    var(--nm-negative) var(--unfavorable-start) 100%
+  );
+}
+
+.verdictMarker {
+  top: 40px;
+  background: var(--nm-text);
+}
+
+.verdictTicks {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 18px;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+}
+
+.verdictTicks span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.verdictTicks span:first-child {
+  transform: none;
+}
+
+.verdictTicks span:last-child {
+  transform: translateX(-100%);
+}
+
+.verdictRows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.verdictRows li {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.verdictRows li > :first-child {
+  justify-self: start;
+}
+
+/* ---------------------------------------------------------------- langkah 3 */
+
+.compositeCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 22px;
+}
+
+.compositeTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.compositeTable th,
+.compositeTable td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--c-card-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.compositeTable thead th {
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.compositeTable tbody th {
+  font-weight: 500;
+}
+
+.compositeTable td {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.compositeTable tfoot th,
+.compositeTable tfoot td {
+  border-bottom: 0;
+  color: var(--c-text-strong-accent);
+  font-weight: 700;
+}
+
+.compositeTable tfoot td:last-child {
+  font-size: 1.25rem;
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  border-radius: 3px;
+  background: var(--swatch);
+  vertical-align: -1px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 34px;
+}
+
+.stackTrack {
+  position: relative;
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--c-surface-muted);
+}
+
+.stackPart {
+  height: 100%;
+  background: var(--swatch);
+}
+
+.stackPart:first-child {
+  border-radius: 7px 0 0 7px;
+}
+
+.stackMarker {
+  background: var(--nm-text);
+}
+
+/* ---------------------------------------------------------------- closing */
+
+.closing {
+  gap: 14px;
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.checkList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkList li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.checkList .icon {
+  color: var(--nm-positive);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Kaca: the white-on-dark details keep their contrast on the dark glass. */
+:global([data-display-mode='glass']) .rangeBubble {
+  background: #fff;
+  color: #14193e;
+}
+
+:global([data-display-mode='glass']) .verdictMarker,
+:global([data-display-mode='glass']) .stackMarker {
+  background: #fff;
+  border-color: #14193e;
+}
+
+:global([data-display-mode='glass']) .checkList .icon,
+:global([data-display-mode='glass']) .modeChip {
+  color: #7be0b5;
+}
+
+:global([data-display-mode='glass']) .modeChip {
+  background: rgb(123 224 181 / 14%);
+}
+
+/* ---------------------------------------------------------------- narrow screens */
+
+@media (width < 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  /* The table of contents becomes a row of chips that scrolls sideways. */
+  .toc {
+    position: static;
+  }
+
+  .tocList {
+    flex-direction: row;
+    gap: 8px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    border-left: 0;
+    scrollbar-width: thin;
+  }
+
+  .tocLink {
+    flex-direction: row;
+    gap: 6px;
+    margin: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--c-card-border);
+    border-radius: var(--nm-radius-pill);
+    white-space: nowrap;
+  }
+
+  .tocLink[aria-current='location'] {
+    border-color: var(--nm-accent);
+  }
+
+  .tocKicker {
+    display: none;
+  }
+
+  .summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .summaryArrow {
+    top: auto;
+    right: auto;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%) rotate(90deg);
+  }
+
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width < 720px) {
+  .content {
+    gap: 44px;
+  }
+
+  .cardGrid,
+  .cardGridTwo,
+  .formulas,
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .row,
+  .verdictRows li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .summaryCard,
+  .valueCard,
+  .exampleCard,
+  .positionCard,
+  .verdictCard,
+  .compositeCard,
+  .closing {
+    padding: 18px;
+  }
+
+  .compositeTable th,
+  .compositeTable td {
+    padding: 8px 4px;
+    font-size: 0.875rem;
+  }
+
+  .formula {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tocLink {
+    transition: none;
+  }
+}
+
+/* The composite table scrolls inside its card rather than widening it on the narrowest phones. */
+.tableScroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (width < 720px) {
+  .compositeTable thead th {
+    font-size: 0.6875rem;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}

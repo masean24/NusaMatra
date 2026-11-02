@@ -20,3 +20,6 @@ export const EvidencePassportPage = lazy(() =>
 export const ComparisonDetailPage = lazy(() =>
   import('./pages/ComparisonDetailPage').then((m) => ({ default: m.ComparisonDetailPage })),
 );
+export const MethodologyPage = lazy(() =>
+  import('./pages/MethodologyPage').then((m) => ({ default: m.MethodologyPage })),
+);

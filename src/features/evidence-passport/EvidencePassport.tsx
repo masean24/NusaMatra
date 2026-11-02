@@ -16,7 +16,7 @@ import {
   type RegionEvidenceQuery,
 } from './evidenceQuery';
 import { BackButton } from '@/features/navigation';
-import { InvalidLink } from './PassportMessages';
+import { InvalidLink, PassportEntry } from './PassportMessages';
 import { useCompositeSources, useEvidenceSources } from './useEvidenceSources';
 import type { SourcesState } from './useSourceLoader';
 
@@ -186,6 +186,14 @@ export function EvidencePassport() {
   const [params] = useSearchParams();
   const parsed = useMemo(() => parseEvidenceQuery(params), [params]);
 
+  // Opened from the navbar, with no link to a region, comparison or ranking: nothing to assemble.
+  if (params.toString() === '') {
+    return (
+      <WithoutRecord>
+        <PassportEntry />
+      </WithoutRecord>
+    );
+  }
   if (!parsed.ok) {
     return (
       <WithoutRecord>

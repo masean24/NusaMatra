@@ -37,10 +37,10 @@ function recompute() {
   if (!(button as HTMLButtonElement).disabled) fireEvent.click(button);
 }
 
-/** Chooses a Data Hub scenario in the native select (it becomes the draft weights). */
+/** Chooses a Data Hub scenario in the "Skenario awal" glass combobox (it becomes the draft weights). */
 async function chooseScenario(name: RegExp) {
-  const option = await screen.findByRole<HTMLOptionElement>('option', { name });
-  fireEvent.change(screen.getByLabelText('Skenario awal'), { target: { value: option.value } });
+  fireEvent.click(await screen.findByRole('combobox', { name: 'Skenario awal' }));
+  fireEvent.pointerUp(await screen.findByRole('option', { name }));
 }
 
 /** Chooses a province in "Cakupan wilayah" (a glass combobox with a listbox, not a native select). */
@@ -395,7 +395,9 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
       ),
     ).toBeInTheDocument();
     expect(within(ranking).queryByText(/kondisi terbaik/i)).not.toBeInTheDocument();
-    const firstRow = within(within(ranking).getByRole('list')).getAllByRole('button')[0];
+    const firstRow = within(
+      within(ranking).getByRole('list', { name: 'Daftar peringkat wilayah' }),
+    ).getAllByRole('button')[0];
     expect(firstRow).toHaveTextContent(expected.regions[0]?.region_name ?? 'tidak ada');
     expect(firstRow).toHaveTextContent(/^1/);
     // Direction under higher_is_need, checked on the captured production values.
@@ -412,7 +414,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
   it('charts the ranking, explains a selected region as weight x score, and reverses the view without renumbering', async () => {
     renderLive();
     const ranking = await rankingRegion();
-    const list = within(ranking).getByRole('list');
+    const list = within(ranking).getByRole('list', { name: 'Daftar peringkat wilayah' });
     // Every row starts closed; opening one shows its breakdown right under it.
     expect(within(list).queryAllByRole('button', { expanded: true })).toHaveLength(0);
     expect(
@@ -449,7 +451,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
       await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/),
     ).toBeInTheDocument();
     const ranking = await rankingRegion();
-    const list = within(ranking).getByRole('list');
+    const list = within(ranking).getByRole('list', { name: 'Daftar peringkat wilayah' });
     expect(within(list).getAllByRole('button')[0]).toHaveTextContent(/^1.*Kabupaten Wonosobo.*35,06/);
     // The captured national rank (80) is computed with Lanny Jaya, whose water score is inconsistent:
     // it is left out, never recomputed; the provincial order does not use Lanny Jaya and stays.
@@ -525,10 +527,16 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     const search = within(ranking).getByLabelText('Cari wilayah dalam peringkat');
     for (const name of ['Bireuen', 'Sijunjung', 'Lampung Barat']) {
       fireEvent.change(search, { target: { value: name } });
-      expect(within(within(ranking).getByRole('list')).getAllByRole('button')[0]).toHaveTextContent(/^145/);
+      expect(
+        within(within(ranking).getByRole('list', { name: 'Daftar peringkat wilayah' })).getAllByRole(
+          'button',
+        )[0],
+      ).toHaveTextContent(/^145/);
     }
     fireEvent.change(search, { target: { value: 'Lanny Jaya' } });
-    const lanny = within(within(ranking).getByRole('list')).getAllByRole('button')[0] as HTMLElement;
+    const lanny = within(
+      within(ranking).getByRole('list', { name: 'Daftar peringkat wilayah' }),
+    ).getAllByRole('button')[0] as HTMLElement;
     expect(lanny).toHaveTextContent('Estimasi tingkat provinsi');
     fireEvent.click(lanny);
     const table = screen.getByRole('table', {
@@ -542,9 +550,10 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
       '/api/v1/indicators/composite-query': () => jsonResponse(live('composite_national_pendidikan_3t')),
     });
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
+    fireEvent.click(await screen.findByRole('combobox', { name: 'Skenario awal' }));
     const option = await screen.findByRole('option', { name: /Pemerataan Kualitas Pendidikan Daerah 3T/ });
     expect(option).toHaveTextContent('Belum dapat diperingkat · data nasional 45% bobot');
-    await chooseScenario(/Pemerataan Kualitas Pendidikan Daerah 3T/);
+    fireEvent.pointerUp(option);
     recompute();
     expect(
       await screen.findByText(

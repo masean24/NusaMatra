@@ -86,11 +86,11 @@ describe('RegionDetailPanel on a captured LIVE profile', () => {
       'Indeks Pembangunan Manusia (IPM / HDI)',
     ]) {
       expect(card(label).getByText('Tidak dinilai')).toBeInTheDocument();
-      expect(card(label).getByText(/belum menjelaskan arah persentil/)).toBeInTheDocument();
+      // The summary keeps only the essentials; the reason lives in the indicator's details.
+      expect(card(label).queryByText(/belum menjelaskan arah persentil/)).not.toBeInTheDocument();
     }
-    expect(
-      card('Persentase Penduduk Miskin (P0)').getByText(/tidak menyertakan pembanding nasional/),
-    ).toBeInTheDocument();
+    expect(screen.getAllByText(/belum menjelaskan arah persentil/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/tidak menyertakan pembanding nasional/).length).toBeGreaterThan(0);
     expect(
       screen.queryByText(/Relatif lebih baik|Relatif kurang baik|Di sekitar tengah/),
     ).not.toBeInTheDocument();

@@ -36,11 +36,10 @@ async function openSettings(page: Page) {
 
 const results = (page: Page) => page.getByRole('region', { name: 'Peringkat wilayah' });
 
-/** Chooses a Data Hub scenario in the native select (draft weights until "Hitung ulang"). */
+/** Chooses a Data Hub scenario in the "Skenario awal" glass combobox (draft weights until "Hitung ulang"). */
 async function chooseScenario(page: Page, name: RegExp) {
-  const select = page.getByRole('combobox', { name: 'Skenario awal' });
-  const value = await select.locator('option', { hasText: name }).getAttribute('value');
-  await select.selectOption(value ?? '');
+  await page.getByRole('combobox', { name: 'Skenario awal' }).click();
+  await page.getByRole('option', { name }).click();
 }
 
 /** Weights and scenarios apply only on "Hitung ulang peringkat". */
@@ -290,8 +289,10 @@ test.describe('Lab Prioritas against the deployed Data Hub (read-only)', () => {
     const presets = await livePresets(page);
     expect(presets.length).toBeGreaterThan(0);
     await openLive(page);
-    const select = page.getByRole('combobox', { name: 'Skenario awal' });
-    await expect(select.locator('option')).not.toHaveCount(0, { timeout: SERVER_TIMEOUT });
+    // The scenario combobox appears once the Data Hub's presets have arrived.
+    await expect(page.getByRole('combobox', { name: 'Skenario awal' })).toBeVisible({
+      timeout: SERVER_TIMEOUT,
+    });
     await settledOutcome(page);
 
     for (const preset of presets) {

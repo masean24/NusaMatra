@@ -639,6 +639,74 @@
   justify-content: space-between;
 }
 
+.rankingTitleBlock {
+  display: flex;
+  flex: 1 1 260px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.rankingTitleBlock .cardTitle {
+  font-size: 1.125rem;
+}
+
+/* What the ranking is based on: a short list, one weight per line, heading the card. */
+.rankingBasisLead {
+  margin: 4px 0 0;
+  color: var(--c-text-muted);
+  font-size: 0.875rem;
+}
+
+.rankingBasis {
+  display: grid;
+  gap: 2px;
+  max-width: 26rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--c-text-strong-accent);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.basisItem {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+/* The list dot, in the accent colour, centred on the first line. */
+.basisItem::before {
+  flex: none;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--nm-accent);
+  content: '';
+}
+
+.basisItem span {
+  flex: 1;
+  min-width: 0;
+}
+
+.basisItem strong {
+  font-weight: 700;
+}
+
+/*
+ * The list box: capped at the first page's height (useRankScroll), so "Tampilkan lagi" adds rows
+ * that scroll inside the card instead of growing it.
+ */
+.rankScroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scroll-padding-top: 4px;
+}
+
 .searchRow {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

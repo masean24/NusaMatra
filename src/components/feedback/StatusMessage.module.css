@@ -54,8 +54,49 @@
   }
 }
 
+/* Stacked map layers: each lifts 2.5px and brightens, the base first, the top last. */
+.layers {
+  display: block;
+  overflow: visible;
+}
+
+.layerTop,
+.layerMiddle,
+.layerBase {
+  animation: layer-float 1.8s ease-in-out infinite;
+}
+
+.layerTop {
+  animation-delay: 0.4s;
+}
+
+.layerMiddle {
+  animation-delay: 0.2s;
+}
+
+@keyframes layer-float {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-2.5px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .spinner {
     animation-duration: 2.4s;
+  }
+
+  /* Still layers, fully drawn: the words carry the waiting. */
+  .layerTop,
+  .layerMiddle,
+  .layerBase {
+    opacity: 1;
+    animation: none;
   }
 }

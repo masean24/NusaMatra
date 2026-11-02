@@ -1393,6 +1393,126 @@
   gap: 10px;
 }
 
+/* ---------------------------------------------------------------- opened without a link */
+
+/* A crossed-out passport beside the explanation; one column on narrow screens. */
+.entry {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.entryArt {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+}
+
+/*
+ * Brand colours only (cobalt cover, limestone emblem, orange cross), never the theme's surface
+ * colours, so the picture looks the same in Normal and Kaca.
+ */
+.entryHalo {
+  fill: color-mix(in srgb, var(--nm-sea-shallow) 16%, transparent);
+}
+
+.entryBook {
+  fill: var(--nm-sea);
+}
+
+.entrySpine {
+  fill: var(--nm-sea-deep);
+}
+
+.entryEmblem,
+.entryTitle {
+  fill: none;
+  stroke: var(--nm-land-2);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.entryTitle {
+  stroke: color-mix(in srgb, var(--nm-land-1) 70%, transparent);
+  stroke-width: 6;
+}
+
+/* A limestone outline under the cross, so it stays clear where it crosses the cobalt cover. */
+.entryCrossHalo,
+.entryCross {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.entryCrossHalo {
+  stroke: var(--nm-land-1);
+  stroke-width: 20;
+}
+
+.entryCross {
+  stroke: var(--nm-accent);
+  stroke-width: 12;
+}
+
+.entryBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.entryBody h2,
+.entryBody p {
+  margin: 0;
+}
+
+.entryLead {
+  max-width: 62ch;
+  color: var(--c-text-muted);
+}
+
+.entrySteps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entryStep {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--c-surface-muted);
+}
+
+.entryStep > :last-child {
+  margin-top: auto;
+}
+
+.entryHow {
+  color: var(--c-text-muted);
+}
+
+@media (width < 640px) {
+  .entry {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .entryArt {
+    max-width: 120px;
+  }
+}
+
 .fallbackField {
   width: 100%;
   min-height: 120px;

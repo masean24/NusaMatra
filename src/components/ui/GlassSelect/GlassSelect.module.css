@@ -80,6 +80,23 @@
   background: rgb(20 26 62 / 94%);
 }
 
+/* A group's heading (as an <optgroup> label): small caps text above its options, never choosable. */
+.group + .group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--edge);
+}
+
+.groupLabel {
+  padding: 8px 10px 4px;
+  color: var(--c-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
 .option {
   display: flex;
   gap: 10px;

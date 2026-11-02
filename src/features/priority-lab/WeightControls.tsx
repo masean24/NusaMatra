@@ -1,4 +1,5 @@
 import { useId, useState, type CSSProperties, type ReactNode } from 'react';
+import { GlassSelect } from '@/components/ui/GlassSelect/GlassSelect';
 import { Icon } from '@/components/ui/Icon/Icon';
 import {
   TOTAL_BASIS_POINTS,
@@ -26,10 +27,14 @@ interface ScenarioPickerProps {
   readonly onApply: (weights: Weights) => void;
 }
 
-/** Data Hub presets as starting points in one native select; hand-set weights read "Bobot sendiri". */
+/**
+ * Data Hub presets as starting points in the glass combobox; hand-set weights read "Bobot sendiri".
+ * "Bobot sendiri" is where any hand-set weights land: it is reached by moving a slider, so choosing
+ * it from the list changes nothing.
+ */
 export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPickerProps) {
   const active = presets?.find((preset) => sameWeights(weights, preset.weightsBasisPoints)) ?? null;
-  const fieldId = useId();
+  const labelId = useId();
   const activeNote = active ? availabilityNote(active) : null;
   return (
     <section className={styles.configSection} aria-labelledby="lab-skenario">
@@ -38,33 +43,26 @@ export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPick
           <span className={styles.stepNumber} aria-hidden="true">
             1
           </span>
-          <label htmlFor={fieldId}>Skenario awal</label>
+          <span id={labelId}>Skenario awal</span>
         </h3>
       </div>
       {presets && presets.length > 0 && (
-        <span className="glass-field glass-field--select">
-          <select
-            id={fieldId}
-            value={active?.presetId ?? ''}
-            onChange={(event) => {
-              const preset = presets.find((entry) => entry.presetId === event.target.value);
-              if (preset) onApply({ ...preset.weightsBasisPoints });
-            }}
-          >
-            {/* "Bobot sendiri" is where any hand-set weights land; it is chosen by moving a slider. */}
-            <option value="" disabled={active !== null}>
-              Bobot sendiri
-            </option>
-            {presets.map((preset) => {
-              const presetNote = availabilityNote(preset);
-              return (
-                <option key={preset.presetId} value={preset.presetId}>
-                  {presetNote ? `${preset.label} — ${presetNote}` : preset.label}
-                </option>
-              );
-            })}
-          </select>
-        </span>
+        <GlassSelect
+          labelledBy={labelId}
+          value={active?.presetId ?? ''}
+          options={[
+            { value: '', label: 'Bobot sendiri' },
+            ...presets.map((preset) => ({
+              value: preset.presetId,
+              label: preset.label,
+              detail: availabilityNote(preset) ?? undefined,
+            })),
+          ]}
+          onChange={(next) => {
+            const preset = presets.find((entry) => entry.presetId === next);
+            if (preset) onApply({ ...preset.weightsBasisPoints });
+          }}
+        />
       )}
       {active?.description && <p className={styles.hint}>{active.description}</p>}
       {activeNote && <p className={styles.hint}>{activeNote}</p>}
