@@ -1,6 +1,6 @@
-export { GraphicsQualitySetting } from './GraphicsQualitySetting';
+export { GraphicsModeToggle } from './GraphicsModeToggle';
 export {
-  applyQualityToDocument,
+  applyGraphicsModeToDocument,
   getQualityProfile,
   subscribeQuality,
   useQualityProfile,

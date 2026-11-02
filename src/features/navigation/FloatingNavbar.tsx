@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { useRefractiveGlass } from '@/lib/glass';
 import { Logo } from '@/components/brand/Logo';
 import { prefersReducedMotion } from '@/features/motion';
+import { GraphicsModeToggle } from '@/features/graphics-quality';
 import { DisplayModeSwitch } from '@/features/theme';
 import { NavLinkList } from './NavLinkList';
 import { useCompactOnScroll } from './useCompactOnScroll';
@@ -55,12 +56,16 @@ export function FloatingNavbar() {
           <NavLinkList layout="pill" />
         </nav>
         <span className={styles.divider} aria-hidden="true" />
+        <GraphicsModeToggle />
         <DisplayModeSwitch />
       </div>
 
       <div ref={compactRef} className={`${styles.bar} ${styles.compactTop}`}>
         <HomeLink />
-        <DisplayModeSwitch size="compact" />
+        <span className={styles.controls}>
+          <GraphicsModeToggle />
+          <DisplayModeSwitch size="compact" />
+        </span>
       </div>
 
       <nav ref={tabBarRef} aria-label="Navigasi utama" className={`${styles.bar} ${styles.tabBar}`}>

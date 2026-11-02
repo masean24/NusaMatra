@@ -12,3 +12,6 @@ export type {
   HeroHexMapProps,
 } from './contract';
 export type { HeroMapOutcome } from './HeroDioramaSlot';
+
+/** Starts downloading the Jelajahi map engine (three.js and the 3D map) before it is needed. */
+export const preloadExploreEngine = () => import('./engineAdapters');

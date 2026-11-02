@@ -1,0 +1,63 @@
+/* A round control with the same track, border and height as the Normal–Kaca switch beside it. */
+.toggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--c-switch-border);
+  border-radius: 50%;
+  background: var(--c-switch-track);
+  color: var(--c-text);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  perspective: 160px;
+}
+
+/*
+ * The coin: "3D" on the front, "2D" on the back. Switching turns it half a revolution, so the two
+ * labels trade places with a spin; the colours stay the same.
+ */
+.coin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--c-switch-knob);
+  box-shadow: var(--nm-shadow-knob);
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.coin[data-face='2d'] {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  backface-visibility: hidden;
+}
+
+.back {
+  transform: rotateY(180deg);
+}
+
+.toggle:active .coin {
+  scale: 0.94;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin {
+    transition: none;
+  }
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useQualityProfile } from '@/features/graphics-quality';
 import { useMediaQuery } from '@/features/motion';
 import styles from './MapGestureHint.module.css';
 
@@ -32,6 +33,8 @@ function rememberSeen(): void {
  */
 export function MapGestureHint() {
   const touch = useMediaQuery(TOUCH_QUERY);
+  // The flat 2D map moves with the left button (one finger) and does not tilt.
+  const { flatMap: flat } = useQualityProfile();
   const [visible, setVisible] = useState(() => !alreadySeen());
   const hintRef = useRef<HTMLDivElement>(null);
 
@@ -82,16 +85,32 @@ export function MapGestureHint() {
             <span className={styles.finger} data-finger="a" />
             <span className={styles.finger} data-finger="b" />
           </span>
-          <p className={styles.text}>Cubit untuk memperbesar, geser dengan satu jari untuk memutar peta</p>
+          <p className={styles.text}>
+            {flat
+              ? 'Cubit untuk memperbesar, geser dengan satu jari untuk menggeser peta'
+              : 'Cubit untuk memperbesar, geser dengan satu jari untuk memutar peta'}
+          </p>
         </>
       ) : (
-        <ul role="list" className={styles.list} aria-label="Cara memakai peta 3D">
-          <li>
-            <span className={styles.key}>Klik kiri</span> + geser untuk memutar 3D
-          </li>
-          <li>
-            <span className={styles.key}>Klik kanan</span> + geser untuk menggeser peta
-          </li>
+        <ul
+          role="list"
+          className={styles.list}
+          aria-label={flat ? 'Cara memakai peta' : 'Cara memakai peta 3D'}
+        >
+          {flat ? (
+            <li>
+              <span className={styles.key}>Klik kiri</span> + geser untuk menggeser peta
+            </li>
+          ) : (
+            <>
+              <li>
+                <span className={styles.key}>Klik kiri</span> + geser untuk memutar 3D
+              </li>
+              <li>
+                <span className={styles.key}>Klik kanan</span> + geser untuk menggeser peta
+              </li>
+            </>
+          )}
           <li>
             <span className={styles.key}>Scroll</span> untuk memperbesar atau memperkecil
           </li>

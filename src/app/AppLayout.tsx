@@ -5,6 +5,7 @@ import { SiteFooter } from '@/components/layout/SiteFooter';
 import { FloatingNavbar } from '@/features/navigation';
 import { useScrollbarCompensation } from '@/hooks/useScrollbarCompensation';
 import { useSmoothHashLinks } from '@/hooks/useSmoothHashLinks';
+import { usePreloadExploreOnIntent } from './preloadExplore';
 import styles from './AppLayout.module.css';
 
 /**
@@ -44,6 +45,7 @@ export function AppLayout() {
   useRouteFocus(mainRef);
   useScrollbarCompensation(pathname);
   useSmoothHashLinks();
+  usePreloadExploreOnIntent();
 
   return (
     <>

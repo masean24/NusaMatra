@@ -10,7 +10,7 @@ function subscribeToDisplayMode(onChange: () => void): () => void {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ['data-display-mode', 'data-quality'],
+    attributeFilter: ['data-display-mode', 'data-graphics'],
   });
   return () => {
     observer.disconnect();
@@ -24,12 +24,12 @@ export function useGlassMode(): boolean {
   return useSyncExternalStore(subscribeToDisplayMode, isGlassMode, () => false);
 }
 
-/** The "Ringan" graphics level (<html data-quality="lite">) asks for the cheaper glass. */
-const isLiteQuality = () => document.documentElement.getAttribute('data-quality') === 'lite';
+/** The light 2D mode (<html data-graphics="low">) asks for the cheaper glass. */
+const isLowGraphics = () => document.documentElement.getAttribute('data-graphics') === 'low';
 
-/** Refraction is drawn only where Chromium can render it, only in Kaca, and not at the "Ringan" level. */
+/** Refraction is drawn only where Chromium can render it, only in Kaca, and not in the light 2D mode. */
 export function useRefractionEnabled(): boolean {
-  const lite = useSyncExternalStore(subscribeToDisplayMode, isLiteQuality, () => false);
+  const lite = useSyncExternalStore(subscribeToDisplayMode, isLowGraphics, () => false);
   return useGlassMode() && !lite && supportsBackdropRefraction();
 }
 

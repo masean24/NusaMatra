@@ -1,90 +1,95 @@
 import { useSyncExternalStore } from 'react';
 
-/** What the visitor chose; `auto` lets the device decide (a static check, not live measurement). */
-export type QualityChoice = 'auto' | 'high' | 'balanced' | 'lite';
-export type QualityLevel = Exclude<QualityChoice, 'auto'>;
+/** HIGH is the full 3D site; LOW swaps the heavy 3D scenes for 2D pictures and a flat map. */
+export type GraphicsMode = 'high' | 'low';
 
 export interface QualityProfile {
+  /** Landing hexagon hero and the 3D scenes; off = their still 2D pictures. */
+  readonly scenes3d: boolean;
+  /** Jelajahi map seen from straight above, flat, without shadows or tilting. */
+  readonly flatMap: boolean;
   /** Cap on the WebGL drawing-buffer pixel ratio; each renderer also keeps its own lower cap. */
   readonly maxPixelRatio: number;
   /** Looping decoration on the 3D map (sea ripple, pulsing markers). Never carries information. */
   readonly decorativeMotion: boolean;
-  /** Refracting glass edges (Chromium, Kaca) and the full backdrop blur. */
-  readonly richGlass: boolean;
 }
 
-/*
- * HIGH is the site as it was before profiles existed (each renderer's own pixel-ratio cap applies).
- * BALANCED draws about half the pixels on HiDPI screens; LITE draws one pixel per CSS pixel, stops
- * the decorative loops and uses a lighter blur. Colours, data and interaction are the same in all.
- */
-export const QUALITY_PROFILES: Readonly<Record<QualityLevel, QualityProfile>> = {
-  high: { maxPixelRatio: 2, decorativeMotion: true, richGlass: true },
-  balanced: { maxPixelRatio: 1.25, decorativeMotion: true, richGlass: true },
-  lite: { maxPixelRatio: 1, decorativeMotion: false, richGlass: false },
+/** Colours, data and every interaction are the same in both modes; only the drawing changes. */
+export const QUALITY_PROFILES: Readonly<Record<GraphicsMode, QualityProfile>> = {
+  high: { scenes3d: true, flatMap: false, maxPixelRatio: 2, decorativeMotion: true },
+  low: { scenes3d: false, flatMap: true, maxPixelRatio: 1, decorativeMotion: false },
 };
 
-export const QUALITY_STORAGE_KEY = 'nusa-matra:graphics-quality';
+export const GRAPHICS_MODE_STORAGE_KEY = 'nusa-matra:graphics-mode';
 
-const CHOICES: readonly QualityChoice[] = ['auto', 'high', 'balanced', 'lite'];
+/** WebGL renderers that draw on the CPU (no graphics acceleration). */
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|softpipe|software|basic render/i;
 
-/** Touch-first or few-core devices start on BALANCED; everything else on HIGH. */
-const MODEST_DEVICE_MAX_CORES = 4;
-
-export function resolveAutoLevel(device: {
-  readonly coarsePointer: boolean;
-  readonly cores: number | undefined;
-}): QualityLevel {
-  const fewCores = device.cores !== undefined && device.cores <= MODEST_DEVICE_MAX_CORES;
-  return device.coarsePointer || fewCores ? 'balanced' : 'high';
+export function isSoftwareRenderer(rendererName: string): boolean {
+  return SOFTWARE_RENDERER.test(rendererName);
 }
 
-function readChoice(): QualityChoice {
+/**
+ * True when the browser can draw WebGL only on the CPU: hardware acceleration is off or missing
+ * (Chrome's SwiftShader, Mesa's llvmpipe). There the 3D map runs at a few frames per second, so the
+ * site starts in 2D. A browser without WebGL at all is not counted: its own fallbacks apply.
+ */
+function detectSoftwareRendering(): boolean {
   try {
-    const value = window.localStorage.getItem(QUALITY_STORAGE_KEY);
-    return CHOICES.find((choice) => choice === value) ?? 'auto';
+    const strict = document
+      .createElement('canvas')
+      .getContext('webgl', { failIfMajorPerformanceCaveat: true });
+    if (strict) {
+      const info = strict.getExtension('WEBGL_debug_renderer_info');
+      const name = info ? String(strict.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+      strict.getExtension('WEBGL_lose_context')?.loseContext();
+      return isSoftwareRenderer(name);
+    }
+    // Refused only because it would be slow: WebGL works, but in software.
+    const plain = document.createElement('canvas').getContext('webgl');
+    plain?.getExtension('WEBGL_lose_context')?.loseContext();
+    return plain !== null;
   } catch {
-    return 'auto';
+    return false;
   }
 }
 
-function deviceAutoLevel(): QualityLevel {
-  return resolveAutoLevel({
-    coarsePointer: typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches,
-    cores: typeof navigator === 'undefined' ? undefined : navigator.hardwareConcurrency,
-  });
+/** The visitor's own choice wins; without one, devices that draw in software start in 2D. */
+function readMode(): GraphicsMode {
+  try {
+    const stored = window.localStorage.getItem(GRAPHICS_MODE_STORAGE_KEY);
+    if (stored === 'low' || stored === 'high') return stored;
+  } catch {
+    // Storage blocked: fall back to the device check.
+  }
+  return detectSoftwareRendering() ? 'low' : 'high';
 }
 
-let choice: QualityChoice | null = null;
+let mode: GraphicsMode | null = null;
 const listeners = new Set<() => void>();
 
-function currentChoice(): QualityChoice {
-  choice ??= readChoice();
-  return choice;
-}
-
-export function getQualityLevel(): QualityLevel {
-  const chosen = currentChoice();
-  return chosen === 'auto' ? deviceAutoLevel() : chosen;
+export function getGraphicsMode(): GraphicsMode {
+  mode ??= readMode();
+  return mode;
 }
 
 export function getQualityProfile(): QualityProfile {
-  return QUALITY_PROFILES[getQualityLevel()];
+  return QUALITY_PROFILES[getGraphicsMode()];
 }
 
-/** Puts the level on <html data-quality>, where the glass styles read it. */
-export function applyQualityToDocument(): void {
-  document.documentElement.setAttribute('data-quality', getQualityLevel());
+/** Puts the mode on <html data-graphics>, where the glass styles read it. */
+export function applyGraphicsModeToDocument(): void {
+  document.documentElement.setAttribute('data-graphics', getGraphicsMode());
 }
 
-export function setQualityChoice(next: QualityChoice): void {
-  choice = next;
+export function setGraphicsMode(next: GraphicsMode): void {
+  mode = next;
   try {
-    window.localStorage.setItem(QUALITY_STORAGE_KEY, next);
+    window.localStorage.setItem(GRAPHICS_MODE_STORAGE_KEY, next);
   } catch {
     // Storage blocked: the choice holds for this visit only.
   }
-  applyQualityToDocument();
+  applyGraphicsModeToDocument();
   for (const listener of listeners) listener();
 }
 
@@ -95,16 +100,16 @@ export function subscribeQuality(listener: () => void): () => void {
   };
 }
 
-export function useQualityChoice(): QualityChoice {
-  return useSyncExternalStore(subscribeQuality, currentChoice, () => 'auto');
+export function useGraphicsMode(): GraphicsMode {
+  return useSyncExternalStore(subscribeQuality, getGraphicsMode, () => 'high');
 }
 
 export function useQualityProfile(): QualityProfile {
   return useSyncExternalStore(subscribeQuality, getQualityProfile, () => QUALITY_PROFILES.high);
 }
 
-/** For tests: forget the cached choice so the next read comes from storage. */
-export function resetQualityForTests(): void {
-  choice = null;
+/** For tests: forget the cached mode so the next read comes from storage. */
+export function resetGraphicsModeForTests(): void {
+  mode = null;
   listeners.clear();
 }

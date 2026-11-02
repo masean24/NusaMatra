@@ -11,9 +11,10 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
-import { getQualityProfile, subscribeQuality } from '@/features/graphics-quality';
+import { getQualityProfile, subscribeQuality, useQualityProfile } from '@/features/graphics-quality';
 import styles from './NusaMatra3DMap.module.css';
 import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
+import { RegionBatch, type RegionPiece } from './regionBatch';
 import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
 import { fbmNoise } from './terrain/noise';
 import { getIndonesiaCoastline } from './terrain/coastline';
@@ -43,7 +44,9 @@ function exploreDefaultPosition(
   const distance = eng.exploreFrame
     ? exploreFitDistance(eng.camera, eng.exploreFrame.width, eng.scene)
     : EXPLORE_CAMERA_DISTANCE;
-  return target.clone().addScaledVector(EXPLORE_CAMERA_DIRECTION, distance);
+  // Light 2D mode looks straight down, so the map reads as a flat atlas.
+  const direction = getQualityProfile().flatMap ? TOP_DOWN_DIRECTION : EXPLORE_CAMERA_DIRECTION;
+  return target.clone().addScaledVector(direction, distance);
 }
 
 /**
@@ -80,6 +83,14 @@ const AWAKE_AFTER_CHANGE_MS = 2500;
 const WAKE_EVENTS = ['pointerdown', 'pointermove', 'pointerup', 'pointerleave', 'wheel', 'keydown', 'touchstart'];
 /** Upper bound on the drawing-buffer pixel ratio (sharp on HiDPI screens without 3x the pixels). */
 const MAX_PIXEL_RATIO = 1.75;
+/** Light 2D mode: regions nearly flat, so the map reads as a 2D atlas seen from above. */
+const FLAT_MAP_EXTRUSION = 0.05;
+/** Main-thread time per frame for building regions, so the page and its loader keep moving. */
+const BUILD_SLICE_MS = 12;
+/** A camera glide that has not arrived by then ends anyway, so it can never hold the camera. */
+const MAX_GLIDE_MS = 2500;
+/** Straight down, with a hair of tilt so the orbit controls keep a stable "up". */
+const TOP_DOWN_DIRECTION = new THREE.Vector3(0, 1, 0.001).normalize();
 
 /**
  * Host fix: a tall, narrow canvas (a phone's full screen) needs the camera farther away than the
@@ -330,13 +341,19 @@ const SIDE_BOUNCE_LAND_SHARE = 0.8;
 type RegionPaint = 'idle' | 'hover' | 'selected';
 const REGION_LIFT: Readonly<Record<RegionPaint, number>> = { idle: 0, hover: 0.08, selected: 0.16 };
 
+const paintColour = new THREE.Color();
+
 /** Colour and lift of one region for its interaction state; the only place regions are recoloured. */
-function paintRegion(group: THREE.Group, palette: AtlasPalette, state: RegionPaint): void {
-  const top = group.userData.topMaterial as THREE.MeshStandardMaterial;
-  top.color.set(
+function paintRegion(
+  batch: RegionBatch | null,
+  regionId: string,
+  palette: AtlasPalette,
+  state: RegionPaint
+): void {
+  paintColour.set(
     state === 'selected' ? palette.selected : state === 'hover' ? palette.hover : palette.landTop
   );
-  group.position.y = REGION_LIFT[state];
+  batch?.paint(regionId, paintColour, REGION_LIFT[state]);
 }
 
 // ============================================================================
@@ -1274,6 +1291,27 @@ export function createIllustrativeTextures(): ProceduralSurfaceSet {
 // 6. GPU SCENE DISPOSAL HELPER
 // ============================================================================
 
+/**
+ * Mouse and touch gestures: the 3D map tilts with the left button (one finger) and moves with the
+ * right; the flat 2D map moves with the left button (one finger) and never tilts.
+ */
+function applyMapGestures(controls: OrbitControls, flat: boolean): void {
+  controls.enableRotate = !flat;
+  controls.mouseButtons = flat
+    ? { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: null }
+    : { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.PAN };
+  controls.touches = flat
+    ? { ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN }
+    : { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+}
+
+/** Where the camera goes to look at one place: obliquely, or straight down (2D / top-down). */
+function focusPosition(target: THREE.Vector3, distance: number, topDown: boolean): THREE.Vector3 {
+  return topDown
+    ? new THREE.Vector3(target.x, distance, target.z + 0.01)
+    : new THREE.Vector3(target.x, distance * 0.82, target.z + distance * 0.65);
+}
+
 /** Keeps the map drawing for a while: something on it may change. */
 function wakeEngine(eng: InternalEngineState, ms = AWAKE_AFTER_CHANGE_MS): void {
   eng.awakeUntil = Math.max(eng.awakeUntil, performance.now() + ms);
@@ -1321,10 +1359,13 @@ interface InternalEngineState {
   oceanMesh: THREE.Mesh;
   oceanMaterial: THREE.MeshStandardMaterial;
   textures: ProceduralSurfaceSet;
-  featureMeshes: Map<string, THREE.Group>;
-  interactiveMeshes: THREE.Object3D[];
+  /** Explore: every region in one batched mesh (see RegionBatch), and each region's properties. */
+  regionBatch: RegionBatch | null;
+  regionProperties: Map<string, GeographyDataset['features'][number]['properties']>;
   raycaster: THREE.Raycaster;
   cameraTargetPos: THREE.Vector3 | null;
+  /** Set while the glide under way is a whole-map fit (resetCamera): a resize may refit it. */
+  fitGlideTarget: THREE.Vector3 | null;
   controlsTargetPos: THREE.Vector3 | null;
   introProgress: number;
   pointerParallax: { x: number; y: number };
@@ -1340,6 +1381,7 @@ interface InternalEngineState {
   overlay: PointOverlay;
   /** Explore: lights and materials the atlas palette recolours in place on a theme change. */
   hemiLight: THREE.HemisphereLight;
+  dirLight: THREE.DirectionalLight;
   gridMaterial: THREE.LineBasicMaterial;
   equatorMaterial: THREE.LineDashedMaterial;
   shadowMaterial: THREE.ShadowMaterial;
@@ -1390,6 +1432,10 @@ export const NusaMatra3DMap = forwardRef<
 
   const [devWireframe, setDevWireframe] = useState(false);
   const [devExtrusion, setDevExtrusion] = useState(1.0);
+  const { flatMap } = useQualityProfile();
+  const flatMapRef = useRef(flatMap);
+  flatMapRef.current = flatMap;
+  const extrusion = mode === 'explore' && flatMap ? FLAT_MAP_EXTRUSION : devExtrusion;
   const [devCursorCoords, setDevCursorCoords] = useState<{
     lon: number;
     lat: number;
@@ -1422,6 +1468,17 @@ export const NusaMatra3DMap = forwardRef<
   // Read when regions are (re)built, so new materials start in the current theme.
   const displayModeRef = useRef(displayMode);
   displayModeRef.current = displayMode;
+  const selectedRegionIdRef = useRef(selectedRegionId);
+  selectedRegionIdRef.current = selectedRegionId;
+  // Explore reports ready once its regions are drawn (see the region build), not when the canvas exists.
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
+  /** What the regions were last painted for, so a selection change repaints two regions, not all. */
+  const paintedRef = useRef<{
+    batch: RegionBatch | null;
+    displayMode: string;
+    selected: string | null;
+  }>({ batch: null, displayMode: '', selected: null });
 
   const validationResult = useMemo<{
     dataset: GeographyDataset | null;
@@ -1451,6 +1508,9 @@ export const NusaMatra3DMap = forwardRef<
     }
   }, [dataValidationError, onError]);
 
+  // The flat 2D map and the top-down preset both look straight down.
+  const isTopDown = () => cameraPreset === 'top-down' || getQualityProfile().flatMap;
+
   useImperativeHandle(
     ref,
     () => ({
@@ -1467,22 +1527,14 @@ export const NusaMatra3DMap = forwardRef<
         const dist = feature.properties.focusDistance ?? 16;
         const targetWorld = lonLatToPlanar(lon, lat, 0);
         eng.controlsTargetPos = targetWorld.clone();
-        eng.cameraTargetPos = new THREE.Vector3(
-          targetWorld.x,
-          dist * 0.82,
-          targetWorld.z + (cameraPreset === 'top-down' ? 0.01 : dist * 0.65)
-        );
+        eng.cameraTargetPos = focusPosition(targetWorld, dist, isTopDown());
       },
       focusCoordinates: (lon: number, lat: number, distance = 16) => {
         const eng = engineRef.current;
         if (!eng) return;
         const targetWorld = lonLatToPlanar(lon, lat, 0);
         eng.controlsTargetPos = targetWorld.clone();
-        eng.cameraTargetPos = new THREE.Vector3(
-          targetWorld.x,
-          distance * 0.82,
-          targetWorld.z + (cameraPreset === 'top-down' ? 0.01 : distance * 0.65)
-        );
+        eng.cameraTargetPos = focusPosition(targetWorld, distance, isTopDown());
       },
       resetCamera: () => {
         const eng = engineRef.current;
@@ -1497,6 +1549,7 @@ export const NusaMatra3DMap = forwardRef<
           // Official geography: back to the fitted start-up view, so the whole archipelago is in view.
           eng.controlsTargetPos = eng.exploreFrame.center.clone();
           eng.cameraTargetPos = exploreDefaultPosition(eng, eng.exploreFrame.center);
+          eng.fitGlideTarget = eng.cameraTargetPos;
         } else if (cameraPreset === 'top-down') {
           eng.cameraTargetPos = new THREE.Vector3(0, 44, 0.01);
         } else {
@@ -1780,10 +1833,11 @@ export const NusaMatra3DMap = forwardRef<
       oceanMesh,
       oceanMaterial,
       textures,
-      featureMeshes: new Map(),
-      interactiveMeshes: [],
+      regionBatch: null,
+      regionProperties: new Map(),
       raycaster: new THREE.Raycaster(),
       cameraTargetPos: null,
+      fitGlideTarget: null,
       controlsTargetPos: null,
       introProgress: isMotionReducedRef.current ? 1 : 0,
       pointerParallax: { x: 0, y: 0 },
@@ -1794,6 +1848,7 @@ export const NusaMatra3DMap = forwardRef<
       exploreFrame: null,
       overlay,
       hemiLight,
+      dirLight,
       gridMaterial,
       equatorMaterial,
       shadowMaterial,
@@ -1801,7 +1856,7 @@ export const NusaMatra3DMap = forwardRef<
       regionBoundaryMaterial: null,
     };
 
-    onReady?.();
+    if (mode !== 'explore') onReady?.();
 
     // Projection, fit and renderer size for a container size; run on resize and when the inset changes.
     const relayout = (rawW: number, rawH: number) => {
@@ -1825,9 +1880,12 @@ export const NusaMatra3DMap = forwardRef<
         keepFitReachable(eng.controls, exploreFitDistance(camera, eng.exploreFrame.width, scene));
         // Refit to the new canvas shape, keeping the direction the user is looking from.
         const target = eng.controls ? eng.controls.target : new THREE.Vector3();
-        if (eng.cameraTargetPos) {
-          // A camera move is under way (start-up framing): retarget it for the new shape.
+        if (eng.cameraTargetPos && eng.cameraTargetPos === eng.fitGlideTarget) {
+          // A whole-map fit is under way: fit the new shape instead.
           eng.cameraTargetPos.copy(exploreDefaultPosition(eng, eng.controlsTargetPos ?? target));
+        } else if (eng.cameraTargetPos) {
+          // A glide to a region is under way (the profile panel opening or closing resizes the
+          // canvas): keep its destination. Retargeting it here sent the camera back to the start.
         } else {
           // Scale the distance by how much the fitted distance changed, so a side panel folding
           // keeps the user's zoom and target instead of snapping back to the whole frame.
@@ -1873,6 +1931,15 @@ export const NusaMatra3DMap = forwardRef<
     };
     for (const type of WAKE_EVENTS) container.addEventListener(type, wake, { passive: true });
     controls?.addEventListener('change', wake);
+    // Dragging or zooming takes over from any glide under way.
+    const endGlide = () => {
+      const eng = engineRef.current;
+      if (!eng) return;
+      eng.cameraTargetPos = null;
+      eng.controlsTargetPos = null;
+      eng.fitGlideTarget = null;
+    };
+    controls?.addEventListener('start', endGlide);
 
     // A screen with another pixel ratio (window dragged across monitors) fires no resize.
     let pixelRatioQuery: MediaQueryList | null = null;
@@ -1895,6 +1962,8 @@ export const NusaMatra3DMap = forwardRef<
 
     let rafId = 0;
     let lastTime = performance.now();
+    let glideTarget: THREE.Vector3 | null = null;
+    let glideStartedAt = 0;
 
     // A lost GL context (GPU reset, driver crash, too many contexts) leaves a blank canvas: stop
     // drawing and report it, so the slot shows its status and the region list instead.
@@ -1949,6 +2018,16 @@ export const NusaMatra3DMap = forwardRef<
         eng.rootGroup.rotation.x += (targetRotX - eng.rootGroup.rotation.x) * damp;
       }
 
+      if (eng.cameraTargetPos !== glideTarget) {
+        glideTarget = eng.cameraTargetPos;
+        glideStartedAt = now;
+      }
+      if (eng.cameraTargetPos && now - glideStartedAt > MAX_GLIDE_MS) {
+        // Not arrived in time (a limit of the orbit controls keeps it out of reach): stop here.
+        eng.cameraTargetPos = null;
+        eng.controlsTargetPos = null;
+        eng.fitGlideTarget = null;
+      }
       if (eng.cameraTargetPos && eng.controlsTargetPos) {
         const lerpFactor = isMotionReducedRef.current ? 1 : 1 - Math.exp(-5.5 * dt);
         eng.camera.position.lerp(eng.cameraTargetPos, lerpFactor);
@@ -1960,6 +2039,7 @@ export const NusaMatra3DMap = forwardRef<
         if (eng.camera.position.distanceTo(eng.cameraTargetPos) < 0.12) {
           eng.cameraTargetPos = null;
           eng.controlsTargetPos = null;
+          eng.fitGlideTarget = null;
         }
       }
 
@@ -1991,10 +2071,12 @@ export const NusaMatra3DMap = forwardRef<
       intersectionObserver.disconnect();
       for (const type of WAKE_EVENTS) container.removeEventListener(type, wake);
       controls?.removeEventListener('change', wake);
+      controls?.removeEventListener('start', endGlide);
       pixelRatioQuery?.removeEventListener('change', onPixelRatioChange);
       unsubscribeQuality();
       controls?.dispose();
       overlay.dispose();
+      engineRef.current?.regionBatch?.dispose();
       disposeObjectTree(rootGroup);
       heroTerrain?.dispose(); // also frees the data textures, which the tree walk does not reach
       oceanMesh.geometry.dispose();
@@ -2012,10 +2094,12 @@ export const NusaMatra3DMap = forwardRef<
     if (!eng || !validatedDataset) return;
 
     eng.renderer.shadowMap.needsUpdate = true;
+    eng.regionBatch?.dispose();
     disposeObjectTree(eng.regionsGroup);
     disposeObjectTree(eng.markersGroup);
-    eng.featureMeshes.clear();
-    eng.interactiveMeshes = [];
+    eng.regionBatch = null;
+    eng.regionProperties.clear();
+    const pieces: RegionPiece[] = [];
 
     const palette = EXPLORE_ATLAS_PALETTE[displayModeRef.current];
     // Shared by every region (one draw state), recoloured in place on a theme change.
@@ -2035,8 +2119,8 @@ export const NusaMatra3DMap = forwardRef<
 
     // The hero draws the coastline relief built with the scene; selectable regions are Explore's.
     const regionFeatures = mode === 'hero' ? [] : validatedDataset.features;
-    regionFeatures.forEach((feature) => {
-      const { regionId, displayName } = feature.properties;
+    const buildPiece = (feature: (typeof regionFeatures)[number]) => {
+      const { regionId } = feature.properties;
       // Regions are Explore's only (the hero draws its own relief): one uniform height.
       const tierDepth = 0.28;
 
@@ -2096,39 +2180,44 @@ export const NusaMatra3DMap = forwardRef<
       const geometry = consolidateExtrudeGroups(new THREE.ExtrudeGeometry(shapes, extrudeSettings));
       geometry.rotateX(-Math.PI / 2);
 
-      // One uniform land colour (no tier tint: the map shows no indicator); a faint bump keeps it
-      // material. Its own instance only so hover and selection can recolour this region alone.
+      pieces.push({
+        regionId,
+        body: geometry,
+        outline: coastlineRings.length > 0 ? ringsToSegmentsGeometry(coastlineRings) : null,
+      });
+      eng.regionProperties.set(regionId, feature.properties);
+    };
+
+    let finished = false;
+    const finishRegions = () => {
+      finished = true;
+      if (pieces.length > 0) {
+      // One uniform land colour (no tier tint: the map shows no indicator), carried per vertex so
+      // hover and selection recolour one region; a faint bump keeps it material.
       const topMaterial = new THREE.MeshStandardMaterial({
-        color: palette.landTop,
+        color: '#ffffff',
+        vertexColors: true,
         bumpMap: eng.textures.bumpMap,
         bumpScale: 0.05,
         roughness: 0.88,
         metalness: 0,
         wireframe: devWireframe,
       });
-
-      const mesh = new THREE.Mesh(geometry, [topMaterial, sideMaterial]);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      mesh.userData = {
-        isRegionMesh: true,
-        regionId,
-        displayName,
-        featureProperties: feature.properties,
-        topMaterial,
-      };
-
-      const featureGroup = new THREE.Group();
-      featureGroup.userData = { regionId, topMaterial };
-      featureGroup.add(mesh);
-      if (coastlineRings.length > 0) {
-        featureGroup.add(new THREE.LineSegments(ringsToSegmentsGeometry(coastlineRings), borderMat));
-      }
-
-      eng.regionsGroup.add(featureGroup);
-      eng.featureMeshes.set(regionId, featureGroup);
-      eng.interactiveMeshes.push(mesh);
-    });
+      // The flat 2D map draws the same colours unlit: no light or bump per pixel, which is what
+      // makes a map slow where the browser has no graphics acceleration.
+      const flatTopMaterial = new THREE.MeshBasicMaterial({ color: '#ffffff', vertexColors: true });
+      const batch = new RegionBatch(
+        pieces,
+        { top: topMaterial, flatTop: flatTopMaterial, side: sideMaterial, outline: borderMat },
+        new THREE.Color(palette.landTop)
+      );
+      batch.setFlat(mode === 'explore' && flatMapRef.current);
+      batch.mesh.castShadow = true;
+      batch.mesh.receiveShadow = true;
+      eng.regionsGroup.add(batch.mesh);
+      if (batch.outline) eng.regionsGroup.add(batch.outline);
+      eng.regionBatch = batch;
+    }
 
     // Centre the view on the drawn regions and fit them to the canvas, for the official LIVE
     // archipelago and the illustrative DEMO one alike, so the map opens centred on screen.
@@ -2141,12 +2230,38 @@ export const NusaMatra3DMap = forwardRef<
       target.copy(center);
       const fitDistance = exploreFitDistance(eng.camera, eng.exploreFrame.width, eng.scene);
       keepFitReachable(eng.controls, fitDistance);
-      eng.camera.position.copy(center).addScaledVector(EXPLORE_CAMERA_DIRECTION, fitDistance);
+      eng.camera.position.copy(exploreDefaultPosition(eng, center));
       eng.camera.lookAt(center);
       eng.controls?.update();
     } else {
       eng.exploreFrame = null;
     }
+
+      const batch = eng.regionBatch;
+      const selected = selectedRegionIdRef.current;
+      if (batch && selected) {
+        paintRegion(batch, selected, EXPLORE_ATLAS_PALETTE[displayModeRef.current], 'selected');
+      }
+      paintedRef.current = { batch, displayMode: displayModeRef.current, selected };
+      eng.renderer.shadowMap.needsUpdate = true;
+      wakeEngine(eng);
+      if (mode === 'explore') onReadyRef.current?.();
+    };
+
+    // Build the regions a slice per frame: the page, and the loader's animation, never freeze.
+    let frame = 0;
+    let next = 0;
+    const buildSlice = () => {
+      const until = performance.now() + BUILD_SLICE_MS;
+      while (next < regionFeatures.length && performance.now() < until) {
+        const feature = regionFeatures[next];
+        next += 1;
+        if (feature) buildPiece(feature);
+      }
+      if (next < regionFeatures.length) frame = requestAnimationFrame(buildSlice);
+      else finishRegions();
+    };
+    buildSlice();
 
     const activeMarkers =
       mode === 'hero'
@@ -2207,6 +2322,16 @@ export const NusaMatra3DMap = forwardRef<
 
       eng.markersGroup.add(markerGroup);
     });
+
+    return () => {
+      cancelAnimationFrame(frame);
+      if (finished) return;
+      // Left before the batch was made: free the pieces built so far.
+      for (const piece of pieces) {
+        piece.body.dispose();
+        piece.outline?.dispose();
+      }
+    };
   }, [validatedDataset, mode, showMarkers, showCoastlines, devWireframe]);
 
   useEffect(() => {
@@ -2231,19 +2356,47 @@ export const NusaMatra3DMap = forwardRef<
       eng.oceanMaterial.needsUpdate = true;
     }
     eng.gridGroup.visible = mode === 'explore' && showGraticule;
-    eng.regionsGroup.scale.y = devExtrusion;
+    eng.regionsGroup.scale.y = extrusion;
     eng.renderer.shadowMap.needsUpdate = true;
-    eng.markersGroup.position.y = (devExtrusion - 1) * 0.32;
-  }, [displayMode, mode, showGraticule, devExtrusion]);
+    eng.markersGroup.position.y = (extrusion - 1) * 0.32;
+  }, [displayMode, mode, showGraticule, extrusion]);
+
+  // Light 2D mode: the Explore map seen from straight above, without shadows or tilting; back to the
+  // usual oblique view when it is turned off.
+  const appliedFlatRef = useRef(flatMap);
+  useEffect(() => {
+    const eng = engineRef.current;
+    if (!eng || mode !== 'explore') return;
+    eng.dirLight.castShadow = !flatMap;
+    eng.renderer.shadowMap.needsUpdate = true;
+    if (eng.controls) applyMapGestures(eng.controls, flatMap);
+    eng.regionBatch?.setFlat(flatMap);
+    if (appliedFlatRef.current === flatMap) return; // first mount: the start-up framing places the camera
+    appliedFlatRef.current = flatMap;
+    const target = eng.controls ? eng.controls.target.clone() : new THREE.Vector3(0, 0, 0);
+    eng.controlsTargetPos = target;
+    eng.cameraTargetPos = exploreDefaultPosition(eng, target);
+  }, [flatMap, mode]);
 
   useEffect(() => {
     const eng = engineRef.current;
     if (!eng) return;
-    eng.renderer.shadowMap.needsUpdate = true;
+    const batch = eng.regionBatch;
+    if (!batch) return; // still being built: it paints the selection when it is done
     const palette = EXPLORE_ATLAS_PALETTE[displayMode];
-    eng.featureMeshes.forEach((group, id) => {
-      paintRegion(group, palette, id === selectedRegionId ? 'selected' : 'idle');
-    });
+    const before = paintedRef.current;
+    if (before.batch !== batch || before.displayMode !== displayMode) {
+      for (const id of batch.regionIds) {
+        paintRegion(batch, id, palette, id === selectedRegionId ? 'selected' : 'idle');
+      }
+    } else {
+      for (const id of [before.selected, hoveredIdRef.current]) {
+        if (id && id !== selectedRegionId) paintRegion(batch, id, palette, 'idle');
+      }
+      if (selectedRegionId) paintRegion(batch, selectedRegionId, palette, 'selected');
+    }
+    paintedRef.current = { batch, displayMode, selected: selectedRegionId };
+    eng.renderer.shadowMap.needsUpdate = true;
     hoveredIdRef.current = null;
   }, [selectedRegionId, validatedDataset, displayMode]);
 
@@ -2330,12 +2483,11 @@ export const NusaMatra3DMap = forwardRef<
       }
 
       const overlayId = eng.overlay.hit(eng.raycaster);
-      const hits = overlayId ? [] : eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
-      const firstHit = hits[0];
-      if (firstHit) {
-        const hitMesh = firstHit.object;
-        const rId = hitMesh.userData.regionId as string;
-        const name = hitMesh.userData.displayName as string;
+      const hit = overlayId ? null : (eng.regionBatch?.raycast(eng.raycaster) ?? null);
+      const hitProperties = hit ? eng.regionProperties.get(hit.regionId) : undefined;
+      if (hit && hitProperties) {
+        const rId = hit.regionId;
+        const name = hitProperties.displayName;
 
         const clampedX = Math.min(
           Math.max(coords.localX + 14, 12),
@@ -2361,14 +2513,12 @@ export const NusaMatra3DMap = forwardRef<
             hoveredIdRef.current &&
             hoveredIdRef.current !== selectedRegionId
           ) {
-            const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
-            if (prevGroup) paintRegion(prevGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
+            paintRegion(eng.regionBatch, hoveredIdRef.current, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
           }
           hoveredIdRef.current = rId;
           eng.renderer.shadowMap.needsUpdate = true;
           if (rId !== selectedRegionId) {
-            const currGroup = eng.featureMeshes.get(rId);
-            if (currGroup) paintRegion(currGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'hover');
+            paintRegion(eng.regionBatch, rId, EXPLORE_ATLAS_PALETTE[displayMode], 'hover');
           }
           onHoverRegion?.({
             regionId: rId,
@@ -2376,7 +2526,7 @@ export const NusaMatra3DMap = forwardRef<
             boundaryEditionId: validatedDataset.metadata.boundaryEditionId,
             dataMode: validatedDataset.metadata.dataMode,
             codeSystem: validatedDataset.metadata.codeSystem,
-            regionCode: hitMesh.userData.featureProperties?.regionCode,
+            ...(hitProperties.regionCode === undefined ? {} : { regionCode: hitProperties.regionCode }),
           });
         }
       } else {
@@ -2393,8 +2543,7 @@ export const NusaMatra3DMap = forwardRef<
         );
         if (hoveredIdRef.current) {
           if (hoveredIdRef.current !== selectedRegionId) {
-            const prevGroup = eng.featureMeshes.get(hoveredIdRef.current);
-            if (prevGroup) paintRegion(prevGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
+            paintRegion(eng.regionBatch, hoveredIdRef.current, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
           }
           hoveredIdRef.current = null;
           eng.renderer.shadowMap.needsUpdate = true;
@@ -2454,18 +2603,16 @@ export const NusaMatra3DMap = forwardRef<
         onSelectOverlay?.(overlayId);
         return;
       }
-      const hits = eng.raycaster.intersectObjects(eng.interactiveMeshes, false);
-
-      const firstHit = hits[0];
-      if (firstHit) {
-        const hitMesh = firstHit.object;
+      const hit = eng.regionBatch?.raycast(eng.raycaster) ?? null;
+      const hitProperties = hit ? eng.regionProperties.get(hit.regionId) : undefined;
+      if (hit && hitProperties) {
         onSelectRegion?.({
-          regionId: hitMesh.userData.regionId,
-          displayName: hitMesh.userData.displayName,
+          regionId: hit.regionId,
+          displayName: hitProperties.displayName,
           boundaryEditionId: validatedDataset.metadata.boundaryEditionId,
           dataMode: validatedDataset.metadata.dataMode,
           codeSystem: validatedDataset.metadata.codeSystem,
-          regionCode: hitMesh.userData.featureProperties?.regionCode,
+          ...(hitProperties.regionCode === undefined ? {} : { regionCode: hitProperties.regionCode }),
         });
       }
     },
@@ -2478,8 +2625,7 @@ export const NusaMatra3DMap = forwardRef<
       eng.pointerParallax = { x: 0, y: 0 };
       const previousId = hoveredIdRef.current;
       if (previousId && previousId !== selectedRegionId) {
-        const previousGroup = eng.featureMeshes.get(previousId);
-        if (previousGroup) paintRegion(previousGroup, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
+        paintRegion(eng.regionBatch, previousId, EXPLORE_ATLAS_PALETTE[displayMode], 'idle');
       }
     }
     hoveredIdRef.current = null;

@@ -137,6 +137,14 @@
   display: none;
 }
 
+/* The 3D/2D toggle and the Normal–Kaca switch, side by side at the end of the narrow bar. */
+.controls {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  align-items: center;
+}
+
 /* Below this width the full navbar (~950px with four destinations) no longer fits with 24px margins. */
 @media (width < 1024px) {
   .desktop {

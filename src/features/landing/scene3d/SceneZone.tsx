@@ -4,6 +4,7 @@ import { useDisplayMode } from '@/features/theme';
 import { RenderErrorBoundary } from '@/components/feedback/RenderErrorBoundary';
 import type { SceneProps } from './sceneProps';
 import { STATIC_ART, type SceneKind } from './staticArt';
+import { useQualityProfile } from '@/features/graphics-quality';
 import { supportsWebGL, whenIdle } from '@/lib/webglSupport';
 import styles from './SceneZone.module.css';
 
@@ -37,7 +38,8 @@ export function SceneZone({ kind, description, className, values }: SceneZonePro
   const isCompact = useMediaQuery(STATIC_ONLY_QUERY);
   const reducedMotion = useReducedMotion();
   const { mode } = useDisplayMode();
-  const canRender3d = !isCompact && supportsWebGL();
+  const { scenes3d } = useQualityProfile(); // light 2D mode: the still picture only
+  const canRender3d = scenes3d && !isCompact && supportsWebGL();
 
   useEffect(() => {
     const element = containerRef.current;

@@ -135,14 +135,14 @@
 }
 
 /*
- * Graphics level "Ringan" (<html data-quality="lite">): a lighter blur on every glass surface, which
- * costs the GPU far less on large panels. Colours and borders stay, so both modes look the same.
+ * Light 2D mode (<html data-graphics="low">): a lighter blur on every glass surface, which costs the
+ * GPU far less on large panels. Colours and borders stay, so Normal and Kaca look the same.
  */
-:root[data-quality='lite'] {
+:root[data-graphics='low'] {
   --glass-blur: blur(16px);
 }
 
-:root[data-quality='lite'] .glass--read {
+:root[data-graphics='low'] .glass--read {
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }

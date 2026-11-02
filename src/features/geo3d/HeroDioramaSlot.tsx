@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent } from 'react';
 import storyGlassUrl from '@/assets/figma/landing/placeholder-story-diorama-kaca.svg';
 import storyUrl from '@/assets/figma/landing/placeholder-story-diorama.svg';
+import { useQualityProfile } from '@/features/graphics-quality';
 import { HexPoster } from '@/features/hex-map';
 import { useReducedMotion } from '@/features/motion';
 import { useDisplayMode } from '@/features/theme';
@@ -43,12 +44,16 @@ export function HeroDioramaSlot({ scene, description, className, onHeroMapOutcom
   const { mode } = useDisplayMode();
   const reducedMotion = useReducedMotion();
   const isHero = scene === 'hero';
+  const { scenes3d } = useQualityProfile();
   const engineProps = { displayMode: mode, dataMode: publicConfig.dataMode, reducedMotion };
 
   return (
     <div className={[styles.frame, styles[scene], className].filter(Boolean).join(' ')}>
       <p className="visually-hidden">{description}</p>
-      {isHero ? (
+      {isHero && !scenes3d ? (
+        // Light 2D mode: the still picture of the same hexagon map, no WebGL.
+        <HexPoster theme={mode} />
+      ) : isHero ? (
         <EngineSlot
           engine={geoEngineRegistry.HeroHexMap}
           engineProps={{

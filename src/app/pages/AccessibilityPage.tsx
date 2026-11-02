@@ -1,6 +1,5 @@
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
-import { GraphicsQualitySetting } from '@/features/graphics-quality';
 import styles from './StaticPage.module.css';
 
 /** States what this build actually supports; no conformance claim beyond what was implemented. */
@@ -30,9 +29,6 @@ export function AccessibilityPage() {
             </li>
           ))}
         </ul>
-      </Surface>
-      <Surface radius="card" reading className={styles.panel}>
-        <GraphicsQualitySetting />
       </Surface>
       <p className={`kk-small ${styles.muted}`}>
         Audit aksesibilitas menyeluruh belum dilakukan. Temuan dan perbaikan akan dicatat di halaman ini.
