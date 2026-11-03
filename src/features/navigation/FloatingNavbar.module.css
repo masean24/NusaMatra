@@ -145,6 +145,24 @@
   align-items: center;
 }
 
+/* The logo gives way before the controls ever leave the bar. */
+.compactTop .home {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/*
+ * Narrow phones (Galaxy S9: 360px), or a larger system font, which `em` follows: the bar shows the
+ * logo mark alone, so the 3D/2D toggle and the Normal–Kaca switch keep their full size inside it.
+ * The link keeps its accessible name ("Nusa Matra — Beranda").
+ */
+@media (width < 24em) {
+  .compactTop [data-wordmark] {
+    display: none;
+  }
+}
+
 /* Below this width the full navbar (~950px with four destinations) no longer fits with 24px margins. */
 @media (width < 1024px) {
   .desktop {
