@@ -1,9 +1,23 @@
-import { useId, useState, type KeyboardEvent, type ReactNode, type SubmitEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useEffectEvent,
+  useId,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+  type SubmitEvent,
+} from 'react';
 import { useNavigate } from 'react-router';
 import { TextField } from '@/components/ui/TextField/TextField';
 import { adminLevelLabel } from '@/features/data-hub';
 import type { DataHubRegionDTO } from '@/services/api';
-import { normalizeRegionQuery, regionProfileHref, regionSearchHref } from './regionSearch';
+import {
+  normalizeRegionQuery,
+  regionMatchingQuery,
+  regionProfileHref,
+  regionSearchHref,
+} from './regionSearch';
 import { SUGGESTION_MIN_LENGTH, useRegionSuggestions } from './useRegionSuggestions';
 import styles from './RegionSearchForm.module.css';
 
@@ -30,8 +44,8 @@ function suggestionNote(loading: boolean, regions: readonly DataHubRegionDTO[]):
 /**
  * Region search shared by the hero and the closing CTA. While the user types it suggests matching
  * kabupaten/kota from the Data Hub (a combobox: arrows move, Enter opens, Escape closes); picking one
- * opens that region in Jelajahi, and submitting the text hands the query to Jelajahi's search. It
- * never invents a result.
+ * opens that region in Jelajahi. Submitting the text opens the region it clearly names (once the Data
+ * Hub has answered), and otherwise hands it to Jelajahi's search list. It never invents a result.
  */
 export function RegionSearchForm({
   placeholder,
@@ -60,10 +74,31 @@ export function RegionSearchForm({
     (loading || (current && suggestions.state.status === 'success'));
   const activeRegion = showList && current ? regions[activeIndex] : undefined;
 
+  // Whether the Data Hub has answered (found, found nothing, or failed) for the text on screen.
+  const answered = current && suggestions.state.status !== 'loading' && suggestions.state.status !== 'idle';
+  // Text submitted before that answer came: resolved as soon as it does.
+  const pendingQuery = useRef<string | null>(null);
+
   const openRegion = (region: DataHubRegionDTO) => {
     setOpen(false);
     void navigate(regionProfileHref(region.regionId));
   };
+
+  // A search that clearly means one region opens it (Jelajahi then flies to it); anything else, or
+  // no answer from the Data Hub, goes to Jelajahi's search list for the visitor to choose.
+  const goToQuery = (query: string) => {
+    const match = suggestions.state.status === 'success' ? regionMatchingQuery(query, regions) : null;
+    if (match) openRegion(match);
+    else void navigate(regionSearchHref(query));
+  };
+  const goToPendingQuery = useEffectEvent(goToQuery);
+
+  useEffect(() => {
+    const pending = pendingQuery.current;
+    if (pending === null || !answered || suggestions.query !== pending) return;
+    pendingQuery.current = null;
+    goToPendingQuery(pending);
+  }, [answered, suggestions.query]);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -76,7 +111,8 @@ export function RegionSearchForm({
       return;
     }
     setError(null);
-    void navigate(regionSearchHref(typed));
+    if (answered) goToQuery(typed);
+    else pendingQuery.current = typed;
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -125,6 +161,8 @@ export function RegionSearchForm({
               setValue(event.target.value);
               setOpen(true);
               setActiveIndex(-1);
+              // Typing again replaces a search still waiting for its answer.
+              pendingQuery.current = null;
               if (error) setError(null);
             }}
             onKeyDown={handleKeyDown}

@@ -1511,23 +1511,30 @@ export const NusaMatra3DMap = forwardRef<
   // The flat 2D map and the top-down preset both look straight down.
   const isTopDown = () => cameraPreset === 'top-down' || getQualityProfile().flatMap;
 
+  /** Glides the camera to one region. Kept in a ref so the region build can call the current one. */
+  const focusRegion = (regionId: string) => {
+    const eng = engineRef.current;
+    if (!eng || !validatedDataset) return;
+    const feature = validatedDataset.features.find(
+      (f) => f.properties.regionId === regionId
+    );
+    if (!feature) return;
+    const center = approximateFeatureCenter(feature);
+    const lon = Number.isFinite(feature.properties.focusLon) ? feature.properties.focusLon! : center.lon;
+    const lat = Number.isFinite(feature.properties.focusLat) ? feature.properties.focusLat! : center.lat;
+    const dist = feature.properties.focusDistance ?? 16;
+    const targetWorld = lonLatToPlanar(lon, lat, 0);
+    eng.controlsTargetPos = targetWorld.clone();
+    eng.cameraTargetPos = focusPosition(targetWorld, dist, isTopDown());
+  };
+  const focusRegionRef = useRef(focusRegion);
+  focusRegionRef.current = focusRegion;
+
   useImperativeHandle(
     ref,
     () => ({
       focusRegion: (regionId: string) => {
-        const eng = engineRef.current;
-        if (!eng || !validatedDataset) return;
-        const feature = validatedDataset.features.find(
-          (f) => f.properties.regionId === regionId
-        );
-        if (!feature) return;
-        const center = approximateFeatureCenter(feature);
-        const lon = Number.isFinite(feature.properties.focusLon) ? feature.properties.focusLon! : center.lon;
-        const lat = Number.isFinite(feature.properties.focusLat) ? feature.properties.focusLat! : center.lat;
-        const dist = feature.properties.focusDistance ?? 16;
-        const targetWorld = lonLatToPlanar(lon, lat, 0);
-        eng.controlsTargetPos = targetWorld.clone();
-        eng.cameraTargetPos = focusPosition(targetWorld, dist, isTopDown());
+        focusRegionRef.current(regionId);
       },
       focusCoordinates: (lon: number, lat: number, distance = 16) => {
         const eng = engineRef.current;
@@ -2243,6 +2250,9 @@ export const NusaMatra3DMap = forwardRef<
         paintRegion(batch, selected, EXPLORE_ATLAS_PALETTE[displayModeRef.current], 'selected');
       }
       paintedRef.current = { batch, displayMode: displayModeRef.current, selected };
+      // A region already chosen when the map opens (a link, the Beranda search, a reload): glide
+      // from the whole archipelago to it, as a click on the map would.
+      if (mode === 'explore' && selected) focusRegionRef.current(selected);
       eng.renderer.shadowMap.needsUpdate = true;
       wakeEngine(eng);
       if (mode === 'explore') onReadyRef.current?.();

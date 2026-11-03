@@ -100,6 +100,42 @@ describe('RegionSearchForm', () => {
     });
   });
 
+  it('opens the region on Enter when the text clearly names one, waiting for the Data Hub answer', async () => {
+    const { router } = renderForm(regionsFetch());
+    // Enter right after typing, before the suggestions have arrived.
+    await userEvent.type(screen.getByRole('combobox'), 'semarang{Enter}');
+    await waitFor(() => {
+      expect(location(router)).toBe('/jelajahi?kode=3374');
+    });
+  });
+
+  it('hands an ambiguous name to the Jelajahi search list instead of guessing', async () => {
+    const bandung = (regionId: string, level: string, name: string) => ({
+      ...semarang,
+      region_id: regionId,
+      parent_region_id: '32',
+      province_name: 'Jawa Barat',
+      level,
+      name,
+      short_name: 'Bandung',
+      codes: { kemendagri: null, bps: regionId, kemendikdasmen: null },
+    });
+    const fetchImpl = createFixtureFetch({
+      '/api/v1/regions': () =>
+        jsonResponse(
+          liveEnvelope([
+            bandung('3204', 'kabupaten', 'Kabupaten Bandung'),
+            bandung('3273', 'kota', 'Kota Bandung'),
+          ]),
+        ),
+    });
+    const { router } = renderForm(fetchImpl);
+    await userEvent.type(screen.getByRole('combobox'), 'Bandung{Enter}');
+    await waitFor(() => {
+      expect(location(router)).toBe('/jelajahi?cari=Bandung');
+    });
+  });
+
   it('suggests nothing for a single letter', async () => {
     const fetchImpl = regionsFetch();
     renderForm(fetchImpl);
