@@ -1,3 +1,4 @@
+import { IntroGarisPantai, useIntroOnce } from '@/features/intro';
 import { CallToActionSection } from './sections/CallToActionSection';
 import { HeroSection } from './sections/HeroSection';
 import { HowItWorksSection } from './sections/HowItWorksSection';
@@ -6,11 +7,17 @@ import { SourcesSection } from './sections/SourcesSection';
 import { TransparencySection } from './sections/TransparencySection';
 import styles from './LandingPage.module.css';
 
-/** The full scrolling landing from Figma 27:2 (Normal) and 27:118 (Kaca), in its section order. */
+/**
+ * The full scrolling landing from Figma 27:2 (Normal) and 27:118 (Kaca), in its section order. On
+ * the first visit of a browser session the Garis Pantai opening plays over it; the page renders
+ * underneath from the start, so nothing waits on the animation.
+ */
 export function LandingPage() {
+  const intro = useIntroOnce();
   return (
     <div className={styles.page}>
       <title>Nusa Matra — Memahami wilayah, menentukan arah</title>
+      {intro.playing && <IntroGarisPantai onDone={intro.finish} />}
       <HeroSection />
       <HowItWorksSection />
       <LabPreviewSection />

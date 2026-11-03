@@ -82,7 +82,7 @@ ul[role='list'] {
     hyphens: auto;
   }
 
-  main :where(.kk-lead, .kk-caption, [role='status'], [role='alert']),
+  main :where(.kk-lead, .kk-caption, .kk-small, [role='status'], [role='alert']),
   main :where([role='status'], [role='alert']) :where(p, li) {
     text-align: start;
   }

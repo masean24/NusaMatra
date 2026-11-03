@@ -21,6 +21,11 @@ interface RevealProps {
    * the hero (G1/G2 "saat halaman dimuat"), so it never waits on an observer callback.
    */
   readonly trigger?: 'view' | 'load';
+  /**
+   * Its place (seconds) in the Beranda entrance after the opening animation (features/intro): while
+   * the opening plays this element waits, then rises in at this offset instead of its own entrance.
+   */
+  readonly introStep?: number;
   readonly className?: string | undefined;
 }
 
@@ -38,6 +43,7 @@ export function Reveal({
   threshold = DEFAULT_REVEAL_THRESHOLD,
   fromScale = 1,
   trigger = 'view',
+  introStep,
   className,
 }: RevealProps) {
   const { ref, revealed } = useRevealOnce<HTMLElement>(threshold, trigger === 'view');
@@ -47,6 +53,7 @@ export function Reveal({
     '--reveal-scale': fromScale,
     '--reveal-delay': `${delay}ms`,
     '--reveal-duration': `${duration}ms`,
+    ...(introStep === undefined ? {} : { '--intro-step': `${String(introStep)}s` }),
   } as CSSProperties;
 
   return (
@@ -56,6 +63,7 @@ export function Reveal({
         .filter(Boolean)
         .join(' ')}
       data-revealed={trigger === 'load' ? true : revealed}
+      data-intro-step={introStep === undefined ? undefined : ''}
       {...STAGGER_ITEM_PROPS}
       style={style}
     >

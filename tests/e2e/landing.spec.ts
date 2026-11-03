@@ -1,6 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
 import { mockDataHub } from './dataHubMocks';
 
+/**
+ * Opens the Beranda past the Garis Pantai opening (tested in intro.spec.ts), which plays on every
+ * load of it: skipped with Escape, as a visitor may, and waited out until the page is given back.
+ */
+async function openBeranda(page: Page) {
+  await page.goto('/');
+  const intro = page.getByRole('dialog', { name: 'Pembuka Nusa Matra. Tekan Enter untuk masuk.' });
+  await expect(intro).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(intro).toHaveCount(0);
+  await expect(page.locator('html')).toHaveAttribute('data-intro', 'done');
+}
+
 function visibleNav(page: Page) {
   // Desktop renders the floating bar, phones the bottom tab bar; only one is visible.
   return page.getByRole('navigation', { name: 'Navigasi utama' }).filter({ visible: true });
@@ -14,7 +27,7 @@ test.describe('landing', () => {
       if (message.type() === 'error') errors.push(message.text());
     });
 
-    await page.goto('/');
+    await openBeranda(page);
     await expect(page).toHaveTitle(/Nusa Matra/);
     await expect(
       page.getByRole('heading', { level: 1, name: 'Memahami wilayah, menentukan arah.' }),
@@ -40,7 +53,7 @@ test.describe('landing', () => {
   test('makes no universal claim: priorities depend on the choices, and examples say CONTOH', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openBeranda(page);
     await expect(
       page.getByText(/Hasilnya bergantung pada indikator, bobot, data yang tersedia/),
     ).toBeVisible();
@@ -54,7 +67,7 @@ test.describe('landing', () => {
     isMobile,
   }) => {
     test.skip(isMobile, 'the full floating bar is a desktop layout');
-    await page.goto('/');
+    await openBeranda(page);
     const bar = page.locator('header > div').first();
     const wordmark = bar.getByText('Nusa Matra', { exact: false }).first();
     const home = bar.getByRole('link', { name: 'Nusa Matra — Beranda' });
@@ -80,7 +93,7 @@ test.describe('landing', () => {
     page,
     isMobile,
   }) => {
-    await page.goto('/');
+    await openBeranda(page);
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible();
     // The "Wilayah A/B/C" cards and their pins were removed (owner decision 2026-10-27).
@@ -135,7 +148,7 @@ test.describe('landing', () => {
   test('how-it-works questions swap the preview with a crossfade, and its button opens the feature', async ({
     page,
   }) => {
-    await page.goto('/');
+    await openBeranda(page);
     const labTab = page.getByRole('tab', { name: /Daerah mana yang perlu perhatian lebih/ });
     await labTab.scrollIntoViewIfNeeded();
     const explorePanel = page.locator('#cara-kerja-panel-jelajahi');
@@ -157,7 +170,7 @@ test.describe('landing', () => {
       localStorage.setItem('nusa-matra:display-mode', 'glass');
     });
     await page.setViewportSize({ width: 1900, height: 900 });
-    await page.goto('/');
+    await openBeranda(page);
     await page.waitForTimeout(1500);
     const scrolled = await page.evaluate(() => {
       window.scrollTo(600, 0);
@@ -167,7 +180,7 @@ test.describe('landing', () => {
   });
 
   test('has no horizontal page overflow', async ({ page }) => {
-    await page.goto('/');
+    await openBeranda(page);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
@@ -175,7 +188,7 @@ test.describe('landing', () => {
   });
 
   test('primary CTA and navbar lead to honest destinations with an active state', async ({ page }) => {
-    await page.goto('/');
+    await openBeranda(page);
     // "Mulai jelajahi" opens Jelajahi directly ("Peta Utama" was retired, owner decision 2026-10-28).
     await page.getByRole('link', { name: 'Mulai jelajahi' }).first().click();
     await expect(page).toHaveURL(/\/jelajahi$/);
@@ -229,7 +242,7 @@ test.describe('landing', () => {
 
   test('region search validates and hands the query to Jelajahi', async ({ page }) => {
     await mockDataHub(page);
-    await page.goto('/');
+    await openBeranda(page);
     const search = page.getByRole('combobox', { name: 'Cari kabupaten/kota' }).first();
     await search.press('Enter');
     await expect(page.getByRole('alert').first()).toHaveText('Ketik minimal 2 huruf nama kabupaten/kota.');
@@ -244,7 +257,7 @@ test.describe('landing', () => {
 
   test('region search suggests regions while typing and opens the one picked', async ({ page }) => {
     await mockDataHub(page);
-    await page.goto('/');
+    await openBeranda(page);
     const search = page.getByRole('combobox', { name: 'Cari kabupaten/kota' }).first();
     await search.pressSequentially('aceh');
     const first = page.getByRole('option').first();
@@ -256,7 +269,7 @@ test.describe('landing', () => {
   });
 
   test('"Lihat cara kerjanya" glides to the section and rests it mid-screen', async ({ page }) => {
-    await page.goto('/');
+    await openBeranda(page);
     await page.getByRole('link', { name: 'Lihat cara kerjanya' }).click();
     const section = page.locator('#cara-kerja');
     await expect(section).toBeFocused();
@@ -286,7 +299,11 @@ test.describe('landing', () => {
 
   test('keyboard users can skip to content and reach the navbar', async ({ page, isMobile }) => {
     test.skip(isMobile, 'keyboard traversal is checked on desktop');
-    await page.goto('/');
+    // After the opening, focus is already on the main content, as the skip link would put it.
+    await openBeranda(page);
+    await expect(page.locator('#konten-utama')).toBeFocused();
+    // From the top of a page (here one opened without the opening), the skip link comes first.
+    await page.goto('/bandingkan');
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: 'Lewati ke konten utama' })).toBeFocused();
     await page.keyboard.press('Tab');
@@ -299,7 +316,7 @@ test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
   test('shows all content immediately and switches mode without the liquid', async ({ page }) => {
-    await page.goto('/');
+    await openBeranda(page);
     await expect(page.getByRole('heading', { name: 'Sumber dan metodologi' })).toHaveCSS('opacity', '1');
     const toggle = page.getByRole('switch', { name: 'Mode tampilan kaca' }).filter({ visible: true });
     await toggle.click();

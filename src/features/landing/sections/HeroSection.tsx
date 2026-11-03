@@ -40,22 +40,34 @@ export function HeroSection() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={styles.copy}>
-        <Reveal trigger="load" distance={G1_DISTANCE}>
+        <Reveal trigger="load" distance={G1_DISTANCE} introStep={0.12}>
           <h1 id="hero-title" className={`kk-display ${styles.title}`}>
             Memahami wilayah, menentukan arah.
           </h1>
         </Reveal>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS}>
+        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS} introStep={0.22}>
           <p className={`kk-lead ${styles.lead}`}>
             Jelajahi kondisi kabupaten/kota di Indonesia, bandingkan indikator pembangunan, dan susun
             prioritas yang dapat diperiksa. Hasilnya bergantung pada indikator, bobot, data yang tersedia, dan
             metode yang dipakai.
           </p>
         </Reveal>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS * 2} className={styles.search}>
+        <Reveal
+          trigger="load"
+          distance={G1_DISTANCE}
+          delay={G1_STAGGER_MS * 2}
+          introStep={0.32}
+          className={styles.search}
+        >
           <RegionSearchForm placeholder="Ketik nama kabupaten/kota Anda" landmarkLabel="Cari wilayah" />
         </Reveal>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS * 3} className={styles.actions}>
+        <Reveal
+          trigger="load"
+          distance={G1_DISTANCE}
+          delay={G1_STAGGER_MS * 3}
+          introStep={0.4}
+          className={styles.actions}
+        >
           <ButtonLink to={EXPLORE_PATH}>Mulai jelajahi</ButtonLink>
           <a
             href={`#${HOW_IT_WORKS_ID}`}
@@ -70,7 +82,7 @@ export function HeroSection() {
             Lihat cara kerjanya
           </a>
         </Reveal>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS * 4}>
+        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS * 4} introStep={0.4}>
           <p className={`kk-small ${styles.note}`}>
             Gratis dan tanpa daftar. Setiap angka menyebutkan sumber dan tahunnya.
           </p>
@@ -84,6 +96,7 @@ export function HeroSection() {
             distance={60}
             duration={1100}
             delay={G2_DELAY_MS}
+            introStep={0.1}
             className={styles.dioramaReveal}
           >
             {/* Hexagon map (default engine); its still poster is the fallback. */}
