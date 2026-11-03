@@ -29,7 +29,7 @@ export function LabHeader() {
           <div className={styles.meta} aria-label="Sumber data halaman ini">
             <span className={styles.chip} data-tone={dataMode === 'LIVE' ? 'live' : 'demo'}>
               <span className={styles.dot} aria-hidden="true" />
-              {dataMode === 'LIVE' ? 'Data LIVE' : 'DEMO · data simulasi'}
+              {dataMode === 'LIVE' ? 'Data LIVE' : 'DEMO: data simulasi'}
             </span>
             {publicConfig.modeSwitch && (
               <details className={styles.modeControl}>

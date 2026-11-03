@@ -51,7 +51,7 @@ function ExploreArt() {
         <p className={styles.infoName}>Wilayah contoh {region?.key}</p>
         <p className={styles.infoLabel}>Penduduk miskin (P0)</p>
         <p className={styles.infoNumber}>{region?.value}</p>
-        <p className={styles.infoSource}>Sumber: BPS · 2025</p>
+        <p className={styles.infoSource}>Sumber: BPS, 2025</p>
       </div>
     </div>
   );
@@ -118,7 +118,7 @@ function LabArt() {
   return (
     <div className={styles.lab}>
       <div className={styles.weightsBlock}>
-        <p className={styles.blockLabel}>Bobot · total 100%</p>
+        <p className={styles.blockLabel}>Bobot (total 100%)</p>
         <div className={styles.stack} aria-hidden="true">
           {LAB_WEIGHTS.map((item) => (
             <span key={item.name} data-series={item.series} style={{ flexGrow: item.weight }} />

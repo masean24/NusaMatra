@@ -26,7 +26,7 @@ export function IndicatorPicker({ options, selected, onToggle, maxSelected }: In
           <span aria-hidden="true">+ </span>Tambah kriteria
         </span>
         <span className={`kk-small ${styles.muted}`}>
-          {selected.size} dipilih · {availableCount} dari {options.length} indikator punya data
+          {selected.size} dipilih, {availableCount} dari {options.length} indikator punya data
         </span>
       </summary>
       {full && (
@@ -67,10 +67,10 @@ export function IndicatorPicker({ options, selected, onToggle, maxSelected }: In
                           {reason ?? (
                             <>
                               {option.agency ?? 'Sumber tidak disebutkan'}
-                              {option.referenceYear !== null && ` · ${String(option.referenceYear)}`} ·{' '}
-                              {option.unit} · {directionLabel(option.polarity)}
+                              {option.referenceYear !== null && ` ${String(option.referenceYear)}`}, satuan{' '}
+                              {option.unit}. {directionLabel(option.polarity)}
                               {indicatorCoverageText(option) !== null &&
-                                ` · ${indicatorCoverageText(option) ?? ''}`}
+                                `. Data untuk ${indicatorCoverageText(option) ?? ''}`}
                             </>
                           )}
                         </span>

@@ -361,7 +361,7 @@ export function PassportLayout({
         </div>
         {wide && <div className={styles.wideSections}>{wide}</div>}
         <p className={styles.footerLine}>
-          Nusa Matra · Data dari {agencies.length > 0 ? agencies.join(', ') : 'sumber yang belum tersedia'}{' '}
+          Nusa Matra. Data dari {agencies.length > 0 ? agencies.join(', ') : 'sumber yang belum tersedia'}{' '}
           melalui Data Hub ({record.source.dataMode}). Paspor dirangkai di peramban dan bukan arsip resmi.
         </p>
       </article>

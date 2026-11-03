@@ -356,7 +356,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
               )}
               <span className="kk-small">
                 {dataMode === 'DEMO' ? 'Simulasi' : 'Data resmi'}
-                {quakeLayerOn ? ' · Gempa BMKG aktif' : ''}
+                {quakeLayerOn ? ', Gempa BMKG aktif' : ''}
               </span>
               <span className={styles.summaryHint}>Info data</span>
             </summary>

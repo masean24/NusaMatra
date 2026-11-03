@@ -18,7 +18,7 @@ export function ModeTag({ mode }: { readonly mode: DataMode }) {
       LIVE
     </span>
   ) : (
-    <span className={`${styles.modeChip} ${styles.tagWarn}`}>DEMO · data simulasi</span>
+    <span className={`${styles.modeChip} ${styles.tagWarn}`}>DEMO: data simulasi</span>
   );
 }
 

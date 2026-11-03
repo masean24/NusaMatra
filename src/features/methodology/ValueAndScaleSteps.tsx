@@ -48,7 +48,7 @@ function ExampleChips({ regionName, label }: { readonly regionName: string; read
   return (
     <p className={styles.chipRow}>
       <span className={styles.chip} data-tone="sea">
-        Contoh · {regionName}
+        Contoh: {regionName}
       </span>
       <span className={styles.chip}>{label}</span>
     </p>
@@ -173,7 +173,7 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
               {example.valueText}
               {example.unitText}
             </strong>{' '}
-            · {example.indicatorLabel} di {example.regionName}
+            untuk {example.indicatorLabel} di {example.regionName}
           </p>
         </div>
 
@@ -200,8 +200,8 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
               />
               {example.reported !== null && (
                 <RangeTrack
-                  start="0 · kebutuhan terendah"
-                  end="100 · tertinggi"
+                  start="0 (kebutuhan terendah)"
+                  end="100 (tertinggi)"
                   position={positionOf(example.reported, 0, 100)}
                   bubble={`skor ${formatNumber(example.reported)}`}
                   needEnd="high"

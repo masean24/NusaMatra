@@ -73,13 +73,13 @@ function ComponentLine({
   if (component.weightBps === null) {
     return (
       <li>
-        <strong>{component.label}</strong>: skor {component.scoreText} · bobot wilayah belum dilaporkan
+        <strong>{component.label}</strong>: skor {component.scoreText}, bobot wilayah belum dilaporkan
       </li>
     );
   }
   return (
     <li>
-      <strong>{component.label}</strong>: skor {component.scoreText} · bobot wilayah{' '}
+      <strong>{component.label}</strong>: skor {component.scoreText}, bobot wilayah{' '}
       {bpsLabel(component.weightBps)}
       {differs && requestedBps !== undefined && ` (diminta ${bpsLabel(requestedBps)})`}
       <ObservationSource component={component} />
@@ -96,7 +96,7 @@ function ObservationSource({ component }: { readonly component: RegionComponent 
   if (!observationDatasetId || observationDatasetId === catalogDatasetId) return null;
   return (
     <>
-      {' · sumber observasi: '}
+      {'; sumber observasi: '}
       <span className={styles.code}>{observationDatasetId}</span>
       {sourceRecordRef && ` (${sourceRecordRef})`}
     </>

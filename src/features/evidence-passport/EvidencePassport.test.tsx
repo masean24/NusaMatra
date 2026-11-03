@@ -128,7 +128,7 @@ describe('Paspor Bukti for a region, CAPTURED DEMO responses', () => {
     const article = await screen.findByRole('article', { name: /Bukti indikator/ });
 
     for (const section of sectionsOf(article)) {
-      expect(within(section).getAllByText('DEMO · data simulasi').length).toBeGreaterThan(0);
+      expect(within(section).getAllByText('DEMO: data simulasi').length).toBeGreaterThan(0);
     }
     expect(within(article).queryByText('LIVE')).not.toBeInTheDocument();
     expect(within(article).getAllByText('Contoh simulasi').length).toBeGreaterThan(0);
@@ -316,7 +316,7 @@ describe('Paspor Bukti print layout', () => {
     renderPassport(LIVE_URL, capturedLiveBodies());
     await findDocument();
     expect(
-      screen.getByText(/Nusa Matra · Paspor Bukti · Mode LIVE · Versi data 2026.10.0-official-live/),
+      screen.getByText(/Nusa Matra, Paspor Bukti, mode LIVE, versi data 2026.10.0-official-live/),
     ).toBeInTheDocument();
   });
 

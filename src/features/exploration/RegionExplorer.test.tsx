@@ -34,8 +34,8 @@ describe('RegionExplorer against the captured Data Hub responses', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Kota' }));
     expect(await screen.findByText('Menampilkan 30 dari 99 wilayah')).toBeInTheDocument();
-    expect(screen.getAllByText(/^Kota ·/).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/^Kabupaten ·/)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/^Kota di /).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/^Kabupaten di /)).not.toBeInTheDocument();
   });
 
   it('answers q=bogor with an honest empty state and never invents Kabupaten Bogor', async () => {

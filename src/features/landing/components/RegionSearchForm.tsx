@@ -167,7 +167,7 @@ export function RegionSearchForm({
                     <span className={styles.optionName}>{region.displayName}</span>
                     <span className={`kk-small ${styles.optionMeta}`}>
                       {adminLevelLabel(region.adminLevel)}
-                      {region.provinceName ? ` · ${region.provinceName}` : ''}
+                      {region.provinceName ? `, ${region.provinceName}` : ''}
                     </span>
                   </div>
                 ))}

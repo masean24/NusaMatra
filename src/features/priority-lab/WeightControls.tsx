@@ -76,7 +76,7 @@ function availabilityNote(preset: CompositePresetDTO): string | null {
   const availability = preset.availability;
   if (!availability) return null;
   if (!availability.rankable)
-    return `Belum dapat diperingkat · data nasional ${String(availability.requestedWeightAvailabilityPct)}% bobot`;
+    return `Belum dapat diperingkat: data nasional baru ${String(availability.requestedWeightAvailabilityPct)}% bobot`;
   if (availability.requestedWeightAvailabilityPct < 100)
     return `Data nasional ${String(availability.requestedWeightAvailabilityPct)}% bobot, sisanya dialihkan`;
   return null;

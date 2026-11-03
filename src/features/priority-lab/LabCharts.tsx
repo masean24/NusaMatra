@@ -115,7 +115,7 @@ export function RankingChart({
                   <span className={styles.rankBadges}>
                     {partial && (
                       <span className={`${styles.badge} ${styles.badgeWarn}`}>
-                        Data sebagian · {formatDecimalId(String(item.coveragePct))}% bobot
+                        Data sebagian ({formatDecimalId(String(item.coveragePct))}% bobot)
                       </span>
                     )}
                     {imputed && (

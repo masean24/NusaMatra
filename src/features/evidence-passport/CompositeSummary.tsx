@@ -25,7 +25,7 @@ function TopRegions({ record }: { readonly record: CompositeEvidenceRecord }) {
   return (
     <>
       <h3 className="kk-body-strong">
-        {top.length} wilayah dengan prioritas tertinggi ·{' '}
+        {top.length} wilayah dengan prioritas tertinggi,{' '}
         {scopeLabel(record.scope.provinceId, record.scope.provinceName)}
       </h3>
       <ol role="list" className={styles.topList} aria-label="Wilayah dengan prioritas tertinggi">
@@ -38,8 +38,8 @@ function TopRegions({ record }: { readonly record: CompositeEvidenceRecord }) {
             <span className={styles.topName}>
               <span className="kk-body-strong">{row.name}</span>
               <span className={`kk-small ${styles.muted}`}>
-                Skor {row.scoreText ?? 'belum tersedia'} · {coverageText(row)}
-                {row.isFocus && ' · wilayah yang Anda buka'}
+                Skor {row.scoreText ?? 'belum tersedia'}, {coverageText(row)}
+                {row.isFocus && ' (wilayah yang Anda buka)'}
               </span>
             </span>
           </li>
@@ -91,10 +91,10 @@ export function CompositeSummary({ record }: { readonly record: CompositeEvidenc
           <dt>Kualitas dan cakupan data</dt>
           <dd>
             {record.ranking === 'SHOWN'
-              ? `${String(integrity.coverageTiers.complete)} wilayah lengkap · ${String(integrity.coverageTiers.partial)} parsial · ${String(record.insufficient.length)} tidak diperingkat`
+              ? `${String(integrity.coverageTiers.complete)} wilayah lengkap, ${String(integrity.coverageTiers.partial)} parsial, ${String(record.insufficient.length)} tidak diperingkat`
               : 'Tidak dinyatakan karena peringkat ditahan.'}
             {integrity.requestedWeightAvailabilityPct !== null &&
-              ` · bobot diminta tersedia ${percent(integrity.requestedWeightAvailabilityPct)} secara nasional`}
+              `. Bobot yang diminta tersedia ${percent(integrity.requestedWeightAvailabilityPct)} secara nasional.`}
           </dd>
         </div>
       </dl>

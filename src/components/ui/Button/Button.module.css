@@ -11,8 +11,11 @@
   font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1.2;
+  text-align: center;
   text-decoration: none;
   white-space: nowrap;
+  /* Never wider than the card it sits in; a long label wraps instead (see below). */
+  max-width: 100%;
   cursor: pointer;
   /* The press settles back on the "Halus" spring; colours change on a plain short ease. */
   transition:
@@ -101,5 +104,12 @@
   /* On cobalt or glass the hover only brightens the tint; the white label stays readable. */
   .glass:hover:not(:disabled) {
     background: color-mix(in srgb, var(--nm-text-on-sea) 22%, transparent);
+  }
+}
+
+/* Phones: a label longer than the card wraps onto a second line instead of running past its edge. */
+@media (width < 480px) {
+  .button {
+    white-space: normal;
   }
 }

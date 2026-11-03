@@ -131,7 +131,7 @@ describe('Paspor Bukti for Lab, CAPTURED LIVE Jawa Tengah (kemiskinan + stunting
     expect(row).toHaveTextContent('bobot wilayah 42,86% (diminta 30%)');
     expect(row).toHaveTextContent('Bobot berbeda dari bobot global');
     // A genuinely observed zero stays a zero.
-    expect(row).toHaveTextContent(/skor 0 · bobot wilayah 28,57%/);
+    expect(row).toHaveTextContent(/skor 0, bobot wilayah 28,57%/);
 
     const focus = screen.getByRole('region', { name: /Wilayah yang Anda buka/ });
     expect(focus).toHaveTextContent('peringkat 35 dari 35');
@@ -457,7 +457,7 @@ describe('Paspor Bukti for Lab, CAPTURED DEMO responses', () => {
     const article = await findDocument();
 
     for (const section of sectionsOf(article)) {
-      expect(within(section).getAllByText('DEMO · data simulasi').length).toBeGreaterThan(0);
+      expect(within(section).getAllByText('DEMO: data simulasi').length).toBeGreaterThan(0);
     }
     expect(within(article).queryByText('LIVE')).not.toBeInTheDocument();
     const table = rankingTable(article);

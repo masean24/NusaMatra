@@ -64,7 +64,7 @@ function FocusPanel({
             </span>
             {row.unavailable && (
               <span className={`kk-caption ${styles.note}`}>
-                Belum ada data · bobotnya dialihkan ke indikator lain
+                Belum ada data, bobotnya dialihkan ke indikator lain
               </span>
             )}
           </li>

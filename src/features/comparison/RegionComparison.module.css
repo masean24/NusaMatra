@@ -182,12 +182,27 @@ tr[data-blocked] th[scope='row'] {
 }
 
 /* Above the table: the way to the full detail (or back) and the evidence passport of this pair. */
+/*
+ * Both buttons share one width: side by side at the card's right edge on wide screens, one under the
+ * other across the full card on phones.
+ */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 15rem);
   gap: 8px 12px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: end;
+}
+
+@media (width < 640px) {
+  .actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.actions > a {
+  width: 100%;
+  justify-content: center;
 }
 
 .catalogError {
@@ -238,15 +253,32 @@ tr[data-blocked] th[scope='row'] {
     clip-path: inset(50%);
   }
 
+  /*
+   * Each indicator is its own card: the indicator's name in a tinted strip across the top, then
+   * region A, region B and the result, so it is always clear where one comparison ends.
+   */
   .table tbody tr {
-    padding: 4px 0 12px;
-    border-top: 1px solid var(--c-input-border);
+    --row-rule: color-mix(in srgb, var(--c-text) 16%, transparent);
+    margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid var(--row-rule);
+    border-radius: 16px;
   }
 
   .table td,
   .table tbody th {
     border-top: 0;
-    padding: 6px 4px;
+    padding: 8px 14px;
+  }
+
+  .table tbody th:not([colspan]) {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--row-rule);
+    background: color-mix(in srgb, var(--c-text-strong-accent) 10%, transparent);
+  }
+
+  .table tbody td:last-child {
+    padding-bottom: 12px;
   }
 
   .table td[data-label]::before {
@@ -258,8 +290,11 @@ tr[data-blocked] th[scope='row'] {
     content: attr(data-label);
   }
 
+  /* A category heading row ("Risiko bencana") stays a plain label above its cards. */
   .table tbody tr:has(th[colspan]) {
+    margin: 8px 0 4px;
     padding: 0;
-    border-top: 0;
+    border: 0;
+    border-radius: 0;
   }
 }

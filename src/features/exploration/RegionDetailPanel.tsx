@@ -78,7 +78,7 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
           {profile
             ? describeRegion(profile)
             : detail.state.status === 'loading'
-              ? `Kode ${regionId} · memuat provinsi dan indikator…`
+              ? `Kode ${regionId}, memuat provinsi dan indikator…`
               : `Kode ${regionId}`}
         </p>
         <DataStatus dataMode={dataMode} />
@@ -147,8 +147,8 @@ function describeRegion(profile: RegionProfileDTO): string {
             : 'luas wilayah dari sumber tidak valid (0 km²)',
         ]),
   ];
-  const codes = region.identifiers.map(({ codeSystem, code }) => `${codeSystem} ${code}`).join(' · ');
-  return codes ? `${parts.join(' · ')} · kode ${codes}` : parts.join(' · ');
+  const codes = region.identifiers.map(({ codeSystem, code }) => `${codeSystem} ${code}`).join(', ');
+  return codes ? `${parts.join(', ')}, kode ${codes}` : parts.join(', ');
 }
 
 function DataStatus({ dataMode }: { readonly dataMode: 'DEMO' | 'LIVE' }) {
@@ -349,7 +349,7 @@ function IndicatorItem({
                 ) : (
                   indicator.agencyCode
                 )}
-                {indicator.datasetTitle ? ` · ${indicator.datasetTitle}` : ''}
+                {indicator.datasetTitle ? `, ${indicator.datasetTitle}` : ''}
               </dd>
             </div>
           </dl>

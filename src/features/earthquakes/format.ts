@@ -30,4 +30,4 @@ export function formatEventTime(
 
 /** Plain-text label for the map hover, e.g. "Magnitudo 5,1 · 62 km TimurLaut MALUKUBRTDAYA". */
 export const markerLabel = (event: EarthquakeEventDTO) =>
-  event.area ? `${formatMagnitude(event.magnitude)} · ${event.area}` : formatMagnitude(event.magnitude);
+  event.area ? `${formatMagnitude(event.magnitude)}, ${event.area}` : formatMagnitude(event.magnitude);

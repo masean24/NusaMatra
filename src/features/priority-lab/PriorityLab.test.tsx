@@ -371,7 +371,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     const poverty = screen.getByRole('checkbox', { name: 'Persentase Penduduk Miskin (P0)' });
     expect(poverty).toBeChecked();
     expect(poverty).toHaveAccessibleDescription(
-      /BPS .*percent.*Nilai rendah = kondisi lebih baik \(skor kebutuhan lebih rendah\).*514 wilayah/,
+      /BPS.*percent.*Nilai rendah = kondisi lebih baik \(skor kebutuhan lebih rendah\).*514 wilayah/,
     );
   });
 
@@ -465,7 +465,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
 
     fireEvent.click(within(ranking).getByRole('button', { name: 'Terendah' }));
     const surakarta = within(list).getAllByRole('button')[0];
-    expect(surakarta).toHaveTextContent(/^35.*Kota Surakarta.*Data sebagian · 70% bobot.*9,57/);
+    expect(surakarta).toHaveTextContent(/^35.*Kota Surakarta.*Data sebagian \(70% bobot\).*9,57/);
     // Its breakdown, opened in its row, names the omitted criterion and does not turn it into a zero.
     openRow(surakarta as HTMLElement);
     const table = screen.getByRole('table', { name: /Sumbangan setiap kriteria ke skor Kota Surakarta/ });
@@ -552,7 +552,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
     fireEvent.click(await screen.findByRole('combobox', { name: 'Skenario awal' }));
     const option = await screen.findByRole('option', { name: /Pemerataan Kualitas Pendidikan Daerah 3T/ });
-    expect(option).toHaveTextContent('Belum dapat diperingkat · data nasional 45% bobot');
+    expect(option).toHaveTextContent('Belum dapat diperingkat: data nasional baru 45% bobot');
     fireEvent.pointerUp(option);
     recompute();
     expect(

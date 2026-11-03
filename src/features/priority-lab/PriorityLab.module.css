@@ -904,37 +904,66 @@
 
 /* ---------------------------------------------------------------- tables */
 
+/*
+ * A ruled grid: every cell has its borders; the number columns are as wide as their one-word
+ * headings and values (never broken), the criterion column takes the rest and wraps by words, and
+ * numbers with their headings are right-aligned, so each row reads straight across.
+ */
 .table {
+  --table-rule: color-mix(in srgb, var(--c-text) 18%, transparent);
   width: 100%;
+  border: 1px solid var(--table-rule);
   border-collapse: collapse;
   font-size: 0.875rem;
 }
 
 .table th,
 .table td {
-  padding: 7px 8px;
-  border-bottom: 1px solid var(--lab-card-border);
+  padding: 8px 10px;
+  border: 1px solid var(--table-rule);
   font-weight: 400;
+  line-height: 1.35;
   text-align: left;
+  vertical-align: middle;
+  /* Words break only when one is longer than its column, never mid-word otherwise. */
+  overflow-wrap: break-word;
 }
 
-.table thead th,
-.table tfoot th,
-.table tfoot td {
-  color: var(--lab-muted);
+.table thead th:not(:first-child),
+.table td {
+  width: 1%;
+}
+
+/* The one-word headings never break; a cell such as "Tidak dipakai (tanpa data)" wraps by words. */
+.table thead th:not(:first-child) {
+  white-space: nowrap;
+}
+
+/* Phones: a little tighter, so a criterion's longest word ("Pembangunan") fits its column whole. */
+@media (width < 480px) {
+  .table {
+    font-size: 0.8125rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+}
+
+.table thead th {
+  background: var(--c-surface-muted);
+  color: var(--lab-ink);
   font-weight: 600;
 }
 
-.table tfoot th,
-.table tfoot td {
-  color: var(--lab-ink);
-  border-bottom: 0;
+.table thead th:not(:first-child),
+.table td {
+  text-align: right;
 }
 
 .table td {
   font-variant-numeric: tabular-nums;
-  text-align: right;
-  white-space: nowrap;
 }
 
 /*

@@ -46,7 +46,7 @@ test.describe('landing', () => {
     ).toBeVisible();
     await expect(page.getByText(/objektif/)).toHaveCount(0);
     await expect(page.getByText(/belum terhubung di prototipe/)).toHaveCount(0);
-    await expect(page.getByText('Paspor Bukti · CONTOH-0412')).toBeAttached();
+    await expect(page.getByText('Paspor Bukti CONTOH-0412')).toBeAttached();
   });
 
   test('keeps the Nusa Matra wordmark inside its box, clear of the navbar dividers', async ({

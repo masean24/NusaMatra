@@ -79,7 +79,7 @@ export function EarthquakeLayerControl({
                     >
                       <span className="kk-body-strong">{formatMagnitude(event.magnitude)}</span>
                       <span className="kk-small">
-                        {event.area ?? 'Lokasi tidak disebutkan'} · {formatEventTime(event)}
+                        {event.area ?? 'Lokasi tidak disebutkan'}, {formatEventTime(event)}
                       </span>
                     </button>
                   </li>
@@ -113,7 +113,7 @@ export function EarthquakeLayerControl({
         <p className={`kk-small ${styles.reasons}`}>
           {describeLastSuccess(feed.lastSuccessAt)}
           {feed.rejectedCount > 0
-            ? ` · ${String(feed.rejectedCount)} entri ditolak karena tidak lolos validasi`
+            ? `, ${String(feed.rejectedCount)} entri ditolak karena tidak lolos validasi`
             : ''}
         </p>
       )}
@@ -144,7 +144,7 @@ function LayerStatus({ state, count }: { readonly state: EarthquakeFeedState; re
       <OriginBadge origin={feed.origin} />
       {assessment.isStale && <Chip tone="warning">Mungkin usang</Chip>}
       <span>
-        {count} gempa{age ? ` · ${age}` : ''}
+        {count} gempa{age ? `, ${age}` : ''}
       </span>
     </span>
   );

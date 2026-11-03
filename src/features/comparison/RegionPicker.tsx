@@ -88,9 +88,9 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
                           >
                             <span className="kk-body-strong">{region.displayName}</span>
                             <span className="kk-small">
-                              {adminLevelLabel(region.adminLevel)} ·{' '}
+                              {adminLevelLabel(region.adminLevel)} di{' '}
                               {region.provinceName ?? 'provinsi tidak diketahui'}
-                              {' · kode '}
+                              {', kode '}
                               {region.regionId}
                             </span>
                           </button>
@@ -112,7 +112,7 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
                 <>
                   <p className="kk-h3">{envelope.data.region.displayName}</p>
                   <p className={`kk-small ${styles.slot}`}>
-                    {envelope.data.region.provinceName ?? 'provinsi tidak diketahui'} · kode{' '}
+                    {envelope.data.region.provinceName ?? 'provinsi tidak diketahui'}, kode{' '}
                     {envelope.data.region.regionId}
                   </p>
                 </>

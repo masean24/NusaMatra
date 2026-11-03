@@ -138,7 +138,7 @@ export function HexIndonesiaMap({
           </Canvas>
         </div>
       )}
-      <p className={styles.badge}>Garis pantai: Natural Earth · Sel hexagon: data simulasi</p>
+      <p className={styles.badge}>Garis pantai dari Natural Earth, sel hexagon berisi data simulasi</p>
     </div>
   );
 }

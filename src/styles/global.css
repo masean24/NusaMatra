@@ -66,6 +66,27 @@ ul[role='list'] {
   padding: 0;
 }
 
+/*
+ * Text alignment. Running prose (a paragraph, or a list item that is a sentence) is justified where
+ * its lines are long enough to take it (from 640px wide), so a card of explanation reads as a clean
+ * block; the last line stays left, and a one-line paragraph looks the same either way. On phones a
+ * line holds only about 35 characters, and browsers do not hyphenate Indonesian, so justifying opens
+ * wide gaps between words: there prose stays left-aligned. Everything that is not prose stays left at
+ * every width: headings, the lead under a heading, labels, buttons, chips and badges, table cells,
+ * formulas, captions and short metadata. Any component that sets its own alignment wins (these rules
+ * carry no specificity).
+ */
+@media (width >= 640px) {
+  main :where(p, li) {
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  main :where(.kk-lead, .kk-caption, [role='status'], [role='alert']) {
+    text-align: start;
+  }
+}
+
 img,
 svg,
 canvas {

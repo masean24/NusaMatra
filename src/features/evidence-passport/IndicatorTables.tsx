@@ -71,7 +71,7 @@ function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
 }
 
 function SourceLine({ source }: { readonly source: IndicatorSourceInfo }) {
-  const name = `${source.agencyCode ?? 'Lembaga belum tersedia'} · ${source.datasetTitle ?? source.datasetId ?? 'judul dataset belum tersedia'}`;
+  const name = `${source.agencyCode ?? 'Lembaga belum tersedia'}: ${source.datasetTitle ?? source.datasetId ?? 'judul dataset belum tersedia'}`;
   if (!source.officialUrl) {
     return (
       <span className={styles.cell}>

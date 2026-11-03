@@ -186,8 +186,8 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                         >
                           <span className="kk-body-strong">{region.displayName}</span>
                           <span className={`kk-small ${styles.regionMeta}`}>
-                            {adminLevelLabel(region.adminLevel)} ·{' '}
-                            {region.provinceName ?? 'provinsi tidak diketahui'} · kode {region.regionId}
+                            {adminLevelLabel(region.adminLevel)} di{' '}
+                            {region.provinceName ?? 'provinsi tidak diketahui'}, kode {region.regionId}
                           </span>
                         </button>
                       </li>

@@ -12,7 +12,7 @@ describe('PrintRunningHeader', () => {
     const { container } = render(
       <PrintRunningHeader source={{ dataMode: 'LIVE', snapshotId: '2026.10.0-official-live' }} />,
     );
-    const text = `Nusa Matra · Paspor Bukti · Mode LIVE · Versi data 2026.10.0-official-live · ${BROWSER_ASSEMBLED_LABEL}`;
+    const text = `Nusa Matra, Paspor Bukti, mode LIVE, versi data 2026.10.0-official-live, ${BROWSER_ASSEMBLED_LABEL}`;
     expect(screen.getByText(text)).toBeInTheDocument();
     const rule = pageRule(container);
     expect(rule).toContain('@page');
@@ -25,7 +25,7 @@ describe('PrintRunningHeader', () => {
     const { container } = render(
       <PrintRunningHeader source={{ dataMode: 'DEMO', snapshotId: '2026.10.0-wia-demo' }} />,
     );
-    expect(pageRule(container)).toContain('Mode DEMO · Versi data 2026.10.0-wia-demo');
+    expect(pageRule(container)).toContain('mode DEMO, versi data 2026.10.0-wia-demo');
   });
 
   it('never lets a versi data id end the CSS string it is written into', () => {
@@ -34,8 +34,8 @@ describe('PrintRunningHeader', () => {
     const rule = pageRule(container);
     expect(rule).not.toContain('display: none');
     expect(rule).not.toContain(hostile);
-    expect(rule).toContain('Versi data tidak dapat ditampilkan');
-    expect(screen.getByText(/Versi data tidak dapat ditampilkan/)).toBeInTheDocument();
+    expect(rule).toContain('versi data tidak dapat ditampilkan');
+    expect(screen.getByText(/versi data tidak dapat ditampilkan/i)).toBeInTheDocument();
   });
 
   it('is the first thing in a printed passport and appears once', async () => {

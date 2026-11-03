@@ -32,7 +32,7 @@ test.describe('LIVE against the deployed Data Hub', () => {
 
     // The choice holds across pages within the session. Lab keeps the switch folded under "Ganti data".
     await page.getByRole('link', { name: 'Lab Prioritas' }).first().click();
-    await expect(page.getByText('DEMO · data simulasi')).toBeVisible();
+    await expect(page.getByText('DEMO: data simulasi')).toBeVisible();
     await page.getByText('Ganti data').click();
     await expect(page.getByRole('radio', { name: 'DEMO' })).toBeChecked();
   });

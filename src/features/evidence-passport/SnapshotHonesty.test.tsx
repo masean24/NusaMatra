@@ -121,9 +121,7 @@ describe('versi data id is not proof that data is the same', () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const article = await findRegionDocument();
     expect(
-      within(article).getByText(
-        new RegExp(`Mode LIVE · Versi data ${SNAPSHOT} · ${BROWSER_ASSEMBLED_LABEL}`),
-      ),
+      within(article).getByText(new RegExp(`mode LIVE, versi data ${SNAPSHOT}, ${BROWSER_ASSEMBLED_LABEL}`)),
     ).toBeInTheDocument();
     const { json } = await downloadJson();
     expect((json as { notice: string }).notice.startsWith(BROWSER_ASSEMBLED_LABEL)).toBe(true);

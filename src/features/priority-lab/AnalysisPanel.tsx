@@ -299,8 +299,8 @@ function AnalysisStatus(props: AnalysisStatusProps) {
         details={
           error instanceof ApiError ? (
             <p>
-              Kode {error.code} · HTTP {String(error.status)}
-              {error.serverMessage ? ` · ${error.serverMessage}` : ''}
+              Kode {error.code}, HTTP {String(error.status)}
+              {error.serverMessage ? `: ${error.serverMessage}` : ''}
             </p>
           ) : undefined
         }
@@ -776,7 +776,7 @@ function InsufficientCard({
               {region.coveragePct === null
                 ? 'tidak dilaporkan'
                 : `${formatDecimalId(String(region.coveragePct))}%`}
-              {result.minCoveragePct !== null && ` · ambang ${String(result.minCoveragePct)}%`}
+              {result.minCoveragePct !== null && ` (ambang ${String(result.minCoveragePct)}%)`}
             </span>
             {region.coveragePct !== null && (
               <span className={styles.coverageTrack} aria-hidden="true">
@@ -818,7 +818,7 @@ function AnomalyList({
     <ul role="list" className={styles.issueList}>
       {anomalies.map(({ indicatorId, regionId, raw, score }) => (
         <li key={`${indicatorId}|${regionId}`}>
-          {labelOf(indicatorId)} · {regionLabel(regionId, registry)}: nilai mentah{' '}
+          {labelOf(indicatorId)} di {regionLabel(regionId, registry)}: nilai mentah{' '}
           {formatDecimalId(String(raw))}, skor terpublikasi {formatDecimalId(String(score))}. Frontend tidak
           mengoreksi skor ini.
         </li>

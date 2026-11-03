@@ -29,7 +29,7 @@ export function formatReceived(iso: string | null, withSeconds = false): string 
   if (Number.isNaN(date.getTime())) return iso;
   return withSeconds
     ? `${SHORT_DATE.format(date)}, ${FULL_TIME.format(date)}`
-    : `${SHORT_DATE.format(date)} · ${SHORT_TIME.format(date)}`;
+    : `${SHORT_DATE.format(date)}, pukul ${SHORT_TIME.format(date)}`;
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];

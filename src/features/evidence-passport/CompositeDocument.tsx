@@ -75,7 +75,7 @@ export function CompositeDocument({ record }: { readonly record: CompositeEviden
   return (
     <PassportLayout
       record={record}
-      kindLabel={`Lab Prioritas · ${scopeLabel(record.scope.provinceId, record.scope.provinceName)}`}
+      kindLabel={`Lab Prioritas, ${scopeLabel(record.scope.provinceId, record.scope.provinceName)}`}
       notes={notes}
       agencies={agencies}
       toc={toc}

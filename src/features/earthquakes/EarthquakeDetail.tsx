@@ -102,7 +102,7 @@ export function EarthquakeDetail({ event, assessment, origin, onClose }: Earthqu
         kerusakan atau risiko tsunami; untuk peringatan, ikuti keterangan resmi BMKG.
       </p>
       <p className={`kk-small ${styles.muted}`}>
-        Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika) melalui Data Hub Nusa Matra ·{' '}
+        Sumber: BMKG (Badan Meteorologi, Klimatologi, dan Geofisika) melalui Data Hub Nusa Matra.{' '}
         <a href={BMKG_PORTAL} target="_blank" rel="noreferrer noopener">
           data.bmkg.go.id
         </a>

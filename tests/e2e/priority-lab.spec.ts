@@ -102,7 +102,7 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
     await page.getByRole('button', { name: 'Terendah', exact: true }).click();
     const last = results(page).locator('ol > li').first();
     await expect(last).toContainText('Kota Surakarta');
-    await expect(last).toContainText('Data sebagian · 70% bobot');
+    await expect(last).toContainText('Data sebagian (70% bobot)');
     await expect(last).toContainText('9,57');
   });
 

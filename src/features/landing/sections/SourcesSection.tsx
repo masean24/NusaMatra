@@ -9,7 +9,7 @@ import styles from './SourcesSection.module.css';
  */
 const SOURCES = [
   {
-    name: 'BNPB · InaRISK',
+    name: 'BNPB (InaRISK)',
     description: 'Indeks dan kelas risiko bencana per kabupaten/kota.',
     status: 'Terhubung lewat Data Hub',
   },

@@ -123,8 +123,8 @@ function IssueItem({ issue }: { readonly issue: CompositeIssueView }) {
       {issue.examples.length > 0 && <> Contoh kode wilayah: {issue.examples.join(', ')}.</>}
       <br />
       <span className="kk-small">
-        Sumber aturan: {issue.originLabel} · kode teknis <span className={styles.code}>{issue.code}</span>
-        {issue.count > 0 && ` · jumlah terdampak ${String(issue.count)}`}
+        Sumber aturan: {issue.originLabel}, kode teknis <span className={styles.code}>{issue.code}</span>
+        {issue.count > 0 && `, jumlah terdampak ${String(issue.count)}`}
       </span>
     </li>
   );
@@ -194,7 +194,7 @@ export function CriteriaSection({ record }: { readonly record: CompositeEvidence
                     <span>{indicator.label}</span>
                     <span className={`kk-small ${styles.muted}`}>
                       {indicator.category ? categoryLabel(indicator.category) : 'kategori belum tersedia'}
-                      {indicator.unitLabel && ` · satuan ${indicator.unitLabel}`}
+                      {indicator.unitLabel && `, satuan ${indicator.unitLabel}`}
                     </span>
                   </div>
                 </th>
@@ -210,7 +210,7 @@ export function CriteriaSection({ record }: { readonly record: CompositeEvidence
                       target="_blank"
                       rel="noreferrer noopener"
                     >
-                      {indicator.source.agencyCode ?? 'Lembaga belum tersedia'} ·{' '}
+                      {indicator.source.agencyCode ?? 'Lembaga belum tersedia'}:{' '}
                       {indicator.source.datasetTitle ??
                         indicator.source.datasetId ??
                         'judul dataset belum tersedia'}
@@ -218,7 +218,7 @@ export function CriteriaSection({ record }: { readonly record: CompositeEvidence
                     </a>
                   ) : (
                     <span>
-                      {indicator.source.agencyCode ?? 'Lembaga belum tersedia'} ·{' '}
+                      {indicator.source.agencyCode ?? 'Lembaga belum tersedia'}:{' '}
                       {indicator.source.datasetTitle ??
                         indicator.source.datasetId ??
                         'judul dataset belum tersedia'}

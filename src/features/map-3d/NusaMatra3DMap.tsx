@@ -2691,7 +2691,7 @@ export const NusaMatra3DMap = forwardRef<
 
       <div className={styles.attributionBadge}>
         {mode === 'hero'
-          ? 'Garis pantai: Natural Earth · Relief ilustratif, bukan data elevasi'
+          ? 'Garis pantai dari Natural Earth. Relief ilustratif, bukan data elevasi'
           : validatedDataset?.metadata.isAuthoritative
           ? `Batas: ${validatedDataset.metadata.boundaryEditionId}`
           : 'Data simulasi (DEMO) — Relief ilustratif'}

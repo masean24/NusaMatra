@@ -194,7 +194,7 @@ function ComparisonResult({
       </h2>
       {dataMode === 'DEMO' && (
         <div className={styles.context}>
-          <Chip tone="warning">DEMO · simulasi, bukan observasi resmi</Chip>
+          <Chip tone="warning">DEMO: simulasi, bukan observasi resmi</Chip>
         </div>
       )}
       {snapshotsDiffer && (
@@ -249,7 +249,7 @@ function ComparisonResult({
           </colgroup>
           <thead>
             <tr>
-              <th scope="col">{view === 'summary' ? 'Indikator' : 'Indikator · tahun · sumber'}</th>
+              <th scope="col">{view === 'summary' ? 'Indikator' : 'Indikator, tahun, dan sumber'}</th>
               <th scope="col">{shortName(a)}</th>
               <th scope="col">{shortName(b)}</th>
               <th scope="col">Hasil</th>
@@ -521,12 +521,12 @@ function describeProvenance(row: ComparisonRow): string {
   ];
   const source = agencies.join(', ') || 'sumber tidak diketahui';
   const sameYear = yearOf(row.a) === yearOf(row.b);
-  const years = sameYear ? yearOf(row.a) : `A ${yearOf(row.a)} · B ${yearOf(row.b)}`;
-  return `${years} · ${source}`;
+  const years = sameYear ? yearOf(row.a) : `A ${yearOf(row.a)}, B ${yearOf(row.b)}`;
+  return `${years}, ${source}`;
 }
 
 /**
- * One line: years · agency · dataset · link, separated by " · " in the text itself, so it reads right
+ * One line: years, agency, dataset and link, separated by commas in the text itself, so it reads right
  * whatever the layout (desktop column, mobile card) and for screen readers.
  */
 function SourceLine({ row }: { readonly row: ComparisonRow }) {
@@ -534,7 +534,7 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
   if (sides.some((side) => !side.provenanceKnown)) {
     return (
       <span className={`kk-small ${styles.warning}`}>
-        {describeProvenance(row)} · Dataset sumber tidak diketahui.
+        {describeProvenance(row)}. Dataset sumber tidak diketahui.
       </span>
     );
   }
@@ -544,7 +544,7 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
   );
   return (
     <span className={`kk-small ${styles.muted}`}>
-      {describeProvenance(row)} · Dataset {datasets.join(', ') || '—'} ·{' '}
+      {describeProvenance(row)}, dataset {datasets.join(', ') || '—'}.{' '}
       {href ? (
         <a href={href} target="_blank" rel="noreferrer noopener">
           Sumber resmi

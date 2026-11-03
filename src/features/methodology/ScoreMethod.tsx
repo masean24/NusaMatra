@@ -73,7 +73,7 @@ function MethodSummary({ method }: { readonly method: ScoreMethodData }) {
           unit={ready?.unitText.trim() ?? ''}
           caption={
             example.status === 'ready'
-              ? `${example.value.indicatorLabel} · ${example.value.agency} ${String(example.value.referenceYear ?? '')}`.trim()
+              ? `${example.value.indicatorLabel} (${`${example.value.agency} ${String(example.value.referenceYear ?? '')}`.trim()})`
               : 'Nilai resmi dari sumber'
           }
         >

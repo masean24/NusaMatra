@@ -145,9 +145,9 @@ function IndicatorHeading({
     <div className={styles.definition}>
       <h3 className="kk-body-strong">{indicator.labelId}</h3>
       <p className={`kk-small ${styles.muted}`}>
-        {categoryLabel(indicator.category)} · satuan: {indicator.unitCode || 'tidak dicantumkan'} ·{' '}
+        {categoryLabel(indicator.category)}, satuan {indicator.unitCode || 'tidak dicantumkan'}.{' '}
         {preferredDirectionLabel(indicator.preferredDirection)}
-        {referenceYear !== null ? ` · tahun ${String(referenceYear)}` : ' · periode belum tersedia'}
+        {referenceYear !== null ? `, tahun ${String(referenceYear)}.` : ', periode belum tersedia.'}
       </p>
     </div>
   );
@@ -167,13 +167,14 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
         )}
         <p className={`kk-small ${styles.muted}`}>
           Sumber: {indicator.provenance.agencyCode}
-          {indicator.provenance.datasetTitle ? ` · ${indicator.provenance.datasetTitle}` : ''}
+          {indicator.provenance.datasetTitle ? `, ${indicator.provenance.datasetTitle}` : ''}
           {portalUrl && (
             <>
-              {' · '}
+              {' ('}
               <a href={portalUrl} target="_blank" rel="noreferrer noopener">
                 portal sumber
               </a>
+              {')'}
             </>
           )}
         </p>
@@ -272,13 +273,13 @@ function MeasurementCard({
       </p>
       <p className={`kk-small ${styles.muted}`}>
         {cell.rank !== null ? `Peringkat ${String(cell.rank)}` : 'Peringkat belum tersedia'}
-        {cell.percentileDecimal !== null ? ` · persentil ${formatDecimalId(cell.percentileDecimal)}` : ''}
+        {cell.percentileDecimal !== null ? `, persentil ${formatDecimalId(cell.percentileDecimal)}` : ''}
         {cell.normalizedScoreDecimal !== null
-          ? ` · skor ternormalisasi ${formatDecimalId(cell.normalizedScoreDecimal)}`
+          ? `, skor ternormalisasi ${formatDecimalId(cell.normalizedScoreDecimal)}`
           : ''}
       </p>
       <p className={`kk-small ${styles.muted}`}>
-        {referenceYear === null ? 'Periode belum tersedia' : `Tahun ${String(referenceYear)}`} · Sumber:{' '}
+        {referenceYear === null ? 'Periode belum tersedia' : `Tahun ${String(referenceYear)}`}, sumber{' '}
         {agencyCode}
       </p>
       {qualityNote && <Chip tone="warning">{qualityNote}</Chip>}

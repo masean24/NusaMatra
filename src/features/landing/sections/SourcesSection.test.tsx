@@ -8,7 +8,7 @@ describe('SourcesSection', () => {
     const card = (name: string) =>
       within(screen.getByRole('heading', { name }).closest('article') as HTMLElement);
 
-    expect(card('BNPB · InaRISK').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
+    expect(card('BNPB (InaRISK)').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
     expect(card('Badan Pusat Statistik').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
     expect(screen.getAllByRole('article')).toHaveLength(2);
     expect(screen.queryByText(/DJPK/)).not.toBeInTheDocument();

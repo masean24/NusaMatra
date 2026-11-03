@@ -201,7 +201,8 @@
 
 .controlPicker {
   display: flex;
-  flex: 1 1 280px;
+  flex: 1 1 min(280px, 100%);
+  min-width: 0;
   flex-direction: column;
   gap: 6px;
   max-width: 420px;
@@ -429,6 +430,8 @@
   font-family: var(--nm-font-mono, ui-monospace, monospace);
   font-size: 0.875rem;
   line-height: 1.5;
+  /* A formula is never justified: its spacing is part of how it reads. */
+  text-align: start;
   white-space: nowrap;
 }
 
@@ -688,13 +691,16 @@
 
 .verdictRows li {
   display: grid;
-  grid-template-columns: 170px minmax(0, 1fr);
+  grid-template-columns: 12rem minmax(0, 1fr);
   gap: 12px;
   align-items: center;
 }
 
+/* The three verdicts share one width, so their labels line up as a column. */
 .verdictRows li > :first-child {
-  justify-self: start;
+  justify-content: center;
+  width: 12rem;
+  max-width: 100%;
 }
 
 /* ---------------------------------------------------------------- langkah 3 */
@@ -814,11 +820,23 @@
   color: var(--nm-positive);
 }
 
+/* The closing buttons share one width and fill the card: stacked on phones, side by side when wide. */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(14rem, 100%), 1fr));
   gap: 10px;
   margin-top: 4px;
+}
+
+.actions > a {
+  width: 100%;
+  justify-content: center;
+}
+
+/* A badge with a sentence in it (the formula check) wraps inside the card on phones. */
+.rowBody [data-tone] {
+  max-width: 100%;
+  white-space: normal;
 }
 
 /* Kaca: the white-on-dark details keep their contrast on the dark glass. */

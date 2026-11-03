@@ -58,7 +58,7 @@ export function TransparencySection() {
         <EvidencePassport3D />
         <Reveal distance={24} duration={600} delay={200} threshold={0.3}>
           <Surface radius="card" className={styles.preview}>
-            <p className={`kk-h3 ${styles.previewTitle}`}>Paspor Bukti · {DEMO_PASSPORT_PREVIEW.id}</p>
+            <p className={`kk-h3 ${styles.previewTitle}`}>Paspor Bukti {DEMO_PASSPORT_PREVIEW.id}</p>
             <dl className={styles.rows}>
               {DEMO_PASSPORT_PREVIEW.rows.map((row) => (
                 <div key={row.label} className={styles.rowItem}>
@@ -69,7 +69,7 @@ export function TransparencySection() {
             </dl>
             <div className={styles.previewFooter}>
               <ButtonLink to="/paspor-bukti">Lihat contoh paspor</ButtonLink>
-              <Chip>Contoh · data simulasi</Chip>
+              <Chip>Contoh: data simulasi</Chip>
             </div>
           </Surface>
         </Reveal>

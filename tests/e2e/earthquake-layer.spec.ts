@@ -34,7 +34,7 @@ test.describe('Gempa BMKG layer on LIVE geography (mocked Data Hub contract)', (
     await layerSwitch(page).click();
 
     await expect(layer(page).getByText('Data BMKG', { exact: true })).toBeVisible();
-    await expect(layer(page).getByText(/^28 gempa · diperbarui BMKG ±0 menit lalu$/)).toBeVisible();
+    await expect(layer(page).getByText(/^28 gempa, diperbarui BMKG ±0 menit lalu$/)).toBeVisible();
     await expect(layer(page).getByText(/Pratinjau|Mungkin usang|ditahan/)).toHaveCount(0);
     expect(mock.earthquakeRequests[0]).toContain('mode=live');
   });

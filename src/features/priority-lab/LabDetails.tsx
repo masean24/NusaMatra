@@ -124,6 +124,10 @@ export function LabDetails({
               <h3 id="lab-bobot" className={styles.detailsHeading}>
                 Bobot pilihan dan bobot dipakai
               </h3>
+              <p className={styles.muted}>
+                <strong>Pilihan</strong> adalah bobot yang Anda atur. <strong>Dipakai</strong> adalah bobot
+                global yang benar-benar dihitung, setelah bobot indikator tanpa data dibagi ke indikator lain.
+              </p>
               <table className={styles.table}>
                 <caption className={styles.visuallyHidden}>
                   Bobot pilihan Anda dan bobot yang benar-benar dipakai
@@ -131,8 +135,8 @@ export function LabDetails({
                 <thead>
                   <tr>
                     <th scope="col">Kriteria</th>
-                    <th scope="col">Pilihan Anda</th>
-                    <th scope="col">Dipakai (bobot global)</th>
+                    <th scope="col">Pilihan</th>
+                    <th scope="col">Dipakai</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -181,11 +185,11 @@ export function LabDetails({
                     <span className={styles.sourceName}>{labelOf(id)}</span>
                     <span className={styles.muted}>
                       {option?.agency ?? 'Sumber tidak disebutkan'}
-                      {option?.referenceYear != null && ` · ${String(option.referenceYear)}`}
-                      {option && ` · ${option.unit} · ${directionLabel(option.polarity)}`}
+                      {option?.referenceYear != null && ` ${String(option.referenceYear)}`}
+                      {option && `, satuan ${option.unit}. ${directionLabel(option.polarity)}`}
                       {option &&
                         indicatorCoverageText(option) !== null &&
-                        ` · data untuk ${indicatorCoverageText(option) ?? ''}`}
+                        `. Data untuk ${indicatorCoverageText(option) ?? ''}`}
                     </span>
                   </li>
                 );
@@ -234,7 +238,7 @@ export function LabDetails({
                 <div>
                   <dt>Cakupan</dt>
                   <dd>
-                    {result.filterProvinceId ? `Provinsi ${result.filterProvinceId}` : 'Seluruh Indonesia'} ·{' '}
+                    {result.filterProvinceId ? `Provinsi ${result.filterProvinceId}` : 'Seluruh Indonesia'},{' '}
                     {result.items.length} wilayah dihitung
                   </dd>
                 </div>
@@ -253,7 +257,7 @@ export function LabDetails({
                       ? 'Tidak dilaporkan'
                       : `${String(result.totalEligibleNational)} wilayah (di Data Hub); ${String(result.items.length)} diperingkat di tampilan ini`}
                     {result.insufficient.length > 0 &&
-                      ` · ${String(result.insufficient.length)} data belum cukup`}
+                      `; ${String(result.insufficient.length)} data belum cukup`}
                   </dd>
                 </div>
                 <div>

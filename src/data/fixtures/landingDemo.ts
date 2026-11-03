@@ -79,7 +79,7 @@ export const DEMO_PASSPORT_PREVIEW = {
   id: 'CONTOH-0412',
   rows: [
     { label: 'Sumber', value: 'BNPB InaRISK, BPS' },
-    { label: 'Tahun', value: '2023 · 2021' },
-    { label: 'Asumsi', value: 'Banjir 45% · Sosial 35% · Layanan 20%' },
+    { label: 'Tahun', value: '2023 dan 2021' },
+    { label: 'Asumsi', value: 'Banjir 45%, Sosial 35%, Layanan 20%' },
   ],
 } as const;

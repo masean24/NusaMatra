@@ -129,7 +129,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
 
     const row = within(rowOf(POVERTY));
     expect(row.getByText(/Uji 2,0× lebih tinggi|Uji 2× lebih tinggi/)).toBeInTheDocument();
-    expect(row.getByText(/^2025 · BPS · Dataset bps_susenas_sakernas_2025 ·/)).toBeInTheDocument();
+    expect(row.getByText(/^2025, BPS, dataset bps_susenas_sakernas_2025\./)).toBeInTheDocument();
     expect(row.getByText('9,89')).toBeInTheDocument();
     expect(row.getByText('19,78')).toBeInTheDocument();
   });
@@ -138,7 +138,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
     await renderComparison();
 
     const row = within(rowOf(POVERTY));
-    expect(row.getByText(/Dataset bps_susenas_sakernas_2025/)).toBeInTheDocument();
+    expect(row.getByText(/dataset bps_susenas_sakernas_2025/)).toBeInTheDocument();
     expect(row.getByRole('link', { name: 'Sumber resmi' })).toHaveAttribute('href');
     expect(screen.queryByText('2026.10.0-official-live')).toBeNull();
   });
@@ -170,7 +170,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
     const row = within(rowOf('Indeks Pembangunan Manusia (IPM / HDI)'));
     expect(row.getByText('Untuk sementara hasil belum dapat ditentukan')).toBeInTheDocument();
     expect(row.getByText(/Tahun data berbeda \(2024 dan 2021\)/)).toBeInTheDocument();
-    expect(row.getByText(/^A 2024 · B 2021 · BPS · Dataset /)).toBeInTheDocument();
+    expect(row.getByText(/^A 2024, B 2021, BPS, dataset /)).toBeInTheDocument();
     expect(row.getAllByText('69,1')).toHaveLength(2);
     expect(row.queryByText(/kondisi (lebih|kurang) baik/)).not.toBeInTheDocument();
     expect(row.queryByText(/lebih tinggi/)).not.toBeInTheDocument();
@@ -268,7 +268,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
     expect(row.getByText('Untuk sementara hasil belum dapat ditentukan')).toBeInTheDocument();
     expect(row.getByText(/Sumber dataset salah satu angka tidak diketahui/)).toBeInTheDocument();
     expect(
-      row.getByText(/^2025 · sumber tidak diketahui · Dataset sumber tidak diketahui[.]$/),
+      row.getByText(/^2025, sumber tidak diketahui[.] Dataset sumber tidak diketahui[.]$/),
     ).toBeInTheDocument();
   });
 
@@ -305,7 +305,7 @@ describe('RegionComparison on captured LIVE profiles', () => {
     expect(screen.getByText('Metrik kualitas data')).toBeInTheDocument();
     const row = within(rowOf('Kelengkapan Indikator'));
     expect(row.getByText(/bukan kondisi wilayah/)).toBeInTheDocument();
-    expect(row.getByText(/^2026 · NUSAMATRA · Dataset nusa_matra_internal_audit ·/)).toBeInTheDocument();
+    expect(row.getByText(/^2026, NUSAMATRA, dataset nusa_matra_internal_audit\./)).toBeInTheDocument();
     expect(row.queryByText(/kondisi (lebih|kurang) baik|Sama|lebih tinggi/)).not.toBeInTheDocument();
     expect(row.getAllByText('Turunan (dihitung, bukan pengukuran langsung)')).toHaveLength(2);
     expect(screen.getByText(/Dari 16 indikator wilayah/)).toBeInTheDocument();
@@ -618,7 +618,7 @@ describe('RegionComparison in DEMO mode', () => {
     });
 
     // The summary marks the whole result; each value carries its own label on the detail page.
-    expect(await screen.findByText(/DEMO · simulasi, bukan observasi resmi/)).toBeInTheDocument();
+    expect(await screen.findByText(/DEMO: simulasi, bukan observasi resmi/)).toBeInTheDocument();
     unmount();
 
     renderWithDataHub(<RegionComparison view="detail" />, {
@@ -626,7 +626,7 @@ describe('RegionComparison in DEMO mode', () => {
       dataMode: 'DEMO',
       path: '/bandingkan/rincian?a=3201&b=3202',
     });
-    expect(await screen.findByText(/DEMO · simulasi, bukan observasi resmi/)).toBeInTheDocument();
+    expect(await screen.findByText(/DEMO: simulasi, bukan observasi resmi/)).toBeInTheDocument();
     expect(screen.getAllByText('Contoh DEMO, bukan observasi resmi').length).toBeGreaterThan(0);
   });
 });

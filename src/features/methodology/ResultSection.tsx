@@ -54,7 +54,7 @@ export function ResultSection({ method }: { readonly method: ScoreMethodData }) 
           method.example.value.percentile !== null
             ? {
                 position: method.example.value.percentile,
-                label: `${shortName(method.example.value.regionName)} · ${formatDecimalId(method.example.value.percentileText ?? '')}`,
+                label: `${shortName(method.example.value.regionName)}: ${formatDecimalId(method.example.value.percentileText ?? '')}`,
               }
             : null
         }

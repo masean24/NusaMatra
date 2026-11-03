@@ -9,7 +9,7 @@ function classComposition(coverage: RegionCoverage): string {
     const count = coverage.byClass[evidenceClass] ?? 0;
     return count > 0 ? [`${evidenceClassLabel(evidenceClass, null)} ${String(count)}`] : [];
   });
-  return parts.length > 0 ? parts.join(' · ') : 'tidak ada nilai untuk digolongkan';
+  return parts.length > 0 ? parts.join(', ') : 'tidak ada nilai untuk digolongkan';
 }
 
 function RegionCard({
@@ -24,9 +24,9 @@ function RegionCard({
     <article className={styles.regionCard} aria-label={region.name}>
       <h3 className="kk-body-strong">{region.name}</h3>
       <p className={`kk-small ${styles.muted}`}>
-        {region.levelLabel} · {region.provinceName ?? 'provinsi belum tersedia'}
+        {region.levelLabel} di {region.provinceName ?? 'provinsi belum tersedia'}
         {region.codes.length > 0 &&
-          ` · kode ${region.codes.map(({ system, code }) => `${system} ${code}`).join(', ')}`}
+          `, kode ${region.codes.map(({ system, code }) => `${system} ${code}`).join(', ')}`}
       </p>
       {region.isSyntheticDemoName && (
         <p>
