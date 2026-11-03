@@ -128,11 +128,22 @@
 
 /* ------------------------------------------------------------------ map buttons, bottom right */
 
+/* The 3D/2D toggle sits above the zoom buttons; on phones, where they form a row, to their left. */
 .controls {
   position: absolute;
   right: var(--explore-edge);
   bottom: var(--explore-edge);
   z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (width < 600px) {
+  .controls {
+    flex-direction: row;
+  }
 }
 
 /* ------------------------------------------------------------------ sidebar */

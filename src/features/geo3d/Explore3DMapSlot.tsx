@@ -33,7 +33,7 @@ const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: str
 const LIVE_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
   loading: {
     kind: 'loading',
-    title: 'Menyiapkan peta 3D…',
+    title: 'Menyiapkan peta…',
     children: 'Membangun batas wilayah resmi dari BIG.',
   },
   failed: {

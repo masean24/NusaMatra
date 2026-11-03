@@ -19,6 +19,7 @@ import {
   markerLabel,
   useEarthquakeFeed,
 } from '@/features/earthquakes';
+import { MapViewToggle } from '@/features/graphics-quality';
 import { useMediaQuery } from '@/features/motion';
 import { publicConfig } from '@/lib/publicConfig';
 import type { GeoCameraHandle } from '@/features/geo3d';
@@ -368,6 +369,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
       </div>
 
       <div className={styles.controls}>
+        <MapViewToggle />
         <MapControls cameraRef={cameraRef} ready={cameraReady} />
       </div>
 

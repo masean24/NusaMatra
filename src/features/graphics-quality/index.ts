@@ -1,4 +1,4 @@
-export { GraphicsModeToggle } from './GraphicsModeToggle';
+export { MapViewToggle } from './MapViewToggle';
 export {
   applyGraphicsModeToDocument,
   getQualityProfile,
