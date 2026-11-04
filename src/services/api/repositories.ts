@@ -427,7 +427,13 @@ export class NusaMatraDataHubRepository {
             mapSnapshotDetailData(data, meta, input.snapshotId),
           ),
       },
-      { dataMode: input.dataMode, signal: input.signal, cache: 'no-cache' },
+      {
+        dataMode: input.dataMode,
+        signal: input.signal,
+        cache: 'no-cache',
+        // Without it the envelope of an older snapshot carries the active snapshot's digest.
+        query: { snapshot: input.snapshotId },
+      },
     );
   }
 

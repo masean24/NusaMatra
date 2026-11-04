@@ -136,6 +136,17 @@ describe('snapshot pinning (CAPTURED v2.2 responses)', () => {
     expect(data.metadataChecksum).not.toBe(DIGEST);
   });
 
+  it('asks for a snapshot detail pinned to that snapshot, so an older one keeps its own digest', async () => {
+    // Observed in production on 2026-11-05: without ?snapshot=, the envelope of an older snapshot's
+    // detail carries the ACTIVE digest and is refused, which breaks every older Paspor Bukti link.
+    const fetchImpl = createFixtureFetch({
+      [`/api/v1/snapshots/${SNAPSHOT}`]: () => fixtureResponse(v22('snapshot_detail')),
+    });
+    await repositoryOver(fetchImpl).getSnapshotDetail({ dataMode: 'LIVE', snapshotId: SNAPSHOT });
+    const [url] = requestedUrls(fetchImpl);
+    expect(url?.searchParams.get('snapshot')).toBe(SNAPSHOT);
+  });
+
   it('SYNTHETIC: refuses a detail for another snapshot than the one asked for', async () => {
     const fetchImpl = createFixtureFetch({
       '/api/v1/snapshots/other': () => fixtureResponse(v22('snapshot_detail')),

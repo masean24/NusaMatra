@@ -53,7 +53,7 @@ async function failure(promise: Promise<unknown>): Promise<ApiError> {
 }
 
 describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', () => {
-  it('pins every data request to the active reproducible versi data; only the versi data lookup is unpinned', async () => {
+  it('pins every request to the active reproducible versi data; only the list of versi data is unpinned', async () => {
     const fetchImpl = hubFetch(captured22NationalKms());
     const raw = await loadCompositeSources(repositoryOver(fetchImpl), KMS_WEIGHTS, null, 'LIVE', null);
     expect(raw.pinning).toMatchObject({
@@ -62,13 +62,13 @@ describe('pinned Lab passport, national kemiskinan + stunting (CAPTURED v2.2)', 
       pin: { snapshotId: SNAPSHOT_22, contentSha256: DIGEST_22 },
     });
     const urls = requestedUrls(fetchImpl);
-    const lookups = ['/api/v1/snapshots', `/api/v1/snapshots/${SNAPSHOT_22}`];
+    const list = '/api/v1/snapshots';
     for (const url of urls) {
-      expect(url.searchParams.get('snapshot'), url.pathname).toBe(
-        lookups.includes(url.pathname) ? null : SNAPSHOT_22,
-      );
+      expect(url.searchParams.get('snapshot'), url.pathname).toBe(url.pathname === list ? null : SNAPSHOT_22);
     }
-    expect(urls.map((url) => url.pathname)).toEqual(expect.arrayContaining([COMPOSITE_PATH, ...lookups]));
+    expect(urls.map((url) => url.pathname)).toEqual(
+      expect.arrayContaining([COMPOSITE_PATH, list, `/api/v1/snapshots/${SNAPSHOT_22}`]),
+    );
   });
 
   it('records a reproducible data versi data, shows the corrected ranking and the observation source of Lanny Jaya', async () => {
@@ -229,7 +229,11 @@ describe('unpinned passports', () => {
       DEMO_SNAPSHOT,
     );
     expect(raw.pinning.status).toBe('UNPINNED');
-    expect(requestedUrls(fetchImpl).every((url) => url.searchParams.get('snapshot') === null)).toBe(true);
+    // Only the lookup of the versi data itself names it; no data request is pinned.
+    const dataRequests = requestedUrls(fetchImpl).filter(
+      (url) => url.pathname !== `/api/v1/snapshots/${DEMO_SNAPSHOT}`,
+    );
+    expect(dataRequests.every((url) => url.searchParams.get('snapshot') === null)).toBe(true);
     const record = buildCompositeRecord(
       { kind: 'lab', mode: 'DEMO', snapshotId: DEMO_SNAPSHOT, weights: DEMO_COMPOSITE_WEIGHTS },
       raw,
