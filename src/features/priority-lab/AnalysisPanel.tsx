@@ -10,6 +10,7 @@ import {
 import { formatDecimalId, isLiveBlockedError, useDataHub, useDataHubResource } from '@/features/data-hub';
 import {
   ApiError,
+  getIndonesianErrorCopy,
   type CompositePresetDTO,
   type DataHubRegionDTO,
   type ExploratoryCompositeResultDTO,
@@ -33,6 +34,7 @@ import {
   regionLabel,
   type IndicatorOption,
 } from './labModel';
+import { describeResultStatus } from './resultStatus';
 import { StatusPanel } from './StatusPanel';
 import { impactRowsOf } from './directionChecks';
 import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
@@ -189,6 +191,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
     <div className={styles.analysis}>
       <AnalysisStatus
         ready={ready}
+        stale={stale}
         state={ranking.state}
         onRetry={ranking.retry}
         result={result}
@@ -256,6 +259,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
 
 interface AnalysisStatusProps {
   readonly ready: boolean;
+  readonly stale: boolean;
   readonly state: ReturnType<typeof useDataHubResource<unknown>>['state'];
   readonly onRetry: () => void;
   readonly result: ExploratoryCompositeResultDTO | null;
@@ -290,7 +294,14 @@ function AnalysisStatus(props: AnalysisStatusProps) {
   if (state.status === 'error' || state.status === 'unconfigured') {
     const error = state.status === 'error' ? state.error : null;
     if (isLiveBlockedError(error, dataMode)) {
-      return <p className={styles.quietNote}>Tidak ada data LIVE untuk ditampilkan di sini.</p>;
+      return (
+        <p className={styles.quietNote}>
+          Tidak ada data LIVE untuk ditampilkan di sini.{' '}
+          <button type="button" className={styles.quietRetry} onClick={onRetry}>
+            Coba lagi
+          </button>
+        </p>
+      );
     }
     return (
       <StatusPanel
@@ -312,7 +323,8 @@ function AnalysisStatus(props: AnalysisStatusProps) {
           ) : undefined
         }
       >
-        Data Hub tidak memberi hasil. Tidak ada peringkat lain yang ditampilkan sebagai gantinya.
+        {error === null ? 'Data Hub tidak memberi hasil.' : getIndonesianErrorCopy(error)} Tidak ada peringkat
+        lain yang ditampilkan sebagai gantinya.
       </StatusPanel>
     );
   }
@@ -384,20 +396,27 @@ function AnalysisStatus(props: AnalysisStatusProps) {
       </StatusPanel>
     );
   }
-  const unlisted = integrity.issues.find((issue) => issue.code === 'REGISTRY_COUNT_MISMATCH');
   const { partial } = integrity.coverageTiers;
   const unverified = props.unverifiedDirection;
-  const imputed = integrity.issues.find((issue) => issue.code === 'IMPUTED_PROVINCE_DATA');
+  const status = describeResultStatus({
+    stale: props.stale,
+    directionCheckFailed: props.directionFailed,
+    requestedWeightAvailabilityPct: integrity.requestedWeightAvailabilityPct,
+    partialRegions: partial,
+    imputedRegions: integrity.issues.find((issue) => issue.code === 'IMPUTED_PROVINCE_DATA')?.count ?? 0,
+    insufficientRegions: result.insufficient.length,
+    unlistedRegions: integrity.issues.find((issue) => issue.code === 'REGISTRY_COUNT_MISMATCH')?.count ?? 0,
+    unverifiedDirectionLabels: unverified.map(({ indicatorId }) => props.labelOf(indicatorId)),
+    nationalRankWithheldRegions:
+      props.impact.status === 'national_rank_withheld'
+        ? [...new Set(props.impact.anomalies.map(({ regionId }) => regionLabel(regionId, registry)))]
+        : [],
+  });
   return (
     <StatusPanel
-      // Partial or estimated data is flagged per row and counted on the right; the amber tone is kept
-      // for checks that did not complete or could not verify the source.
-      tone={
-        props.directionFailed || unverified.length > 0 || props.impact.status === 'national_rank_withheld'
-          ? 'warning'
-          : 'ok'
-      }
-      title="Hasil siap dan sudah diperiksa"
+      tone={status.tone}
+      title={status.title}
+      notes={status.limitations}
       stats={
         <dl className={styles.statusStats}>
           <div>
@@ -440,18 +459,9 @@ function AnalysisStatus(props: AnalysisStatusProps) {
         ) : undefined
       }
     >
-      {counted} dari data resmi LIVE.
-      {result.insufficient.length > 0 &&
-        ` ${String(result.insufficient.length)} wilayah tidak diperingkat karena datanya belum cukup.`}
-      {unlisted && ` ${String(unlisted.count)} wilayah lain tidak tercantum di hasil Data Hub.`}
-      {partial > 0 && ` ${String(partial)} wilayah dihitung dari sebagian kriteria saja (diberi tanda).`}
-      {imputed &&
-        ` ${String(imputed.count)} wilayah memakai estimasi tingkat provinsi untuk sebagian kriteria.`}
-      {props.directionFailed && ' Pemeriksaan arah skor belum selesai.'}
-      {props.impact.status === 'national_rank_withheld' &&
-        ` Peringkat nasional tidak ditampilkan: skor sumber ${[...new Set(props.impact.anomalies.map(({ regionId }) => regionLabel(regionId, registry)))].join(', ')} (di luar daftar ini) tidak konsisten, dan peringkat nasional dihitung bersama wilayah itu.`}
-      {unverified.length > 0 &&
-        ` Arah skor belum terverifikasi penuh terhadap data sumber untuk: ${unverified.map(({ indicatorId }) => props.labelOf(indicatorId)).join(', ')}.`}
+      {status.trust === 'stale'
+        ? 'Daftar di bawah masih dihitung dari bobot sebelumnya.'
+        : `${counted} dari data resmi LIVE.`}
     </StatusPanel>
   );
 }

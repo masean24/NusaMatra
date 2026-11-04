@@ -22,10 +22,19 @@ function repositoryFromConfig(): NusaMatraDataHubRepository | null {
 export function DataHubProvider({ children, repository, initialDataMode }: DataHubProviderProps) {
   const [ownRepository] = useState(repositoryFromConfig);
   const [dataMode, setDataMode] = useState<DataMode>(initialDataMode ?? publicConfig.dataMode);
+  const [retryEpoch, setRetryEpoch] = useState(0);
 
   const value = useMemo(
-    () => ({ repository: repository === undefined ? ownRepository : repository, dataMode, setDataMode }),
-    [repository, ownRepository, dataMode],
+    () => ({
+      repository: repository === undefined ? ownRepository : repository,
+      dataMode,
+      setDataMode,
+      retryEpoch,
+      retryFailed: () => {
+        setRetryEpoch((current) => current + 1);
+      },
+    }),
+    [repository, ownRepository, dataMode, retryEpoch],
   );
 
   return <DataHubContext value={value}>{children}</DataHubContext>;

@@ -10,11 +10,14 @@ describe('isLiveBlockedError', () => {
     expect(isLiveBlockedError(live503, 'DEMO')).toBe(true);
   });
 
-  it('counts an unreadable response and a DEMO payload for a LIVE request as blocked, in LIVE only', () => {
-    for (const code of ['NETWORK_ERROR', 'MODE_MISMATCH']) {
-      expect(isLiveBlockedError(apiError(0, code), 'LIVE')).toBe(true);
-      expect(isLiveBlockedError(apiError(0, code), 'DEMO')).toBe(false);
-    }
+  it('counts a DEMO payload for a LIVE request as blocked, in LIVE only', () => {
+    expect(isLiveBlockedError(apiError(0, 'MODE_MISMATCH'), 'LIVE')).toBe(true);
+    expect(isLiveBlockedError(apiError(0, 'MODE_MISMATCH'), 'DEMO')).toBe(false);
+  });
+
+  it('never reads a network failure as "no LIVE data": it says nothing about the data', () => {
+    expect(isLiveBlockedError(apiError(0, 'NETWORK_ERROR'), 'LIVE')).toBe(false);
+    expect(isLiveBlockedError(apiError(0, 'NETWORK_ERROR'), 'DEMO')).toBe(false);
   });
 
   it('leaves every other failure an ordinary error', () => {

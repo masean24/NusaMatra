@@ -13,9 +13,9 @@ import { PriorityLabPage } from './PriorityLabPage';
 // The illustrative 3D map is not under test; its slots would load the WebGL engine.
 vi.mock('@/features/exploration/ExplorationMapPanel', () => ({ ExplorationMapPanel: () => null }));
 
-const PRIMARY_TITLES = ['LIVE Belum Tersedia', 'LIVE Tidak Dapat Dimuat'];
+const PRIMARY_TITLES = ['LIVE Belum Tersedia'];
 
-type LiveBehaviour = 'http-503' | 'unreadable' | 'cached-demo';
+type LiveBehaviour = 'http-503' | 'cached-demo';
 
 /**
  * A Data Hub whose DEMO answers are the captured responses and whose LIVE answers misbehave in one of
@@ -27,7 +27,6 @@ function dataHub(live: LiveBehaviour) {
   const answer = (name: string) => (url: URL) => {
     if (url.searchParams.get('mode') !== 'live') return demo(name);
     if (live === 'http-503') return fixtureResponse('regions_live', 503);
-    if (live === 'unreadable') return Promise.reject(new TypeError('Failed to fetch'));
     return demo(name);
   };
   return createFixtureFetch({
@@ -35,6 +34,7 @@ function dataHub(live: LiveBehaviour) {
     '/api/v1/regions': answer('regions_nonempty'),
     '/api/v1/regions/3201': answer('region_detail'),
     '/api/v1/indicators': answer('indicators'),
+    '/api/v1/indicators/coverage': answer('indicators'),
     '/api/v1/indicators/soc_poverty_rate/values': answer('indicator_values'),
     '/api/v1/boundaries/kabupaten': answer('boundaries_kabupaten'),
     '/api/v1/indicators/composite-query': answer('composite_valid'),
@@ -69,7 +69,6 @@ const assertNoDemoData = () => {
 
 describe.each<[LiveBehaviour, string]>([
   ['http-503', 'the captured HTTP 503'],
-  ['unreadable', 'an unreadable response (the real API sends its 503 without CORS headers)'],
   ['cached-demo', 'a DEMO payload served for the LIVE request'],
 ])('LIVE unavailable through %s: %s', (live) => {
   it('Jelajahi shows one primary message, however many requests failed, and no data', async () => {
@@ -145,5 +144,59 @@ describe('switching from DEMO to LIVE', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Beralih ke data DEMO' }));
     expect(await screen.findByText('Menampilkan 30 dari 514 wilayah')).toBeInTheDocument();
     expect(primaryMessages(container)).toHaveLength(0);
+  });
+});
+
+describe('A connection failure in LIVE is not "no LIVE data"', () => {
+  /** Every request fails until `online.value` turns true; then the captured responses answer. */
+  function flakyHub() {
+    const online = { value: false };
+    const answer = (name: string) => () =>
+      online.value ? fixtureResponse(name) : Promise.reject(new TypeError('Failed to fetch'));
+    const fetchMock = createFixtureFetch({
+      '/api/v1/snapshots': answer('snapshots'),
+      '/api/v1/regions': answer('regions_nonempty'),
+      '/api/v1/indicators': answer('indicators'),
+      '/api/v1/indicators/coverage': answer('indicators'),
+      '/api/v1/indicators/soc_poverty_rate/values': answer('indicator_values'),
+      '/api/v1/boundaries/kabupaten': answer('boundaries_kabupaten'),
+    });
+    return { online, fetchMock };
+  }
+
+  it('says the connection failed, offers a retry, and neither blames the data nor offers DEMO', async () => {
+    const { fetchMock } = flakyHub();
+    const { container } = renderWithDataHub(explorePage(), { fetchImpl: fetchMock, dataMode: 'LIVE' });
+
+    expect(await screen.findByText('Data belum dapat dimuat')).toBeInTheDocument();
+    expect(primaryMessages(container)).toHaveLength(1);
+    expect(screen.queryByText(/belum diverifikasi/)).not.toBeInTheDocument();
+    expect(screen.queryByText('LIVE Belum Tersedia')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Beralih ke data DEMO' })).not.toBeInTheDocument();
+    expect(requestedUrls(fetchMock).every((url) => url.searchParams.get('mode') === 'live')).toBe(true);
+    assertNoDemoData();
+  });
+
+  it('one "Coba lagi" asks again for everything that failed, once each, and stops when it fails again', async () => {
+    const { fetchMock } = flakyHub();
+    renderWithDataHub(labPage(), { fetchImpl: fetchMock, dataMode: 'LIVE' });
+    await screen.findByText('Data belum dapat dimuat');
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'Coba lagi' }).length).toBeGreaterThanOrEqual(2);
+    });
+    const before = requestedUrls(fetchMock).length;
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Coba lagi' })[0] as HTMLElement);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'Coba lagi' }).length).toBeGreaterThanOrEqual(2);
+    });
+    const after = requestedUrls(fetchMock)
+      .slice(before)
+      .map((url) => url.pathname);
+    expect(after.filter((path) => path === '/api/v1/snapshots')).toHaveLength(1);
+    expect(after.filter((path) => path === '/api/v1/indicators')).toHaveLength(1);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(requestedUrls(fetchMock).length).toBe(before + after.length);
   });
 });

@@ -7,6 +7,9 @@ export interface DataHubContextValue {
   /** The Data Hub mode. Independent of the Normal/Kaca appearance mode. */
   readonly dataMode: DataMode;
   readonly setDataMode: (mode: DataMode) => void;
+  /** Counts the "Coba lagi" presses; each one makes every resource that failed load again. */
+  readonly retryEpoch: number;
+  readonly retryFailed: () => void;
 }
 
 export const DataHubContext = createContext<DataHubContextValue | null>(null);

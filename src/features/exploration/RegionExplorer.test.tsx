@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createFixtureFetch,
@@ -166,15 +166,30 @@ describe('RegionExplorer in LIVE mode (HTTP 503, no fallback)', () => {
     expect(requestedUrls(fetchMock).every((url) => url.searchParams.get('mode') === 'live')).toBe(true);
   });
 
-  it('shows the same quiet note when the browser cannot read the 503 (no CORS headers)', async () => {
+  it('names a connection failure as such, keeps the search, and recovers on "Coba lagi"', async () => {
+    let online = false;
     const fetchMock = createFixtureFetch({
-      '/api/v1/regions': () => Promise.reject(new TypeError('Failed to fetch')),
+      '/api/v1/regions': () =>
+        online ? fixtureResponse('regions_nonempty') : Promise.reject(new TypeError('Failed to fetch')),
     });
-    const { container } = renderWithDataHub(<RegionExplorer />, { fetchImpl: fetchMock, dataMode: 'LIVE' });
+    const { container } = renderWithDataHub(<RegionExplorer />, {
+      fetchImpl: fetchMock,
+      dataMode: 'LIVE',
+      path: '/jelajahi?cari=bogor',
+    });
 
-    expect(await screen.findByText('Tidak ada data LIVE untuk ditampilkan di sini.')).toBeInTheDocument();
+    expect(await screen.findByText('Koneksi sedang bermasalah. Silakan coba lagi.')).toBeInTheDocument();
+    expect(screen.queryByText('Tidak ada data LIVE untuk ditampilkan di sini.')).not.toBeInTheDocument();
     expect(container.querySelector('[data-kind="unavailable"], [data-kind="error"]')).toBeNull();
     expect(screen.queryByText(/Kabupaten Demo/)).not.toBeInTheDocument();
+
+    online = true;
+    await userEvent.click(screen.getByRole('button', { name: 'Coba lagi' }));
+
+    expect(await screen.findByRole('searchbox', { name: 'Cari kabupaten/kota' })).toHaveValue('bogor');
+    await waitFor(() => {
+      expect(screen.queryByText('Koneksi sedang bermasalah. Silakan coba lagi.')).not.toBeInTheDocument();
+    });
   });
 
   it('still reports an ordinary failure in LIVE as an error with a retry, not as a LIVE block', async () => {

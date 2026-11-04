@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { StatusMessage, type LoadingIcon } from '@/components/feedback/StatusMessage';
+import { ApiError, getIndonesianErrorCopy } from '@/services/api';
 import { DataHubErrorMessage } from './DataHubErrorMessage';
 import { isLiveBlockedError } from './liveBlocked';
 import { useDataHub } from './useDataHub';
@@ -18,9 +19,10 @@ interface ResourceViewProps<T> {
 /**
  * Renders the distinct states of a Data Hub resource (docs/03 §6.9); only `success` shows data.
  *
- * LIVE being blocked is stated once per page, by `DataHubBanner`. A panel whose own request failed
- * for that reason therefore shows a quiet note instead of repeating the unavailable card, which
- * would stack one card per request.
+ * LIVE being blocked, or the connection failing, is one fact about the page, and `DataHubBanner` states
+ * it once. A panel whose own request failed for that reason therefore shows a quiet note instead of
+ * repeating the card, which would stack one card per request. Its "Coba lagi" reloads everything that
+ * failed.
  */
 export function ResourceView<T>({
   state,
@@ -43,12 +45,36 @@ export function ResourceView<T>({
         </StatusMessage>
       );
     case 'error':
-      return isLiveBlockedError(state.error, dataMode) ? (
-        <p className={`kk-small ${styles.liveNote}`}>Tidak ada data LIVE untuk ditampilkan di sini.</p>
-      ) : (
-        <DataHubErrorMessage error={state.error} onRetry={onRetry} />
-      );
+      if (isLiveBlockedError(state.error, dataMode)) {
+        return <QuietNote onRetry={onRetry}>Tidak ada data LIVE untuk ditampilkan di sini.</QuietNote>;
+      }
+      if (state.error instanceof ApiError && state.error.isNetworkFailure) {
+        return <QuietNote onRetry={onRetry}>{getIndonesianErrorCopy(state.error)}</QuietNote>;
+      }
+      return <DataHubErrorMessage error={state.error} onRetry={onRetry} />;
     case 'success':
       return <>{children(state.data)}</>;
   }
+}
+
+function QuietNote({
+  children,
+  onRetry,
+}: {
+  readonly children: ReactNode;
+  readonly onRetry: (() => void) | undefined;
+}) {
+  return (
+    <p className={`kk-small ${styles.liveNote}`}>
+      {children}
+      {onRetry && (
+        <>
+          {' '}
+          <button type="button" className={styles.retry} onClick={onRetry}>
+            Coba lagi
+          </button>
+        </>
+      )}
+    </p>
+  );
 }

@@ -92,6 +92,11 @@ export class ApiError extends Error {
     return this.code === 'REQUEST_ABORTED';
   }
 
+  /** No readable answer reached the browser: the connection failed, not the data. Worth retrying. */
+  get isNetworkFailure(): boolean {
+    return this.code === 'NETWORK_ERROR';
+  }
+
   get isValidationError(): boolean {
     return (
       this.status === 422 ||
@@ -127,6 +132,9 @@ export const INDONESIAN_ERROR_COPY: Readonly<Record<string, string>> = {
   'quality.audit_not_run': 'Pemeriksaan kualitas data belum dijalankan.',
   'evidence.not_ready': 'Paspor Bukti masih disiapkan.',
   'network.unavailable': NETWORK_UNAVAILABLE_COPY,
+  'network.offline': 'Perangkat Anda sedang offline. Periksa koneksi internet, lalu coba lagi.',
+  'server.unavailable': 'Server Data Hub sedang bermasalah. Silakan coba lagi beberapa saat lagi.',
+  'request.rate_limited': 'Terlalu banyak permintaan ke Data Hub. Tunggu sebentar, lalu coba lagi.',
   'request.aborted': 'Permintaan dibatalkan karena ada pembaruan pilihan.',
 };
 
@@ -304,6 +312,12 @@ function inferMessageId(status: number, code: string, message: string | null): s
   }
   if (status === 404 || code === 'RESOURCE_NOT_FOUND') {
     return 'data.no_observation';
+  }
+  if (status === 429) {
+    return 'request.rate_limited';
+  }
+  if (status >= 500) {
+    return 'server.unavailable';
   }
   return 'network.unavailable';
 }

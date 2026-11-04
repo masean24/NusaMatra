@@ -21,6 +21,8 @@ interface StatusPanelProps {
   readonly title: string;
   /** One short sentence. */
   readonly children?: ReactNode;
+  /** The limits the reader must know, always visible, one short sentence each. */
+  readonly notes?: readonly string[];
   /** Technical facts, behind "Lihat alasan dan detail teknis". */
   readonly details?: ReactNode;
   readonly detailsLabel?: string;
@@ -39,6 +41,7 @@ export function StatusPanel({
   tone,
   title,
   children,
+  notes = [],
   details,
   detailsLabel = 'Lihat alasan dan detail teknis',
   action,
@@ -53,6 +56,13 @@ export function StatusPanel({
       <div className={styles.statusBody}>
         <p className={styles.statusTitle}>{title}</p>
         {children && <p className={styles.statusText}>{children}</p>}
+        {notes.length > 0 && (
+          <ul className={styles.statusNotes}>
+            {notes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        )}
         {details && (
           <details className={styles.statusDetails}>
             <summary>{detailsLabel}</summary>

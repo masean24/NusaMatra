@@ -1,9 +1,44 @@
 // Adapter test (colocated).
 
 import { describe, expect, it, vi } from 'vitest';
+import { getIndonesianErrorCopy, type ApiError } from './apiError';
 import { DataHubHttpClient, normalizeBaseOrigin } from './httpClient';
 
 describe('DataHubHttpClient & Error Handling', () => {
+  describe('words each failure for what it is', () => {
+    const failing = (status: number) => vi.fn().mockResolvedValue(new Response('{"detail":"x"}', { status }));
+    const copyOf = async (fetchImpl: typeof fetch) => {
+      const client = new DataHubHttpClient({ baseUrl: 'https://api.example.test', fetchImpl });
+      const error: unknown = await client
+        .get('/api/v1/health', { parse: (x) => x }, { dataMode: 'LIVE' })
+        .catch((caught: unknown) => caught);
+      return { error: error as ApiError, copy: getIndonesianErrorCopy(error) };
+    };
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('a request that got no answer is a network failure, never "LIVE unavailable"', async () => {
+      const { error, copy } = await copyOf(vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+      expect(error.isNetworkFailure).toBe(true);
+      expect(error.isLiveUnavailable).toBe(false);
+      expect(copy).toBe('Koneksi sedang bermasalah. Silakan coba lagi.');
+    });
+
+    it('says the device is offline when the browser knows it', async () => {
+      vi.stubGlobal('navigator', { onLine: false });
+      const { error, copy } = await copyOf(vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+      expect(error.isNetworkFailure).toBe(true);
+      expect(copy).toMatch(/sedang offline/);
+    });
+
+    it('a server error names the server, and a rate limit asks to wait', async () => {
+      expect((await copyOf(failing(500))).copy).toMatch(/Server Data Hub sedang bermasalah/);
+      expect((await copyOf(failing(429))).copy).toMatch(/Terlalu banyak permintaan/);
+    });
+  });
+
   it('strips accidental /api/v1 suffix and trailing slashes from baseUrl', () => {
     expect(normalizeBaseOrigin('https://api.nusamatra.site/')).toBe('https://api.nusamatra.site');
     expect(normalizeBaseOrigin('https://api.nusamatra.site/api/v1')).toBe('https://api.nusamatra.site');

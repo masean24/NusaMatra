@@ -429,7 +429,8 @@ describe('Paspor Bukti for Lab, states', () => {
   it('does not show a Lab passport from DEMO data when LIVE cannot be loaded', async () => {
     const fetchImpl = vi.fn<typeof fetch>(() => Promise.reject(new TypeError('Failed to fetch')));
     renderWithDataHub(<EvidencePassport />, { fetchImpl, path: jatengUrl(), dataMode: 'DEMO' });
-    expect(await screen.findByText('Data LIVE tidak dapat dimuat, Paspor Bukti tidak dibuat')).toBeVisible();
+    expect(await screen.findByText('Paspor Bukti belum dapat dibuat')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Coba lagi' })).toBeVisible();
     expect(screen.queryByRole('article', { name: /^Bukti hasil Lab/ })).not.toBeInTheDocument();
   });
 

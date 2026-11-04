@@ -354,12 +354,14 @@ const renderLive = (overrides: Readonly<Record<string, FixtureHandler>> = {}) =>
   renderWithDataHub(<PriorityLab />, { fetchImpl: lab.fetchImpl, dataMode: 'LIVE' });
   return lab;
 };
+// A ranking on screen that passed the checks, with or without limits to disclose.
+const RESULT_READY = /^(Hasil lolos semua pemeriksaan|Hasil dapat dibaca dengan catatan)$/;
 const rankingRegion = () => screen.findByRole('region', { name: 'Peringkat wilayah' });
 
 describe('PriorityLab in LIVE (contract v2.1)', () => {
   it('lists every indicator, disables those without LIVE data and says why, with the need-oriented direction (captured catalog + coverage)', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
 
     expect(screen.getByText(/25 dari 33 indikator punya data/)).toBeInTheDocument();
     openPicker();
@@ -379,7 +381,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     const { bodies } = renderLive();
     const expected = simulatedDefault();
 
-    expect(await screen.findByText('Hasil siap dan sudah diperiksa')).toBeInTheDocument();
+    expect(await screen.findByText(RESULT_READY)).toBeInTheDocument();
     expect(
       screen.getByText(
         new RegExp(`^${String(expected.total_regions)} wilayah dihitung dari data resmi LIVE`),
@@ -443,7 +445,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
 
   it('Jateng (captured): 35 returned, Wonosobo 35,06 is rank 1, Surakarta 9,57 is rank 35 at 70 % coverage with stunting omitted', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     await chooseScope(/Jawa Tengah|Provinsi 33/);
 
@@ -485,7 +487,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
 
   it('Sumut disaster scenario (captured): Padangsidimpuan is listed as insufficient data, never ranked', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Mitigasi Bencana & Ketahanan Infrastruktur/);
     await chooseScope(/Sumatera Utara|Provinsi 12/);
 
@@ -515,7 +517,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     renderLive({
       '/api/v1/indicators/inf_safe_water_pct/values': () => jsonResponse({ detail: 'unavailable' }, 503),
     });
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     await screen.findByText(/^513 wilayah dihitung dari data resmi LIVE/);
     expect(screen.getByText(/1 wilayah tidak diperingkat karena datanya belum cukup/)).toBeInTheDocument();
@@ -569,7 +571,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
 
   it('holds a CUSTOM scenario whose requested weight mostly lacks national data, and labels it as a Nusa Matra policy (mock composite)', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     // In the mock the pool lacks flood / asphalt / electrification, so only 35 % of this preset has data.
     await applyScenario(/Mitigasi Bencana & Ketahanan Infrastruktur/);
     expect(
@@ -582,7 +584,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
 
   it('drops a preset whose weights are not exactly 100%, and says how many (synthetic invalid preset)', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     expect(screen.queryByRole('button', { name: 'Preset tidak lengkap' })).not.toBeInTheDocument();
     expect(screen.getByText(/1 skenario dari Data Hub tidak ditampilkan/)).toBeInTheDocument();
     expect(screen.getByText(/bukan rekomendasi resmi/)).toBeInTheDocument();
@@ -664,7 +666,7 @@ describe('Paspor Bukti link in the calculation notes', () => {
 
   it('LIVE: links to the exact passport address, with weights, province, mode and snapshot of the result (captured Jateng)', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     await chooseScope(/Jawa Tengah|Provinsi 33/);
     await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/);
@@ -768,7 +770,7 @@ describe('Paspor Bukti link in the calculation notes', () => {
 describe('A known direction anomaly withholds the ranking it reaches (captured national composite + captured water values)', () => {
   it('withholds the national ranking whose weighted water score for Lanny Jaya does not follow its raw value, and names it', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
 
     expect(await screen.findByText('Peringkat ditahan: skor sumber tidak konsisten')).toBeInTheDocument();
@@ -788,7 +790,7 @@ describe('A known direction anomaly withholds the ranking it reaches (captured n
 
   it('shows the same scenario again once water carries no weight: an unaffected scenario is not blocked', async () => {
     const { bodies } = renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     await screen.findByText('Peringkat ditahan: skor sumber tidak konsisten');
     openPicker();
@@ -807,10 +809,12 @@ describe('A known direction anomaly withholds the ranking it reaches (captured n
     renderLive({
       '/api/v1/indicators/inf_safe_water_pct/values': () => jsonResponse({ detail: 'unavailable' }, 503),
     });
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     await screen.findByText(/^513 wilayah dihitung dari data resmi LIVE/);
-    expect(screen.getByText(/Pemeriksaan arah skor belum selesai/)).toBeInTheDocument();
+    expect(screen.getByText('Pemeriksaan hasil belum selesai')).toBeInTheDocument();
+    expect(screen.getByText(/Arah skor belum dapat dicocokkan/)).toBeInTheDocument();
+    expect(screen.queryByText('Hasil lolos semua pemeriksaan')).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Peringkat wilayah' })).toBeInTheDocument();
     expect(screen.queryByText('Peringkat ditahan: skor sumber tidak konsisten')).not.toBeInTheDocument();
   });
@@ -827,7 +831,7 @@ describe('A known direction anomaly withholds the ranking it reaches (captured n
 describe('A province filter keeps its own ranking when the anomaly lies outside it (captured Jateng + captured water values)', () => {
   it('shows the provincial ranking, withholds only the national ranks, and still reports the verified checks', async () => {
     renderLive();
-    await screen.findByText('Hasil siap dan sudah diperiksa');
+    await screen.findByText(RESULT_READY);
     await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
     await chooseScope(/Jawa Tengah|Provinsi 33/);
     await screen.findByText(/^35 wilayah di Provinsi 33 dihitung dari data resmi LIVE/);
@@ -843,5 +847,83 @@ describe('A province filter keeps its own ranking when the anomaly lies outside 
     expect(
       screen.getByText(/Arah skor Persentase Penduduk Miskin \(P0\): sesuai data sumber \(\d+ wilayah\)/),
     ).toBeInTheDocument();
+  });
+});
+
+describe('The status says how far a LIVE result can be trusted', () => {
+  it('calls a result with limits exactly that, and lists them', async () => {
+    renderLive();
+    await screen.findByText(RESULT_READY);
+    await applyScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
+    await chooseScope(/Jawa Tengah|Provinsi 33/);
+    expect(await screen.findByText('Hasil dapat dibaca dengan catatan')).toBeInTheDocument();
+    expect(screen.queryByText('Hasil lolos semua pemeriksaan')).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(/wilayah (memakai estimasi tingkat provinsi|dihitung dari sebagian kriteria)/)
+        .length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('says the list is stale until the new weights are calculated', async () => {
+    renderLive();
+    await screen.findByText(RESULT_READY);
+    await chooseScenario(/Prioritas Pembangunan Komprehensif Nasional/);
+    expect(await screen.findByText('Peringkat belum memakai bobot terbaru')).toBeInTheDocument();
+    expect(screen.getByText('Daftar di bawah masih dihitung dari bobot sebelumnya.')).toBeInTheDocument();
+    expect(screen.queryByText(RESULT_READY)).not.toBeInTheDocument();
+  });
+
+  it('keeps a rejected result withheld, with no claim that it was checked', async () => {
+    // SYNTHETIC: one score no longer follows from its components.
+    renderLive({
+      '/api/v1/indicators/composite-query': (_url, init) => {
+        const tampered = compositeResponse(POOL, requestBody(init), REPLAYS) as {
+          data: { regions: { composite_score: number }[] };
+        };
+        const first = tampered.data.regions[0];
+        if (first) first.composite_score = Math.max(0, first.composite_score - 5);
+        return jsonResponse(tampered);
+      },
+    });
+    expect(await screen.findByText('Peringkat belum dapat ditampilkan')).toBeInTheDocument();
+    expect(screen.queryByText(RESULT_READY)).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Peringkat wilayah' })).not.toBeInTheDocument();
+  });
+});
+
+describe('Recovering from a connection failure in LIVE', () => {
+  it('blames the connection, keeps the chosen weights, and recovers the ranking on "Coba lagi"', async () => {
+    let online = true;
+    let queries = 0;
+    renderLive({
+      '/api/v1/indicators/composite-query': (_url, init) => {
+        queries += 1;
+        return online
+          ? jsonResponse(compositeResponse(POOL, requestBody(init), REPLAYS))
+          : Promise.reject(new TypeError('Failed to fetch'));
+      },
+    });
+    await screen.findByText(RESULT_READY);
+    const before = screen.getAllByRole('slider').map((slider) => slider.getAttribute('aria-valuetext'));
+
+    online = false;
+    await applyScenario(/Prioritas Pembangunan Komprehensif Nasional/);
+    expect(await screen.findByText('Perhitungan belum berhasil')).toBeInTheDocument();
+    expect(screen.getByText(/Koneksi sedang bermasalah/)).toBeInTheDocument();
+    expect(screen.queryByText(/belum diverifikasi/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Beralih ke data DEMO' })).not.toBeInTheDocument();
+    const chosen = screen.getAllByRole('slider').map((slider) => slider.getAttribute('aria-valuetext'));
+    expect(chosen).not.toEqual(before);
+
+    online = true;
+    const failedQueries = queries;
+    fireEvent.click(screen.getByRole('button', { name: 'Coba lagi' }));
+
+    expect(await screen.findByText(RESULT_READY)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Peringkat wilayah' })).toBeInTheDocument();
+    expect(queries).toBe(failedQueries + 1);
+    expect(screen.getAllByRole('slider').map((slider) => slider.getAttribute('aria-valuetext'))).toEqual(
+      chosen,
+    );
   });
 });

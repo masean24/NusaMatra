@@ -29,39 +29,23 @@ export function DataHubErrorMessage({ error, onRetry }: DataHubErrorMessageProps
   ) : undefined;
 
   if (isLiveBlockedError(error, dataMode) && error instanceof ApiError) {
-    const switchToDemo = (
-      <Button
-        variant="secondary"
-        onClick={() => {
-          setDataMode('DEMO');
-        }}
-      >
-        Beralih ke data DEMO
-      </Button>
-    );
-
-    // The API's LIVE 503 carries no CORS headers (checked 2026-10-21), so a browser reports it as a
-    // network failure and the LIVE_UNAVAILABLE body is unreadable. It still means "no LIVE data".
-    if (error.code === 'NETWORK_ERROR') {
-      return (
-        <LiveBlocked
-          title="LIVE Tidak Dapat Dimuat"
-          action={
-            <span className={styles.actions}>
-              {retry}
-              {switchToDemo}
-            </span>
-          }
+    const actions = (
+      <span className={styles.actions}>
+        {retry}
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setDataMode('DEMO');
+          }}
         >
-          Server tidak mengirim jawaban yang dapat dibaca untuk mode LIVE, kemungkinan karena data LIVE belum
-          diverifikasi dan dihubungkan. Tidak ada fallback otomatis ke data DEMO.
-        </LiveBlocked>
-      );
-    }
+          Beralih ke data DEMO
+        </Button>
+      </span>
+    );
 
     if (error.code === 'MODE_MISMATCH') {
       return (
-        <LiveBlocked title="LIVE Belum Tersedia" action={switchToDemo}>
+        <LiveBlocked title="LIVE Belum Tersedia" action={actions}>
           Server menjawab permintaan LIVE dengan data DEMO, jadi data itu dibuang dan tidak ditampilkan. Tidak
           ada fallback otomatis ke data DEMO.
         </LiveBlocked>
@@ -69,7 +53,7 @@ export function DataHubErrorMessage({ error, onRetry }: DataHubErrorMessageProps
     }
 
     return (
-      <LiveBlocked title="LIVE Belum Tersedia" action={switchToDemo}>
+      <LiveBlocked title="LIVE Belum Tersedia" action={actions}>
         {getIndonesianErrorCopy(error)}
       </LiveBlocked>
     );

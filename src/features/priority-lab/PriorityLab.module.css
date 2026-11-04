@@ -1549,3 +1549,29 @@
     translate: 0 6px;
   }
 }
+
+/* The limits of a result: visible beside it, in the panel's own ink so both display modes read alike. */
+.statusNotes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding-left: 18px;
+  color: var(--lab-ink);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  text-align: start;
+}
+
+.quietRetry {
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--lab-ink);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

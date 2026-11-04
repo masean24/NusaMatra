@@ -208,7 +208,7 @@ test.describe('LIVE against the deployed Data Hub', () => {
     // The production build opens in LIVE and has no mode switch.
 
     // Either the checked ranking or an explained hold; the detailed invariants live in priority-lab.spec.ts.
-    const ready = page.getByText('Hasil siap dan sudah diperiksa');
+    const ready = page.getByText(/Hasil lolos semua pemeriksaan|Hasil dapat dibaca dengan catatan/);
     const withheld = page.getByText(/Hasil ditahan agar tidak menyesatkan/);
     await expect(ready.or(withheld)).toBeVisible({ timeout: 30_000 });
     if (await ready.isVisible()) {

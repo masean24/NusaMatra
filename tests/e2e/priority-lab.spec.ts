@@ -53,7 +53,9 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
   }) => {
     const mock = await openLiveLab(page);
 
-    await expect(page.getByText('Hasil siap dan sudah diperiksa')).toBeVisible();
+    await expect(
+      page.getByText(/Hasil lolos semua pemeriksaan|Hasil dapat dibaca dengan catatan/),
+    ).toBeVisible();
     await expect(results(page).getByText(/^10 dari \d+ wilayah$/)).toBeVisible();
     await expect(results(page).getByText(/makin tinggi, makin tinggi kebutuhan intervensi/)).toBeVisible();
     await expect(page.getByText(/Kabupaten Demo/)).toHaveCount(0);
@@ -206,7 +208,7 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
  * inside the test.
  */
 const API = 'https://api.nusamatra.site/api/v1';
-const READY = 'Hasil siap dan sudah diperiksa';
+const READY = /Hasil lolos semua pemeriksaan|Hasil dapat dibaca dengan catatan/;
 // Withheld by a blocking check, or by a known direction anomaly in the source scores it ranks.
 const WITHHELD = /Peringkat belum dapat ditampilkan|Peringkat ditahan: skor sumber tidak konsisten/;
 const PASSPORT_LINK = 'Buat Paspor Bukti';

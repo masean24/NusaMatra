@@ -126,7 +126,9 @@ export class DataHubHttpClient {
           cause: err,
         });
       }
-      throw new ApiError(0, 'NETWORK_ERROR', null, 'network.unavailable', {
+      // The browser's own offline flag tells "no internet" from "the Data Hub did not answer".
+      const offline = typeof navigator !== 'undefined' && !navigator.onLine;
+      throw new ApiError(0, 'NETWORK_ERROR', null, offline ? 'network.offline' : 'network.unavailable', {
         serverMessage: err instanceof Error ? err.message : 'Network failure',
         cause: err,
       });
