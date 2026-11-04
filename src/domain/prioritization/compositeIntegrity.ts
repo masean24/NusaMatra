@@ -11,7 +11,8 @@
  * rank 1 is the highest need. Every ranked region carries its own `effective_weights_region` (10 000 bps
  * over the components it actually has); its score is reconstructed with THOSE weights. Two different
  * "coverages" exist and are kept apart on purpose:
- * - per-region `coverage_pct` (how much of the nationally available weight THIS region has data for);
+ * - per-region `coverage_pct` (how much of the weight THIS region has data for: of the requested weight
+ *   in the current Data Hub, of the nationally available weight in responses captured before that change);
  * - requested-weight availability (how much of the weight the USER asked for sits on indicators that
  *   have data nationally at all). Only the second one drives the Nusa Matra frontend policy gate.
  */
@@ -69,6 +70,23 @@ export function classifyCoverage(coveragePct: number | null, minCoveragePct: num
   if (coveragePct >= 100 - 1e-9) return 'complete';
   if (minCoveragePct !== null && coveragePct < minCoveragePct) return 'insufficient';
   return 'partial';
+}
+
+/**
+ * The tier of one region within its ranking. A region that lacks only indicators NO region has data for
+ * is not "partial": it has everything that exists, and the national gap is disclosed for the whole
+ * ranking. Marking it would flag every region alike, because `coverage_pct` counts the requested weight.
+ */
+export function classifyRegionCoverage(
+  region: { readonly coveragePct?: number | null; readonly missingIndicators?: readonly string[] | null },
+  minCoveragePct: number | null,
+  nationallyUnavailable: readonly string[] | null,
+): CoverageTier {
+  const tier = classifyCoverage(region.coveragePct ?? null, minCoveragePct);
+  const missing = region.missingIndicators ?? [];
+  const onlyNationalGaps =
+    missing.length > 0 && missing.every((id) => nationallyUnavailable?.includes(id) ?? false);
+  return tier === 'partial' && onlyNationalGaps ? 'complete' : tier;
 }
 
 /**
@@ -503,7 +521,16 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
       checkRegionRow(
         row,
         regionWeights,
-        { indicatorIds, requestedIds, weightsUsed, globalTotal, minCoverage, minComponents },
+        {
+          indicatorIds,
+          requestedIds,
+          requestedWeights: echoed,
+          unavailable,
+          weightsUsed,
+          globalTotal,
+          minCoverage,
+          minComponents,
+        },
         found,
       );
     }
@@ -680,6 +707,8 @@ function checkLegacyRow(
 interface RegionCheckContext {
   readonly indicatorIds: readonly string[];
   readonly requestedIds: readonly string[];
+  readonly requestedWeights: Readonly<Record<string, number>>;
+  readonly unavailable: readonly string[];
   readonly weightsUsed: Readonly<Record<string, number>>;
   readonly globalTotal: number;
   readonly minCoverage: number | null;
@@ -693,7 +722,7 @@ function checkRegionRow(
   context: RegionCheckContext,
   found: RowFindings,
 ): void {
-  const { indicatorIds, requestedIds, weightsUsed, globalTotal } = context;
+  const { indicatorIds, requestedIds, requestedWeights, unavailable, weightsUsed, globalTotal } = context;
   const usedIds = Object.keys(regionWeights).filter((id) => (regionWeights[id] ?? 0) > 0);
 
   if (sumOf(regionWeights) !== TOTAL_BASIS_POINTS) {
@@ -736,12 +765,23 @@ function checkRegionRow(
     return;
   }
 
-  // Per-region coverage = the share of the global effective weight this region has data for.
-  const expectedCoverage = globalTotal > 0 ? (usedGlobal * 100) / globalTotal : 0;
-  if (row.coveragePct == null || Math.abs(row.coveragePct - expectedCoverage) > COVERAGE_PCT_TOLERANCE) {
+  // Per-region coverage: the share of the requested weight this region has data for (the Data Hub's
+  // definition), or of the global effective weight (its earlier one). They differ only when weight was
+  // redistributed away from an indicator without national data. Any other value is a mismatch.
+  const usedRequested = usedIds.reduce((sum, id) => sum + (requestedWeights[id] ?? 0), 0);
+  const requestedTotal = sumOf(requestedWeights);
+  const expectedCoverages = [
+    requestedTotal > 0 ? (usedRequested * 100) / requestedTotal : 0,
+    globalTotal > 0 ? (usedGlobal * 100) / globalTotal : 0,
+  ];
+  const { coveragePct } = row;
+  if (
+    coveragePct == null ||
+    !expectedCoverages.some((expected) => Math.abs(coveragePct - expected) <= COVERAGE_PCT_TOLERANCE)
+  ) {
     found.coverageMismatch.push(row.regionId);
   } else if (
-    (context.minCoverage !== null && row.coveragePct < context.minCoverage) ||
+    (context.minCoverage !== null && coveragePct < context.minCoverage) ||
     (context.minComponents !== null && usedIds.length < context.minComponents)
   ) {
     found.belowThreshold.push(row.regionId);
@@ -755,7 +795,7 @@ function checkRegionRow(
   found.maxScoreError = Math.max(found.maxScoreError, error);
   if (error > scoreToleranceFor(usedIds.length)) found.mismatched.push(row.regionId);
 
-  if (classifyCoverage(row.coveragePct ?? null, context.minCoverage) === 'complete') found.complete += 1;
+  if (classifyRegionCoverage(row, context.minCoverage, unavailable) === 'complete') found.complete += 1;
   else if (row.coveragePct != null) found.partial.push(row.regionId);
   if (Object.values(row.qualityFlags ?? {}).includes('IMPUTED_PROVINCE')) found.imputed.push(row.regionId);
 }

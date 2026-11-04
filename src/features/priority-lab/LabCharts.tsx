@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { ButtonLink } from '@/components/ui/Button/Button';
-import { classifyCoverage } from '@/domain/prioritization';
+import { classifyRegionCoverage } from '@/domain/prioritization';
 import { formatDecimalId } from '@/features/data-hub';
 import { prefersReducedMotion } from '@/features/motion';
 import type { ExploratoryRegionRankDTO } from '@/services/api';
@@ -32,6 +32,8 @@ interface RankingChartProps {
   readonly moves: ReadonlyMap<string, number>;
   /** The Data Hub's per-region coverage threshold, to tell a complete region from a partial one. */
   readonly minCoveragePct: number | null;
+  /** Indicators no region has data for: lacking only these does not make a region partial. */
+  readonly unavailableIndicatorIds: readonly string[] | null;
 }
 
 /**
@@ -77,6 +79,7 @@ export function RankingChart({
   renderDetail,
   moves,
   minCoveragePct,
+  unavailableIndicatorIds,
 }: RankingChartProps) {
   const listRef = useRef<HTMLOListElement>(null);
   useRowMoves(listRef, rows);
@@ -86,7 +89,7 @@ export function RankingChart({
       {rows.map((item) => {
         const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
         const move = moves.get(item.regionId) ?? 0;
-        const partial = classifyCoverage(item.coveragePct, minCoveragePct) === 'partial';
+        const partial = classifyRegionCoverage(item, minCoveragePct, unavailableIndicatorIds) === 'partial';
         const imputed = imputedCriteria(item).length > 0;
         const open = item.regionId === openId;
         const detailId = `rincian-${item.regionId}`;

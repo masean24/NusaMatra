@@ -2,7 +2,7 @@ import { describeUnit } from '@/domain/indicators';
 import {
   assessCompositeIntegrity,
   assessDirectionImpact,
-  classifyCoverage,
+  classifyRegionCoverage,
   EXPECTED_SCORE_DIRECTION,
   type CompositeIssue,
   type CompositeIssueCode,
@@ -156,7 +156,7 @@ function rowOf(item: ExploratoryRegionRankDTO, lookups: Lookups): CompositeRegio
     scoreText: item.compositeScoreDecimal === null ? null : formatDecimalId(item.compositeScoreDecimal),
     scoreRaw: item.compositeScoreDecimal,
     coveragePct: item.coveragePct,
-    tier: classifyCoverage(item.coveragePct, lookups.tierThreshold),
+    tier: classifyRegionCoverage(item, lookups.tierThreshold, [...lookups.unavailable]),
     components,
     missingIndicators: (item.missingIndicators ?? []).filter((id) => !lookups.unavailable.has(id)),
     imputedIndicators: components

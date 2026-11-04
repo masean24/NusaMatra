@@ -13,6 +13,7 @@ export type { NormalizedValues, RankedRegion, Ranking, ScoreResult, ScoringRegio
 export {
   assessCompositeIntegrity,
   classifyCoverage,
+  classifyRegionCoverage,
   EXPECTED_SCORE_DIRECTION,
   FRONTEND_MIN_REQUESTED_WEIGHT_PCT,
   requestedWeightAvailabilityPct,

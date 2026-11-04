@@ -8,6 +8,7 @@ import {
   assessDirectionImpact,
   checkComponentDirection,
   classifyCoverage,
+  classifyRegionCoverage,
 } from '@/domain/prioritization';
 import {
   mapCompositeQueryData,
@@ -15,6 +16,7 @@ import {
   type AdaptedResponseMeta,
   type ExploratoryCompositeResultDTO,
 } from '@/services/api';
+import jakartaMitigasi from '@/services/api/__fixtures__/live-v2.4/composite_jakarta_mitigasi.json';
 import nationalKms22 from '@/services/api/__fixtures__/live-v2.2/composite_national_kms.json';
 import nonRankable22 from '@/services/api/__fixtures__/live-v2.2/composite_nonrankable.json';
 import valuesWater22 from '@/services/api/__fixtures__/live-v2.2/values_water.json';
@@ -193,6 +195,49 @@ describe('Sumut disaster scenario (captured): Padangsidimpuan is insufficient da
     if (!row) throw new Error('no insufficient row');
     row['rank'] = 33;
     expect(() => map(tampered, '12')).toThrow(/carries a rank or a score/);
+  });
+});
+
+describe('Jakarta Mitigasi preset (captured 2026-11-04): coverage counts the REQUESTED weight', () => {
+  const weights = {
+    dis_multihazard_index: 3500,
+    dis_flood_hazard_idx: 1500,
+    inf_asphalt_road_village_pct: 2500,
+    inf_electrification_pct: 2500,
+  };
+  const result = map(jakartaMitigasi, '31');
+  // 510 eligible nationally + 4 excluded; the registry of this province is 6 regions.
+  const assessment = assess(result, 6, weights);
+
+  it('reports 75% for a region with every indicator that has data, and passes', () => {
+    expect(result.items.every((item) => item.coveragePct === 75)).toBe(true);
+    expect(result.unavailableIndicatorIds).toEqual(['inf_asphalt_road_village_pct']);
+    expect(blocking(assessment)).toEqual([]);
+    expect(assessment.ok).toBe(true);
+  });
+
+  it('does not call a region partial for lacking only what no region has', () => {
+    expect(assessment.coverageTiers).toEqual({ complete: 5, partial: 0 });
+    const [first] = result.items;
+    if (!first) throw new Error('no ranked row');
+    expect(classifyRegionCoverage(first, result.minCoveragePct, result.unavailableIndicatorIds)).toBe(
+      'complete',
+    );
+    expect(
+      classifyRegionCoverage(
+        { coveragePct: 75, missingIndicators: ['inf_asphalt_road_village_pct', 'dis_flood_hazard_idx'] },
+        result.minCoveragePct,
+        result.unavailableIndicatorIds,
+      ),
+    ).toBe('partial');
+  });
+
+  it('still blocks a coverage that fits neither definition (synthetic, derived from this capture)', () => {
+    const tampered = clone(jakartaMitigasi) as { data: { regions: Record<string, unknown>[] } };
+    const row = tampered.data.regions[0];
+    if (!row) throw new Error('no ranked row');
+    row['coverage_pct'] = 90;
+    expect(blocking(assess(map(tampered, '31'), 6, weights))).toContain('COVERAGE_MISMATCH');
   });
 });
 

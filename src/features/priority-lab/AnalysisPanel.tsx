@@ -14,7 +14,7 @@ import {
   type DataHubRegionDTO,
   type ExploratoryCompositeResultDTO,
 } from '@/services/api';
-import { classifyCoverage } from '@/domain/prioritization';
+import { classifyRegionCoverage } from '@/domain/prioritization';
 import { integrityInputFromResult } from './compositeCheck';
 import { weightsKey } from './criteria';
 import { Icon } from '@/components/ui/Icon/Icon';
@@ -558,7 +558,10 @@ function RankingWorkspace({
   const scored = result.items.filter((item) => item.rankPosition !== null);
   const hasPartial = integrity.coverageTiers.partial > 0;
   const pool = completeOnly
-    ? scored.filter((item) => classifyCoverage(item.coveragePct, result.minCoveragePct) !== 'partial')
+    ? scored.filter(
+        (item) =>
+          classifyRegionCoverage(item, result.minCoveragePct, result.unavailableIndicatorIds) !== 'partial',
+      )
     : scored;
   const ordered = order === 'high' ? pool : [...pool].reverse();
   const needle = query.trim().toLowerCase();
@@ -697,6 +700,7 @@ function RankingWorkspace({
               )}
               moves={moves}
               minCoveragePct={result.minCoveragePct}
+              unavailableIndicatorIds={result.unavailableIndicatorIds}
             />
           </div>
         )}
