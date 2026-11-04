@@ -18,6 +18,16 @@
   animation: hint-in 320ms var(--nm-ease-ui) both;
 }
 
+/* Phones: above the map buttons and the sheet, wide enough to stay short. */
+@media (width < 960px) {
+  .hint {
+    top: calc(var(--explore-top, 84px) + 56px);
+    width: min(320px, calc(100% - 48px));
+    padding: 12px 16px;
+    translate: -50% 0;
+  }
+}
+
 @keyframes hint-in {
   from {
     opacity: 0;

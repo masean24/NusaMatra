@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createFixtureFetch, fixtureJson, jsonResponse, renderWithDataHub } from '@/test/dataHubFixtures';
+import { setMediaQueryMatches } from '@/test/browserMocks';
 import { ExploreWorkspace } from './ExploreWorkspace';
 
 // The WebGL map is not under test here; this stand-in only reports a pick and how many points it got.
@@ -89,7 +90,44 @@ function liveFetch(options: { readonly quakeOrigin?: string } = {}) {
   });
 }
 
+describe('ExploreWorkspace on a phone', () => {
+  const HINT = /Klik kiri|Cubit untuk memperbesar/;
+
+  beforeEach(() => {
+    setMediaQueryMatches('(width < 960px)', true);
+  });
+
+  it('marks out the free part of the map, where a chosen region lands', () => {
+    const { container } = renderWithDataHub(<ExploreWorkspace />, {
+      fetchImpl: liveFetch(),
+      dataMode: 'LIVE',
+    });
+    expect(container.querySelector('[class*="visibleFrame"]')).toBeInTheDocument();
+  });
+
+  it('keeps the gesture hint off a region that is already chosen, and shows it without one', () => {
+    const chosen = renderWithDataHub(<ExploreWorkspace />, {
+      fetchImpl: liveFetch(),
+      dataMode: 'LIVE',
+      path: '/jelajahi?kode=1101',
+    });
+    expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+    chosen.unmount();
+
+    renderWithDataHub(<ExploreWorkspace />, { fetchImpl: liveFetch(), dataMode: 'LIVE' });
+    expect(screen.getAllByText(HINT).length).toBeGreaterThan(0);
+  });
+});
+
 describe('ExploreWorkspace (LIVE, map stubbed)', () => {
+  it('has no such frame on a wide screen: the view stays centred', () => {
+    const { container } = renderWithDataHub(<ExploreWorkspace />, {
+      fetchImpl: liveFetch(),
+      dataMode: 'LIVE',
+    });
+    expect(container.querySelector('[class*="visibleFrame"]')).not.toBeInTheDocument();
+  });
+
   it('shows the region profile after a map pick even while an earthquake detail is open', async () => {
     renderWithDataHub(<ExploreWorkspace />, { fetchImpl: liveFetch(), dataMode: 'LIVE' });
 

@@ -6,6 +6,7 @@ import React, {
   forwardRef,
   useMemo,
   useCallback,
+  type RefObject,
 } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -13,6 +14,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
 import { getQualityProfile, subscribeQuality, useQualityProfile } from '@/features/graphics-quality';
 import styles from './NusaMatra3DMap.module.css';
+import { aimForScreenPoint, frameCentreNdc } from './focusFrame';
 import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
 import { RegionBatch, type RegionPiece } from './regionBatch';
 import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
@@ -236,6 +238,8 @@ export interface NusaMatra3DMapProps {
   onSelectOverlay?: (id: string) => void;
   /** Host fix: CSS pixels of the canvas covered on the left by a floating panel; the view is centred beside it. */
   viewInsetLeft?: number;
+  /** The part of the map no panel covers, where a region flown to should land (phones); default: the centre. */
+  visibleFrameRef?: RefObject<HTMLElement | null>;
 }
 
 // ============================================================================
@@ -1414,6 +1418,7 @@ export const NusaMatra3DMap = forwardRef<
     selectedOverlayId = null,
     onSelectOverlay,
     viewInsetLeft = 0,
+    visibleFrameRef,
   } = props;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -1523,9 +1528,16 @@ export const NusaMatra3DMap = forwardRef<
     const lon = Number.isFinite(feature.properties.focusLon) ? feature.properties.focusLon! : center.lon;
     const lat = Number.isFinite(feature.properties.focusLat) ? feature.properties.focusLat! : center.lat;
     const dist = feature.properties.focusDistance ?? 16;
-    const targetWorld = lonLatToPlanar(lon, lat, 0);
-    eng.controlsTargetPos = targetWorld.clone();
-    eng.cameraTargetPos = focusPosition(targetWorld, dist, isTopDown());
+    const place = lonLatToPlanar(lon, lat, 0);
+    const topDown = isTopDown();
+    const canvasBox = containerRef.current?.getBoundingClientRect();
+    const frameBox = visibleFrameRef?.current?.getBoundingClientRect() ?? null;
+    const landing = canvasBox ? frameCentreNdc(canvasBox, frameBox) : null;
+    const aim = landing
+      ? aimForScreenPoint(eng.camera, place, focusPosition(new THREE.Vector3(), dist, topDown), landing)
+      : place;
+    eng.controlsTargetPos = aim.clone();
+    eng.cameraTargetPos = focusPosition(aim, dist, topDown);
   };
   const focusRegionRef = useRef(focusRegion);
   focusRegionRef.current = focusRegion;

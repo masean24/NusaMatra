@@ -12,7 +12,7 @@ import {
 } from '@/features/geo3d';
 import { ResourceView, useDataHub, useDataHubResource } from '@/features/data-hub';
 import type { BoundaryCollectionDTO } from '@/services/api';
-import { loadBoundaries } from './boundaryCache';
+import { boundaryResolution, loadBoundaries } from './boundaryCache';
 import { buildLiveGeography } from './liveGeography';
 import { useRegionBrowserParams } from './regionCode';
 import { useRegionSelection } from './regionSelection';
@@ -33,6 +33,7 @@ export function ExplorationMapPanel({
   onLiveSelect,
   overlay,
   viewInsetLeft,
+  visibleFrameRef,
   immersive = false,
 }: ExplorationMapPanelProps = {}) {
   const { dataMode } = useDataHub();
@@ -42,6 +43,7 @@ export function ExplorationMapPanel({
       onSelect={onLiveSelect}
       overlay={overlay}
       viewInsetLeft={viewInsetLeft}
+      visibleFrameRef={visibleFrameRef}
       immersive={immersive}
     />
   ) : (
@@ -58,6 +60,8 @@ interface ExplorationMapPanelProps {
   readonly overlay?: MapOverlay | undefined;
   /** Pixels of the map covered on the left by a floating panel; the view is centred beside it. */
   readonly viewInsetLeft?: number | undefined;
+  /** The part of the map no panel covers, where a region flown to should land. */
+  readonly visibleFrameRef?: RefObject<HTMLElement | null> | undefined;
   /**
    * Full-screen host (Jelajahi): the map fills its box edge to edge, and the DEMO list of
    * illustrative regions floats over it as a small disclosure instead of following below.
@@ -84,12 +88,14 @@ function LiveMapWorkspace({
   onSelect,
   overlay,
   viewInsetLeft,
+  visibleFrameRef,
   immersive,
 }: {
   readonly cameraRef: Ref<GeoCameraHandle> | undefined;
   readonly onSelect: ((code: string, name: string) => void) | undefined;
   readonly overlay: MapOverlay | undefined;
   readonly viewInsetLeft: number | undefined;
+  readonly visibleFrameRef: RefObject<HTMLElement | null> | undefined;
   readonly immersive: boolean;
 }) {
   const { selectedCode, selectCode } = useRegionBrowserParams();
@@ -128,7 +134,11 @@ function LiveMapWorkspace({
         <div className={`${styles.map} ${styles.loadingFrame}`}>
           <MapLoader
             title="Mengunduh batas wilayah resmi…"
-            text="Sekitar 5 MB dari BIG lewat Data Hub; hanya sekali per sesi."
+            text={
+              boundaryResolution() === 'mobile'
+                ? 'Versi ringan, sekitar 0,5 MB, dari BIG lewat Data Hub; hanya sekali per sesi.'
+                : 'Sekitar 1,6 MB dari BIG lewat Data Hub; hanya sekali per sesi.'
+            }
           />
         </div>
       ) : (
@@ -146,6 +156,7 @@ function LiveMapWorkspace({
               cameraRef={handleCamera}
               overlay={overlay}
               viewInsetLeft={viewInsetLeft}
+              visibleFrameRef={visibleFrameRef}
             />
           )}
         </ResourceView>
@@ -162,6 +173,7 @@ interface LiveMapProps {
   readonly cameraRef: Ref<GeoCameraHandle>;
   readonly overlay: MapOverlay | undefined;
   readonly viewInsetLeft: number | undefined;
+  readonly visibleFrameRef: RefObject<HTMLElement | null> | undefined;
 }
 
 /**
@@ -177,6 +189,7 @@ function LiveMap({
   cameraRef,
   overlay,
   viewInsetLeft,
+  visibleFrameRef,
 }: LiveMapProps) {
   const geography = useMemo(() => buildLiveGeography(boundaries, snapshotId), [boundaries, snapshotId]);
   const handleSelect = useCallback(
@@ -197,6 +210,7 @@ function LiveMap({
       selectedOverlayId={overlay?.selectedId ?? null}
       onOverlaySelect={overlay?.onSelect}
       viewInsetLeft={viewInsetLeft}
+      visibleFrameRef={visibleFrameRef}
       className={styles.map}
     />
   ) : (

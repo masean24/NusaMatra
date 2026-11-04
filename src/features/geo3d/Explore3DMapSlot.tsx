@@ -59,6 +59,7 @@ interface Explore3DMapSlotProps {
   readonly selectedOverlayId?: Explore3DMapProps['selectedOverlayId'];
   readonly onOverlaySelect?: Explore3DMapProps['onOverlaySelect'];
   readonly viewInsetLeft?: Explore3DMapProps['viewInsetLeft'];
+  readonly visibleFrameRef?: Explore3DMapProps['visibleFrameRef'];
   readonly className?: string | undefined;
   /** The mode the page is in right now; defaults to the build-time mode. */
   readonly dataMode?: GeoDataMode | undefined;
@@ -79,6 +80,7 @@ export function Explore3DMapSlot({
   selectedOverlayId,
   onOverlaySelect,
   viewInsetLeft,
+  visibleFrameRef,
   className,
   dataMode = publicConfig.dataMode,
 }: Explore3DMapSlotProps) {
@@ -102,6 +104,7 @@ export function Explore3DMapSlot({
           selectedOverlayId,
           onOverlaySelect,
           viewInsetLeft,
+          visibleFrameRef,
         }}
         placeholder={(state) =>
           dataMode === 'LIVE' ? (

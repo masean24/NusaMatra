@@ -7,7 +7,7 @@
  * These types are deliberately independent of the engine's own names, so a future engine
  * version is absorbed in `engineAdapters.tsx`, not across the app.
  */
-import type { Ref } from 'react';
+import type { Ref, RefObject } from 'react';
 
 export type GeoDisplayMode = 'normal' | 'glass';
 export type GeoDataMode = 'DEMO' | 'LIVE';
@@ -72,6 +72,8 @@ export interface Explore3DMapProps extends GeoEngineBaseProps {
   readonly onOverlaySelect?: ((id: string) => void) | undefined;
   /** CSS pixels of the map covered on the left by a floating panel; the view is centred beside it. */
   readonly viewInsetLeft?: number | undefined;
+  /** The part of the map no panel covers, where a region flown to should land; default: the centre. */
+  readonly visibleFrameRef?: RefObject<HTMLElement | null> | undefined;
 }
 
 /** A point drawn over the map. `size` is a symbol size in map units, never an area on the ground. */

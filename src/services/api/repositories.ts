@@ -89,7 +89,7 @@ export interface GetBoundariesInput {
   readonly dataMode: DataMode;
   readonly adminLevel: AdminLevel;
   readonly format?: 'geojson' | 'topojson' | undefined;
-  readonly resolution?: 'low' | 'high' | undefined;
+  readonly resolution?: 'low' | 'mobile' | 'high' | undefined;
   readonly provinceId?: string | null | undefined;
   readonly signal?: AbortSignal | undefined;
 }
@@ -148,7 +148,7 @@ export const DataHubCacheKeys = {
     dataMode: DataMode,
     adminLevel: AdminLevel,
     provinceId?: string | null,
-    resolution: 'low' | 'high' = 'low',
+    resolution: 'low' | 'mobile' | 'high' = 'low',
   ) => ['nusa-matra', 'v1', dataMode, 'boundaries', adminLevel, provinceId ?? 'ALL', resolution] as const,
 };
 

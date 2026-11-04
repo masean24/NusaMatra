@@ -61,6 +61,7 @@ export function Explore3DMapAdapter({
   selectedOverlayId,
   onOverlaySelect,
   viewInsetLeft,
+  visibleFrameRef,
 }: Explore3DMapProps) {
   const engineRef = useRef<NusaMatra3DMapHandle>(null);
 
@@ -105,6 +106,7 @@ export function Explore3DMapAdapter({
       {...(selectedOverlayId !== undefined ? { selectedOverlayId } : {})}
       {...(onOverlaySelect ? { onSelectOverlay: onOverlaySelect } : {})}
       {...(viewInsetLeft !== undefined ? { viewInsetLeft } : {})}
+      {...(visibleFrameRef !== undefined ? { visibleFrameRef } : {})}
       {...(className ? { className } : {})}
       {...(onReady ? { onReady } : {})}
       {...(onError ? { onError } : {})}

@@ -68,6 +68,8 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
   const isNarrow = useMediaQuery(NARROW_QUERY);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  // Phones: the sheet and the map buttons cover the lower half, so a chosen region lands above them.
+  const visibleFrameRef = useRef<HTMLDivElement>(null);
   // On a phone the sheet starts out of the way so the map is seen first, unless the link already
   // carries a search or a region (for example from the landing search).
   const [panelState, setPanelState] = useState<PanelState>(() => {
@@ -330,7 +332,9 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
     >
       {/* The real 3D map, filling the workspace behind every floating control. */}
       <div ref={stageRef} className={styles.mapStage}>
-        <MapGestureHint />
+        {isPhone && <div ref={visibleFrameRef} className={styles.visibleFrame} aria-hidden="true" />}
+        {/* On a phone it would sit right over the chosen region, so it waits until none is chosen. */}
+        {!(isPhone && selectedCode) && <MapGestureHint />}
         {/*
          * The view is centred on the whole screen: the sidebar floats over the map like the status
          * cards do, so folding it never moves the map (no viewInsetLeft).
@@ -339,6 +343,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
           cameraRef={handleCamera}
           onLiveSelect={handleMapSelect}
           overlay={overlay}
+          visibleFrameRef={visibleFrameRef}
           immersive
         />
       </div>

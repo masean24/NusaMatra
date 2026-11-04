@@ -12,7 +12,7 @@ export interface BoundaryReadiness {
  * illustrative diorama stays illustrative.
  */
 export function describeBoundaryReadiness(boundaries: BoundaryCollectionDTO): BoundaryReadiness {
-  const { geometryStatus, features } = boundaries;
+  const { geometryStatus, features, requestParams } = boundaries;
 
   if (geometryStatus.canExtrudePolygons) {
     return {
@@ -20,7 +20,10 @@ export function describeBoundaryReadiness(boundaries: BoundaryCollectionDTO): Bo
       detail:
         `Poligon batas ${String(features.length)} kabupaten/kota dari ${geometryStatus.source}` +
         (geometryStatus.boundaryVersion ? `, edisi ${geometryStatus.boundaryVersion}` : '') +
-        '. Bentuk disederhanakan untuk tampilan web; bukan untuk pengukuran luas atau keperluan hukum.',
+        '. Bentuk disederhanakan untuk tampilan web; bukan untuk pengukuran luas atau keperluan hukum.' +
+        (requestParams.resolution === 'mobile'
+          ? ' Perangkat ini memakai versi ringan: garis lebih sederhana dan pulau sangat kecil tidak digambar. Semua wilayah dan datanya tetap sama.'
+          : ''),
     };
   }
 

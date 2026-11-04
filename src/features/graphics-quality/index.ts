@@ -1,6 +1,7 @@
 export { MapViewToggle } from './MapViewToggle';
 export {
   applyGraphicsModeToDocument,
+  getDeviceTier,
   getQualityProfile,
   subscribeQuality,
   useQualityProfile,

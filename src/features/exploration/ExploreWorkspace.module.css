@@ -336,6 +336,20 @@
     bottom: var(--explore-above-sheet);
   }
 
+  /*
+   * Measured, never drawn: the part of the map left free when a region's sheet is up, between the
+   * status row under the top bar and the map buttons on the sheet's edge. A region flown to lands in it.
+   */
+  .visibleFrame {
+    position: absolute;
+    top: calc(var(--explore-top) + 56px);
+    right: 0;
+    bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 68px);
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   /* With the sheet up, the buttons ride on its top edge or step aside while it is open. */
   .workspace[data-sheet='peek'] {
     --explore-map-credit-bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 12px);
