@@ -359,17 +359,15 @@ const RESULT_READY = /^(Hasil lolos semua pemeriksaan|Hasil dapat dibaca dengan 
 const rankingRegion = () => screen.findByRole('region', { name: 'Peringkat wilayah' });
 
 describe('PriorityLab in LIVE (contract v2.1)', () => {
-  it('lists every indicator, disables those without LIVE data and says why, with the need-oriented direction (captured catalog + coverage)', async () => {
+  it('lists the indicators with LIVE data, leaves out those without any, with the need-oriented direction (captured catalog + coverage)', async () => {
     renderLive();
     await screen.findByText(RESULT_READY);
 
-    expect(screen.getByText(/25 dari 33 indikator punya data/)).toBeInTheDocument();
+    expect(screen.getByText(/dipilih dari 25 indikator berdata/)).toBeInTheDocument();
     openPicker();
-    const empty = screen.getByRole('checkbox', {
-      name: 'Persentase Ruang Kelas Rusak Sedang/Berat (SD & SMP)',
-    });
-    expect(empty).toBeDisabled();
-    expect(empty).toHaveAccessibleDescription(/Belum ada data resmi untuk indikator ini pada snapshot LIVE/);
+    expect(
+      screen.queryByRole('checkbox', { name: 'Persentase Ruang Kelas Rusak Sedang/Berat (SD & SMP)' }),
+    ).not.toBeInTheDocument();
     const poverty = screen.getByRole('checkbox', { name: 'Persentase Penduduk Miskin (P0)' });
     expect(poverty).toBeChecked();
     expect(poverty).toHaveAccessibleDescription(

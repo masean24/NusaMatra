@@ -15,13 +15,19 @@ interface FocusInputs {
 const percent = (basisPoints: number) =>
   `${(basisPoints / 100).toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
 
-/** The preset's weights, largest first, with the indicators the Data Hub has no data for. */
+/**
+ * The weights the preset really uses, largest first: an indicator without national data is left out and
+ * its weight shared in proportion among the others, as the Data Hub does when it calculates.
+ */
 function weightRows(preset: CompositePresetDTO, names: ReadonlyMap<string, string>) {
   const unavailable = new Set(preset.availability?.unavailableIndicators ?? []);
-  return Object.entries(preset.weightsBasisPoints)
-    .filter(([, bps]) => bps > 0)
+  const used = Object.entries(preset.weightsBasisPoints).filter(
+    ([id, bps]) => bps > 0 && !unavailable.has(id),
+  );
+  const total = used.reduce((sum, [, bps]) => sum + bps, 0);
+  return used
     .sort(([, a], [, b]) => b - a)
-    .map(([id, bps]) => ({ id, name: names.get(id) ?? id, bps, unavailable: unavailable.has(id) }));
+    .map(([id, bps]) => ({ id, name: names.get(id) ?? id, bps: (bps * 10_000) / total }));
 }
 
 type WeightRow = ReturnType<typeof weightRows>[number];
@@ -62,11 +68,6 @@ function FocusPanel({
             <span className={styles.track} aria-hidden="true">
               <span className={styles.bar} />
             </span>
-            {row.unavailable && (
-              <span className={`kk-caption ${styles.note}`}>
-                Belum ada data, bobotnya dialihkan ke indikator lain
-              </span>
-            )}
           </li>
         ))}
       </ul>

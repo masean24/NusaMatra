@@ -15,7 +15,9 @@ interface IndicatorPickerProps {
  * say why; each one names its source, year, unit, direction and how many regions have a value.
  */
 export function IndicatorPicker({ options, selected, onToggle, maxSelected }: IndicatorPickerProps) {
-  const categories = [...new Set(options.map((option) => option.category))];
+  // An indicator no region has data for is no choice at all, unless a scenario already carries it.
+  const listed = options.filter((option) => option.availability !== 'empty' || selected.has(option.id));
+  const categories = [...new Set(listed.map((option) => option.category))];
   const availableCount = options.filter((option) => option.availability === 'available').length;
   const full = selected.size >= maxSelected;
 
@@ -26,7 +28,7 @@ export function IndicatorPicker({ options, selected, onToggle, maxSelected }: In
           <span aria-hidden="true">+ </span>Tambah kriteria
         </span>
         <span className={`kk-small ${styles.muted}`}>
-          {selected.size} dipilih, {availableCount} dari {options.length} indikator punya data
+          {selected.size} dipilih dari {availableCount} indikator berdata
         </span>
       </summary>
       {full && (
@@ -38,7 +40,7 @@ export function IndicatorPicker({ options, selected, onToggle, maxSelected }: In
         <fieldset key={category} className={styles.category}>
           <legend className="kk-small">{categoryLabel(category)}</legend>
           <ul role="list" className={styles.options}>
-            {options
+            {listed
               .filter((option) => option.category === category)
               .map((option) => {
                 const reason = unavailableReason(option);
