@@ -82,17 +82,21 @@ export function CompositeDocument({ record }: { readonly record: CompositeEviden
       citation={citation}
       exportNote={exportNote(record)}
       actions={actions}
+      wide={
+        <>
+          <IntegritySection record={record} />
+          <ScopeSection record={record} />
+          <CriteriaSection record={record} />
+          {shown && <RankingSection record={record} />}
+          {shown && <InsufficientSection record={record} />}
+          <SourcesSection record={record} />
+          <LimitationsSection record={record} notes={notes} />
+        </>
+      }
     >
       <CompositeSummary record={record} />
       <FocusSection record={record} />
       <SourceStatusSection record={record} agencies={agencies} />
-      <IntegritySection record={record} />
-      <ScopeSection record={record} />
-      <CriteriaSection record={record} />
-      {shown && <RankingSection record={record} />}
-      {shown && <InsufficientSection record={record} />}
-      <SourcesSection record={record} />
-      <LimitationsSection record={record} notes={notes} />
     </PassportLayout>
   );
 }

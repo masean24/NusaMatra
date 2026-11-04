@@ -7,6 +7,7 @@ import {
   Explore3DMapSlot,
   MapLoader,
   type GeoCameraHandle,
+  type GeoOverlayCallout,
   type GeoOverlayPoint,
   type GeoRegionSelection,
 } from '@/features/geo3d';
@@ -78,6 +79,7 @@ function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
 /** Clickable points over the map and their selection, owned by the page. */
 export interface MapOverlay {
   readonly points: readonly GeoOverlayPoint[];
+  readonly callouts?: readonly GeoOverlayCallout[] | undefined;
   readonly selectedId: string | null;
   readonly onSelect: (id: string) => void;
 }
@@ -209,6 +211,7 @@ function LiveMap({
       overlayPoints={overlay?.points}
       selectedOverlayId={overlay?.selectedId ?? null}
       onOverlaySelect={overlay?.onSelect}
+      overlayCallouts={overlay?.callouts}
       viewInsetLeft={viewInsetLeft}
       visibleFrameRef={visibleFrameRef}
       className={styles.map}

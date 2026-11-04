@@ -203,7 +203,15 @@ function ProfileBody({
           <span className="kk-small">Sumber, tahun data, dan batasan setiap angka</span>
         </span>
         <span className={styles.passportArrow} aria-hidden="true">
-          →
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+            <path
+              d="M4.5 12h15M13 5.5l6.5 6.5-6.5 6.5"
+              stroke="currentColor"
+              strokeWidth="3.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </span>
       </Link>
 

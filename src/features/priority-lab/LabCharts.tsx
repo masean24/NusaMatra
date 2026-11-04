@@ -85,7 +85,12 @@ export function RankingChart({
   useRowMoves(listRef, rows);
 
   return (
-    <ol ref={listRef} className={`glass-group ${styles.rankChart}`} aria-label="Daftar peringkat wilayah">
+    <ol
+      ref={listRef}
+      role="list"
+      className={`glass-group ${styles.rankChart}`}
+      aria-label="Daftar peringkat wilayah"
+    >
       {rows.map((item) => {
         const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
         const move = moves.get(item.regionId) ?? 0;

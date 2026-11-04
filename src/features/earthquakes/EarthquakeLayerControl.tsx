@@ -2,7 +2,9 @@ import { useRef } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DataHubErrorMessage } from '@/features/data-hub';
-import { formatEventTime, formatMagnitude } from './format';
+import { magnitudeBand } from '@/domain/hazards';
+import { describeEvent, formatEventTime, formatMagnitudeShort } from './format';
+import { toneStyle } from './magnitudeTones';
 import { OriginBadge } from './OriginBadge';
 import { describeLastSuccess } from './originText';
 import type { EarthquakeFeedState } from './useEarthquakeFeed';
@@ -20,9 +22,9 @@ interface EarthquakeLayerControlProps {
 
 /**
  * Switch for the "Gempa BMKG" layer, its status in words, and a list of the same events as buttons:
- * the keyboard and screen-reader way to reach what the map shows as dots. It sits in the map's
- * toolbar, so the list, headed by how to read the dots, folds into a disclosure that opens over the map; why data
- * is stale or withheld, and failures, are always shown in full.
+ * the keyboard and screen-reader way to reach what the map shows as symbols. It sits in the map's
+ * toolbar, so the list, headed by how to read the symbols, folds into a disclosure that opens over the
+ * map; why data is stale or withheld, and failures, are always shown in full.
  */
 export function EarthquakeLayerControl({
   enabled,
@@ -55,14 +57,14 @@ export function EarthquakeLayerControl({
           Gempa BMKG
         </button>
         {!available && <span className="kk-small">Hanya untuk data LIVE (peta batas resmi).</span>}
-        {enabled && <LayerStatus state={state} count={shown.length} />}
         {shown.length > 0 && (
           <details ref={listRef} className={styles.disclosure}>
             <summary className="kk-small">Daftar gempa ({shown.length})</summary>
             <div className={`glass ${styles.popover}`}>
               <p className={`kk-small ${styles.legend}`}>
-                Ukuran titik mengikuti magnitudo, bukan luas wilayah terdampak. Warna dan ukuran tidak
-                menunjukkan kerusakan, risiko, atau potensi tsunami; ikuti keterangan resmi BMKG.
+                Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak: merah M 5 ke atas,
+                jingga M 4 sampai 4,9, kuning di bawah M 4. Keduanya tidak menunjukkan kerusakan, risiko, atau
+                potensi tsunami; ikuti keterangan resmi BMKG.
               </p>
               <ul role="list" className={styles.events}>
                 {shown.map((event) => (
@@ -70,6 +72,7 @@ export function EarthquakeLayerControl({
                     <button
                       type="button"
                       className={styles.event}
+                      aria-label={describeEvent(event)}
                       aria-pressed={event.id === selectedId}
                       onClick={() => {
                         onSelect(event.id);
@@ -77,9 +80,12 @@ export function EarthquakeLayerControl({
                         if (listRef.current) listRef.current.open = false;
                       }}
                     >
-                      <span className="kk-body-strong">{formatMagnitude(event.magnitude)}</span>
-                      <span className="kk-small">
-                        {event.area ?? 'Lokasi tidak disebutkan'}, {formatEventTime(event)}
+                      <span className={styles.eventBadge} style={toneStyle(magnitudeBand(event.magnitude))}>
+                        {formatMagnitudeShort(event.magnitude)}
+                      </span>
+                      <span className={styles.eventText}>
+                        <span className="kk-body-strong">{event.area ?? 'Lokasi tidak disebutkan'}</span>
+                        <span className={`kk-small ${styles.eventTime}`}>{formatEventTime(event)}</span>
                       </span>
                     </button>
                   </li>
@@ -89,6 +95,7 @@ export function EarthquakeLayerControl({
           </details>
         )}
       </div>
+      {enabled && <LayerStatus state={state} count={shown.length} />}
 
       {enabled && assessment && assessment.display !== 'OFFICIAL' && assessment.reasons.length > 0 && (
         <ul role="list" className={`kk-small ${styles.reasons}`}>

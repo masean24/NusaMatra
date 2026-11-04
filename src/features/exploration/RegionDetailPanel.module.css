@@ -239,7 +239,6 @@
   border-radius: 50%;
   background: var(--nm-accent);
   color: var(--nm-accent-text);
-  font-weight: 700;
   transition: translate var(--nm-spring-duration) var(--nm-spring-halus);
 }
 

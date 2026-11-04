@@ -767,12 +767,6 @@
   }
 }
 
-/* Rows span the card: the reading measure of `glass--read li` is for prose, not table rows. */
-.rankChart > li {
-  max-width: none;
-  line-height: inherit;
-}
-
 /*
  * A `glass-row` in the `glass-group` list. Rows span the group edge to edge, as in an iOS grouped
  * list, so their highlight has no corners of its own; badges may wrap, hence the block padding.

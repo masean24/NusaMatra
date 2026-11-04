@@ -60,6 +60,7 @@ export function Explore3DMapAdapter({
   overlayPoints,
   selectedOverlayId,
   onOverlaySelect,
+  overlayCallouts,
   viewInsetLeft,
   visibleFrameRef,
 }: Explore3DMapProps) {
@@ -105,6 +106,7 @@ export function Explore3DMapAdapter({
       {...(overlayPoints ? { overlayPoints } : {})}
       {...(selectedOverlayId !== undefined ? { selectedOverlayId } : {})}
       {...(onOverlaySelect ? { onSelectOverlay: onOverlaySelect } : {})}
+      {...(overlayCallouts ? { overlayCallouts } : {})}
       {...(viewInsetLeft !== undefined ? { viewInsetLeft } : {})}
       {...(visibleFrameRef !== undefined ? { visibleFrameRef } : {})}
       {...(className ? { className } : {})}

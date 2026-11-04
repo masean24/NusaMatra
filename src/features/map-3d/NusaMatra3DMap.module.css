@@ -97,6 +97,38 @@
   box-shadow: 0 4px 16px var(--nm-shadow);
 }
 
+/* Cards anchored to overlay points. Moved per drawn frame; shown only once they have a place. */
+.calloutLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.callout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: auto;
+  transition:
+    opacity 160ms ease,
+    visibility 160ms;
+}
+
+.callout[data-placed] {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .callout {
+    transition: none;
+  }
+}
+
 .hoverTooltip {
   pointer-events: none;
   position: absolute;

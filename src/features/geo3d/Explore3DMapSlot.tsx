@@ -58,6 +58,7 @@ interface Explore3DMapSlotProps {
   readonly overlayPoints?: Explore3DMapProps['overlayPoints'];
   readonly selectedOverlayId?: Explore3DMapProps['selectedOverlayId'];
   readonly onOverlaySelect?: Explore3DMapProps['onOverlaySelect'];
+  readonly overlayCallouts?: Explore3DMapProps['overlayCallouts'];
   readonly viewInsetLeft?: Explore3DMapProps['viewInsetLeft'];
   readonly visibleFrameRef?: Explore3DMapProps['visibleFrameRef'];
   readonly className?: string | undefined;
@@ -79,6 +80,7 @@ export function Explore3DMapSlot({
   overlayPoints,
   selectedOverlayId,
   onOverlaySelect,
+  overlayCallouts,
   viewInsetLeft,
   visibleFrameRef,
   className,
@@ -103,6 +105,7 @@ export function Explore3DMapSlot({
           overlayPoints,
           selectedOverlayId,
           onOverlaySelect,
+          overlayCallouts,
           viewInsetLeft,
           visibleFrameRef,
         }}

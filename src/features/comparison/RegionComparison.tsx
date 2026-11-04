@@ -461,9 +461,11 @@ function IndicatorRow({
 
   return (
     <tr data-blocked={assessment.allowed || !isRegional ? undefined : true}>
-      <th scope="row" className={styles.indicator}>
-        <span className="kk-body-strong">{row.label}</span>
-        {detailed && <SourceLine row={row} />}
+      <th scope="row">
+        <span className={styles.indicator}>
+          <span className="kk-body-strong">{row.label}</span>
+          {detailed && <SourceLine row={row} />}
+        </span>
       </th>
       <td data-label={nameA}>
         <ValueCell side={row.a} unit={unit} peak={peak} tone="a" showFlag={detailed} outcome={outcomeA} />
@@ -471,35 +473,39 @@ function IndicatorRow({
       <td data-label={nameB}>
         <ValueCell side={row.b} unit={unit} peak={peak} tone="b" showFlag={detailed} outcome={outcomeB} />
       </td>
-      <td className={styles.difference} data-label="Hasil">
-        {!isRegional ? (
-          <>
-            <span className="kk-body-strong">{NOT_DETERMINED}</span>
-            {detailed && (
-              <span className={`kk-small ${styles.muted}`}>
-                Metrik ini menilai kelengkapan atau kesegaran data, bukan kondisi wilayah, jadi tanpa selisih
-                dan tanpa penilaian lebih baik atau buruk.
-              </span>
-            )}
-          </>
-        ) : assessment.allowed ? (
-          <>
-            <span className="kk-body-strong">{describeDifference(row, nameA, nameB, unit, useRatio)}</span>
-            {detailed && reading && <span className={`kk-small ${styles.muted}`}>{reading.sentence}</span>}
-            {detailed && unit.warning && <span className={`kk-small ${styles.warning}`}>{unit.warning}</span>}
-          </>
-        ) : (
-          <>
-            <span className="kk-body-strong">{NOT_DETERMINED}</span>
-            {detailed && (
-              <ul role="list" className={`kk-small ${styles.reasons}`}>
-                {assessment.blockers.map((blocker) => (
-                  <li key={blocker.code}>{blocker.message}</li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
+      <td data-label="Hasil">
+        <div className={styles.difference}>
+          {!isRegional ? (
+            <>
+              <span className="kk-body-strong">{NOT_DETERMINED}</span>
+              {detailed && (
+                <span className={`kk-small ${styles.muted}`}>
+                  Metrik ini menilai kelengkapan atau kesegaran data, bukan kondisi wilayah, jadi tanpa
+                  selisih dan tanpa penilaian lebih baik atau buruk.
+                </span>
+              )}
+            </>
+          ) : assessment.allowed ? (
+            <>
+              <span className="kk-body-strong">{describeDifference(row, nameA, nameB, unit, useRatio)}</span>
+              {detailed && reading && <span className={`kk-small ${styles.muted}`}>{reading.sentence}</span>}
+              {detailed && unit.warning && (
+                <span className={`kk-small ${styles.warning}`}>{unit.warning}</span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="kk-body-strong">{NOT_DETERMINED}</span>
+              {detailed && (
+                <ul role="list" className={`kk-small ${styles.reasons}`}>
+                  {assessment.blockers.map((blocker) => (
+                    <li key={blocker.code}>{blocker.message}</li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </div>
       </td>
     </tr>
   );

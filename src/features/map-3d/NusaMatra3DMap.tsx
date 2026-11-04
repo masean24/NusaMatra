@@ -6,6 +6,7 @@ import React, {
   forwardRef,
   useMemo,
   useCallback,
+  type ReactNode,
   type RefObject,
 } from 'react';
 import * as THREE from 'three';
@@ -15,6 +16,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { getQualityProfile, subscribeQuality, useQualityProfile } from '@/features/graphics-quality';
 import styles from './NusaMatra3DMap.module.css';
 import { aimForScreenPoint, frameCentreNdc } from './focusFrame';
+import { placeCallouts, type CalloutRequest } from './placeCallouts';
 import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
 import { RegionBatch, type RegionPiece } from './regionBatch';
 import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
@@ -121,6 +123,63 @@ function exploreFitDistance(camera: THREE.PerspectiveCamera, width: number, scen
 }
 
 const NO_OVERLAY_POINTS: readonly MapOverlayPoint[] = [];
+
+/** How many callouts show at once: one on a phone, where they would otherwise cover the map. */
+const MAX_CALLOUTS_WIDE = 3;
+const MAX_CALLOUTS_NARROW = 1;
+const NARROW_MAP_PX = 640;
+const NARROW_SYMBOL_SCALE = 0.62;
+const calloutAnchor = new THREE.Vector3();
+
+/** Moves the callout cards to their anchors for the frame just drawn, without a React render. */
+function positionCallouts(layer: HTMLElement, overlay: PointOverlay, camera: THREE.Camera): void {
+  const cards = Array.from(layer.children) as HTMLElement[];
+  if (cards.length === 0) return;
+  const box = layer.getBoundingClientRect();
+  const requests = cards.map((card): CalloutRequest => {
+    const id = card.dataset['calloutId'] ?? '';
+    const anchor = overlay.anchorOf(id);
+    const onScreen = anchor ? calloutAnchor.copy(anchor.position).project(camera) : null;
+    const visible = onScreen !== null && onScreen.z < 1;
+    return {
+      id,
+      x: visible ? ((onScreen.x + 1) / 2) * box.width : null,
+      y: visible ? ((1 - onScreen.y) / 2) * box.height : null,
+      anchorRadius: anchor?.radiusPx ?? 0,
+      pinned: anchor?.selected ?? false,
+      width: card.offsetWidth,
+      height: card.offsetHeight,
+    };
+  });
+  const root = layer.parentElement;
+  const isOverMap = (x: number, y: number) => {
+    const top = document.elementFromPoint(box.left + x, box.top + y);
+    return top !== null && root !== null && root.contains(top);
+  };
+  const placed = placeCallouts(requests, {
+    width: box.width,
+    height: box.height,
+    max: box.width < NARROW_MAP_PX ? MAX_CALLOUTS_NARROW : MAX_CALLOUTS_WIDE,
+    isFree: (left, top, width, height) =>
+      isOverMap(left + 2, top + 2) &&
+      isOverMap(left + width - 2, top + 2) &&
+      isOverMap(left + 2, top + height - 2) &&
+      isOverMap(left + width - 2, top + height - 2),
+  });
+  for (const card of cards) {
+    const place = placed.get(card.dataset['calloutId'] ?? '');
+    if (place) {
+      card.style.transform = `translate(${String(Math.round(place.left))}px, ${String(Math.round(place.top))}px)`;
+      card.dataset['placed'] = 'true';
+    } else {
+      delete card.dataset['placed'];
+    }
+  }
+}
+
+const stopPropagation = (event: { stopPropagation: () => void }) => {
+  event.stopPropagation();
+};
 
 const HERO_CAMERA_ELEVATION_DEG = 54;
 const HERO_FRAME_MARGIN = 0.05;
@@ -236,6 +295,8 @@ export interface NusaMatra3DMapProps {
   overlayPoints?: readonly MapOverlayPoint[];
   selectedOverlayId?: string | null;
   onSelectOverlay?: (id: string) => void;
+  /** Host fix: cards anchored to overlay points, highest priority first; only those that fit show. */
+  overlayCallouts?: readonly { readonly id: string; readonly content: ReactNode }[];
   /** Host fix: CSS pixels of the canvas covered on the left by a floating panel; the view is centred beside it. */
   viewInsetLeft?: number;
   /** The part of the map no panel covers, where a region flown to should land (phones); default: the centre. */
@@ -1417,11 +1478,13 @@ export const NusaMatra3DMap = forwardRef<
     overlayPoints = NO_OVERLAY_POINTS,
     selectedOverlayId = null,
     onSelectOverlay,
+    overlayCallouts,
     viewInsetLeft = 0,
     visibleFrameRef,
   } = props;
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const calloutLayerRef = useRef<HTMLDivElement | null>(null);
   const viewInsetRef = useRef(viewInsetLeft);
   /** Re-runs the resize handling (projection, fit, renderer size) for the container's current size. */
   const relayoutRef = useRef<((w: number, h: number) => void) | null>(null);
@@ -2076,8 +2139,13 @@ export const NusaMatra3DMap = forwardRef<
       }
 
       eng.controls?.update();
-      eng.overlay.tick(now);
+      eng.overlay.tick(now, {
+        camera: eng.camera,
+        heightPx: container.clientHeight,
+        symbolScale: container.clientWidth < NARROW_MAP_PX ? NARROW_SYMBOL_SCALE : 1,
+      });
       eng.renderer.render(eng.scene, eng.camera);
+      if (calloutLayerRef.current) positionCallouts(calloutLayerRef.current, eng.overlay, eng.camera);
     };
 
     rafId = requestAnimationFrame(animate);
@@ -2710,6 +2778,24 @@ export const NusaMatra3DMap = forwardRef<
       onPointerLeave={handlePointerLeave}
     >
       <div ref={containerRef} className={styles.canvasMount} />
+
+      {mode === 'explore' && overlayCallouts && overlayCallouts.length > 0 && (
+        <div ref={calloutLayerRef} className={styles.calloutLayer}>
+          {overlayCallouts.map((callout) => (
+            <div
+              key={callout.id}
+              className={styles.callout}
+              data-callout-id={callout.id}
+              // A card is not the map under it: its press must not select the region there.
+              onPointerDown={stopPropagation}
+              onPointerUp={stopPropagation}
+              onPointerMove={stopPropagation}
+            >
+              {callout.content}
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className={styles.attributionBadge}>
         {mode === 'hero'

@@ -11,11 +11,15 @@ import {
 } from 'react';
 import { Icon } from '@/components/ui/Icon/Icon';
 import { Surface } from '@/components/ui/Surface/Surface';
-import { epicentreSymbolSize } from '@/domain/hazards';
+import { epicentreSymbolSize, magnitudeBand } from '@/domain/hazards';
 import { useDataHub } from '@/features/data-hub';
 import {
+  calloutEvents,
+  EarthquakeCallout,
   EarthquakeDetail,
   EarthquakeLayerControl,
+  EarthquakeLegend,
+  MAGNITUDE_TONES,
   markerLabel,
   useEarthquakeFeed,
 } from '@/features/earthquakes';
@@ -206,6 +210,17 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
               size: epicentreSymbolSize(event.magnitude),
               label: markerLabel(event),
               isNew: quakes.newIds.has(event.id),
+              color: MAGNITUDE_TONES[magnitudeBand(event.magnitude)].color,
+            })),
+            callouts: calloutEvents(quakeEvents, selectedQuakeId).map((event) => ({
+              id: event.id,
+              content: (
+                <EarthquakeCallout
+                  event={event}
+                  selected={event.id === selectedQuakeId}
+                  onSelect={handleQuakeSelect}
+                />
+              ),
             })),
             selectedId: selectedQuakeId,
             onSelect: handleQuakeSelect,
@@ -328,6 +343,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
       data-panel={collapsed ? 'collapsed' : 'open'}
       data-sheet={shown}
       data-selected={selectedCode ? true : undefined}
+      data-quake-layer={quakeEvents.length > 0 ? true : undefined}
       style={{ '--explore-map-inset': `${String(mapInset)}px` } as CSSProperties}
     >
       {/* The real 3D map, filling the workspace behind every floating control. */}
@@ -346,6 +362,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
           visibleFrameRef={visibleFrameRef}
           immersive
         />
+        {quakeEvents.length > 0 && <EarthquakeLegend className={styles.quakeLegend} />}
       </div>
 
       <div className={styles.status} role="region" aria-label="Status data peta">

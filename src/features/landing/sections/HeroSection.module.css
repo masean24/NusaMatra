@@ -37,6 +37,57 @@
  * One column: the width decides the line breaks. On short screens the size also follows the height,
  * so the whole column stays on the first screen.
  */
+/*
+ * Mask reveal: each word rises out of its own clipped box, so the lines stay whatever the width
+ * makes them. The padding gives ascenders and descenders room in the tight line height, and the
+ * negative margin takes it back, so the title measures the same as plain text.
+ */
+.titleMask {
+  display: inline-block;
+  overflow: clip;
+  padding-block: 0.12em 0.18em;
+  margin-block: -0.12em -0.18em;
+  vertical-align: top;
+}
+
+.titleWord {
+  display: inline-block;
+  animation: title-rise 900ms var(--nm-ease-calm) calc(var(--title-word) * 90ms) both;
+  will-change: transform;
+}
+
+@keyframes title-rise {
+  from {
+    transform: translateY(125%);
+  }
+}
+
+/* After the opening animation (features/intro): waits under its mask, then rises as the curtain lifts. */
+:global(html[data-intro='playing']) .titleWord {
+  animation: none;
+  transform: translateY(125%);
+}
+
+:global(html[data-intro='leaving']) .titleWord {
+  animation-duration: 1.1s;
+  animation-delay: calc(0.57s + var(--title-word) * 0.07s);
+}
+
+:global(html[data-intro='done']) .titleWord {
+  animation: none;
+  transform: none;
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .titleWord,
+  :global(html[data-intro]) .titleWord {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+}
+
 .title {
   max-width: 600px;
   font-size: clamp(2.5rem, min(1.4rem + 3vw, 7svh), 3.5rem);

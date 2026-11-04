@@ -7,7 +7,7 @@
  * These types are deliberately independent of the engine's own names, so a future engine
  * version is absorbed in `engineAdapters.tsx`, not across the app.
  */
-import type { Ref, RefObject } from 'react';
+import type { ReactNode, Ref, RefObject } from 'react';
 
 export type GeoDisplayMode = 'normal' | 'glass';
 export type GeoDataMode = 'DEMO' | 'LIVE';
@@ -70,13 +70,21 @@ export interface Explore3DMapProps extends GeoEngineBaseProps {
   readonly overlayPoints?: readonly GeoOverlayPoint[] | undefined;
   readonly selectedOverlayId?: string | null | undefined;
   readonly onOverlaySelect?: ((id: string) => void) | undefined;
+  /** Cards anchored to overlay points, highest priority first; only those that fit are shown. */
+  readonly overlayCallouts?: readonly GeoOverlayCallout[] | undefined;
   /** CSS pixels of the map covered on the left by a floating panel; the view is centred beside it. */
   readonly viewInsetLeft?: number | undefined;
   /** The part of the map no panel covers, where a region flown to should land; default: the centre. */
   readonly visibleFrameRef?: RefObject<HTMLElement | null> | undefined;
 }
 
-/** A point drawn over the map. `size` is a symbol size in map units, never an area on the ground. */
+/** A card that follows the overlay point with the same id. */
+export interface GeoOverlayCallout {
+  readonly id: string;
+  readonly content: ReactNode;
+}
+
+/** A point drawn over the map. `size` is a relative symbol size, never an area on the ground. */
 export interface GeoOverlayPoint {
   readonly id: string;
   readonly lon: number;
@@ -86,4 +94,6 @@ export interface GeoOverlayPoint {
   readonly label: string;
   /** New since the previous update: animated once. */
   readonly isNew: boolean;
+  /** Colour of the symbol. */
+  readonly color?: string | undefined;
 }

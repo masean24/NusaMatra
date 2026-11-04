@@ -52,12 +52,13 @@
 }
 
 /*
- * The focus options: one segmented row, wrapping to two on narrow columns. Scoped under .band so
- * these rules outrank the global .glass-seg (a column flow) whatever order the stylesheets load in.
+ * The focus options: one segmented row of equal widths however many there are, so a row never ends
+ * with a lone option; two by two on phones. Scoped under .band so these rules outrank the global
+ * .glass-seg whatever order the stylesheets load in.
  */
 .band .focus {
-  grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fit, minmax(min(9.5rem, 100%), 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 2px;
   min-width: 0;
 }
@@ -78,6 +79,7 @@
 /* Phones: two by two, so each option has room for its words; never wider than the card. */
 @media (width < 640px) {
   .band .focus {
+    grid-auto-flow: row;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
   }

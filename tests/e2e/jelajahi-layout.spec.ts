@@ -115,7 +115,10 @@ test.describe('Jelajahi map-first layout', () => {
     const before = await markersOnMap(page);
 
     await page.getByText('Daftar gempa (28)').click();
-    await page.getByRole('button', { name: /Magnitudo 5,7.*SUKABUMI/ }).click();
+    await page
+      .getByRole('region', { name: 'Lapisan gempa BMKG' })
+      .getByRole('button', { name: /Magnitudo 5,7.*SUKABUMI/ })
+      .click();
     const detail = page.getByRole('article', { name: 'Gempa Magnitudo 5,7' });
     await expect(detail).toBeVisible();
     // The map always fills the screen; folding the sidebar moves the view's centre (its inset) instead.

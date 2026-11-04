@@ -1335,10 +1335,6 @@
   overflow-wrap: anywhere;
 }
 
-.fixedTable thead th {
-  white-space: normal;
-}
-
 .table caption {
   padding-bottom: 8px;
   text-align: left;
@@ -1359,6 +1355,11 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* After the rule above, of equal weight: a long region name wraps inside its own fixed column. */
+.fixedTable thead th {
+  white-space: normal;
 }
 
 .table tbody th {
@@ -1395,12 +1396,15 @@
 
 /* ---------------------------------------------------------------- opened without a link */
 
-/* A crossed-out passport beside the explanation; one column on narrow screens. */
+/*
+ * A crossed-out passport beside the explanation, and the three ways to make one across the whole
+ * card under them; one column on narrow screens.
+ */
 .entry {
   display: grid;
-  grid-template-columns: minmax(120px, 200px) minmax(0, 1fr);
-  gap: 28px;
-  align-items: start;
+  grid-template-columns: minmax(96px, 136px) minmax(0, 1fr);
+  gap: 24px 28px;
+  align-items: center;
   padding: 28px;
   border-radius: 24px;
 }
@@ -1470,17 +1474,35 @@
 }
 
 .entryLead {
-  max-width: 62ch;
+  max-width: 78ch;
   color: var(--c-text-muted);
+}
+
+.entryChoices {
+  display: flex;
+  grid-column: 1 / -1;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.entryChoices p {
+  margin: 0;
 }
 
 .entrySteps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+@media (width >= 768px) {
+  .entrySteps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .entryStep {

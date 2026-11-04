@@ -158,7 +158,7 @@ describe('EarthquakeLayerControl', () => {
     );
     expect(screen.getByText('Data BMKG')).toBeInTheDocument();
     expect(
-      screen.getByText(/Ukuran titik mengikuti magnitudo, bukan luas wilayah terdampak/),
+      screen.getByText(/Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak/),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByText('Daftar gempa (1)'));
     await userEvent.click(screen.getByRole('button', { name: /Magnitudo 5,1/ }));

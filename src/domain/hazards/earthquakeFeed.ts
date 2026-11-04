@@ -100,3 +100,14 @@ export function epicentreSymbolSize(magnitude: number): number {
   const clamped = Math.min(8, Math.max(2, magnitude));
   return 0.16 + (clamped - 2) * 0.06;
 }
+
+export type MagnitudeBand = 'strong' | 'moderate' | 'light';
+
+/**
+ * Which colour step a magnitude falls in: a reading aid for the number itself, not a statement about
+ * damage, risk or tsunami potential.
+ */
+export function magnitudeBand(magnitude: number): MagnitudeBand {
+  if (magnitude >= 5) return 'strong';
+  return magnitude >= 4 ? 'moderate' : 'light';
+}

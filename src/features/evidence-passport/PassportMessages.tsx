@@ -77,6 +77,8 @@ export function PassportEntry() {
           peringkat di Lab Prioritas. Isinya sumber, tahun, kelas bukti, dan batasan setiap angka pada
           analisis itu. Halaman ini dibuka langsung dari menu, jadi belum ada analisis yang dirangkum.
         </p>
+      </div>
+      <div className={styles.entryChoices}>
         <p className="kk-body-strong">Buat Paspor Bukti dari salah satu fitur berikut:</p>
         <ol role="list" className={styles.entrySteps}>
           {PASSPORT_SOURCES.map((source) => (

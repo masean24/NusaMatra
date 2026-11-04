@@ -4,12 +4,12 @@ import type { Page } from '@playwright/test';
 export const mapRegion = (page: Page) =>
   page.getByRole('region', { name: 'Peta 3D interaktif wilayah Indonesia' });
 
-/** Smallest dark blob counted as a marker disc, in screenshot pixels (drops outlines and specks). */
+/** Smallest coloured blob counted as a marker disc, in screenshot pixels (drops outlines and specks). */
 const MIN_DISC_PIXELS = 12;
 
 /**
  * Epicentre markers on the map, by their hover labels. WebGL pixels cannot be read back directly,
- * so the dark marker discs are found as connected blobs in a screenshot of the map; each blob's
+ * so the coloured marker discs are found as connected blobs in a screenshot of the map; each blob's
  * centre is hovered and the tooltip read, so a position counts only if the map itself says which
  * event is there. Overlapping markers form one blob and yield whichever is in front.
  */
@@ -27,15 +27,12 @@ export async function markersOnMap(page: Page): Promise<Map<string, { x: number;
       context.drawImage(bitmap, 0, 0);
       const { data, width, height } = context.getImageData(0, 0, bitmap.width, bitmap.height);
       const scale = width / window.innerWidth > 1.5 ? window.devicePixelRatio : 1;
-      // The disc fill (#121826) over the cobalt sea: dark in every channel, unlike sea or land.
-      const dark = (index: number) =>
-        (data[index * 4] ?? 255) < 70 &&
-        (data[index * 4 + 1] ?? 255) < 80 &&
-        (data[index * 4 + 2] ?? 255) < 120;
+      // The disc fills (red, orange, amber): strong in red and low in blue, unlike sea or land.
+      const isDisc = (index: number) => (data[index * 4] ?? 0) > 200 && (data[index * 4 + 2] ?? 255) < 90;
       const seen = new Uint8Array(width * height);
       const blobs: { x: number; y: number }[] = [];
       for (let start = 0; start < width * height; start += 1) {
-        if (seen[start] || !dark(start)) continue;
+        if (seen[start] || !isDisc(start)) continue;
         const stack = [start];
         seen[start] = 1;
         let count = 0;
@@ -51,7 +48,7 @@ export async function markersOnMap(page: Page): Promise<Map<string, { x: number;
           for (const next of [index - 1, index + 1, index - width, index + width]) {
             const nx = next % width;
             if (next < 0 || next >= width * height || Math.abs(nx - x) > 1) continue;
-            if (!seen[next] && dark(next)) {
+            if (!seen[next] && isDisc(next)) {
               seen[next] = 1;
               stack.push(next);
             }

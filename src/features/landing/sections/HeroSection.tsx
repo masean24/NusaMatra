@@ -1,13 +1,16 @@
+import { Fragment, type CSSProperties } from 'react';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { buttonClassName } from '@/components/ui/Button/buttonClassName';
 import { HeroDioramaSlot } from '@/features/geo3d';
-import { Reveal, useReducedMotion } from '@/features/motion';
+import { Reveal, STAGGER_ITEM_PROPS, useReducedMotion } from '@/features/motion';
 import { RegionSearchForm } from '../components/RegionSearchForm';
 import styles from './HeroSection.module.css';
 
-/* G1: heading, lead, search, buttons rise 28px, ~90ms apart, 700ms on the "Tenang" curve. */
+/* The title rises word by word out of its mask; lead, search, buttons and note fade up after it. */
+const HERO_TITLE_WORDS = ['Memahami', 'wilayah,', 'menentukan', 'arah.'];
 const G1_STAGGER_MS = 90;
 const G1_DISTANCE = 28;
+const G1_AFTER_TITLE_MS = 240;
 /* G2: the diorama rises 60px over 1.1s. */
 const G2_DELAY_MS = 100;
 
@@ -40,12 +43,19 @@ export function HeroSection() {
   return (
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={styles.copy}>
-        <Reveal trigger="load" distance={G1_DISTANCE} introStep={0.12}>
-          <h1 id="hero-title" className={`kk-display ${styles.title}`}>
-            Memahami wilayah, menentukan arah.
-          </h1>
-        </Reveal>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS} introStep={0.22}>
+        <h1 id="hero-title" className={`kk-display ${styles.title}`} {...STAGGER_ITEM_PROPS}>
+          {HERO_TITLE_WORDS.map((word, index) => (
+            <Fragment key={word}>
+              {index > 0 && ' '}
+              <span className={styles.titleMask}>
+                <span className={styles.titleWord} style={{ '--title-word': index } as CSSProperties}>
+                  {word}
+                </span>
+              </span>
+            </Fragment>
+          ))}
+        </h1>
+        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_AFTER_TITLE_MS} introStep={0.22}>
           <p className={`kk-lead ${styles.lead}`}>
             Jelajahi kondisi kabupaten/kota di Indonesia, bandingkan indikator pembangunan, dan susun
             prioritas yang dapat diperiksa. Hasilnya bergantung pada indikator, bobot, data yang tersedia, dan
@@ -55,7 +65,7 @@ export function HeroSection() {
         <Reveal
           trigger="load"
           distance={G1_DISTANCE}
-          delay={G1_STAGGER_MS * 2}
+          delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS}
           introStep={0.32}
           className={styles.search}
         >
@@ -64,7 +74,7 @@ export function HeroSection() {
         <Reveal
           trigger="load"
           distance={G1_DISTANCE}
-          delay={G1_STAGGER_MS * 3}
+          delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS * 2}
           introStep={0.4}
           className={styles.actions}
         >
@@ -82,7 +92,12 @@ export function HeroSection() {
             Lihat cara kerjanya
           </a>
         </Reveal>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_STAGGER_MS * 4} introStep={0.4}>
+        <Reveal
+          trigger="load"
+          distance={G1_DISTANCE}
+          delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS * 3}
+          introStep={0.4}
+        >
           <p className={`kk-small ${styles.note}`}>
             Gratis dan tanpa daftar. Setiap angka menyebutkan sumber dan tahunnya.
           </p>

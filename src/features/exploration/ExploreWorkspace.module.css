@@ -25,6 +25,38 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  transition: background-color 400ms ease;
+}
+
+/* With earthquakes on, the sea turns cobalt so the land and the coloured symbols stand out. */
+.workspace[data-quake-layer] .mapStage {
+  background-color: color-mix(in srgb, var(--nm-sea-deep) 62%, #0b1230);
+}
+
+/* A see-through panel over that sea would turn blue and lose contrast, so the panels turn opaque. */
+:global(html[data-display-mode='normal']) .workspace[data-quake-layer] {
+  --explore-reading-surface: var(--nm-land-1);
+  --glass-bg: var(--nm-land-1);
+  --glass-read: var(--nm-land-1);
+}
+
+.quakeLegend {
+  position: absolute;
+  bottom: 48px;
+  left: calc(var(--explore-map-inset, 0px) + 12px);
+  z-index: 5;
+}
+
+@media (width < 1024px) {
+  .quakeLegend {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapStage {
+    transition: none;
+  }
 }
 
 /* ------------------------------------------------------------------ status, top right */

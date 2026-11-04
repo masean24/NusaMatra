@@ -12,6 +12,7 @@
   flex-wrap: wrap;
   gap: 8px 14px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .switch {
@@ -20,7 +21,7 @@
   align-items: center;
   min-height: 44px;
   padding: 6px 14px 6px 8px;
-  border: 1px solid var(--c-surface-border, transparent);
+  border: 1px solid var(--c-input-border);
   border-radius: var(--nm-radius-pill);
   background: var(--c-surface);
   box-shadow: var(--c-surface-shadow);
@@ -84,7 +85,7 @@
   align-items: center;
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid var(--c-surface-border, transparent);
+  border: 1px solid var(--c-input-border);
   border-radius: var(--nm-radius-pill);
   background: var(--c-surface);
   color: var(--c-text);
@@ -125,11 +126,10 @@
 
 .event {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-start;
+  gap: 12px;
+  align-items: center;
   width: 100%;
-  padding: 8px 12px;
+  padding: 8px 12px 8px 8px;
   border: 1px solid var(--c-surface-border, transparent);
   border-radius: 12px;
   background: var(--c-surface-muted);
@@ -141,6 +141,34 @@
 .event[aria-pressed='true'] {
   background: var(--c-nav-active-liquid);
   color: var(--c-nav-active-text);
+}
+
+/* The magnitude first, in its colour step, as on the map's cards. */
+.eventBadge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 58px;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 10px;
+  background: var(--tone-text);
+  color: var(--nm-land-1);
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.eventText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.eventTime {
+  opacity: 0.8;
 }
 
 @media (prefers-reduced-motion: reduce) {
