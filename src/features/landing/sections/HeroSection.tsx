@@ -1,4 +1,5 @@
 import { Fragment, type CSSProperties } from 'react';
+import { Link } from 'react-router';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { buttonClassName } from '@/components/ui/Button/buttonClassName';
 import { HeroDioramaSlot } from '@/features/geo3d';
@@ -110,22 +111,24 @@ export function HeroSection() {
 
       <div className={styles.visual} data-hero-visual>
         <div className={styles.stage}>
-          <Reveal
-            trigger="load"
-            distance={60}
-            duration={1100}
-            delay={G2_DELAY_MS}
-            introStep={0.1}
-            className={styles.dioramaReveal}
-          >
-            {/* Hexagon map (default engine); its still poster is the fallback. */}
-            <HeroDioramaSlot
-              scene="hero"
-              description={t(
-                'Peta hexagon Indonesia (ilustrasi dekoratif): setiap sel hexagon mewakili sebagian daratan, diwarnai dari putih ke oranye tua.',
-              )}
-            />
-          </Reveal>
+          <Link to={EXPLORE_PATH} className={styles.mapLink} aria-label={t('Buka peta di Jelajahi')}>
+            <Reveal
+              trigger="load"
+              distance={60}
+              duration={1100}
+              delay={G2_DELAY_MS}
+              introStep={0.1}
+              className={styles.dioramaReveal}
+            >
+              {/* Hexagon map (default engine); its still poster is the fallback. */}
+              <HeroDioramaSlot
+                scene="hero"
+                description={t(
+                  'Peta hexagon Indonesia (ilustrasi dekoratif): setiap sel hexagon mewakili sebagian daratan, diwarnai dari putih ke oranye tua.',
+                )}
+              />
+            </Reveal>
+          </Link>
         </div>
         <p className={`kk-caption ${styles.caption}`}>{t('Ilustrasi, bukan peta geografis akurat.')}</p>
       </div>

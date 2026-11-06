@@ -179,6 +179,12 @@ test.describe('landing', () => {
     expect(scrolled).toBe(0);
   });
 
+  test('the hexagon map opens Jelajahi', async ({ page }) => {
+    await openBeranda(page);
+    await page.getByRole('link', { name: 'Buka peta di Jelajahi' }).click();
+    await expect(page).toHaveURL(/\/jelajahi$/);
+  });
+
   test('has no horizontal page overflow', async ({ page }) => {
     await openBeranda(page);
     const overflow = await page.evaluate(
