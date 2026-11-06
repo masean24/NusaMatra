@@ -15,9 +15,10 @@ const pageWasKept = (page: Page) =>
 
 async function openBeranda(page: Page) {
   await page.goto('/');
-  await expect(page.getByRole('dialog')).toBeVisible();
+  const intro = page.locator('[data-intro-splash]');
+  await expect(intro).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(intro).toHaveCount(0);
 }
 
 test.describe('Interface language', () => {

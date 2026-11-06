@@ -2,12 +2,12 @@ import { expect, test, type Page } from '@playwright/test';
 import { mockDataHub } from './dataHubMocks';
 
 /**
- * Opens the Beranda past the Garis Pantai opening (tested in intro.spec.ts), which plays on every
- * load of it: skipped with Escape, as a visitor may, and waited out until the page is given back.
+ * Opens the Beranda past the opening splash (tested in intro.spec.ts), which plays on every load of
+ * it: skipped with Escape, as a visitor may, and waited out until the page is given back.
  */
 async function openBeranda(page: Page) {
   await page.goto('/');
-  const intro = page.getByRole('dialog', { name: 'Pembuka Nusa Matra. Tekan Enter untuk masuk.' });
+  const intro = page.locator('[data-intro-splash]');
   await expect(intro).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(intro).toHaveCount(0);

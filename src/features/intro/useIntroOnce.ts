@@ -1,18 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-
-/**
- * How long the Beranda entrance runs after the overlay has gone: the last step (the buttons) starts
- * 0.55 s + 0.4 s after the curtain begins and lasts 1.1 s, and the overlay leaves at 1.18 s.
- */
-const ENTRANCE_TAIL_MS = 550 + 400 + 1100 - 1180;
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 
 /** The Beranda's address: the opening plays only when the site is loaded there. */
 const BERANDA_PATH = '/';
 
 /**
- * Stage of the opening, on <html data-intro>, where CSS holds back the Beranda elements marked
- * `data-intro-step` ("playing"), lets them in one after another ("leaving"), and then keeps their
- * own load entrance from playing a second time ("done", until the Beranda unmounts).
+ * Stage of the opening, on <html data-intro>. CSS hides the Beranda's page under it ("playing"),
+ * brings the page in through the portal ("leaving"), and keeps its own load entrance from playing
+ * behind the opening or after it (any stage, until the Beranda unmounts).
  */
 export type IntroStage = 'playing' | 'leaving' | 'done';
 
@@ -23,9 +17,9 @@ export function setIntroStage(stage: IntroStage | null): void {
 }
 
 /**
- * Whether this page load still owes the opening: true when the site was opened or reloaded on the
- * Beranda, until the opening has played. Module state, so a reload starts it again while moving
- * between pages inside the site does not.
+ * Whether this page load still owes the opening: true when the site was opened or refreshed on the
+ * Beranda, until it has played. Module state, so a refresh starts it again while moving between pages
+ * inside the site does not.
  */
 let introPending = window.location.pathname === BERANDA_PATH;
 
@@ -76,15 +70,14 @@ function lockScroll(): () => void {
 }
 
 /**
- * Whether the Garis Pantai opening plays: every time the site is loaded or reloaded on the Beranda,
- * decided before the first paint so the Beranda never shows and then disappears; not when the
- * Beranda is reached from another page of the site. While it plays the page under it is inert and
- * does not scroll; `finish` (called when the overlay is gone) returns focus to the content.
+ * Whether the opening plays, decided before the first paint so the Beranda never shows and then
+ * disappears. While it plays the page under it is inert and does not scroll; `finish` (called when
+ * the overlay is gone) returns focus to the content.
  */
 export function useIntroOnce(): { readonly playing: boolean; readonly finish: () => void } {
   // Read here, spent in the effect: StrictMode runs this initializer twice.
   const [playing, setPlaying] = useState(() => introPending);
-  const tailTimer = useRef<number | undefined>(undefined);
+  const [finished, setFinished] = useState(false);
 
   useLayoutEffect(() => {
     if (!playing) return;
@@ -99,27 +92,24 @@ export function useIntroOnce(): { readonly playing: boolean; readonly finish: ()
     };
   }, [playing]);
 
-  // Leaving the Beranda mid-entrance must not leave its elements held back on the next visit.
+  // Leaving the Beranda must not leave the stage behind on the next page.
   useEffect(
     () => () => {
-      window.clearTimeout(tailTimer.current);
       setIntroStage(null);
     },
     [],
   );
 
   const finish = useCallback(() => {
+    setIntroStage('done');
     setPlaying(false);
-    tailTimer.current = window.setTimeout(() => {
-      setIntroStage('done');
-    }, ENTRANCE_TAIL_MS);
+    setFinished(true);
   }, []);
 
   // After the page is no longer inert (the layout effect above has cleaned up).
   useEffect(() => {
-    if (playing || tailTimer.current === undefined) return;
-    document.getElementById('konten-utama')?.focus({ preventScroll: true });
-  }, [playing]);
+    if (finished) document.getElementById('konten-utama')?.focus({ preventScroll: true });
+  }, [finished]);
 
   return { playing, finish };
 }

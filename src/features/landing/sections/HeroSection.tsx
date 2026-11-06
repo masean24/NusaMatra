@@ -57,7 +57,7 @@ export function HeroSection() {
             </Fragment>
           ))}
         </h1>
-        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_AFTER_TITLE_MS} introStep={0.22}>
+        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_AFTER_TITLE_MS}>
           <p className={`kk-lead ${styles.lead}`}>
             {t(
               'Jelajahi kondisi kabupaten/kota di Indonesia, bandingkan indikator pembangunan, dan susun prioritas yang dapat diperiksa. Hasilnya bergantung pada indikator, bobot, data yang tersedia, dan metode yang dipakai.',
@@ -68,7 +68,6 @@ export function HeroSection() {
           trigger="load"
           distance={G1_DISTANCE}
           delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS}
-          introStep={0.32}
           className={styles.search}
         >
           <RegionSearchForm
@@ -80,7 +79,6 @@ export function HeroSection() {
           trigger="load"
           distance={G1_DISTANCE}
           delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS * 2}
-          introStep={0.4}
           className={styles.actions}
         >
           <ButtonLink to={EXPLORE_PATH}>{t('Mulai jelajahi')}</ButtonLink>
@@ -97,12 +95,7 @@ export function HeroSection() {
             {t('Lihat cara kerjanya')}
           </a>
         </Reveal>
-        <Reveal
-          trigger="load"
-          distance={G1_DISTANCE}
-          delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS * 3}
-          introStep={0.4}
-        >
+        <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS * 3}>
           <p className={`kk-small ${styles.note}`}>
             {t('Gratis dan tanpa daftar. Setiap angka menyebutkan sumber dan tahunnya.')}
           </p>
@@ -117,7 +110,6 @@ export function HeroSection() {
               distance={60}
               duration={1100}
               delay={G2_DELAY_MS}
-              introStep={0.1}
               className={styles.dioramaReveal}
             >
               {/* Hexagon map (default engine); its still poster is the fallback. */}

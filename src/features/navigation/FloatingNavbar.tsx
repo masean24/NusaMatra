@@ -50,8 +50,7 @@ export function FloatingNavbar() {
 
   return (
     <header className={styles.header}>
-      {/* data-intro-step: each bar rises into place as the Beranda's opening lifts (features/intro). */}
-      <div ref={desktopRef} className={`${styles.bar} ${styles.desktop}`} data-intro-step="rise">
+      <div ref={desktopRef} className={`${styles.bar} ${styles.desktop}`}>
         <HomeLink />
         <span className={styles.divider} aria-hidden="true" />
         <nav aria-label={t('Navigasi utama')}>
@@ -62,7 +61,7 @@ export function FloatingNavbar() {
         <DisplayModeSwitch />
       </div>
 
-      <div ref={compactRef} className={`${styles.bar} ${styles.compactTop}`} data-intro-step="rise">
+      <div ref={compactRef} className={`${styles.bar} ${styles.compactTop}`}>
         <HomeLink />
         <span className={styles.compactControls}>
           <LanguageSwitch />
@@ -70,12 +69,7 @@ export function FloatingNavbar() {
         </span>
       </div>
 
-      <nav
-        ref={tabBarRef}
-        aria-label={t('Navigasi utama')}
-        className={`${styles.bar} ${styles.tabBar}`}
-        data-intro-step="rise"
-      >
+      <nav ref={tabBarRef} aria-label={t('Navigasi utama')} className={`${styles.bar} ${styles.tabBar}`}>
         <NavLinkList layout="tab" />
       </nav>
     </header>

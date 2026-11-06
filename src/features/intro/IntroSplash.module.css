@@ -1,0 +1,509 @@
+/*
+ * The opening. The root's data-phase is set by hand, not by React, so nothing renders again:
+ * "playing" starts every step below, "out" lifts the lockup, "portal" fades the overlay.
+ * Times are from the prompt's timeline, in seconds from the start of the splash.
+ */
+.overlay {
+  --splash-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --splash-orange: #ff8a3d;
+  --splash-bg: radial-gradient(120% 90% at 50% 40%, #fbfaf6 0%, #f2f1ec 55%, #e9e4d8 100%);
+  --splash-dot: #a3bce6;
+  --splash-dot-coast: #6f92d3;
+  --splash-sweep: rgb(47 91 255 / 14%);
+  --splash-orbit: rgb(47 91 255 / 30%);
+  --splash-stroke: #2f5bff;
+  --splash-glow: rgb(255 138 61 / 30%);
+  --splash-glow-soft: rgb(255 138 61 / 8%);
+  --splash-halo: rgb(248 247 242 / 92%);
+  --splash-meta: #5a6170;
+  --splash-percent: #2f5bff;
+  --splash-track: rgb(18 24 38 / 10%);
+
+  position: fixed;
+  inset: 0;
+  z-index: var(--nm-z-skip-link);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--splash-bg);
+  cursor: pointer;
+  will-change: opacity, transform;
+  transition:
+    opacity 0.75s var(--splash-ease),
+    transform 0.85s var(--splash-ease);
+}
+
+:global(html[data-display-mode='glass']) .overlay {
+  --splash-bg: radial-gradient(120% 90% at 50% 40%, #0e1638 0%, #0a0f27 50%, #06091a 100%);
+  --splash-dot: rgb(169 187 255 / 55%);
+  --splash-dot-coast: #a9bbff;
+  --splash-sweep: rgb(169 187 255 / 16%);
+  --splash-orbit: rgb(169 187 255 / 35%);
+  --splash-stroke: #a9bbff;
+  --splash-glow: rgb(255 150 80 / 28%);
+  --splash-glow-soft: rgb(255 150 80 / 7%);
+  --splash-halo: rgb(9 13 34 / 85%);
+  --splash-meta: rgb(244 239 230 / 70%);
+  --splash-percent: #a9bbff;
+  --splash-track: rgb(255 255 255 / 14%);
+}
+
+.overlay[data-phase='portal'] {
+  opacity: 0;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+/* -------------------------------------------------------------------- the map behind */
+
+.map {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dots {
+  display: block;
+  width: 86%;
+  max-width: 1020px;
+  aspect-ratio: 1060 / 440;
+}
+
+.sweep {
+  position: absolute;
+  width: min(125vw, 920px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  opacity: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 280deg,
+    var(--splash-sweep) 359deg,
+    transparent 360deg
+  );
+  mask: radial-gradient(circle, transparent 8%, #000 30%, transparent 68%);
+  will-change: transform;
+}
+
+.overlay[data-phase] .sweep {
+  animation:
+    splash-fade-in 0.8s ease-out 0.5s forwards,
+    splash-spin 3s linear infinite;
+}
+
+.overlay[data-phase='portal'] .sweep {
+  animation: none;
+  opacity: 0;
+}
+
+/* ---------------------------------------------------------------------- the lockup */
+
+.centre {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition:
+    transform 0.6s var(--splash-ease),
+    opacity 0.6s var(--splash-ease);
+}
+
+/* Keeps the text clear of the map's dots. */
+.centre::before {
+  position: absolute;
+  top: 54%;
+  left: 50%;
+  z-index: -1;
+  width: 820px;
+  height: 470px;
+  background: radial-gradient(closest-side, var(--splash-halo) 0%, var(--splash-halo) 48%, transparent);
+  content: '';
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.overlay[data-phase='out'] .centre,
+.overlay[data-phase='portal'] .centre {
+  opacity: 0;
+  transform: translateY(-18px) scale(0.94);
+}
+
+.lockup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.glow {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  width: 260px;
+  height: 260px;
+  margin-left: -90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--splash-glow) 0%, var(--splash-glow-soft) 45%, transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay[data-phase] .glow {
+  animation:
+    splash-glow-in 1.2s ease-out 0.7s both,
+    splash-breathe 3s ease-in-out 1.9s infinite;
+}
+
+.symbol {
+  position: relative;
+  width: 124px;
+}
+
+.body,
+.sun,
+.outline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.body {
+  opacity: 0;
+}
+
+.overlay[data-phase] .body {
+  animation: splash-fade-in 0.6s ease-out 0.7s forwards;
+}
+
+.outline {
+  overflow: visible;
+}
+
+.outline path {
+  fill: none;
+  stroke: var(--splash-stroke);
+  stroke-width: 1.6;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.overlay[data-phase] .outline path {
+  animation:
+    splash-draw 1s cubic-bezier(0.65, 0, 0.35, 1) forwards,
+    splash-fade-out 0.4s ease 1s forwards;
+}
+
+.sun {
+  transform: translateY(34px) scale(0);
+  transform-origin: var(--splash-sun-x) var(--splash-sun-y);
+}
+
+.overlay[data-phase] .sun {
+  animation: splash-sunrise 0.9s var(--splash-ease) 0.7s forwards;
+}
+
+.ring {
+  position: absolute;
+  top: var(--splash-sun-y);
+  left: var(--splash-sun-x);
+  width: var(--splash-sun-size);
+  aspect-ratio: 1;
+  border: 3px solid var(--splash-orange);
+  border-radius: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.overlay[data-phase] .ring {
+  animation: splash-burst 1.1s ease-out 1s forwards;
+}
+
+.overlay[data-phase] .ring + .ring {
+  animation-delay: 1.25s;
+}
+
+.orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 230px;
+  height: 230px;
+  margin: -115px 0 0 -115px;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.6);
+}
+
+.overlay[data-phase] .orbit {
+  animation: splash-settle 1s var(--splash-ease) 1s forwards;
+}
+
+.orbit svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay[data-phase] .orbit svg {
+  animation: splash-spin 8s linear infinite;
+}
+
+.orbitRing {
+  fill: none;
+  stroke: var(--splash-orbit);
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+}
+
+.satellite {
+  fill: var(--splash-orange);
+}
+
+.wordmark {
+  position: relative;
+  height: 34px;
+  margin-top: 18px;
+}
+
+.letter {
+  position: absolute;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(55%) scale(0.9);
+}
+
+.overlay[data-phase] .letter {
+  animation: splash-settle 0.8s var(--splash-ease) calc(0.85s + var(--splash-letter) * 0.055s) forwards;
+}
+
+/* ------------------------------------------------------------------- progress, slogan */
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 22px;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.overlay[data-phase] .meta {
+  animation: splash-settle 0.7s var(--splash-ease) 0.8s forwards;
+}
+
+.track {
+  position: relative;
+  width: 180px;
+  height: 2.5px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--splash-track);
+}
+
+/* The whole gradient is scaled, not widened: no layout on any frame. */
+.bar {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #1e3a8a, #2f5bff, var(--splash-orange));
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--splash-meta);
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.percent {
+  width: 4ch;
+  color: var(--splash-percent);
+  font-weight: 700;
+}
+
+/* Its type comes from the theme (.kk-small), as the same sentence on the Beranda does. */
+.slogan {
+  margin: 12px 0 0;
+  color: var(--splash-meta);
+  opacity: 0;
+  text-align: center;
+  transform: translateY(8px);
+}
+
+.overlay[data-phase] .slogan {
+  animation: splash-settle 0.5s ease 1.3s forwards;
+}
+
+/* ------------------------------------------------------------------------- keyframes */
+
+@keyframes splash-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes splash-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes splash-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes splash-sunrise {
+  to {
+    transform: none;
+  }
+}
+
+@keyframes splash-settle {
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+@keyframes splash-glow-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+
+  to {
+    opacity: 0.85;
+    transform: none;
+  }
+}
+
+@keyframes splash-breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: none;
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes splash-burst {
+  from {
+    border-width: 3px;
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  to {
+    border-width: 0.4px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(4.2);
+  }
+}
+
+/* ---------------------------------------------------------------------------- phones */
+
+@media (width < 900px) {
+  .dots {
+    width: 150vw;
+    max-width: none;
+    flex: none;
+  }
+
+  .symbol {
+    width: 92px;
+  }
+
+  .wordmark {
+    height: 25px;
+    margin-top: 14px;
+  }
+
+  .orbit {
+    width: 176px;
+    height: 176px;
+    margin: -88px 0 0 -88px;
+  }
+
+  .glow {
+    top: -26px;
+    width: 200px;
+    height: 200px;
+    margin-left: -64px;
+  }
+
+  .centre::before {
+    width: 330px;
+    height: 250px;
+  }
+}
+
+/* --------------------------------------------------------------------- reduced motion */
+
+/* Still, in its final state: no sweep, orbit, rings or drawing, and a plain fade at the end. */
+.overlay[data-reduced] {
+  transition: opacity 0.4s ease;
+}
+
+.overlay[data-reduced] * {
+  animation: none !important;
+}
+
+.overlay[data-reduced] .sweep,
+.overlay[data-reduced] .orbit,
+.overlay[data-reduced] .ring,
+.overlay[data-reduced] .outline {
+  display: none;
+}
+
+.overlay[data-reduced] .body,
+.overlay[data-reduced] .letter,
+.overlay[data-reduced] .meta,
+.overlay[data-reduced] .slogan,
+.overlay[data-reduced] .glow {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+.overlay[data-reduced] .sun,
+.overlay[data-reduced] .bar {
+  transform: none;
+}
+
+.overlay[data-reduced][data-phase='portal'] {
+  transform: none;
+}
+
+.overlay[data-reduced] .centre {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
