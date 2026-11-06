@@ -25,6 +25,7 @@ import { getIndonesiaCoastline } from './terrain/coastline';
 import { buildHeroTerrain, type HeroTerrain } from './terrain/heroTerrain';
 import { HERO_SUN_DIRECTION } from './terrain/heightField';
 import { fitCameraToPoints, type CameraPose } from './terrain/cameraFit';
+import { t as tr } from '@/lib/i18n';
 
 /** Hero framing: elevation of the camera and the free border kept for parallax and the intro. */
 /** Start-up camera of the Explore map, (0, 33, 29): its distance and the direction it looks from. */
@@ -456,46 +457,46 @@ export function planarToLonLat(
 export const HERO_DIORAMA_MARKERS: StrategicMarker[] = [
   {
     id: 'hero-node-west',
-    name: 'Simpul Barat (Sumatera-Jawa)',
+    name: tr('Simpul Barat (Sumatera-Jawa)'),
     lon: 106.85,
     lat: -6.2,
     category: 'anchor',
-    note: 'Titik orientasi barat diorama ilustratif.',
+    note: tr('Titik orientasi barat diorama ilustratif.'),
   },
   {
     id: 'hero-node-central',
-    name: 'Simpul Tengah (Kalimantan-Sulawesi)',
+    name: tr('Simpul Tengah (Kalimantan-Sulawesi)'),
     lon: 116.7,
     lat: -0.97,
     category: 'anchor',
-    note: 'Titik orientasi tengah kepulauan.',
+    note: tr('Titik orientasi tengah kepulauan.'),
   },
   {
     id: 'hero-node-east',
-    name: 'Simpul Timur (Maluku-Papua)',
+    name: tr('Simpul Timur (Maluku-Papua)'),
     lon: 135.5,
     lat: -3.8,
     category: 'anchor',
-    note: 'Titik orientasi timur diorama ilustratif.',
+    note: tr('Titik orientasi timur diorama ilustratif.'),
   },
 ];
 
 export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
   {
     id: 'ref-jkt',
-    name: 'Jakarta (Titik Referensi)',
+    name: tr('Jakarta (Titik Referensi)'),
     lon: 106.8456,
     lat: -6.2088,
     category: 'anchor',
-    note: 'Titik referensi koordinat perkotaan barat.',
+    note: tr('Titik referensi koordinat perkotaan barat.'),
   },
   {
     id: 'ref-ikn',
-    name: 'IKN Nusantara (Titik Referensi)',
+    name: tr('IKN Nusantara (Titik Referensi)'),
     lon: 116.705,
     lat: -0.973,
     category: 'anchor',
-    note: 'Titik referensi koordinat Kalimantan Timur.',
+    note: tr('Titik referensi koordinat Kalimantan Timur.'),
   },
   {
     id: 'ref-mdn',
@@ -503,7 +504,7 @@ export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
     lon: 98.6722,
     lat: 3.5952,
     category: 'regional-node',
-    note: 'Titik referensi Sumatera bagian utara.',
+    note: tr('Titik referensi Sumatera bagian utara.'),
   },
   {
     id: 'ref-sby',
@@ -511,7 +512,7 @@ export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
     lon: 112.7521,
     lat: -7.2575,
     category: 'regional-node',
-    note: 'Titik referensi Jawa bagian timur.',
+    note: tr('Titik referensi Jawa bagian timur.'),
   },
   {
     id: 'ref-mks',
@@ -519,7 +520,7 @@ export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
     lon: 119.4327,
     lat: -5.1477,
     category: 'regional-node',
-    note: 'Titik referensi kawasan Sulawesi.',
+    note: tr('Titik referensi kawasan Sulawesi.'),
   },
   {
     id: 'ref-amb',
@@ -527,7 +528,7 @@ export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
     lon: 128.1814,
     lat: -3.6954,
     category: 'regional-node',
-    note: 'Titik referensi kepulauan Maluku.',
+    note: tr('Titik referensi kepulauan Maluku.'),
   },
   {
     id: 'ref-jyp',
@@ -535,7 +536,7 @@ export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
     lon: 140.7181,
     lat: -2.5337,
     category: 'regional-node',
-    note: 'Titik referensi kawasan timur Papua.',
+    note: tr('Titik referensi kawasan timur Papua.'),
   },
 ];
 
@@ -548,7 +549,7 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
     dataMode: 'DEMO',
     isAuthoritative: false,
     provenanceNote:
-      'Siluet gugus pulau ilustratif untuk demonstrasi UI/3D. Bukan batas administrasi resmi provinsi/kabupaten/kota.',
+      tr('Siluet gugus pulau ilustratif untuk demonstrasi UI/3D. Bukan batas administrasi resmi provinsi/kabupaten/kota.'),
     snapshotId: 'SIM-SNAPSHOT-001',
   },
   features: [
@@ -556,14 +557,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-SUMATERA',
-        displayName: 'Gugus Pulau Sumatera (Simulasi)',
+        displayName: tr('Gugus Pulau Sumatera (Simulasi)'),
         regionCode: 'DEMO-01',
         tier: 1,
         focusLon: 101.5,
         focusLat: -0.5,
         focusDistance: 18,
         summaryNote:
-          'Geometri gugus pulau simulasi. Indikator kebijakan belum dimuat pada mode DEMO.',
+          tr('Geometri gugus pulau simulasi. Indikator kebijakan belum dimuat pada mode DEMO.'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -644,14 +645,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-JAWA',
-        displayName: 'Gugus Pulau Jawa & Madura (Simulasi)',
+        displayName: tr('Gugus Pulau Jawa & Madura (Simulasi)'),
         regionCode: 'DEMO-02',
         tier: 2,
         focusLon: 110.0,
         focusLat: -7.2,
         focusDistance: 13,
         summaryNote:
-          'Geometri gugus pulau simulasi. Gunakan adapter Data Hub untuk memuat batas kabupaten/kota resmi.',
+          tr('Geometri gugus pulau simulasi. Gunakan adapter Data Hub untuk memuat batas kabupaten/kota resmi.'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -712,14 +713,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-NUSATENGGARA',
-        displayName: 'Gugus Bali & Nusa Tenggara (Simulasi)',
+        displayName: tr('Gugus Bali & Nusa Tenggara (Simulasi)'),
         regionCode: 'DEMO-03',
         tier: 3,
         focusLon: 119.5,
         focusLat: -8.8,
         focusDistance: 14,
         summaryNote:
-          'Geometri gugus kepulauan simulasi. Tidak merepresentasikan skor prioritas daerah.',
+          tr('Geometri gugus kepulauan simulasi. Tidak merepresentasikan skor prioritas daerah.'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -788,14 +789,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-KALIMANTAN',
-        displayName: 'Gugus Pulau Kalimantan (Simulasi)',
+        displayName: tr('Gugus Pulau Kalimantan (Simulasi)'),
         regionCode: 'DEMO-04',
         tier: 1,
         focusLon: 114.2,
         focusLat: 0.5,
         focusDistance: 17,
         summaryNote:
-          'Siluet ilustratif Kalimantan pada mode DEMO. Batas negara/provinsi resmi memerlukan dataset LIVE.',
+          tr('Siluet ilustratif Kalimantan pada mode DEMO. Batas negara/provinsi resmi memerlukan dataset LIVE.'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -843,14 +844,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-SULAWESI',
-        displayName: 'Gugus Pulau Sulawesi (Simulasi)',
+        displayName: tr('Gugus Pulau Sulawesi (Simulasi)'),
         regionCode: 'DEMO-05',
         tier: 2,
         focusLon: 121.0,
         focusLat: -2.0,
         focusDistance: 15,
         summaryNote:
-          'Geometri gugus pulau Sulawesi untuk simulasi navigasi kamera dan seleksi fitur.',
+          tr('Geometri gugus pulau Sulawesi untuk simulasi navigasi kamera dan seleksi fitur.'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -909,14 +910,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-MALUKU',
-        displayName: 'Gugus Kepulauan Maluku (Simulasi)',
+        displayName: tr('Gugus Kepulauan Maluku (Simulasi)'),
         regionCode: 'DEMO-06',
         tier: 3,
         focusLon: 128.5,
         focusLat: -2.2,
         focusDistance: 14,
         summaryNote:
-          'Geometri gugus kepulauan Maluku untuk simulasi eksplorasi spasial.',
+          tr('Geometri gugus kepulauan Maluku untuk simulasi eksplorasi spasial.'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -963,14 +964,14 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       type: 'Feature',
       properties: {
         regionId: 'ID-DEMO-PAPUA',
-        displayName: 'Gugus Tanah Papua (Simulasi)',
+        displayName: tr('Gugus Tanah Papua (Simulasi)'),
         regionCode: 'DEMO-07',
         tier: 4,
         focusLon: 136.0,
         focusLat: -4.2,
         focusDistance: 17,
         summaryNote:
-          'Geometri siluet Papua dengan tingkatan warna kapur ke-4 (relief ilustratif, bukan DEM).',
+          tr('Geometri siluet Papua dengan tingkatan warna kapur ke-4 (relief ilustratif, bukan DEM).'),
       },
       geometry: {
         type: 'MultiPolygon',
@@ -1690,7 +1691,7 @@ export const NusaMatra3DMap = forwardRef<
       });
     } catch {
       const msg =
-        'WebGL tidak tersedia pada perangkat atau peramban ini. Menampilkan pratinjau statis.';
+        tr('WebGL tidak tersedia pada perangkat atau peramban ini. Menampilkan pratinjau statis.');
       setWebglError(msg);
       onError?.(new Error(msg));
       return;
@@ -2052,7 +2053,7 @@ export const NusaMatra3DMap = forwardRef<
     const handleContextLost = (event: Event) => {
       event.preventDefault();
       cancelAnimationFrame(rafId);
-      const msg = 'Konteks WebGL hilang. Peta 3D tidak dapat ditampilkan.';
+      const msg = tr('Konteks WebGL hilang. Peta 3D tidak dapat ditampilkan.');
       setWebglError(msg);
       onError?.(new Error(msg));
     };
@@ -2594,7 +2595,7 @@ export const NusaMatra3DMap = forwardRef<
           y: clampedY,
           subtitle:
             validatedDataset.metadata.dataMode === 'DEMO'
-              ? 'Geometri Simulasi (DEMO)'
+              ? tr('Geometri Simulasi (DEMO)')
               : validatedDataset.metadata.boundaryEditionId,
         });
 
@@ -2627,7 +2628,7 @@ export const NusaMatra3DMap = forwardRef<
                 name: overlayLabel,
                 x: Math.min(Math.max(coords.localX + 14, 12), Math.max(12, coords.rect.width - 220)),
                 y: Math.min(Math.max(coords.localY - 12, 12), Math.max(12, coords.rect.height - 64)),
-                subtitle: 'Klik untuk detail gempa',
+                subtitle: tr('Klik untuk detail gempa'),
               }
             : null,
         );
@@ -2730,8 +2731,8 @@ export const NusaMatra3DMap = forwardRef<
         role="region"
         aria-label={
           mode === 'hero'
-            ? 'Ilustrasi geografis kepulauan Indonesia'
-            : 'Peta interaktif kepulauan Indonesia'
+            ? tr('Ilustrasi geografis kepulauan Indonesia')
+            : tr('Peta interaktif kepulauan Indonesia')
         }
         className={`${styles.fallbackContainer} ${className}`.trim()}
       >
@@ -2740,15 +2741,13 @@ export const NusaMatra3DMap = forwardRef<
         </div>
         <h3 className={styles.fallbackTitle}>
           {dataValidationError
-            ? 'Data Geografi Belum Tersedia'
-            : 'Mode Pratinjau Statis'}
+            ? tr('Data Geografi Belum Tersedia')
+            : tr('Mode Pratinjau Statis')}
         </h3>
         <p className={styles.fallbackMessage}>
           {dataValidationError ? dataValidationError.message : webglError}
         </p>
-        <span className={styles.fallbackPill}>
-          Ilustrasi geografis — bukan peta skala presisi
-        </span>
+        <span className={styles.fallbackPill}>{tr('Ilustrasi geografis — bukan peta skala presisi')}</span>
       </div>
     );
   }
@@ -2768,8 +2767,8 @@ export const NusaMatra3DMap = forwardRef<
       role="region"
       aria-label={
         mode === 'hero'
-          ? 'Diorama 3D ilustratif kepulauan Indonesia'
-          : 'Peta 3D interaktif wilayah Indonesia'
+          ? tr('Diorama 3D ilustratif kepulauan Indonesia')
+          : tr('Peta 3D interaktif wilayah Indonesia')
       }
       className={rootClasses}
       onPointerMove={handlePointerMove}
@@ -2799,10 +2798,10 @@ export const NusaMatra3DMap = forwardRef<
 
       <div className={styles.attributionBadge}>
         {mode === 'hero'
-          ? 'Garis pantai dari Natural Earth. Relief ilustratif, bukan data elevasi'
+          ? tr('Garis pantai dari Natural Earth. Relief ilustratif, bukan data elevasi')
           : validatedDataset?.metadata.isAuthoritative
-          ? `Batas: ${validatedDataset.metadata.boundaryEditionId}`
-          : 'Data simulasi (DEMO) — Relief ilustratif'}
+          ? tr('Batas: {0}', validatedDataset.metadata.boundaryEditionId)
+          : tr('Data simulasi (DEMO) — Relief ilustratif')}
       </div>
 
       {mode === 'explore' && hoveredInfo && (
@@ -2822,9 +2821,9 @@ export const NusaMatra3DMap = forwardRef<
 
       {mode === 'explore' && enableDevInspector && (
         <div className={styles.devInspector} data-nm-dev-inspector="true">
-          <div className={styles.devHeader}>DEV Inspector (Non-Produksi)</div>
+          <div className={styles.devHeader}>{tr('DEV Inspector (Non-Produksi)')}</div>
           <label className={styles.devRow}>
-            <span>Skala Ekstrusi Visual</span>
+            <span>{tr('Skala Ekstrusi Visual')}</span>
             <input
               type="range"
               min="0.4"
@@ -2841,13 +2840,10 @@ export const NusaMatra3DMap = forwardRef<
               checked={devWireframe}
               onChange={(e) => setDevWireframe(e.target.checked)}
             />
-            <span>Tampilkan Wireframe Mesh</span>
+            <span>{tr('Tampilkan Wireframe Mesh')}</span>
           </label>
           {devCursorCoords && (
-            <div className={styles.devCoords}>
-              Proyeksi Planar: {devCursorCoords.lat.toFixed(2)}° ,{' '}
-              {devCursorCoords.lon.toFixed(2)}°
-            </div>
+            <div className={styles.devCoords}>{tr('Proyeksi Planar: {0}° , {1}°', devCursorCoords.lat.toFixed(2), devCursorCoords.lon.toFixed(2))}</div>
           )}
         </div>
       )}

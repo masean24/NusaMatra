@@ -5,6 +5,7 @@ import { TextField } from '@/components/ui/TextField/TextField';
 import { ResourceView, adminLevelLabel, useDataHubResource } from '@/features/data-hub';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import styles from './RegionPicker.module.css';
+import { t } from '@/lib/i18n';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const MAX_SUGGESTIONS = 6;
@@ -43,11 +44,11 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
         <div className={styles.searchBox}>
           <TextField
             glass
-            label={`Cari ${slot}`}
+            label={t('Cari {0}', slot)}
             icon="search"
             type="search"
             value={query}
-            placeholder="Ketik nama kabupaten/kota"
+            placeholder={t('Ketik nama kabupaten/kota')}
             autoComplete="off"
             onChange={(event) => {
               setQuery(event.target.value);
@@ -55,7 +56,11 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
           />
           {isSearching && (
             <div className={styles.popup}>
-              <ResourceView state={results.state} onRetry={results.retry} loadingTitle="Mencari wilayah…">
+              <ResourceView
+                state={results.state}
+                onRetry={results.retry}
+                loadingTitle={t('Mencari wilayah…')}
+              >
                 {(envelope) => {
                   const candidates = envelope.data.filter(
                     (region) =>
@@ -64,11 +69,20 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
                   );
                   return candidates.length === 0 ? (
                     <p className="kk-small" role="status">
-                      Tidak ada kabupaten/kota yang cocok dengan “{debounced}”
-                      {excludeCode ? ` (wilayah yang sudah dipilih di slot lain tidak ditawarkan lagi)` : ''}.
+                      {t(
+                        'Tidak ada kabupaten/kota yang cocok dengan “{0}”{1}.',
+                        debounced,
+                        excludeCode
+                          ? t(' (wilayah yang sudah dipilih di slot lain tidak ditawarkan lagi)')
+                          : '',
+                      )}
                     </p>
                   ) : (
-                    <ul role="list" className={styles.suggestions} aria-label={`Hasil pencarian ${slot}`}>
+                    <ul
+                      role="list"
+                      className={styles.suggestions}
+                      aria-label={t('Hasil pencarian {0}', slot)}
+                    >
                       {candidates.slice(0, MAX_SUGGESTIONS).map((region) => (
                         <li key={region.regionId}>
                           <button
@@ -88,10 +102,12 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
                           >
                             <span className="kk-body-strong">{region.displayName}</span>
                             <span className="kk-small">
-                              {adminLevelLabel(region.adminLevel)} di{' '}
-                              {region.provinceName ?? 'provinsi tidak diketahui'}
-                              {', kode '}
-                              {region.regionId}
+                              {t(
+                                '{0} di {1}, kode {2}',
+                                adminLevelLabel(region.adminLevel),
+                                region.provinceName ?? t('provinsi tidak diketahui'),
+                                region.regionId,
+                              )}
                             </span>
                           </button>
                         </li>
@@ -107,13 +123,16 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
         <div className={styles.chosen}>
           <div>
             <p className={`kk-small ${styles.slot}`}>{slot}</p>
-            <ResourceView state={selected.state} onRetry={selected.retry} loadingTitle="Memuat wilayah…">
+            <ResourceView state={selected.state} onRetry={selected.retry} loadingTitle={t('Memuat wilayah…')}>
               {(envelope) => (
                 <>
                   <p className="kk-h3">{envelope.data.region.displayName}</p>
                   <p className={`kk-small ${styles.slot}`}>
-                    {envelope.data.region.provinceName ?? 'provinsi tidak diketahui'}, kode{' '}
-                    {envelope.data.region.regionId}
+                    {t(
+                      '{0}, kode {1}',
+                      envelope.data.region.provinceName ?? t('provinsi tidak diketahui'),
+                      envelope.data.region.regionId,
+                    )}
                   </p>
                 </>
               )}
@@ -125,7 +144,7 @@ export function RegionPicker({ slot, selectedCode, onSelect, excludeCode = null 
               onSelect(null);
             }}
           >
-            Ganti {slot}
+            {t('Ganti {0}', slot)}
           </Button>
         </div>
       )}

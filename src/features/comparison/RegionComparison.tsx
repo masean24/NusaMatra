@@ -20,9 +20,10 @@ import { describeQualityFlag } from './qualityFlag';
 import { RegionPicker } from './RegionPicker';
 import { useComparisonParams } from './comparisonParams';
 import styles from './RegionComparison.module.css';
+import { t } from '@/lib/i18n';
 
 const SIMILAR_RATIO = 1.05;
-const DATA_QUALITY_SECTION = 'Metrik kualitas data';
+const DATA_QUALITY_SECTION = t('Metrik kualitas data');
 
 /**
  * `summary` (Bandingkan): pickers and a short table, each row only the indicator, both values, the
@@ -53,17 +54,17 @@ export function RegionComparison({ view = 'summary', footerSlot }: RegionCompari
     <div className={styles.comparison}>
       {view === 'summary' && (
         <div className={styles.pickers}>
-          <RegionPicker slot="Wilayah A" selectedCode={a} onSelect={setA} excludeCode={b} />
+          <RegionPicker slot={t('Wilayah A')} selectedCode={a} onSelect={setA} excludeCode={b} />
           <Button variant="secondary" onClick={swap} disabled={a === null && b === null}>
-            Tukar wilayah
+            {t('Tukar wilayah')}
           </Button>
-          <RegionPicker slot="Wilayah B" selectedCode={b} onSelect={setB} excludeCode={a} />
+          <RegionPicker slot={t('Wilayah B')} selectedCode={b} onSelect={setB} excludeCode={a} />
         </div>
       )}
       {a !== null && b !== null ? (
         a === b ? (
-          <StatusMessage kind="info" title="Pilih dua wilayah yang berbeda">
-            Wilayah A dan B sama, jadi tidak ada yang dibandingkan.
+          <StatusMessage kind="info" title={t('Pilih dua wilayah yang berbeda')}>
+            {t('Wilayah A dan B sama, jadi tidak ada yang dibandingkan.')}
           </StatusMessage>
         ) : (
           <ComparisonTable codeA={a} codeB={b} view={view} />
@@ -71,16 +72,16 @@ export function RegionComparison({ view = 'summary', footerSlot }: RegionCompari
       ) : (
         <StatusMessage
           kind="empty"
-          title="Pilih dua wilayah"
+          title={t('Pilih dua wilayah')}
           action={
             view === 'detail' ? (
               <ButtonLink to={COMPARISON_PATH} variant="secondary">
-                Pilih di Bandingkan
+                {t('Pilih di Bandingkan')}
               </ButtonLink>
             ) : undefined
           }
         >
-          Cari dan pilih Wilayah A dan Wilayah B untuk melihat perbandingan indikatornya.
+          {t('Cari dan pilih Wilayah A dan Wilayah B untuk melihat perbandingan indikatornya.')}
         </StatusMessage>
       )}
       {a !== null && b !== null && a !== b ? footerSlot : null}
@@ -124,8 +125,8 @@ function ComparisonTable({
   // Each region reports its own state, so a failure says which region failed and can be retried alone.
   return (
     <div className={styles.slotStates}>
-      <RegionSlotState slot="Wilayah A" state={profileA.state} onRetry={profileA.retry} />
-      <RegionSlotState slot="Wilayah B" state={profileB.state} onRetry={profileB.retry} />
+      <RegionSlotState slot={t('Wilayah A')} state={profileA.state} onRetry={profileA.retry} />
+      <RegionSlotState slot={t('Wilayah B')} state={profileB.state} onRetry={profileB.retry} />
     </div>
   );
 }
@@ -140,11 +141,15 @@ function RegionSlotState({
   readonly onRetry: () => void;
 }) {
   return (
-    <div role="group" aria-label={`Status ${slot}`}>
-      <ResourceView state={state} onRetry={onRetry} loadingTitle={`Memuat ${slot}…`}>
+    <div role="group" aria-label={t('Status {0}', slot)}>
+      <ResourceView state={state} onRetry={onRetry} loadingTitle={t('Memuat {0}…', slot)}>
         {(envelope) => (
           <p className="kk-small" role="status">
-            {slot}: {envelope.data.region.displayName} sudah dimuat. Perbandingan menunggu kedua wilayah.
+            {t(
+              '{0}: {1} sudah dimuat. Perbandingan menunggu kedua wilayah.',
+              slot,
+              envelope.data.region.displayName,
+            )}
           </p>
         )}
       </ResourceView>
@@ -173,9 +178,12 @@ function ComparisonResult({
   const rows = buildComparisonRows(a, b);
   if (rows.length === 0) {
     return (
-      <StatusMessage kind="empty" title="Belum ada data indikator untuk dibandingkan">
-        Data Hub belum memuat indikator untuk {a.region.displayName} maupun {b.region.displayName} pada
-        snapshot ini.
+      <StatusMessage kind="empty" title={t('Belum ada data indikator untuk dibandingkan')}>
+        {t(
+          'Data Hub belum memuat indikator untuk {0} maupun {1} pada snapshot ini.',
+          a.region.displayName,
+          b.region.displayName,
+        )}
       </StatusMessage>
     );
   }
@@ -189,42 +197,48 @@ function ComparisonResult({
 
   return (
     <Surface radius="card" reading className={styles.result}>
-      <h2 className="kk-h3">
-        {a.region.displayName} dan {b.region.displayName}
-      </h2>
+      <h2 className="kk-h3">{t('{0} dan {1}', a.region.displayName, b.region.displayName)}</h2>
       {dataMode === 'DEMO' && (
         <div className={styles.context}>
-          <Chip tone="warning">DEMO: simulasi, bukan observasi resmi</Chip>
+          <Chip tone="warning">{t('DEMO: simulasi, bukan observasi resmi')}</Chip>
         </div>
       )}
       {snapshotsDiffer && (
         <p className={`kk-small ${styles.warning}`} role="alert">
-          Data kedua wilayah berasal dari versi data yang berbeda. Muat ulang sebelum membandingkan.
+          {t('Data kedua wilayah berasal dari versi data yang berbeda. Muat ulang sebelum membandingkan.')}
         </p>
       )}
       {view === 'summary' ? (
         <p className="kk-body" role="status">
-          Dari {regionalRows.length} indikator wilayah, {comparable} dapat dibandingkan
-          {blocked > 0 ? ` dan ${String(blocked)} tidak.` : '.'} Angka lebih tinggi tidak selalu berarti lebih
-          baik.
+          {t(
+            'Dari {0} indikator wilayah, {1} dapat dibandingkan{2} Angka lebih tinggi tidak selalu berarti lebih baik.',
+            regionalRows.length,
+            comparable,
+            blocked > 0 ? t(' dan {0} tidak.', String(blocked)) : '.',
+          )}
         </p>
       ) : (
         <p className="kk-body" role="status">
-          Dari {regionalRows.length} indikator wilayah, {comparable} dapat dibandingkan
-          {blocked > 0
-            ? ` dan ${String(blocked)} tidak dibandingkan karena data kosong, tahun, satuan atau definisi berbeda, sumber tidak diketahui, atau nilai diimputasi.`
-            : '.'}{' '}
-          Angka yang lebih tinggi tidak selalu berarti lebih baik; arahnya mengikuti definisi tiap indikator.
-          Selisih menunjukkan perbedaan angka yang teramati, bukan penyebabnya.
+          {t(
+            'Dari {0} indikator wilayah, {1} dapat dibandingkan{2} Angka yang lebih tinggi tidak selalu berarti lebih baik; arahnya mengikuti definisi tiap indikator. Selisih menunjukkan perbedaan angka yang teramati, bukan penyebabnya.',
+            regionalRows.length,
+            comparable,
+            blocked > 0
+              ? t(
+                  ' dan {0} tidak dibandingkan karena data kosong, tahun, satuan atau definisi berbeda, sumber tidak diketahui, atau nilai diimputasi.',
+                  String(blocked),
+                )
+              : '.',
+          )}
         </p>
       )}
       <CatalogNote catalog={catalog} onRetry={onRetryCatalog} />
       <ResultActions a={a} b={b} snapshotsDiffer={snapshotsDiffer} view={view} />
       {catalog.status === 'success' && (
         <p className={`kk-small ${styles.legend}`}>
-          <span data-outcome="better">Hijau: kondisi lebih baik</span>
-          <span data-outcome="worse">Merah: kondisi kurang baik</span>
-          <span>Biru: arah baik atau buruk belum ditetapkan</span>
+          <span data-outcome="better">{t('Hijau: kondisi lebih baik')}</span>
+          <span data-outcome="worse">{t('Merah: kondisi kurang baik')}</span>
+          <span>{t('Biru: arah baik atau buruk belum ditetapkan')}</span>
         </p>
       )}
       {/* Scrolls sideways on narrow screens; focusable so the keyboard can scroll it too. */}
@@ -234,11 +248,11 @@ function ComparisonResult({
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={0}
         role="region"
-        aria-label={`Tabel perbandingan ${shortName(a)} dan ${shortName(b)}, dapat digeser`}
+        aria-label={t('Tabel perbandingan {0} dan {1}, dapat digeser', shortName(a), shortName(b))}
       >
         <table className={styles.table} data-view={view}>
           <caption className="visually-hidden">
-            Perbandingan indikator {a.region.displayName} dan {b.region.displayName}
+            {t('Perbandingan indikator {0} dan {1}', a.region.displayName, b.region.displayName)}
           </caption>
           {/* Fixed column widths: every indicator group lines up under the same four columns. */}
           <colgroup>
@@ -249,10 +263,10 @@ function ComparisonResult({
           </colgroup>
           <thead>
             <tr>
-              <th scope="col">{view === 'summary' ? 'Indikator' : 'Indikator, tahun, dan sumber'}</th>
+              <th scope="col">{view === 'summary' ? t('Indikator') : t('Indikator, tahun, dan sumber')}</th>
               <th scope="col">{shortName(a)}</th>
               <th scope="col">{shortName(b)}</th>
-              <th scope="col">Hasil</th>
+              <th scope="col">{t('Hasil')}</th>
             </tr>
           </thead>
           {groups.map(([category, items]) => (
@@ -303,16 +317,16 @@ function ResultActions({
     <div className={styles.actions}>
       {view === 'summary' ? (
         <ButtonLink to={pairHref(COMPARISON_DETAIL_PATH, ...pair)} variant="secondary">
-          Selengkapnya
+          {t('Selengkapnya')}
         </ButtonLink>
       ) : (
         <ButtonLink to={pairHref(COMPARISON_PATH, ...pair)} variant="secondary">
-          Kembali ke ringkasan
+          {t('Kembali ke ringkasan')}
         </ButtonLink>
       )}
       {snapshotsDiffer ? (
         <p className={`kk-small ${styles.muted}`}>
-          Paspor Bukti belum bisa dibuat karena kedua wilayah berasal dari snapshot atau mode berbeda.
+          {t('Paspor Bukti belum bisa dibuat karena kedua wilayah berasal dari snapshot atau mode berbeda.')}
         </p>
       ) : (
         <ButtonLink
@@ -324,7 +338,7 @@ function ResultActions({
             snapshotId: a.snapshotId,
           })}
         >
-          Buat Paspor Bukti
+          {t('Buat Paspor Bukti')}
         </ButtonLink>
       )}
     </div>
@@ -341,8 +355,9 @@ function CatalogNote({
   if (catalog.status === 'loading') {
     return (
       <p className={`kk-small ${styles.muted}`} role="status">
-        Memuat arah baik atau buruk tiap indikator. Penilaian lebih baik atau lebih buruk ditahan sampai
-        selesai.
+        {t(
+          'Memuat arah baik atau buruk tiap indikator. Penilaian lebih baik atau lebih buruk ditahan sampai selesai.',
+        )}
       </p>
     );
   }
@@ -350,12 +365,13 @@ function CatalogNote({
     return (
       <div className={styles.catalogError} role="alert">
         <span className="kk-small">
-          Katalog indikator tidak dapat dimuat, jadi tidak ada wilayah yang dinilai lebih baik. Nilai dan
-          selisih tetap ditampilkan.
+          {t(
+            'Katalog indikator tidak dapat dimuat, jadi tidak ada wilayah yang dinilai lebih baik. Nilai dan selisih tetap ditampilkan.',
+          )}
         </span>
         {catalog.status === 'error' && (
           <Button variant="secondary" onClick={onRetry}>
-            Coba muat katalog lagi
+            {t('Coba muat katalog lagi')}
           </Button>
         )}
       </div>
@@ -473,15 +489,16 @@ function IndicatorRow({
       <td data-label={nameB}>
         <ValueCell side={row.b} unit={unit} peak={peak} tone="b" showFlag={detailed} outcome={outcomeB} />
       </td>
-      <td data-label="Hasil">
+      <td data-label={t('Hasil')}>
         <div className={styles.difference}>
           {!isRegional ? (
             <>
               <span className="kk-body-strong">{NOT_DETERMINED}</span>
               {detailed && (
                 <span className={`kk-small ${styles.muted}`}>
-                  Metrik ini menilai kelengkapan atau kesegaran data, bukan kondisi wilayah, jadi tanpa
-                  selisih dan tanpa penilaian lebih baik atau buruk.
+                  {t(
+                    'Metrik ini menilai kelengkapan atau kesegaran data, bukan kondisi wilayah, jadi tanpa selisih dan tanpa penilaian lebih baik atau buruk.',
+                  )}
                 </span>
               )}
             </>
@@ -525,7 +542,7 @@ function describeProvenance(row: ComparisonRow): string {
   const agencies = [
     ...new Set([row.a, row.b].flatMap((side) => (side?.provenanceKnown ? [side.agencyCode] : []))),
   ];
-  const source = agencies.join(', ') || 'sumber tidak diketahui';
+  const source = agencies.join(', ') || t('sumber tidak diketahui');
   const sameYear = yearOf(row.a) === yearOf(row.b);
   const years = sameYear ? yearOf(row.a) : `A ${yearOf(row.a)}, B ${yearOf(row.b)}`;
   return `${years}, ${source}`;
@@ -540,7 +557,7 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
   if (sides.some((side) => !side.provenanceKnown)) {
     return (
       <span className={`kk-small ${styles.warning}`}>
-        {describeProvenance(row)}. Dataset sumber tidak diketahui.
+        {t('{0}. Dataset sumber tidak diketahui.', describeProvenance(row))}
       </span>
     );
   }
@@ -550,13 +567,13 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
   );
   return (
     <span className={`kk-small ${styles.muted}`}>
-      {describeProvenance(row)}, dataset {datasets.join(', ') || '—'}.{' '}
+      {t('{0}, dataset', describeProvenance(row))} {datasets.join(', ') || '—'}.{' '}
       {href ? (
         <a href={href} target="_blank" rel="noreferrer noopener">
-          Sumber resmi
+          {t('Sumber resmi')}
         </a>
       ) : (
-        'tautan sumber tidak tersedia'
+        t('tautan sumber tidak tersedia')
       )}
     </span>
   );
@@ -575,7 +592,7 @@ function sideOutcomes(
 }
 
 /** Said for a row whose figures cannot be compared yet (missing data, other year, unit, source). */
-const NOT_DETERMINED = 'Untuk sementara hasil belum dapat ditentukan';
+const NOT_DETERMINED = t('Untuk sementara hasil belum dapat ditentukan');
 
 function describeDifference(
   row: ComparisonRow,
@@ -586,15 +603,15 @@ function describeDifference(
 ): string {
   const { difference } = row.assessment;
   if (!difference) return '';
-  if (difference.higher === 'EQUAL') return 'Sama';
+  if (difference.higher === 'EQUAL') return t('Sama');
   const higherName = difference.higher === 'A' ? nameA : nameB;
   if (useRatio && difference.ratio !== null && difference.ratio >= SIMILAR_RATIO) {
-    return `${higherName} ${formatDecimalId(difference.ratio.toFixed(1))}× lebih tinggi`;
+    return t('{0} {1}× lebih tinggi', higherName, formatDecimalId(difference.ratio.toFixed(1)));
   }
   const gap = formatDecimalId(Math.abs(difference.absolute).toFixed(2));
   return difference.ratio !== null && difference.ratio < SIMILAR_RATIO
-    ? `Hampir sama (selisih ${gap} ${unit.label})`.trim()
-    : `${higherName} lebih tinggi ${gap} ${unit.label}`.trim();
+    ? t('Hampir sama (selisih {0} {1})', gap, unit.label).trim()
+    : t('{0} lebih tinggi {1} {2}', higherName, gap, unit.label).trim();
 }
 
 function ValueCell({
@@ -619,8 +636,8 @@ function ValueCell({
     return (
       <span className={`kk-small ${styles.muted}`}>
         {side?.valueStatus === 'SUPPRESSED'
-          ? 'Nilai tidak dipublikasikan oleh sumber'
-          : 'Data belum tersedia'}
+          ? t('Nilai tidak dipublikasikan oleh sumber')
+          : t('Data belum tersedia')}
       </span>
     );
   }
@@ -643,7 +660,7 @@ function ValueCell({
         {unit.label ? <span className={`kk-small ${styles.muted}`}> {unit.label}</span> : null}
         {outcome && (
           <span className="visually-hidden">
-            {outcome === 'better' ? ', kondisi lebih baik' : ', kondisi kurang baik'}
+            {outcome === 'better' ? t(', kondisi lebih baik') : t(', kondisi kurang baik')}
           </span>
         )}
       </span>

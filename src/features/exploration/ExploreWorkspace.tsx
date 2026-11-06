@@ -35,6 +35,7 @@ import { RegionDetailPanel } from './RegionDetailPanel';
 import { RegionExplorer } from './RegionExplorer';
 import { useRegionBrowserParams } from './regionCode';
 import styles from './ExploreWorkspace.module.css';
+import { t } from '@/lib/i18n';
 
 /** A swipe of at least this many pixels on the sheet handle opens or collapses it. */
 const SWIPE_THRESHOLD_PX = 36;
@@ -261,12 +262,12 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
   const collapsed = shown === 'collapsed';
   // The name sits in the bar only while the panel is folded; unfolded, the profile heading already shows it.
   const label = selectedQuake
-    ? 'Detail gempa'
+    ? t('Detail gempa')
     : !selectedCode
-      ? 'Cari wilayah'
+      ? t('Cari wilayah')
       : collapsed
-        ? (knownNames[selectedCode] ?? `Wilayah kode ${selectedCode}`)
-        : 'Profil wilayah';
+        ? (knownNames[selectedCode] ?? t('Wilayah kode {0}', selectedCode))
+        : t('Profil wilayah');
 
   const intro = (backLink ?? title) && (
     <div key="intro" className={styles.intro}>
@@ -365,7 +366,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
         {quakeEvents.length > 0 && <EarthquakeLegend className={styles.quakeLegend} />}
       </div>
 
-      <div className={styles.status} role="region" aria-label="Status data peta">
+      <div className={styles.status} role="region" aria-label={t('Status data peta')}>
         {isNarrow ? (
           // Phones: the cards would cover the map, so they fold into one control that names the
           // data mode. Every card is still there, unchanged, one tap away.
@@ -378,10 +379,10 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
                 </span>
               )}
               <span className="kk-small">
-                {dataMode === 'DEMO' ? 'Simulasi' : 'Data resmi'}
-                {quakeLayerOn ? ', Gempa BMKG aktif' : ''}
+                {dataMode === 'DEMO' ? t('Simulasi') : t('Data resmi')}
+                {quakeLayerOn ? t(', Gempa BMKG aktif') : ''}
               </span>
-              <span className={styles.summaryHint}>Info data</span>
+              <span className={styles.summaryHint}>{t('Info data')}</span>
             </summary>
             <div className={styles.statusBody}>{statusCards}</div>
           </details>
@@ -400,7 +401,7 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
         radius="card"
         reading
         className={styles.panel}
-        aria-label="Informasi wilayah"
+        aria-label={t('Informasi wilayah')}
         data-state={shown}
         data-explore-panel
       >
@@ -423,7 +424,11 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
           <span className={styles.barLabel}>
             <span className="kk-body-strong">{label}</span>
             <span className={`kk-small ${styles.barHint}`}>
-              {collapsed ? 'Buka panel' : shown === 'peek' ? 'Ketuk untuk memperluas' : 'Ciutkan panel'}
+              {collapsed
+                ? t('Buka panel')
+                : shown === 'peek'
+                  ? t('Ketuk untuk memperluas')
+                  : t('Ciutkan panel')}
             </span>
           </span>
           <span className={styles.chevron} data-open={!collapsed || undefined} aria-hidden="true">

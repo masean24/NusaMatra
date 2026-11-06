@@ -1,10 +1,11 @@
 import type { EvidenceBase, EvidenceSourceSummary } from './evidenceTypes';
 import { formatBrowserTime } from './formatTime';
 import { BROWSER_ASSEMBLED_LABEL, BROWSER_ASSEMBLED_NOTICE, snapshotIdentityNote } from './notices';
+import { t } from '@/lib/i18n';
 
 function describeSource(source: EvidenceSourceSummary): string {
-  const name = source.agencyCode ?? 'sumber belum tersedia';
-  const title = source.datasetTitle ?? source.datasetId ?? 'dataset belum tersedia';
+  const name = source.agencyCode ?? t('sumber belum tersedia');
+  const title = source.datasetTitle ?? source.datasetId ?? t('dataset belum tersedia');
   const years = source.years.length > 0 ? ` (${source.years.join(', ')})` : '';
   return `${name}, ${title}${years}`;
 }
@@ -19,17 +20,22 @@ export function buildCitation(
   details: readonly string[] = [],
 ): string {
   const { source } = record;
-  const mode = source.dataMode === 'LIVE' ? 'LIVE' : 'DEMO (data simulasi, bukan observasi resmi)';
+  const mode = source.dataMode === 'LIVE' ? 'LIVE' : t('DEMO (data simulasi, bukan observasi resmi)');
   const sources =
-    record.sources.length > 0 ? record.sources.map(describeSource).join('; ') : 'sumber belum tersedia';
+    record.sources.length > 0 ? record.sources.map(describeSource).join('; ') : t('sumber belum tersedia');
   return [
-    `Nusa Matra, Paspor Bukti: ${record.title}.`,
-    `Mode data: ${mode}. Versi data Data Hub: ${source.snapshotId}. ${snapshotIdentityNote(source.reproducibility)}`,
-    `Sumber data: ${sources}.`,
+    t('Nusa Matra, Paspor Bukti: {0}.', record.title),
+    t(
+      'Mode data: {0}. Versi data Data Hub: {1}. {2}',
+      mode,
+      source.snapshotId,
+      snapshotIdentityNote(source.reproducibility),
+    ),
+    t('Sumber data: {0}.', sources),
     ...details,
-    `Diterima peramban: ${formatBrowserTime(source.receivedByBrowserAt)}.`,
+    t('Diterima peramban: {0}.', formatBrowserTime(source.receivedByBrowserAt)),
     BROWSER_ASSEMBLED_LABEL,
     BROWSER_ASSEMBLED_NOTICE,
-    `Tautan: ${link}`,
+    t('Tautan: {0}', link),
   ].join('\n');
 }

@@ -1,12 +1,14 @@
 import { COMPARISON_DETAIL_PATH, RegionComparison } from '@/features/comparison';
 import { DataHubBanner } from '@/features/data-hub';
 import { FeaturePageFrame, type FeatureShell } from '@/features/feature-shell';
+import { t } from '@/lib/i18n';
 
 const DETAIL_SHELL: FeatureShell = {
   path: COMPARISON_DETAIL_PATH,
-  title: 'Rincian Perbandingan',
-  summary:
+  title: t('Rincian Perbandingan'),
+  summary: t(
     'Versi lengkap dari Bandingkan: tahun, sumber dan dataset tiap angka, penjelasan selisihnya, dan alasan bila sebuah indikator tidak dibandingkan.',
+  ),
   plannedCapabilities: [],
   figmaNode: '12:840',
 };

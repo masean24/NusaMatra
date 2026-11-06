@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 /**
  * Rule-based reading of one indicator value for ordinary users. Deterministic and explainable:
  * a condition is only called favorable or unfavorable when the indicator's polarity is defined,
@@ -57,9 +59,9 @@ export function isPolarity(value: string): value is IndicatorPolarity {
 /** What a higher or lower number means for this indicator. */
 export function polarityReading(polarity: string): string | null {
   if (polarity === 'positive')
-    return 'Nilai yang lebih tinggi menunjukkan kondisi yang lebih baik pada indikator ini.';
+    return t('Nilai yang lebih tinggi menunjukkan kondisi yang lebih baik pada indikator ini.');
   if (polarity === 'negative')
-    return 'Nilai yang lebih rendah menunjukkan kondisi yang lebih baik pada indikator ini.';
+    return t('Nilai yang lebih rendah menunjukkan kondisi yang lebih baik pada indikator ini.');
   return null;
 }
 
@@ -69,41 +71,45 @@ export function readIndicator(input: IndicatorReadingInput): IndicatorReading {
   if (!input.hasValue) {
     return {
       verdict: 'NO_JUDGEMENT',
-      label: 'Data belum tersedia',
-      explanation: 'Tidak ada nilai untuk dinilai.',
+      label: t('Data belum tersedia'),
+      explanation: t('Tidak ada nilai untuk dinilai.'),
     };
   }
   if (input.qualityFlag !== null && input.qualityFlag.startsWith('IMPUTED')) {
     return {
       verdict: 'NO_JUDGEMENT',
-      label: 'Tidak dinilai',
-      explanation:
+      label: t('Tidak dinilai'),
+      explanation: t(
         'Nilai ini diimputasi dari tingkat provinsi, bukan pengukuran kabupaten/kota, sehingga tidak dinilai.',
+      ),
     };
   }
   if (!isPolarity(input.polarity)) {
     return {
       verdict: 'NO_JUDGEMENT',
-      label: 'Tidak dinilai',
-      explanation:
+      label: t('Tidak dinilai'),
+      explanation: t(
         'Arah baik atau buruk indikator ini belum ditetapkan, jadi nilainya tidak diberi penilaian.',
+      ),
     };
   }
   if (input.percentile === null) {
     return {
       verdict: 'NO_JUDGEMENT',
-      label: 'Tidak dinilai',
-      explanation:
+      label: t('Tidak dinilai'),
+      explanation: t(
         'Data Hub tidak menyertakan pembanding nasional untuk nilai ini, jadi tidak diberi penilaian.',
+      ),
     };
   }
 
   if (input.percentileOrientation === 'UNVERIFIED') {
     return {
       verdict: 'NO_JUDGEMENT',
-      label: 'Tidak dinilai',
-      explanation:
+      label: t('Tidak dinilai'),
+      explanation: t(
         'Data Hub belum menjelaskan arah persentil nasionalnya, jadi nilai ini belum dibandingkan dengan wilayah lain.',
+      ),
     };
   }
 
@@ -114,20 +120,29 @@ export function readIndicator(input: IndicatorReadingInput): IndicatorReading {
   if (betterShare >= FAVORABLE_FROM_PERCENT) {
     return {
       verdict: 'FAVORABLE',
-      label: 'Relatif lebih baik',
-      explanation: `Lebih baik daripada sekitar ${better}% wilayah lain yang datanya tersedia pada snapshot ini.`,
+      label: t('Relatif lebih baik'),
+      explanation: t(
+        'Lebih baik daripada sekitar {0}% wilayah lain yang datanya tersedia pada snapshot ini.',
+        better,
+      ),
     };
   }
   if (betterShare <= UNFAVORABLE_UP_TO_PERCENT) {
     return {
       verdict: 'UNFAVORABLE',
-      label: 'Relatif kurang baik',
-      explanation: `Hanya lebih baik daripada sekitar ${better}% wilayah lain yang datanya tersedia pada snapshot ini.`,
+      label: t('Relatif kurang baik'),
+      explanation: t(
+        'Hanya lebih baik daripada sekitar {0}% wilayah lain yang datanya tersedia pada snapshot ini.',
+        better,
+      ),
     };
   }
   return {
     verdict: 'NEUTRAL',
-    label: 'Di sekitar tengah',
-    explanation: `Berada di sekitar tengah: lebih baik daripada sekitar ${better}% wilayah lain yang datanya tersedia.`,
+    label: t('Di sekitar tengah'),
+    explanation: t(
+      'Berada di sekitar tengah: lebih baik daripada sekitar {0}% wilayah lain yang datanya tersedia.',
+      better,
+    ),
   };
 }

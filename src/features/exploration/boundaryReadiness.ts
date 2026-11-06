@@ -1,4 +1,5 @@
 import type { BoundaryCollectionDTO } from '@/services/api';
+import { t } from '@/lib/i18n';
 
 export interface BoundaryReadiness {
   /** True only when the Data Hub really sent polygon geometry. The 3D map is never fed anything else. */
@@ -18,20 +19,28 @@ export function describeBoundaryReadiness(boundaries: BoundaryCollectionDTO): Bo
     return {
       hasPolygons: true,
       detail:
-        `Poligon batas ${String(features.length)} kabupaten/kota dari ${geometryStatus.source}` +
-        (geometryStatus.boundaryVersion ? `, edisi ${geometryStatus.boundaryVersion}` : '') +
-        '. Bentuk disederhanakan untuk tampilan web; bukan untuk pengukuran luas atau keperluan hukum.' +
+        t('Poligon batas {0} kabupaten/kota dari {1}', String(features.length), geometryStatus.source) +
+        (geometryStatus.boundaryVersion ? t(', edisi {0}', geometryStatus.boundaryVersion) : '') +
+        t('. Bentuk disederhanakan untuk tampilan web; bukan untuk pengukuran luas atau keperluan hukum.') +
         (requestParams.resolution === 'mobile'
-          ? ' Perangkat ini memakai versi ringan: garis lebih sederhana dan pulau sangat kecil tidak digambar. Semua wilayah dan datanya tetap sama.'
+          ? t(
+              ' Perangkat ini memakai versi ringan: garis lebih sederhana dan pulau sangat kecil tidak digambar. Semua wilayah dan datanya tetap sama.',
+            )
           : ''),
     };
   }
 
-  const returned = geometryStatus.geometryTypeReturned ?? 'tanpa geometri';
+  const returned = geometryStatus.geometryTypeReturned ?? t('tanpa geometri');
   return {
     hasPolygons: false,
     detail:
-      `Data Hub hanya mengirim geometri ${returned} (titik label) untuk ${String(features.length)} wilayah, ` +
-      `bukan poligon batas administrasi. Peta 3D tetap ilustratif dan tidak memakai titik ini sebagai batas wilayah.`,
+      t(
+        'Data Hub hanya mengirim geometri {0} (titik label) untuk {1} wilayah, ',
+        returned,
+        String(features.length),
+      ) +
+      t(
+        'bukan poligon batas administrasi. Peta 3D tetap ilustratif dan tidak memakai titik ini sebagai batas wilayah.',
+      ),
   };
 }

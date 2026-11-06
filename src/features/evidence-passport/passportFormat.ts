@@ -1,6 +1,7 @@
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import { PASSPORT_PATH } from './evidenceQuery';
 import type { EvidenceRecord } from './evidenceTypes';
+import { LOCALE, t } from '@/lib/i18n';
 
 export type AnyEvidenceRecord = EvidenceRecord | CompositeEvidenceRecord;
 
@@ -9,13 +10,13 @@ export function shortDigest(digest: string): string {
   return digest.length > 20 ? `${digest.slice(0, 8)}…${digest.slice(-8)}` : digest;
 }
 
-const SHORT_DATE = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-const SHORT_TIME = new Intl.DateTimeFormat('id-ID', {
+const SHORT_DATE = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short', year: 'numeric' });
+const SHORT_TIME = new Intl.DateTimeFormat(LOCALE, {
   hour: '2-digit',
   minute: '2-digit',
   timeZoneName: 'short',
 });
-const FULL_TIME = new Intl.DateTimeFormat('id-ID', {
+const FULL_TIME = new Intl.DateTimeFormat(LOCALE, {
   hour: '2-digit',
   minute: '2-digit',
   second: '2-digit',
@@ -24,15 +25,28 @@ const FULL_TIME = new Intl.DateTimeFormat('id-ID', {
 
 /** Browser receive time, compact: "24 Okt 2026 · 19.09 WIB" (`withSeconds`: "24 Okt 2026, 19.09.04 WIB"). */
 export function formatReceived(iso: string | null, withSeconds = false): string {
-  if (iso === null) return 'belum tersedia';
+  if (iso === null) return t('belum tersedia');
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return withSeconds
     ? `${SHORT_DATE.format(date)}, ${FULL_TIME.format(date)}`
-    : `${SHORT_DATE.format(date)}, pukul ${SHORT_TIME.format(date)}`;
+    : t('{0}, pukul {1}', SHORT_DATE.format(date), SHORT_TIME.format(date));
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const MONTHS = [
+  t('Jan'),
+  t('Feb'),
+  t('Mar'),
+  t('Apr'),
+  t('Mei'),
+  t('Jun'),
+  t('Jul'),
+  t('Agu'),
+  t('Sep'),
+  t('Okt'),
+  t('Nov'),
+  t('Des'),
+];
 const SERVER_STAMP = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/;
 
 /**
@@ -43,7 +57,7 @@ export function formatServerStamp(value: string | null): {
   readonly text: string;
   readonly zone: string | null;
 } {
-  if (value === null) return { text: 'belum tersedia', zone: null };
+  if (value === null) return { text: t('belum tersedia'), zone: null };
   const match = SERVER_STAMP.exec(value);
   if (!match) return { text: value, zone: null };
   const [, year, month, day, hour, minute, second, offset] = match;
@@ -77,18 +91,18 @@ export interface PageLink {
 
 /** The big title of the hero: the region, the pair, or the Lab result. */
 export function heroTitle(record: AnyEvidenceRecord): string {
-  if (record.kind === 'lab') return 'Hasil Lab Prioritas';
-  return record.regions.map((region) => region.name).join(' dan ');
+  if (record.kind === 'lab') return t('Hasil Lab Prioritas');
+  return record.regions.map((region) => region.name).join(t(' dan '));
 }
 
 /** The middle step of the breadcrumb: where this record's subject lives in the app. */
 export function subjectCrumb(record: AnyEvidenceRecord): PageLink {
-  if (record.kind === 'lab') return { label: 'Lab Prioritas', to: '/lab-prioritas' };
+  if (record.kind === 'lab') return { label: t('Lab Prioritas'), to: '/lab-prioritas' };
   const [first, second] = record.regions;
   if (record.kind === 'bandingkan' && first && second) {
-    return { label: 'Bandingkan', to: `/bandingkan?a=${first.regionId}&b=${second.regionId}` };
+    return { label: t('Bandingkan'), to: `/bandingkan?a=${first.regionId}&b=${second.regionId}` };
   }
-  return { label: first?.name ?? 'Wilayah', to: first ? `/jelajahi?kode=${first.regionId}` : '/jelajahi' };
+  return { label: first?.name ?? t('Wilayah'), to: first ? `/jelajahi?kode=${first.regionId}` : '/jelajahi' };
 }
 
 /** Where to go next from this record. Every link opens a real page with the same subject. */
@@ -96,22 +110,22 @@ export function relatedLinks(record: AnyEvidenceRecord): PageLink[] {
   if (record.kind === 'lab') {
     const focus = record.focus?.name ? record.focus : null;
     return [
-      { label: 'Ubah bobot di Lab Prioritas', to: '/lab-prioritas' },
-      { label: 'Bandingkan dua wilayah', to: '/bandingkan' },
+      { label: t('Ubah bobot di Lab Prioritas'), to: '/lab-prioritas' },
+      { label: t('Bandingkan dua wilayah'), to: '/bandingkan' },
       focus
-        ? { label: `Lihat ${focus.name ?? ''} di peta Jelajahi`, to: `/jelajahi?kode=${focus.regionId}` }
-        : { label: 'Lihat di peta Jelajahi', to: '/jelajahi' },
+        ? { label: t('Lihat {0} di peta Jelajahi', focus.name ?? ''), to: `/jelajahi?kode=${focus.regionId}` }
+        : { label: t('Lihat di peta Jelajahi'), to: '/jelajahi' },
     ];
   }
   const [first, second] = record.regions;
   const id = first?.regionId;
   return [
     record.kind === 'bandingkan' && first && second
-      ? { label: 'Buka perbandingan ini', to: `/bandingkan?a=${first.regionId}&b=${second.regionId}` }
-      : { label: 'Bandingkan dengan wilayah lain', to: id ? `/bandingkan?a=${id}` : '/bandingkan' },
-    { label: 'Uji di Lab Prioritas', to: '/lab-prioritas' },
-    { label: 'Lihat di peta Jelajahi', to: id ? `/jelajahi?kode=${id}` : '/jelajahi' },
+      ? { label: t('Buka perbandingan ini'), to: `/bandingkan?a=${first.regionId}&b=${second.regionId}` }
+      : { label: t('Bandingkan dengan wilayah lain'), to: id ? `/bandingkan?a=${id}` : '/bandingkan' },
+    { label: t('Uji di Lab Prioritas'), to: '/lab-prioritas' },
+    { label: t('Lihat di peta Jelajahi'), to: id ? `/jelajahi?kode=${id}` : '/jelajahi' },
   ];
 }
 
-export const PASSPORT_CRUMB = { label: 'Paspor Bukti', to: PASSPORT_PATH } as const;
+export const PASSPORT_CRUMB = { label: t('Paspor Bukti'), to: PASSPORT_PATH } as const;

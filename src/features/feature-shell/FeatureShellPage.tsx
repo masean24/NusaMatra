@@ -4,6 +4,7 @@ import { ExplorationMapPanel } from '@/features/exploration';
 import { FeaturePageFrame } from './FeaturePageFrame';
 import type { FeatureShell } from './featureShells';
 import styles from './FeatureShellPage.module.css';
+import { t } from '@/lib/i18n';
 
 interface FeatureShellPageProps {
   readonly shell: FeatureShell;
@@ -16,8 +17,8 @@ export function FeatureShellPage({ shell }: FeatureShellPageProps) {
       {shell.hasMap && <ExplorationMapPanel />}
 
       <Surface radius="card" reading className={styles.panel}>
-        <p className={styles.status}>Sedang dikembangkan</p>
-        <h2 className="kk-h3">Yang akan bisa Anda lakukan di sini</h2>
+        <p className={styles.status}>{t('Sedang dikembangkan')}</p>
+        <h2 className="kk-h3">{t('Yang akan bisa Anda lakukan di sini')}</h2>
         <ul className={styles.capabilities}>
           {shell.plannedCapabilities.map((capability) => (
             <li key={capability} className="kk-body">
@@ -26,16 +27,17 @@ export function FeatureShellPage({ shell }: FeatureShellPageProps) {
           ))}
         </ul>
         <p className={`kk-small ${styles.muted}`}>
-          Halaman ini belum menampilkan data. Nusa Matra tidak akan menampilkan angka simulasi seolah-olah
-          data resmi.
+          {t(
+            'Halaman ini belum menampilkan data. Nusa Matra tidak akan menampilkan angka simulasi seolah-olah data resmi.',
+          )}
         </p>
       </Surface>
 
       <div className={styles.actions}>
-        <ButtonLink to="/">Kembali ke beranda</ButtonLink>
+        <ButtonLink to="/">{t('Kembali ke beranda')}</ButtonLink>
         {shell.path !== '/jelajahi' && (
           <ButtonLink to="/jelajahi" variant="secondary">
-            Buka Jelajahi
+            {t('Buka Jelajahi')}
           </ButtonLink>
         )}
       </div>

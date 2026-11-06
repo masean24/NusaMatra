@@ -24,6 +24,7 @@ import type {
 import { IndicatorDownloads } from './IndicatorDownloads';
 import { scoreMethodHref } from './scoreMethodHref';
 import styles from './IndicatorPanel.module.css';
+import { t } from '@/lib/i18n';
 
 type IndicatorValuesEnvelope = AdaptedEnvelope<IndicatorValuesMapDTO>;
 
@@ -31,10 +32,10 @@ type IndicatorValuesEnvelope = AdaptedEnvelope<IndicatorValuesMapDTO>;
 const PREFERRED_INDICATOR_ID = 'soc_poverty_rate';
 
 const STATS_LABELS = [
-  ['min', 'Terendah'],
-  ['median', 'Median'],
-  ['mean', 'Rata-rata'],
-  ['max', 'Tertinggi'],
+  ['min', t('Terendah')],
+  ['median', t('Median')],
+  ['mean', t('Rata-rata')],
+  ['max', t('Tertinggi')],
 ] as const;
 
 function pickIndicator(catalog: IndicatorCatalogDTO, chosenId: string | null): DataHubIndicatorDTO | null {
@@ -67,17 +68,21 @@ export function IndicatorPanel({ regionId, embedded = false }: IndicatorPanelPro
   return (
     <Frame {...frameProps}>
       <h2 id="indikator-judul" className={embedded ? 'kk-body-strong' : 'kk-h3'}>
-        Indikator
+        {t('Indikator')}
       </h2>
-      <ResourceView state={catalog.state} onRetry={catalog.retry} loadingTitle="Memuat katalog indikator…">
+      <ResourceView
+        state={catalog.state}
+        onRetry={catalog.retry}
+        loadingTitle={t('Memuat katalog indikator…')}
+      >
         {(envelope) => {
           const indicator = pickIndicator(envelope.data, chosenId);
-          if (!indicator) return <p className="kk-body">Katalog indikator dari Data Hub kosong.</p>;
+          if (!indicator) return <p className="kk-body">{t('Katalog indikator dari Data Hub kosong.')}</p>;
           return (
             <>
               <div className={styles.picker}>
                 <span id={pickerLabelId} className="kk-body-strong">
-                  Pilih indikator
+                  {t('Pilih indikator')}
                 </span>
                 {/* The glass combobox, grouped by theme as the native <optgroup> list was. */}
                 <GlassSelect
@@ -147,9 +152,9 @@ function IndicatorHeading({
     <div className={styles.definition}>
       <h3 className="kk-body-strong">{indicator.labelId}</h3>
       <p className={`kk-small ${styles.muted}`}>
-        {categoryLabel(indicator.category)}, satuan {indicator.unitCode || 'tidak dicantumkan'}.{' '}
+        {t('{0}, satuan', categoryLabel(indicator.category))} {indicator.unitCode || t('tidak dicantumkan')}.{' '}
         {preferredDirectionLabel(indicator.preferredDirection)}
-        {referenceYear !== null ? `, tahun ${String(referenceYear)}.` : ', periode belum tersedia.'}
+        {referenceYear !== null ? t(', tahun {0}.', String(referenceYear)) : t(', periode belum tersedia.')}
       </p>
     </div>
   );
@@ -161,20 +166,23 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
   return (
     <details className={styles.more}>
       <summary className={styles.moreSummary}>
-        <span className="kk-small">Definisi, sumber, dan statistik nasional</span>
+        <span className="kk-small">{t('Definisi, sumber, dan statistik nasional')}</span>
       </summary>
-      <section aria-label="Definisi indikator" className={styles.definition}>
+      <section aria-label={t('Definisi indikator')} className={styles.definition}>
         {indicator.derivationFormula && (
-          <p className={`kk-small ${styles.muted}`}>Rumus turunan: {indicator.derivationFormula}</p>
+          <p className={`kk-small ${styles.muted}`}>{t('Rumus turunan: {0}', indicator.derivationFormula)}</p>
         )}
         <p className={`kk-small ${styles.muted}`}>
-          Sumber: {indicator.provenance.agencyCode}
-          {indicator.provenance.datasetTitle ? `, ${indicator.provenance.datasetTitle}` : ''}
+          {t(
+            'Sumber: {0}{1}',
+            indicator.provenance.agencyCode,
+            indicator.provenance.datasetTitle ? `, ${indicator.provenance.datasetTitle}` : '',
+          )}
           {portalUrl && (
             <>
               {' ('}
               <a href={portalUrl} target="_blank" rel="noreferrer noopener">
-                portal sumber
+                {t('portal sumber')}
               </a>
               {')'}
             </>
@@ -213,18 +221,19 @@ function IndicatorRegionValue({
   return (
     <section aria-labelledby={titleId} className={styles.valueCard}>
       <h3 id={titleId} className={styles.valueTitle}>
-        Nilai pada wilayah terpilih
+        {t('Nilai pada wilayah terpilih')}
       </h3>
       {regionId === null ? (
-        <p className="kk-body">Pilih wilayah pada daftar untuk melihat nilainya.</p>
+        <p className="kk-body">{t('Pilih wilayah pada daftar untuk melihat nilainya.')}</p>
       ) : (
-        <ResourceView state={values.state} onRetry={values.retry} loadingTitle="Memuat nilai indikator…">
+        <ResourceView state={values.state} onRetry={values.retry} loadingTitle={t('Memuat nilai indikator…')}>
           {(envelope) => {
             if (Object.keys(envelope.data.valuesByRegion).length === 0) {
               return (
                 <p className="kk-body">
-                  Data Hub tidak memuat nilai untuk indikator ini pada versi data ini. Indikatornya terdaftar
-                  di katalog, tetapi belum ada datanya.
+                  {t(
+                    'Data Hub tidak memuat nilai untuk indikator ini pada versi data ini. Indikatornya terdaftar di katalog, tetapi belum ada datanya.',
+                  )}
                 </p>
               );
             }
@@ -237,7 +246,9 @@ function IndicatorRegionValue({
                 agencyCode={indicator.provenance.agencyCode}
               />
             ) : (
-              <p className="kk-body">Wilayah kode {regionId} tidak ada dalam respons indikator ini.</p>
+              <p className="kk-body">
+                {t('Wilayah kode {0} tidak ada dalam respons indikator ini.', regionId)}
+              </p>
             );
           }}
         </ResourceView>
@@ -247,7 +258,7 @@ function IndicatorRegionValue({
         variant="secondary"
         className={styles.methodLink}
       >
-        Bagaimana skor tersebut dihitung
+        {t('Bagaimana skor tersebut dihitung')}
       </ButtonLink>
     </section>
   );
@@ -274,15 +285,18 @@ function MeasurementCard({
         ) : null}
       </p>
       <p className={`kk-small ${styles.muted}`}>
-        {cell.rank !== null ? `Peringkat ${String(cell.rank)}` : 'Peringkat belum tersedia'}
-        {cell.percentileDecimal !== null ? `, persentil ${formatDecimalId(cell.percentileDecimal)}` : ''}
+        {cell.rank !== null ? t('Peringkat {0}', String(cell.rank)) : t('Peringkat belum tersedia')}
+        {cell.percentileDecimal !== null ? t(', persentil {0}', formatDecimalId(cell.percentileDecimal)) : ''}
         {cell.normalizedScoreDecimal !== null
-          ? `, skor ternormalisasi ${formatDecimalId(cell.normalizedScoreDecimal)}`
+          ? t(', skor ternormalisasi {0}', formatDecimalId(cell.normalizedScoreDecimal))
           : ''}
       </p>
       <p className={`kk-small ${styles.muted}`}>
-        {referenceYear === null ? 'Periode belum tersedia' : `Tahun ${String(referenceYear)}`}, sumber{' '}
-        {agencyCode}
+        {t(
+          '{0}, sumber {1}',
+          referenceYear === null ? t('Periode belum tersedia') : t('Tahun {0}', String(referenceYear)),
+          agencyCode,
+        )}
       </p>
       {qualityNote && <Chip tone="warning">{qualityNote}</Chip>}
       {cell.isDemoExample && <Chip tone="warning">DEMO_EXAMPLE</Chip>}

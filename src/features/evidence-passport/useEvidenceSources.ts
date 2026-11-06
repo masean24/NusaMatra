@@ -125,7 +125,7 @@ export function useCompositeSources(
 ): { readonly state: CompositeSourcesState; readonly retry: () => void } {
   const weightKey = Object.entries(weights)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([id, bps]) => `${id}:${String(bps)}`)
+    .map(([id, bps]) => `${id}:${bps}`)
     .join(',');
   return useSourceLoader(
     `${mode}|${linkSnapshotId ?? 'aktif'}|lab|${provinceId ?? 'nasional'}|${weightKey}`,

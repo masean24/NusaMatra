@@ -38,6 +38,7 @@ import type {
   SystemHealthDTO,
   WeightedCriterionInput,
 } from './wireTypes';
+import { t } from '@/lib/i18n';
 
 const VALID_SHA256_HEX_REGEX = /^[a-f0-9]{64}$/i;
 const VALID_DECIMAL_REGEX = /^-?\d+(\.\d+)?$/;
@@ -469,7 +470,7 @@ function mapRegionProfileIndicator(
 
   const source: SourceCitation = {
     publisherId: agencyCode,
-    publisherName: isDemoExample ? `${agencyCode} (Simulasi DEMO — bukan observasi resmi)` : agencyCode,
+    publisherName: isDemoExample ? t('{0} (Simulasi DEMO — bukan observasi resmi)', agencyCode) : agencyCode,
     datasetId,
     datasetEditionId: `${datasetId}:${meta.snapshotId}`,
     publicSourceUrl: officialUrl,
@@ -675,7 +676,7 @@ export function mapIndicatorValuesData(rawData: unknown, meta: AdaptedResponseMe
     const source: SourceCitation = {
       publisherId: indicator.provenance.agencyCode,
       publisherName: isDemoExample
-        ? `${indicator.provenance.agencyCode} (Simulasi DEMO — bukan observasi resmi)`
+        ? t('{0} (Simulasi DEMO — bukan observasi resmi)', indicator.provenance.agencyCode)
         : indicator.provenance.agencyCode,
       // v2.2 names the dataset of each observation; it wins over the indicator's catalog dataset.
       datasetId: measurement.datasetId ?? indicator.provenance.datasetId,
@@ -1327,7 +1328,7 @@ function buildYearReferencePeriod(year: number | null): ReferencePeriod {
   }
   return {
     periodId: 'period:unspecified',
-    label: 'Periode belum tersedia',
+    label: t('Periode belum tersedia'),
     granularity: 'UNKNOWN',
     startsOn: null,
     endsBefore: null,

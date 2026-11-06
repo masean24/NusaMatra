@@ -5,6 +5,7 @@ import { Disclosure } from './Disclosure';
 import { ScrollRegion } from './ScrollRegion';
 import { Section } from './Section';
 import styles from './EvidencePassport.module.css';
+import { t } from '@/lib/i18n';
 
 const WARN_CLASSES: ReadonlySet<EvidenceClass> = new Set([
   'IMPUTED_PROVINCE',
@@ -20,12 +21,14 @@ function IndicatorCell({ indicator }: { readonly indicator: EvidenceIndicator })
       <span className={styles.indicatorName}>{indicator.label}</span>
       <Disclosure
         variant="inline"
-        title={indicator.derivationFormula ? 'Definisi, rumus, dan satuan' : 'Definisi dan satuan'}
+        title={indicator.derivationFormula ? t('Definisi, rumus, dan satuan') : t('Definisi dan satuan')}
         context={indicator.label}
       >
-        <p>{indicator.definition ?? 'Definisi belum tersedia dari Data Hub.'}</p>
-        {indicator.derivationFormula && <p>Rumus turunan: {indicator.derivationFormula}</p>}
-        <p>Satuan dari sumber: {indicator.rawUnit || 'belum tersedia'}</p>
+        <p>{indicator.definition ?? t('Definisi belum tersedia dari Data Hub.')}</p>
+        {indicator.derivationFormula && <p>{t('Rumus turunan: {0}', indicator.derivationFormula)}</p>}
+        <p>
+          {t('Satuan dari sumber:')} {indicator.rawUnit || t('belum tersedia')}
+        </p>
       </Disclosure>
     </div>
   );
@@ -33,7 +36,7 @@ function IndicatorCell({ indicator }: { readonly indicator: EvidenceIndicator })
 
 function ValueAndYear({ value }: { readonly value: EvidenceValue | null }) {
   if (!value) {
-    return <span className={`kk-small ${styles.muted}`}>Tidak ada entri untuk indikator ini.</span>;
+    return <span className={`kk-small ${styles.muted}`}>{t('Tidak ada entri untuk indikator ini.')}</span>;
   }
   return (
     <div className={styles.cell}>
@@ -41,7 +44,7 @@ function ValueAndYear({ value }: { readonly value: EvidenceValue | null }) {
         {value.valueText}
       </span>
       <span className={`kk-small ${styles.muted}`}>
-        Tahun {value.referenceYear === null ? 'belum tersedia' : value.referenceYear}
+        {t('Tahun {0}', value.referenceYear === null ? t('belum tersedia') : value.referenceYear)}
       </span>
     </div>
   );
@@ -49,7 +52,7 @@ function ValueAndYear({ value }: { readonly value: EvidenceValue | null }) {
 
 function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
   if (!value?.evidenceClass) {
-    return <span className={`kk-small ${styles.muted}`}>Tidak ada nilai untuk digolongkan.</span>;
+    return <span className={`kk-small ${styles.muted}`}>{t('Tidak ada nilai untuk digolongkan.')}</span>;
   }
   const { evidenceClass } = value;
   return (
@@ -61,7 +64,7 @@ function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
       </span>
       <Disclosure
         variant="inline"
-        title="Arti kelas bukti"
+        title={t('Arti kelas bukti')}
         context={evidenceClassLabel(evidenceClass, value.rawFlag)}
       >
         <p>{value.classNote ?? evidenceClassMeaning(evidenceClass)}</p>
@@ -71,19 +74,19 @@ function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
 }
 
 function SourceLine({ source }: { readonly source: IndicatorSourceInfo }) {
-  const name = `${source.agencyCode ?? 'Lembaga belum tersedia'}: ${source.datasetTitle ?? source.datasetId ?? 'judul dataset belum tersedia'}`;
+  const name = `${source.agencyCode ?? t('Lembaga belum tersedia')}: ${source.datasetTitle ?? source.datasetId ?? t('judul dataset belum tersedia')}`;
   if (!source.officialUrl) {
     return (
       <span className={styles.cell}>
         <span>{name}</span>
-        <span className={`kk-small ${styles.muted}`}>Tautan sumber belum tersedia.</span>
+        <span className={`kk-small ${styles.muted}`}>{t('Tautan sumber belum tersedia.')}</span>
       </span>
     );
   }
   return (
     <a className={styles.link} href={source.officialUrl} target="_blank" rel="noreferrer noopener">
       {name}
-      <span className={styles.srOnly}> (membuka tab baru)</span>
+      <span className={styles.srOnly}> {t('(membuka tab baru)')}</span>
     </a>
   );
 }
@@ -99,7 +102,7 @@ function groupByCategory(indicators: readonly EvidenceIndicator[]): [string, Evi
 }
 
 function categoryCaption(category: string, count: number): string {
-  return `${category ? categoryLabel(category) : 'Tanpa kategori'} (${String(count)} indikator)`;
+  return t('{0} ({1} indikator)', category ? categoryLabel(category) : t('Tanpa kategori'), String(count));
 }
 
 function SingleRegionTable({
@@ -122,10 +125,10 @@ function SingleRegionTable({
         </colgroup>
         <thead>
           <tr>
-            <th scope="col">Indikator</th>
-            <th scope="col">Nilai dan tahun</th>
-            <th scope="col">Kelas bukti</th>
-            <th scope="col">Sumber</th>
+            <th scope="col">{t('Indikator')}</th>
+            <th scope="col">{t('Nilai dan tahun')}</th>
+            <th scope="col">{t('Kelas bukti')}</th>
+            <th scope="col">{t('Sumber')}</th>
           </tr>
         </thead>
         <tbody>
@@ -142,7 +145,7 @@ function SingleRegionTable({
                 <td>
                   <ClassTag value={value} />
                 </td>
-                <td>{value ? <SourceLine source={value.source} /> : 'Sumber belum tersedia.'}</td>
+                <td>{value ? <SourceLine source={value.source} /> : t('Sumber belum tersedia.')}</td>
               </tr>
             );
           })}
@@ -160,14 +163,14 @@ function ComparisonCell({ indicator }: { readonly indicator: EvidenceIndicator }
       {comparison.allowed ? (
         <>
           <span>
-            <span className={styles.tag}>Dapat dibandingkan</span>
+            <span className={styles.tag}>{t('Dapat dibandingkan')}</span>
           </span>
           <span>{comparison.differenceText}</span>
         </>
       ) : (
         <>
           <span>
-            <span className={`${styles.tag} ${styles.tagWarn}`}>Tidak dibandingkan</span>
+            <span className={`${styles.tag} ${styles.tagWarn}`}>{t('Tidak dibandingkan')}</span>
           </span>
           <ul role="list" className={`kk-small ${styles.list}`}>
             {comparison.blockers.map((blocker) => (
@@ -179,7 +182,7 @@ function ComparisonCell({ indicator }: { readonly indicator: EvidenceIndicator }
       {comparison.warnings.length > 0 && (
         <ul role="list" className={`kk-small ${styles.list}`}>
           {comparison.warnings.map((warning) => (
-            <li key={warning}>Peringatan: {warning}</li>
+            <li key={warning}>{t('Peringatan: {0}', warning)}</li>
           ))}
         </ul>
       )}
@@ -206,7 +209,7 @@ function ComparisonSources({ indicator }: { readonly indicator: EvidenceIndicato
           <SourceLine source={b.source} />
         </span>
       )}
-      {!a && !b && 'Sumber belum tersedia.'}
+      {!a && !b && t('Sumber belum tersedia.')}
     </div>
   );
 }
@@ -234,11 +237,11 @@ function ComparisonTable({
         </colgroup>
         <thead>
           <tr>
-            <th scope="col">Indikator</th>
+            <th scope="col">{t('Indikator')}</th>
             <th scope="col">A: {names[0]}</th>
             <th scope="col">B: {names[1]}</th>
-            <th scope="col">Perbandingan</th>
-            <th scope="col">Sumber</th>
+            <th scope="col">{t('Perbandingan')}</th>
+            <th scope="col">{t('Sumber')}</th>
           </tr>
         </thead>
         <tbody>
@@ -275,8 +278,8 @@ function ComparisonTable({
 export function IndicatorTables({ record }: { readonly record: EvidenceRecord }) {
   const groups = groupByCategory(record.indicators);
   const names: readonly [string, string] = [
-    record.regions[0]?.name ?? 'Wilayah A',
-    record.regions[1]?.name ?? 'Wilayah B',
+    record.regions[0]?.name ?? t('Wilayah A'),
+    record.regions[1]?.name ?? t('Wilayah B'),
   ];
 
   return (
@@ -284,15 +287,16 @@ export function IndicatorTables({ record }: { readonly record: EvidenceRecord })
       id="paspor-indikator"
       title={
         record.kind === 'bandingkan'
-          ? 'Indikator, bukti, dan hasil perbandingan'
-          : 'Indikator, kelas bukti, dan sumber'
+          ? t('Indikator, bukti, dan hasil perbandingan')
+          : t('Indikator, kelas bukti, dan sumber')
       }
       mode={record.source.dataMode}
     >
       {record.indicators.length === 0 ? (
         <p className="kk-body">
-          Tidak ada indikator yang dapat ditampilkan: Data Hub tidak memuat nilai untuk permintaan ini pada
-          snapshot ini.
+          {t(
+            'Tidak ada indikator yang dapat ditampilkan: Data Hub tidak memuat nilai untuk permintaan ini pada snapshot ini.',
+          )}
         </p>
       ) : (
         groups.map(([category, indicators]) =>

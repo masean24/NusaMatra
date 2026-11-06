@@ -6,6 +6,7 @@ import { DEMO_DATA_STATUSES, DEMO_PASSPORT_PREVIEW, type DataStatusKind } from '
 import { Reveal } from '@/features/motion';
 import { EvidencePassport3D } from '../components/EvidencePassport3D';
 import styles from './TransparencySection.module.css';
+import { t } from '@/lib/i18n';
 
 /** Each status has its own icon and wording; colour is never the only signal. */
 const STATUS_ICON: Record<DataStatusKind, IconName> = {
@@ -23,13 +24,14 @@ export function TransparencySection() {
       <div className={styles.copy}>
         <Reveal distance={24} duration={600}>
           <h2 id="transparansi-title" className={`kk-h1 ${styles.title}`}>
-            Kami juga menunjukkan yang belum kami ketahui
+            {t('Kami juga menunjukkan yang belum kami ketahui')}
           </h2>
         </Reveal>
         <Reveal distance={24} duration={600} delay={80}>
           <p className={`kk-body ${styles.lead}`}>
-            Data kosong, tahun yang berbeda, atau metode yang tidak sebanding tidak disembunyikan. Bila
-            perbandingan bisa menyesatkan, Nusa Matra menahannya.
+            {t(
+              'Data kosong, tahun yang berbeda, atau metode yang tidak sebanding tidak disembunyikan. Bila perbandingan bisa menyesatkan, Nusa Matra menahannya.',
+            )}
           </p>
         </Reveal>
         <ul role="list" className={styles.statuses}>
@@ -50,7 +52,7 @@ export function TransparencySection() {
           ))}
         </ul>
         <p className={`kk-caption ${styles.muted}`}>
-          Contoh temuan pada data simulasi, bukan diagnosis data nyata.
+          {t('Contoh temuan pada data simulasi, bukan diagnosis data nyata.')}
         </p>
       </div>
 
@@ -58,7 +60,9 @@ export function TransparencySection() {
         <EvidencePassport3D />
         <Reveal distance={24} duration={600} delay={200} threshold={0.3}>
           <Surface radius="card" className={styles.preview}>
-            <p className={`kk-h3 ${styles.previewTitle}`}>Paspor Bukti {DEMO_PASSPORT_PREVIEW.id}</p>
+            <p className={`kk-h3 ${styles.previewTitle}`}>
+              {t('Paspor Bukti {0}', DEMO_PASSPORT_PREVIEW.id)}
+            </p>
             <dl className={styles.rows}>
               {DEMO_PASSPORT_PREVIEW.rows.map((row) => (
                 <div key={row.label} className={styles.rowItem}>
@@ -68,8 +72,8 @@ export function TransparencySection() {
               ))}
             </dl>
             <div className={styles.previewFooter}>
-              <ButtonLink to="/paspor-bukti">Lihat contoh paspor</ButtonLink>
-              <Chip>Contoh: data simulasi</Chip>
+              <ButtonLink to="/paspor-bukti">{t('Lihat contoh paspor')}</ButtonLink>
+              <Chip>{t('Contoh: data simulasi')}</Chip>
             </div>
           </Surface>
         </Reveal>

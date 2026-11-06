@@ -1,6 +1,7 @@
 import { BROWSER_ASSEMBLED_LABEL } from './notices';
 import type { SourceStatus } from './evidenceTypes';
 import styles from './EvidencePassport.module.css';
+import { t } from '@/lib/i18n';
 
 /** Characters that can safely sit inside a CSS string; anything else is left out of the margin text. */
 const SAFE_IN_CSS_STRING = /^[A-Za-z0-9 ._:/,()-]+$/;
@@ -18,11 +19,18 @@ export function PrintRunningHeader({
 }: {
   readonly source: Pick<SourceStatus, 'dataMode' | 'snapshotId'>;
 }) {
-  const snapshot = SAFE_IN_CSS_STRING.test(source.snapshotId) ? source.snapshotId : 'tidak dapat ditampilkan';
-  const text = `Nusa Matra, Paspor Bukti, mode ${source.dataMode}, versi data ${snapshot}, ${BROWSER_ASSEMBLED_LABEL}`;
+  const snapshot = SAFE_IN_CSS_STRING.test(source.snapshotId)
+    ? source.snapshotId
+    : t('tidak dapat ditampilkan');
+  const text = t(
+    'Nusa Matra, Paspor Bukti, mode {0}, versi data {1}, {2}',
+    source.dataMode,
+    snapshot,
+    BROWSER_ASSEMBLED_LABEL,
+  );
   return (
     <>
-      <style>{`@page { @top-left { content: "${text}"; font: 600 8pt sans-serif; color: #000; } @bottom-right { content: "Halaman " counter(page) " dari " counter(pages); font: 8pt sans-serif; color: #000; } }`}</style>
+      <style>{`@page { @top-left { content: "${text}"; font: 600 8pt sans-serif; color: #000; } @bottom-right { content: "${t('Halaman')} " counter(page) " ${t('dari')} " counter(pages); font: 8pt sans-serif; color: #000; } }`}</style>
       <p className={styles.printHeader}>{text}</p>
     </>
   );

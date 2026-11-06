@@ -4,13 +4,14 @@ import { formatNumber } from './formatNumber';
 import { IconCard, InfoNote, LoadableView, SectionHead } from './MethodParts';
 import type { ScoreMethodData } from './useScoreMethod';
 import styles from './Methodology.module.css';
+import { t } from '@/lib/i18n';
 
 /** Reader-facing names of the example criteria (the catalog's names are long). */
 const CRITERION_LABEL: Readonly<Record<ExampleCriterion, string>> = {
-  soc_hdi: 'Indeks Pembangunan Manusia',
-  dis_multihazard_index: 'Indeks Risiko Bencana (IRBI) multi-bencana',
-  soc_poverty_rate: 'Persentase penduduk miskin',
-  hlt_stunting_prevalence: 'Prevalensi balita stunting',
+  soc_hdi: t('Indeks Pembangunan Manusia'),
+  dis_multihazard_index: t('Indeks Risiko Bencana (IRBI) multi-bencana'),
+  soc_poverty_rate: t('Persentase penduduk miskin'),
+  hlt_stunting_prevalence: t('Prevalensi balita stunting'),
 };
 
 /** Each criterion's colour in the rows and the stacked bar (the brand palette, in order). */
@@ -28,24 +29,27 @@ const round2 = (value: number) => Math.round(value * 100) / 100;
 export function CompositeSection({ method }: { readonly method: ScoreMethodData }) {
   return (
     <section id="langkah-3" aria-labelledby="metode-gabungan" className={styles.section}>
-      <SectionHead id="metode-gabungan" kicker="Langkah 3" title="Skor gabungan di Lab Prioritas">
-        Di Lab Prioritas Anda memilih beberapa indikator dan bobotnya. Skor gabungan sebuah wilayah adalah
-        jumlah skor kebutuhan setiap indikator dikali bobotnya.
+      <SectionHead id="metode-gabungan" kicker={t('Langkah 3')} title={t('Skor gabungan di Lab Prioritas')}>
+        {t(
+          'Di Lab Prioritas Anda memilih beberapa indikator dan bobotnya. Skor gabungan sebuah wilayah adalah jumlah skor kebutuhan setiap indikator dikali bobotnya.',
+        )}
       </SectionHead>
       <p className={`${styles.formula} ${styles.formulaWide}`}>
-        skor gabungan = Σ (skor kebutuhan × bobot) ÷ 10.000
+        {t('skor gabungan = Σ (skor kebutuhan × bobot) ÷ 10.000')}
       </p>
       <ul role="list" className={`${styles.cardGrid} ${styles.cardGridTwo}`}>
-        <IconCard icon="scale" title="Bobot selalu berjumlah 100%">
-          Bobot disimpan sebagai bilangan bulat dengan total tepat 10.000 (sama dengan 100%). Saat satu
-          penggeser digeser, bobot lain menyesuaikan sehingga totalnya tetap 100%.
+        <IconCard icon="scale" title={t('Bobot selalu berjumlah 100%')}>
+          {t(
+            'Bobot disimpan sebagai bilangan bulat dengan total tepat 10.000 (sama dengan 100%). Saat satu penggeser digeser, bobot lain menyesuaikan sehingga totalnya tetap 100%.',
+          )}
         </IconCard>
-        <IconCard icon="list" title="Urutan apa adanya dari Data Hub">
-          Wilayah diurutkan dari skor gabungan tertinggi. Skor dan peringkat dipakai apa adanya dari Data Hub,
-          termasuk peringkat yang sama untuk skor yang sama.
+        <IconCard icon="list" title={t('Urutan apa adanya dari Data Hub')}>
+          {t(
+            'Wilayah diurutkan dari skor gabungan tertinggi. Skor dan peringkat dipakai apa adanya dari Data Hub, termasuk peringkat yang sama untuk skor yang sama.',
+          )}
         </IconCard>
       </ul>
-      <LoadableView part={method.composite} loadingText="Memuat skor kebutuhan keempat kriteria…">
+      <LoadableView part={method.composite} loadingText={t('Memuat skor kebutuhan keempat kriteria…')}>
         {(example) => <CompositeCard example={example} regionName={method.regionName} />}
       </LoadableView>
     </section>
@@ -66,19 +70,19 @@ function CompositeCard({
   return (
     <article className={`glass glass--read ${styles.compositeCard}`} aria-labelledby="metode-gabungan-contoh">
       <h3 id="metode-gabungan-contoh" className="kk-body-strong">
-        Contoh bobot untuk {regionName}
+        {t('Contoh bobot untuk {0}', regionName)}
       </h3>
       <div className={styles.tableScroll}>
         <table className={styles.compositeTable}>
           <caption className="visually-hidden">
-            Skor kebutuhan × bobot = sumbangan, untuk {regionName}
+            {t('Skor kebutuhan × bobot = sumbangan, untuk {0}', regionName)}
           </caption>
           <thead>
             <tr>
-              <th scope="col">Kriteria</th>
-              <th scope="col">Skor kebutuhan</th>
-              <th scope="col">Bobot</th>
-              <th scope="col">Sumbangan</th>
+              <th scope="col">{t('Kriteria')}</th>
+              <th scope="col">{t('Skor kebutuhan')}</th>
+              <th scope="col">{t('Bobot')}</th>
+              <th scope="col">{t('Sumbangan')}</th>
             </tr>
           </thead>
           <tbody>
@@ -92,7 +96,7 @@ function CompositeCard({
                   />
                   {CRITERION_LABEL[row.id]}
                 </th>
-                <td>{row.needScore === null ? 'Data belum tersedia' : formatNumber(row.needScore)}</td>
+                <td>{row.needScore === null ? t('Data belum tersedia') : formatNumber(row.needScore)}</td>
                 <td>{formatNumber(row.basisPoints / 100)}%</td>
                 <td>{row.contribution === null ? '—' : formatNumber(row.contribution)}</td>
               </tr>
@@ -100,7 +104,7 @@ function CompositeCard({
           </tbody>
           <tfoot>
             <tr>
-              <th scope="row">Skor gabungan</th>
+              <th scope="row">{t('Skor gabungan')}</th>
               <td />
               <td>100%</td>
               <td>
@@ -127,7 +131,7 @@ function CompositeCard({
               />
             ))}
             <span className={styles.stackMarker} style={{ left: `${String(example.total)}%` }}>
-              <span className={styles.rangeBubble}>{formatNumber(example.total)} dari 100</span>
+              <span className={styles.rangeBubble}>{t('{0} dari 100', formatNumber(example.total))}</span>
             </span>
           </div>
           <div className={styles.rangeLabels}>
@@ -139,17 +143,26 @@ function CompositeCard({
 
       {example.missing.length > 0 ? (
         <InfoNote>
-          {regionName} belum punya data untuk {example.missing.map((id) => CRITERION_LABEL[id]).join(', ')}.
-          Nilainya tidak dianggap nol: di Lab Prioritas bobotnya dibagi ke kriteria lain dan wilayahnya
-          ditandai “Data sebagian”, jadi total di atas tidak dihitung di sini.
+          {t(
+            '{0} belum punya data untuk {1}. Nilainya tidak dianggap nol: di Lab Prioritas bobotnya dibagi ke kriteria lain dan wilayahnya ditandai “Data sebagian”, jadi total di atas tidak dihitung di sini.',
+            regionName,
+            example.missing.map((id) => CRITERION_LABEL[id]).join(', '),
+          )}
         </InfoNote>
       ) : (
         <InfoNote>
-          Contoh baris pertama: {formatNumber(first?.needScore ?? 0)} ×{' '}
-          {formatNumber((first?.basisPoints ?? 0) / 100)}% = {formatNumber(first?.contribution ?? 0)}. Jumlah
-          keempat sumbangan adalah skor gabungan yang dipakai untuk mengurutkan wilayah.
+          {t(
+            'Contoh baris pertama: {0} × {1}% = {2}. Jumlah keempat sumbangan adalah skor gabungan yang dipakai untuk mengurutkan wilayah.',
+            formatNumber(first?.needScore ?? 0),
+            formatNumber((first?.basisPoints ?? 0) / 100),
+            formatNumber(first?.contribution ?? 0),
+          )}
           {roundingGap &&
-            ` Jumlah sumbangan yang sudah dibulatkan (${formatNumber(roundedSum)}) bisa selisih sedikit dari skor gabungan (${formatNumber(example.total)}), karena skor gabungan dihitung dari angka sebelum dibulatkan.`}
+            t(
+              ' Jumlah sumbangan yang sudah dibulatkan ({0}) bisa selisih sedikit dari skor gabungan ({1}), karena skor gabungan dihitung dari angka sebelum dibulatkan.',
+              formatNumber(roundedSum),
+              formatNumber(example.total),
+            )}
         </InfoNote>
       )}
     </article>

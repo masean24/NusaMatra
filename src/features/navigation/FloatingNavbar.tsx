@@ -4,9 +4,11 @@ import { useRefractiveGlass } from '@/lib/glass';
 import { Logo } from '@/components/brand/Logo';
 import { prefersReducedMotion } from '@/features/motion';
 import { DisplayModeSwitch } from '@/features/theme';
+import { LanguageSwitch } from './LanguageSwitch';
 import { NavLinkList } from './NavLinkList';
 import { useCompactOnScroll } from './useCompactOnScroll';
 import styles from './FloatingNavbar.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * The brand, linking home. Already on the home page, it glides back to the very top (owner
@@ -18,7 +20,7 @@ function HomeLink() {
     <Link
       to="/"
       className={styles.home}
-      aria-label="Nusa Matra — Beranda"
+      aria-label={t('Nusa Matra — Beranda')}
       onClick={(event) => {
         if (pathname !== '/') return;
         event.preventDefault();
@@ -52,21 +54,25 @@ export function FloatingNavbar() {
       <div ref={desktopRef} className={`${styles.bar} ${styles.desktop}`} data-intro-step="rise">
         <HomeLink />
         <span className={styles.divider} aria-hidden="true" />
-        <nav aria-label="Navigasi utama">
+        <nav aria-label={t('Navigasi utama')}>
           <NavLinkList layout="pill" />
         </nav>
         <span className={styles.divider} aria-hidden="true" />
+        <LanguageSwitch />
         <DisplayModeSwitch />
       </div>
 
       <div ref={compactRef} className={`${styles.bar} ${styles.compactTop}`} data-intro-step="rise">
         <HomeLink />
-        <DisplayModeSwitch size="compact" />
+        <span className={styles.compactControls}>
+          <LanguageSwitch />
+          <DisplayModeSwitch size="compact" />
+        </span>
       </div>
 
       <nav
         ref={tabBarRef}
-        aria-label="Navigasi utama"
+        aria-label={t('Navigasi utama')}
         className={`${styles.bar} ${styles.tabBar}`}
         data-intro-step="rise"
       >

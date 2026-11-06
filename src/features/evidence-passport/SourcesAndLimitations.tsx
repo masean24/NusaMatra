@@ -7,17 +7,18 @@ import { PassportIcon } from './PassportIcons';
 import { agencyTile, formatServerStamp } from './passportFormat';
 import { Section } from './Section';
 import styles from './EvidencePassport.module.css';
+import { t } from '@/lib/i18n';
 
 export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase, 'sources' | 'source'> }) {
   return (
     <Section
       id="paspor-sumber"
-      title="Sumber data"
+      title={t('Sumber data')}
       mode={record.source.dataMode}
-      description="Penerbit asli tiap indikator. Buka sumber resmi untuk memeriksa angka langsung."
+      description={t('Penerbit asli tiap indikator. Buka sumber resmi untuk memeriksa angka langsung.')}
     >
       {record.sources.length === 0 ? (
-        <p>Sumber belum tersedia: tidak ada nilai yang dapat ditelusuri ke dataset.</p>
+        <p>{t('Sumber belum tersedia: tidak ada nilai yang dapat ditelusuri ke dataset.')}</p>
       ) : (
         <ul role="list" className={styles.sourceList}>
           {record.sources.map((source) => {
@@ -31,9 +32,9 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                   {agencyTile(source.agencyCode)}
                 </span>
                 <div className={styles.sourceBody}>
-                  <p className={styles.eyebrow}>{source.agencyCode ?? 'Lembaga belum tersedia'}</p>
+                  <p className={styles.eyebrow}>{source.agencyCode ?? t('Lembaga belum tersedia')}</p>
                   <h3 className={styles.sourceTitle}>
-                    {source.datasetTitle ?? source.datasetId ?? 'Judul dataset belum tersedia'}
+                    {source.datasetTitle ?? source.datasetId ?? t('Judul dataset belum tersedia')}
                   </h3>
                   <ul role="list" className={styles.chipRow}>
                     <li
@@ -42,20 +43,26 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                       }
                     >
                       {source.years.length > 0
-                        ? `Tahun data ${source.years.join(', ')}`
-                        : 'Tahun data belum tersedia'}
+                        ? t('Tahun data {0}', source.years.join(', '))
+                        : t('Tahun data belum tersedia')}
                     </li>
-                    <li className={styles.softChip}>{source.indicatorCount} indikator</li>
-                    <li className={styles.softChip}>Lisensi: {source.licenseName ?? 'belum tersedia'}</li>
+                    <li className={styles.softChip}>{t('{0} indikator', source.indicatorCount)}</li>
                     <li className={styles.softChip}>
-                      Pembaruan: {source.updateFrequency ?? 'belum tersedia'}
+                      {t('Lisensi: {0}', source.licenseName ?? t('belum tersedia'))}
                     </li>
-                    <li className={styles.softChip}>Akses: {source.accessMethod ?? 'belum tersedia'}</li>
+                    <li className={styles.softChip}>
+                      {t('Pembaruan: {0}', source.updateFrequency ?? t('belum tersedia'))}
+                    </li>
+                    <li className={styles.softChip}>
+                      {t('Akses: {0}', source.accessMethod ?? t('belum tersedia'))}
+                    </li>
                   </ul>
                   <p className={styles.sourceMeta}>
-                    Dimuat ke Data Hub {ingested.text}
-                    {ingested.zone ? ` ${ingested.zone}` : ' (zona waktu tidak dinyatakan server)'}. Waktu
-                    ambil dari penerbit belum tersedia.
+                    {t(
+                      'Dimuat ke Data Hub {0}{1}. Waktu ambil dari penerbit belum tersedia.',
+                      ingested.text,
+                      ingested.zone ? ` ${ingested.zone}` : t(' (zona waktu tidak dinyatakan server)'),
+                    )}
                   </p>
                   {source.officialUrl ? (
                     <a
@@ -64,12 +71,12 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                       target="_blank"
                       rel="noreferrer noopener"
                     >
-                      Buka sumber resmi
+                      {t('Buka sumber resmi')}
                       <PassportIcon name="external" size={13} />
-                      <span className={styles.srOnly}> (membuka tab baru)</span>
+                      <span className={styles.srOnly}> {t('(membuka tab baru)')}</span>
                     </a>
                   ) : (
-                    <p className={styles.sourceMeta}>Tautan sumber belum tersedia.</p>
+                    <p className={styles.sourceMeta}>{t('Tautan sumber belum tersedia.')}</p>
                   )}
                 </div>
               </li>
@@ -105,7 +112,7 @@ export function LimitationsSection({
         {String(index + 1).padStart(2, '0')}
       </span>
       <div className={styles.limitBody}>
-        <span className={styles.softChip}>{note.category}</span>
+        <span className={styles.softChip}>{t(note.category)}</span>
         <h3 className={styles.limitTitle}>{note.title}</h3>
         <p className={styles.limitText}>{note.text}</p>
       </div>
@@ -115,14 +122,16 @@ export function LimitationsSection({
   return (
     <Section
       id="batasan"
-      title="Batasan dan catatan"
+      title={t('Batasan dan catatan')}
       mode={record.source.dataMode}
       badge={`${String(notes.length)} batasan`}
-      description="Baca sebelum mengutip. Tiap batasan diberi label apa yang terdampak: data, metode, cakupan, atau reproduksibilitas."
+      description={t(
+        'Baca sebelum mengutip. Tiap batasan diberi label apa yang terdampak: data, metode, cakupan, atau reproduksibilitas.',
+      )}
     >
       <Disclosure
-        title="Apa arti Paspor Bukti ini?"
-        helper="Cara paspor dirangkai dan apa yang tidak dijaminnya"
+        title={t('Apa arti Paspor Bukti ini?')}
+        helper={t('Cara paspor dirangkai dan apa yang tidak dijaminnya')}
       >
         <p>{BROWSER_ASSEMBLED_NOTICE}</p>
       </Disclosure>
@@ -149,7 +158,9 @@ export function LimitationsSection({
               setExpanded((current) => !current);
             }}
           >
-            {expanded ? 'Sembunyikan batasan lainnya' : `Tampilkan ${String(rest.length)} batasan lainnya`}
+            {expanded
+              ? t('Sembunyikan batasan lainnya')
+              : t('Tampilkan {0} batasan lainnya', String(rest.length))}
             <PassportIcon name="chevronDown" size={14} />
           </button>
         </>

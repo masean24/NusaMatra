@@ -5,6 +5,7 @@ import { Reveal } from '@/features/motion';
 import type { CompositePresetDTO } from '@/services/api';
 import { SceneZone } from '../scene3d/SceneZone';
 import styles from './LabPreviewSection.module.css';
+import { LOCALE, t } from '@/lib/i18n';
 
 interface FocusInputs {
   readonly presets: readonly CompositePresetDTO[];
@@ -13,7 +14,7 @@ interface FocusInputs {
 }
 
 const percent = (basisPoints: number) =>
-  `${(basisPoints / 100).toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+  `${(basisPoints / 100).toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
 
 /**
  * The weights the preset really uses, largest first: an indicator without national data is left out and
@@ -54,7 +55,7 @@ function FocusPanel({
       aria-hidden={live ? undefined : true}
     >
       <p className={`kk-body-strong ${styles.presetTitle}`}>{preset.label}</p>
-      <ul role="list" className={styles.weights} aria-label={`Bobot fokus ${preset.label}`}>
+      <ul role="list" className={styles.weights} aria-label={t('Bobot fokus {0}', preset.label)}>
         {rows.map((row) => (
           <li
             key={row.id}
@@ -73,8 +74,11 @@ function FocusPanel({
       </ul>
       {top && (
         <p className={`kk-small ${styles.explain}`}>
-          {top.name} mendapat bobot terbesar ({percent(top.bps)}). Di Lab Prioritas, bobot ini dipakai untuk
-          mengurutkan kabupaten/kota, dan setiap skor bisa diurai menjadi sumbangan tiap indikator.
+          {t(
+            '{0} mendapat bobot terbesar ({1}). Di Lab Prioritas, bobot ini dipakai untuk mengurutkan kabupaten/kota, dan setiap skor bisa diurai menjadi sumbangan tiap indikator.',
+            top.name,
+            percent(top.bps),
+          )}
         </p>
       )}
     </div>
@@ -114,37 +118,38 @@ export function LabPreviewSection() {
           values={rows.map((row) => row.bps)}
           description={
             rows.length > 0
-              ? `Kolom oranye di atas alas kapur; tinggi kolom mengikuti bobot fokus yang dipilih: ${rows
-                  .map((row) => `${row.name} ${percent(row.bps)}`)
-                  .join(', ')}.`
-              : 'Kolom oranye di atas alas kapur; tingginya mengikuti bobot fokus yang dipilih.'
+              ? t(
+                  'Kolom oranye di atas alas kapur; tinggi kolom mengikuti bobot fokus yang dipilih: {0}.',
+                  rows.map((row) => `${row.name} ${percent(row.bps)}`).join(', '),
+                )
+              : t('Kolom oranye di atas alas kapur; tingginya mengikuti bobot fokus yang dipilih.')
           }
         />
         <div className={styles.content}>
-          <p className={`kk-small ${styles.eyebrow}`}>Lab Prioritas</p>
+          <p className={`kk-small ${styles.eyebrow}`}>{t('Lab Prioritas')}</p>
           <h2 id="lab-title" className={`kk-h1 ${styles.title}`}>
-            Bagaimana pilihanmu mengubah prioritas wilayah?
+            {t('Bagaimana pilihanmu mengubah prioritas wilayah?')}
           </h2>
           <p className={`kk-body ${styles.lead}`}>
-            Pilih fokus pembangunan untuk melihat bobot yang diberikan pada tiap indikator.
+            {t('Pilih fokus pembangunan untuk melihat bobot yang diberikan pada tiap indikator.')}
           </p>
 
           {inputs.state.status === 'error' ? (
             <div className={styles.problem} role="alert">
-              <p className="kk-small">Pilihan fokus tidak dapat dimuat dari Data Hub saat ini.</p>
+              <p className="kk-small">{t('Pilihan fokus tidak dapat dimuat dari Data Hub saat ini.')}</p>
               <button type="button" className="glass-btn" onClick={inputs.retry}>
-                Coba lagi
+                {t('Coba lagi')}
               </button>
             </div>
           ) : !loaded || !preset ? (
-            <div className={styles.skeleton} aria-busy="true" aria-label="Memuat pilihan fokus">
+            <div className={styles.skeleton} aria-busy="true" aria-label={t('Memuat pilihan fokus')}>
               <span />
               <span />
               <span />
             </div>
           ) : (
             <>
-              <div className={`glass-seg ${styles.focus}`} role="group" aria-label="Fokus pembangunan">
+              <div className={`glass-seg ${styles.focus}`} role="group" aria-label={t('Fokus pembangunan')}>
                 {loaded.presets.map((item) => (
                   <button
                     key={item.presetId}
@@ -179,10 +184,10 @@ export function LabPreviewSection() {
                 preset ? `/lab-prioritas?skenario=${encodeURIComponent(preset.presetId)}` : '/lab-prioritas'
               }
             >
-              Coba di Lab Prioritas
+              {t('Coba di Lab Prioritas')}
             </ButtonLink>
             <ButtonLink to="/metodologi" variant="secondary">
-              Cara skor dihitung
+              {t('Cara skor dihitung')}
             </ButtonLink>
           </div>
         </div>

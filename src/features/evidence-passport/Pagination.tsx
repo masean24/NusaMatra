@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button/Button';
 import type { PagedRows } from './usePagedRows';
 import styles from './EvidencePassport.module.css';
+import { t } from '@/lib/i18n';
 
 interface PaginationProps {
   /** What the pages are of, e.g. "peringkat wilayah". Names the navigation landmark. */
@@ -14,12 +15,12 @@ interface PaginationProps {
 /** Previous / page / next for a long table, with the visible range announced politely. */
 export function Pagination({ label, noun, total, paging }: PaginationProps) {
   const { page, pageCount, first, last, setPage: onPage } = paging;
-  const range = `Menampilkan ${String(first)}–${String(last)} dari ${String(total)} ${noun}`;
+  const range = t('Menampilkan {0}–{1} dari {2} {3}', String(first), String(last), String(total), noun);
   if (pageCount <= 1) {
     return <p className={`kk-small ${styles.muted}`}>{range}</p>;
   }
   return (
-    <nav className={styles.pager} aria-label={`Halaman ${label}`}>
+    <nav className={styles.pager} aria-label={t('Halaman {0}', label)}>
       <p className="kk-small" role="status">
         {range}
       </p>
@@ -31,10 +32,10 @@ export function Pagination({ label, noun, total, paging }: PaginationProps) {
             onPage(page - 1);
           }}
         >
-          Sebelumnya
+          {t('Sebelumnya')}
         </Button>
         <label className={`kk-small ${styles.pagerSelect}`}>
-          Halaman
+          {t('Halaman')}
           <select
             value={page}
             onChange={(event) => {
@@ -43,7 +44,7 @@ export function Pagination({ label, noun, total, paging }: PaginationProps) {
           >
             {Array.from({ length: pageCount }, (_, index) => (
               <option key={index} value={index}>
-                {index + 1} dari {pageCount}
+                {index + 1} {t('dari {0}', pageCount)}
               </option>
             ))}
           </select>
@@ -55,7 +56,7 @@ export function Pagination({ label, noun, total, paging }: PaginationProps) {
             onPage(page + 1);
           }}
         >
-          Berikutnya
+          {t('Berikutnya')}
         </Button>
       </div>
     </nav>

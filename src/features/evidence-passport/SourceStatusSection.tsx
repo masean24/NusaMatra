@@ -7,8 +7,9 @@ import { COMPLETENESS_CLAIM_NOTE } from './notices';
 import { formatReceived, formatServerStamp } from './passportFormat';
 import { Section } from './Section';
 import styles from './EvidencePassport.module.css';
+import { LOCALE, t } from '@/lib/i18n';
 
-const formatPercent = (value: number) => `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+const formatPercent = (value: number) => `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
 
 function Column({
   icon,
@@ -73,14 +74,14 @@ export function SourceStatusSection({ record, agencies }: SourceStatusSectionPro
   return (
     <Section
       id="paspor-status-sumber"
-      title="Status sumber data"
+      title={t('Status sumber data')}
       mode={source.dataMode}
-      meta={`Respons diterima ${formatReceived(source.receivedByBrowserAt, true)}`}
+      meta={t('Respons diterima {0}', formatReceived(source.receivedByBrowserAt, true))}
     >
       <div className={styles.statusGrid}>
-        <Column icon="layers" title="Versi data">
-          <Fact label="Nama">{snapshot?.label ?? 'belum tersedia'}</Fact>
-          <Fact label="Penyedia data">
+        <Column icon="layers" title={t('Versi data')}>
+          <Fact label={t('Nama')}>{snapshot?.label ?? t('belum tersedia')}</Fact>
+          <Fact label={t('Penyedia data')}>
             {agencies.length > 0 ? (
               <span className={styles.chipRow}>
                 {agencies.map((agency) => (
@@ -90,47 +91,53 @@ export function SourceStatusSection({ record, agencies }: SourceStatusSectionPro
                 ))}
               </span>
             ) : (
-              'belum tersedia'
+              t('belum tersedia')
             )}
           </Fact>
           <Fact
-            label="Dipublikasikan"
+            label={t('Dipublikasikan')}
             hint={
-              published.zone === null ? 'Zona waktu tidak dinyatakan server' : `Zona waktu ${published.zone}`
+              published.zone === null
+                ? t('Zona waktu tidak dinyatakan server')
+                : t('Zona waktu {0}', published.zone)
             }
           >
             {published.text}
           </Fact>
         </Column>
 
-        <Column icon="globe" title="Cakupan">
-          <Fact label="Versi batas wilayah">{snapshot?.boundaryVersion ?? 'belum tersedia'}</Fact>
-          <Fact label="Indikator berdata">
+        <Column icon="globe" title={t('Cakupan')}>
+          <Fact label={t('Versi batas wilayah')}>{snapshot?.boundaryVersion ?? t('belum tersedia')}</Fact>
+          <Fact label={t('Indikator berdata')}>
             {source.observedCoverage
-              ? `${String(source.observedCoverage.availableIndicators)} dari ${String(source.observedCoverage.totalIndicators)}`
+              ? t(
+                  '{0} dari {1}',
+                  String(source.observedCoverage.availableIndicators),
+                  String(source.observedCoverage.totalIndicators),
+                )
               : source.dataMode === 'DEMO'
-                ? 'tidak tersedia pada mode DEMO'
-                : 'belum tersedia'}
+                ? t('tidak tersedia pada mode DEMO')
+                : t('belum tersedia')}
           </Fact>
-          <Fact label="Kelengkapan data">
-            {completeness === null ? 'belum tersedia' : formatPercent(completeness)}
+          <Fact label={t('Kelengkapan data')}>
+            {completeness === null ? t('belum tersedia') : formatPercent(completeness)}
           </Fact>
         </Column>
 
-        <Column icon="shield" title="Integritas">
-          <Fact label="Asal data">Data resmi dari Data Hub</Fact>
-          <Fact label="Reproduksibilitas">
+        <Column icon="shield" title={t('Integritas')}>
+          <Fact label={t('Asal data')}>{t('Data resmi dari Data Hub')}</Fact>
+          <Fact label={t('Reproduksibilitas')}>
             {reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
-              ? 'Dapat direproduksi: tautan ini selalu membuka versi data yang sama.'
-              : 'Tidak dapat direproduksi.'}
+              ? t('Dapat direproduksi: tautan ini selalu membuka versi data yang sama.')
+              : t('Tidak dapat direproduksi.')}
           </Fact>
         </Column>
       </div>
 
       {infos.length > 0 && (
         <Disclosure
-          title="Catatan tentang tautan ini"
-          helper="Versi data mana yang dipakai saat halaman dibuka"
+          title={t('Catatan tentang tautan ini')}
+          helper={t('Versi data mana yang dipakai saat halaman dibuka')}
         >
           {infos.map((info) => (
             <p key={info.code} data-severity="info">
@@ -143,7 +150,9 @@ export function SourceStatusSection({ record, agencies }: SourceStatusSectionPro
       {completeness !== null && source.observedCoverage !== null && (
         <p className={styles.muted}>{COMPLETENESS_CLAIM_NOTE}</p>
       )}
-      {snapshot === null && <p className={styles.muted}>Rincian versi data belum tersedia dari Data Hub.</p>}
+      {snapshot === null && (
+        <p className={styles.muted}>{t('Rincian versi data belum tersedia dari Data Hub.')}</p>
+      )}
     </Section>
   );
 }

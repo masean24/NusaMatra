@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import styles from './GlassSelect.module.css';
+import { LOCALE } from '@/lib/i18n';
 
 export interface GlassSelectOption {
   readonly value: string;
@@ -40,10 +41,10 @@ interface GlassSelectProps {
 
 /** First option whose label starts with the typed text (case-insensitive), searching after `from`. */
 function findByPrefix(options: readonly GlassSelectOption[], text: string, from: number): number {
-  const needle = text.toLocaleLowerCase('id-ID');
+  const needle = text.toLocaleLowerCase(LOCALE);
   for (let step = 1; step <= options.length; step++) {
     const index = (from + step) % options.length;
-    if (options[index]?.label.toLocaleLowerCase('id-ID').startsWith(needle)) return index;
+    if (options[index]?.label.toLocaleLowerCase(LOCALE).startsWith(needle)) return index;
   }
   return -1;
 }

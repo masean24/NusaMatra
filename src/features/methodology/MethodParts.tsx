@@ -3,6 +3,7 @@ import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { MethodIcon, type MethodIconName } from './MethodIcon';
 import type { Loadable } from './useScoreMethod';
 import styles from './Methodology.module.css';
+import { t } from '@/lib/i18n';
 
 /** A section's kicker ("LANGKAH 1"), heading and optional lead. */
 export function SectionHead({
@@ -82,14 +83,14 @@ export function LoadableView<T>({
   return (
     <StatusMessage
       kind="error"
-      title="Data contoh tidak dapat dimuat dari Data Hub"
+      title={t('Data contoh tidak dapat dimuat dari Data Hub')}
       action={
         <button type="button" className="glass-btn" onClick={part.retry}>
-          Coba lagi
+          {t('Coba lagi')}
         </button>
       }
     >
-      Penjelasan rumus tetap berlaku; angka contohnya akan muncul setelah Data Hub dapat dihubungi.
+      {t('Penjelasan rumus tetap berlaku; angka contohnya akan muncul setelah Data Hub dapat dihubungi.')}
     </StatusMessage>
   );
 }

@@ -9,6 +9,7 @@ import { OriginBadge } from './OriginBadge';
 import { describeLastSuccess } from './originText';
 import type { EarthquakeFeedState } from './useEarthquakeFeed';
 import styles from './EarthquakeLayerControl.module.css';
+import { t } from '@/lib/i18n';
 
 interface EarthquakeLayerControlProps {
   readonly enabled: boolean;
@@ -39,7 +40,7 @@ export function EarthquakeLayerControl({
   const shown = enabled && feed && assessment && assessment.display !== 'WITHHELD' ? feed.events : [];
 
   return (
-    <section className={styles.control} aria-label="Lapisan gempa BMKG">
+    <section className={styles.control} aria-label={t('Lapisan gempa BMKG')}>
       <div className={styles.row}>
         <button
           type="button"
@@ -54,17 +55,17 @@ export function EarthquakeLayerControl({
           <span className={styles.track} aria-hidden="true">
             <span className={styles.knob} />
           </span>
-          Gempa BMKG
+          {t('Gempa BMKG')}
         </button>
-        {!available && <span className="kk-small">Hanya untuk data LIVE (peta batas resmi).</span>}
+        {!available && <span className="kk-small">{t('Hanya untuk data LIVE (peta batas resmi).')}</span>}
         {shown.length > 0 && (
           <details ref={listRef} className={styles.disclosure}>
-            <summary className="kk-small">Daftar gempa ({shown.length})</summary>
+            <summary className="kk-small">{t('Daftar gempa ({0})', shown.length)}</summary>
             <div className={`glass ${styles.popover}`}>
               <p className={`kk-small ${styles.legend}`}>
-                Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak: merah M 5 ke atas,
-                jingga M 4 sampai 4,9, kuning di bawah M 4. Keduanya tidak menunjukkan kerusakan, risiko, atau
-                potensi tsunami; ikuti keterangan resmi BMKG.
+                {t(
+                  'Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak: merah M 5 ke atas, jingga M 4 sampai 4,9, kuning di bawah M 4. Keduanya tidak menunjukkan kerusakan, risiko, atau potensi tsunami; ikuti keterangan resmi BMKG.',
+                )}
               </p>
               <ul role="list" className={styles.events}>
                 {shown.map((event) => (
@@ -84,7 +85,7 @@ export function EarthquakeLayerControl({
                         {formatMagnitudeShort(event.magnitude)}
                       </span>
                       <span className={styles.eventText}>
-                        <span className="kk-body-strong">{event.area ?? 'Lokasi tidak disebutkan'}</span>
+                        <span className="kk-body-strong">{event.area ?? t('Lokasi tidak disebutkan')}</span>
                         <span className={`kk-small ${styles.eventTime}`}>{formatEventTime(event)}</span>
                       </span>
                     </button>
@@ -113,21 +114,23 @@ export function EarthquakeLayerControl({
       )}
       {enabled && state.lastError !== null && feed && (
         <p className={`kk-small ${styles.reasons}`} role="status">
-          Pembaruan terakhir gagal; yang tampil adalah data sebelumnya. Akan dicoba lagi otomatis.
+          {t('Pembaruan terakhir gagal; yang tampil adalah data sebelumnya. Akan dicoba lagi otomatis.')}
         </p>
       )}
       {enabled && feed && assessment && assessment.display !== 'WITHHELD' && (
         <p className={`kk-small ${styles.reasons}`}>
           {describeLastSuccess(feed.lastSuccessAt)}
           {feed.rejectedCount > 0
-            ? `, ${String(feed.rejectedCount)} entri ditolak karena tidak lolos validasi`
+            ? t(', {0} entri ditolak karena tidak lolos validasi', String(feed.rejectedCount))
             : ''}
         </p>
       )}
       {enabled && state.status === 'error' && (
         <DataHubErrorMessage error={state.lastError} onRetry={state.retry} />
       )}
-      {enabled && state.status === 'loading' && <StatusMessage kind="loading" title="Memuat gempa BMKG…" />}
+      {enabled && state.status === 'loading' && (
+        <StatusMessage kind="loading" title={t('Memuat gempa BMKG…')} />
+      )}
     </section>
   );
 }
@@ -136,23 +139,21 @@ function LayerStatus({ state, count }: { readonly state: EarthquakeFeedState; re
   const { assessment, feed } = state;
   if (!assessment || !feed) return null;
   if (assessment.display === 'WITHHELD')
-    return <Chip tone="warning">Gempa ditahan: asal data belum jelas</Chip>;
+    return <Chip tone="warning">{t('Gempa ditahan: asal data belum jelas')}</Chip>;
   const age =
     assessment.ageMinutes === null
       ? null
-      : `diperbarui BMKG ±${String(Math.round(assessment.ageMinutes))} menit lalu`;
+      : t('diperbarui BMKG ±{0} menit lalu', String(Math.round(assessment.ageMinutes)));
   return (
     <span className={`kk-small ${styles.status}`}>
       {assessment.display === 'PREVIEW_UNVERIFIED' ? (
-        <Chip tone="warning">Pratinjau: asal data belum terverifikasi</Chip>
+        <Chip tone="warning">{t('Pratinjau: asal data belum terverifikasi')}</Chip>
       ) : (
-        <Chip>Data BMKG</Chip>
+        <Chip>{t('Data BMKG')}</Chip>
       )}
       <OriginBadge origin={feed.origin} />
-      {assessment.isStale && <Chip tone="warning">Mungkin usang</Chip>}
-      <span>
-        {count} gempa{age ? `, ${age}` : ''}
-      </span>
+      {assessment.isStale && <Chip tone="warning">{t('Mungkin usang')}</Chip>}
+      <span>{t('{0} gempa{1}', count, age ? `, ${age}` : '')}</span>
     </span>
   );
 }

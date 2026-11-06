@@ -5,21 +5,23 @@ import type { MissingExample, ReadyExample } from './indicatorExample';
 import { IconCard, InfoNote, LoadableView, SectionHead } from './MethodParts';
 import type { ScoreMethodData } from './useScoreMethod';
 import styles from './Methodology.module.css';
+import { t } from '@/lib/i18n';
 
 /** Langkah 1: the raw official value, shown as the source states it. */
 export function ValueStep({ method }: { readonly method: ScoreMethodData }) {
   return (
     <section id="langkah-1" aria-labelledby="metode-nilai" className={styles.section}>
-      <SectionHead id="metode-nilai" kicker="Langkah 1" title="Nilai asli dari sumber resmi">
-        Setiap skor berawal dari angka resmi kabupaten/kota, ditampilkan apa adanya dengan satuan dan tahun
-        acuannya.
+      <SectionHead id="metode-nilai" kicker={t('Langkah 1')} title={t('Nilai asli dari sumber resmi')}>
+        {t(
+          'Setiap skor berawal dari angka resmi kabupaten/kota, ditampilkan apa adanya dengan satuan dan tahun acuannya.',
+        )}
       </SectionHead>
-      <LoadableView part={method.example} loadingText="Memuat nilai contoh dari Data Hub…">
+      <LoadableView part={method.example} loadingText={t('Memuat nilai contoh dari Data Hub…')}>
         {(example) =>
           example.status === 'missing' ? (
             <p className={`kk-body ${styles.exampleNote}`}>
-              {example.regionName} belum punya nilai <strong>{example.indicatorLabel}</strong> pada versi data
-              ini.
+              {t('{0} belum punya nilai', example.regionName)} <strong>{example.indicatorLabel}</strong>{' '}
+              {t('pada versi data ini.')}
             </p>
           ) : (
             <ValueCard example={example} />
@@ -27,17 +29,20 @@ export function ValueStep({ method }: { readonly method: ScoreMethodData }) {
         }
       </LoadableView>
       <ul role="list" className={styles.cardGrid}>
-        <IconCard icon="calendar" title="Tahun selalu disebutkan">
-          Tahun antarindikator bisa berbeda karena mengikuti publikasi resmi terbaru, jadi tahun selalu
-          ditulis di samping angka.
+        <IconCard icon="calendar" title={t('Tahun selalu disebutkan')}>
+          {t(
+            'Tahun antarindikator bisa berbeda karena mengikuti publikasi resmi terbaru, jadi tahun selalu ditulis di samping angka.',
+          )}
         </IconCard>
-        <IconCard icon="empty" title="Data kosong tetap kosong">
-          Tidak diisi nol dan tidak ditebak. Wilayah tanpa data untuk sebuah indikator tidak diberi skor untuk
-          indikator itu.
+        <IconCard icon="empty" title={t('Data kosong tetap kosong')}>
+          {t(
+            'Tidak diisi nol dan tidak ditebak. Wilayah tanpa data untuk sebuah indikator tidak diberi skor untuk indikator itu.',
+          )}
         </IconCard>
-        <IconCard icon="layers" title="Estimasi tingkat provinsi">
-          Angka yang hanya terbit per provinsi dipakai untuk semua kabupaten/kota di provinsi itu dan diberi
-          tanda estimasi, karena bukan pengukuran kabupaten/kota.
+        <IconCard icon="layers" title={t('Estimasi tingkat provinsi')}>
+          {t(
+            'Angka yang hanya terbit per provinsi dipakai untuk semua kabupaten/kota di provinsi itu dan diberi tanda estimasi, karena bukan pengukuran kabupaten/kota.',
+          )}
         </IconCard>
       </ul>
     </section>
@@ -48,7 +53,7 @@ function ExampleChips({ regionName, label }: { readonly regionName: string; read
   return (
     <p className={styles.chipRow}>
       <span className={styles.chip} data-tone="sea">
-        Contoh: {regionName}
+        {t('Contoh: {0}', regionName)}
       </span>
       <span className={styles.chip}>{label}</span>
     </p>
@@ -57,8 +62,8 @@ function ExampleChips({ regionName, label }: { readonly regionName: string; read
 
 function ValueCard({ example }: { readonly example: ReadyExample }) {
   return (
-    <article className={`glass glass--read ${styles.valueCard}`} aria-label="Nilai asli contoh">
-      <ExampleChips regionName={example.regionName} label="Nilai asli dari sumber" />
+    <article className={`glass glass--read ${styles.valueCard}`} aria-label={t('Nilai asli contoh')}>
+      <ExampleChips regionName={example.regionName} label={t('Nilai asli dari sumber')} />
       <p className={styles.valueFigure}>
         <span>{example.valueText}</span>
         <span className={styles.valueUnit}>{example.unitText}</span>
@@ -66,10 +71,12 @@ function ValueCard({ example }: { readonly example: ReadyExample }) {
       <p className={styles.pillRow}>
         <span className={styles.pill}>{example.indicatorLabel}</span>
         <span className={styles.pill}>
-          {example.referenceYear === null ? 'Tahun belum tersedia' : `Tahun ${String(example.referenceYear)}`}
+          {example.referenceYear === null
+            ? t('Tahun belum tersedia')
+            : t('Tahun {0}', String(example.referenceYear))}
         </span>
-        <span className={styles.pill}>Sumber {example.agency}</span>
-        {example.provinceEstimate && <span className={styles.pill}>Estimasi tingkat provinsi</span>}
+        <span className={styles.pill}>{t('Sumber {0}', example.agency)}</span>
+        {example.provinceEstimate && <span className={styles.pill}>{t('Estimasi tingkat provinsi')}</span>}
       </p>
     </article>
   );
@@ -78,8 +85,10 @@ function ValueCard({ example }: { readonly example: ReadyExample }) {
 function MissingValue({ example }: { readonly example: MissingExample }) {
   return (
     <p className={`kk-body ${styles.exampleNote}`}>
-      {example.regionName} belum punya data <strong>{example.indicatorLabel}</strong> pada versi data ini,
-      jadi tidak diberi skor. Data yang kosong tidak diisi nol. Pilih indikator lain untuk melihat contohnya.
+      {t('{0} belum punya data', example.regionName)} <strong>{example.indicatorLabel}</strong>{' '}
+      {t(
+        'pada versi data ini, jadi tidak diberi skor. Data yang kosong tidak diisi nol. Pilih indikator lain untuk melihat contohnya.',
+      )}
     </p>
   );
 }
@@ -94,29 +103,29 @@ export function ScaleStep({
 }) {
   return (
     <section id="langkah-2" aria-labelledby="metode-skala" className={styles.section}>
-      <SectionHead id="metode-skala" kicker="Langkah 2" title="Skala kebutuhan 0–100">
-        Indikator punya satuan berbeda (persen, tahun, skor), jadi semuanya diletakkan pada satu skala yang
-        sama. Patokannya nilai terendah dan tertinggi di antara semua kabupaten/kota yang punya data pada
-        versi data aktif.
+      <SectionHead id="metode-skala" kicker={t('Langkah 2')} title={t('Skala kebutuhan 0–100')}>
+        {t(
+          'Indikator punya satuan berbeda (persen, tahun, skor), jadi semuanya diletakkan pada satu skala yang sama. Patokannya nilai terendah dan tertinggi di antara semua kabupaten/kota yang punya data pada versi data aktif.',
+        )}
       </SectionHead>
       <div className={styles.formulas}>
         <article className={`glass glass--read ${styles.formulaCard}`} data-direction="high">
-          <h3 className="kk-body-strong">Kalau angka tinggi berarti buruk</h3>
-          <p className={`kk-small ${styles.muted}`}>Contoh: kemiskinan, stunting, risiko bencana</p>
-          <p className={styles.formula}>skor = (nilai − terendah) ÷ (tertinggi − terendah) × 100</p>
+          <h3 className="kk-body-strong">{t('Kalau angka tinggi berarti buruk')}</h3>
+          <p className={`kk-small ${styles.muted}`}>{t('Contoh: kemiskinan, stunting, risiko bencana')}</p>
+          <p className={styles.formula}>{t('skor = (nilai − terendah) ÷ (tertinggi − terendah) × 100')}</p>
           <MiniScale highIsNeed />
         </article>
         <article className={`glass glass--read ${styles.formulaCard}`} data-direction="low">
-          <h3 className="kk-body-strong">Kalau angka tinggi berarti baik</h3>
-          <p className={`kk-small ${styles.muted}`}>Contoh: IPM, harapan hidup, akses air minum</p>
-          <p className={styles.formula}>skor = (tertinggi − nilai) ÷ (tertinggi − terendah) × 100</p>
+          <h3 className="kk-body-strong">{t('Kalau angka tinggi berarti baik')}</h3>
+          <p className={`kk-small ${styles.muted}`}>{t('Contoh: IPM, harapan hidup, akses air minum')}</p>
+          <p className={styles.formula}>{t('skor = (tertinggi − nilai) ÷ (tertinggi − terendah) × 100')}</p>
           <MiniScale highIsNeed={false} />
         </article>
       </div>
       <InfoNote>
-        Skor ini relatif. Angka 100 berarti paling membutuhkan di antara kabupaten/kota di Indonesia, bukan
-        “buruk sekali” secara mutlak. Bila arah baik atau buruk sebuah indikator belum ditetapkan, skornya
-        tidak dihitung.
+        {t(
+          'Skor ini relatif. Angka 100 berarti paling membutuhkan di antara kabupaten/kota di Indonesia, bukan “buruk sekali” secara mutlak. Bila arah baik atau buruk sebuah indikator belum ditetapkan, skornya tidak dihitung.',
+        )}
       </InfoNote>
 
       <article
@@ -125,9 +134,9 @@ export function ScaleStep({
         aria-labelledby="metode-contoh"
       >
         <h3 id="metode-contoh" className="kk-h3">
-          Contoh dengan angka sungguhan
+          {t('Contoh dengan angka sungguhan')}
         </h3>
-        <LoadableView part={method.example} loadingText="Memuat nilai indikator…">
+        <LoadableView part={method.example} loadingText={t('Memuat nilai indikator…')}>
           {(example) =>
             example.status === 'missing' ? (
               <MissingValue example={example} />
@@ -147,17 +156,20 @@ function MiniScale({ highIsNeed }: { readonly highIsNeed: boolean }) {
     <div className={styles.miniScale}>
       <span className={styles.miniTrack} data-need-end={highIsNeed ? 'high' : 'low'} aria-hidden="true" />
       <span className={styles.miniLabels}>
-        <span>terendah → {highIsNeed ? 0 : 100}</span>
-        <span>tertinggi → {highIsNeed ? 100 : 0}</span>
+        <span>{t('terendah → {0}', highIsNeed ? 0 : 100)}</span>
+        <span>{t('tertinggi → {0}', highIsNeed ? 100 : 0)}</span>
       </span>
     </div>
   );
 }
 
 const DIRECTION_TEXT = {
-  HIGH_VALUE_IS_NEED: 'Makin tinggi nilainya, makin besar kebutuhannya. Nilai tertinggi mendapat skor 100.',
-  LOW_VALUE_IS_NEED:
+  HIGH_VALUE_IS_NEED: t(
+    'Makin tinggi nilainya, makin besar kebutuhannya. Nilai tertinggi mendapat skor 100.',
+  ),
+  LOW_VALUE_IS_NEED: t(
     'Makin tinggi nilainya, makin baik kondisinya. Skalanya dibalik: nilai terendah mendapat skor 100.',
+  ),
 } as const;
 
 function WorkedRows({ example }: { readonly example: ReadyExample }) {
@@ -167,28 +179,32 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
       <ExampleChips regionName={example.regionName} label={example.indicatorLabel} />
       <div className={styles.rows}>
         <div className={styles.row}>
-          <h4 className={styles.rowLabel}>Nilai asli</h4>
+          <h4 className={styles.rowLabel}>{t('Nilai asli')}</h4>
           <p className="kk-body">
             <strong>
               {example.valueText}
               {example.unitText}
             </strong>{' '}
-            untuk {example.indicatorLabel} di {example.regionName}
+            {t('untuk {0} di {1}', example.indicatorLabel, example.regionName)}
           </p>
         </div>
 
         <div className={styles.row}>
-          <h4 className={styles.rowLabel}>Rentang nasional</h4>
+          <h4 className={styles.rowLabel}>{t('Rentang nasional')}</h4>
           {range === null ? (
             <p className="kk-body">
-              Data Hub tidak menyertakan nilai terendah dan tertinggi untuk indikator ini.
+              {t('Data Hub tidak menyertakan nilai terendah dan tertinggi untuk indikator ini.')}
             </p>
           ) : (
             <div className={styles.rowBody}>
               <p className="kk-body">
-                Terendah <strong>{formatNumber(range.min)}</strong>
-                {example.unitText} dan tertinggi <strong>{formatNumber(range.max)}</strong>
-                {example.unitText}, dari {example.regionsWithData} kabupaten/kota yang punya data.
+                {t('Terendah')} <strong>{formatNumber(range.min)}</strong>
+                {t('{0} dan tertinggi', example.unitText)} <strong>{formatNumber(range.max)}</strong>
+                {t(
+                  '{0}, dari {1} kabupaten/kota yang punya data.',
+                  example.unitText,
+                  example.regionsWithData,
+                )}
               </p>
               <RangeTrack
                 start={formatNumber(range.min)}
@@ -200,10 +216,10 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
               />
               {example.reported !== null && (
                 <RangeTrack
-                  start="0 (kebutuhan terendah)"
-                  end="100 (tertinggi)"
+                  start={t('0 (kebutuhan terendah)')}
+                  end={t('100 (tertinggi)')}
                   position={positionOf(example.reported, 0, 100)}
-                  bubble={`skor ${formatNumber(example.reported)}`}
+                  bubble={t('skor {0}', formatNumber(example.reported))}
                   needEnd="high"
                   tone="accent"
                 />
@@ -213,17 +229,19 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
         </div>
 
         <div className={styles.row}>
-          <h4 className={styles.rowLabel}>Arah indikator</h4>
+          <h4 className={styles.rowLabel}>{t('Arah indikator')}</h4>
           <p className="kk-body">
             {needEnd === null
-              ? 'Arah baik atau buruk indikator ini belum ditetapkan, jadi skor kebutuhannya tidak dihitung.'
+              ? t(
+                  'Arah baik atau buruk indikator ini belum ditetapkan, jadi skor kebutuhannya tidak dihitung.',
+                )
               : DIRECTION_TEXT[needEnd]}
           </p>
         </div>
 
         {needEnd !== null && range !== null && (
           <div className={styles.row}>
-            <h4 className={styles.rowLabel}>Rumus diisi</h4>
+            <h4 className={styles.rowLabel}>{t('Rumus diisi')}</h4>
             <div className={styles.rowBody}>
               <p className={styles.formula}>
                 {needEnd === 'HIGH_VALUE_IS_NEED'
@@ -239,12 +257,17 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
               {example.reportedText !== null &&
                 (example.matches ? (
                   <ConditionBadge tone="positive">
-                    {`Sama dengan skor kebutuhan dari Data Hub: ${formatDecimalId(example.reportedText)}.`}
+                    {t(
+                      'Sama dengan skor kebutuhan dari Data Hub: {0}.',
+                      formatDecimalId(example.reportedText),
+                    )}
                   </ConditionBadge>
                 ) : (
                   <p className={`kk-small ${styles.muted}`}>
-                    Data Hub melaporkan {formatDecimalId(example.reportedText)}; angka Data Hub itulah yang
-                    dipakai di situs.
+                    {t(
+                      'Data Hub melaporkan {0}; angka Data Hub itulah yang dipakai di situs.',
+                      formatDecimalId(example.reportedText),
+                    )}
                   </p>
                 ))}
             </div>

@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 /** Canonical weights are integer basis points; a complete set sums to exactly this value. */
 export const TOTAL_BASIS_POINTS = 10_000;
 
@@ -23,7 +25,7 @@ export function validateWeights<CriterionId extends string>(
 
   const total = entries.reduce((sum, [, value]) => sum + value, 0);
   if (total !== TOTAL_BASIS_POINTS) {
-    return { valid: false, reason: 'wrong_total', detail: `total = ${total}` };
+    return { valid: false, reason: 'wrong_total', detail: t('total = {0}', total) };
   }
 
   return { valid: true };

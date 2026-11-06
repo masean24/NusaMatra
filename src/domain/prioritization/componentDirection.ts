@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 /**
  * Checks that a component score of the composite ranking points the way its indicator's polarity
  * says. Under the v2.1 contract (`score_direction: higher_is_need`, the default) a higher score means
@@ -129,7 +131,10 @@ export function checkComponentDirection(input: DirectionCheckInput): DirectionVe
   if (offPublished.length > 0) {
     return {
       status: 'inconsistent',
-      reason: `${String(offPublished.length)} skor komponen berbeda dari skor ternormalisasi yang dipublikasikan untuk indikator ini.`,
+      reason: t(
+        '{0} skor komponen berbeda dari skor ternormalisasi yang dipublikasikan untuk indikator ini.',
+        String(offPublished.length),
+      ),
       examples: offPublished.slice(0, MAX_EXAMPLES),
     };
   }
@@ -138,14 +143,18 @@ export function checkComponentDirection(input: DirectionCheckInput): DirectionVe
   const polaritySign = input.polarity === 'positive' ? 1 : input.polarity === 'negative' ? -1 : 0;
   const sign = (input.scoreDirection ?? 'higher_is_need') === 'higher_is_need' ? -polaritySign : polaritySign;
   if (sign === 0)
-    return { status: 'unverifiable', reason: 'Arah indikator ini tidak dinyatakan positif atau negatif.' };
+    return { status: 'unverifiable', reason: t('Arah indikator ini tidak dinyatakan positif atau negatif.') };
   if (independent.length + imputed.length < 2)
-    return { status: 'unverifiable', reason: 'Nilai sumber tidak cukup untuk diperiksa.' };
+    return { status: 'unverifiable', reason: t('Nilai sumber tidak cukup untuk diperiksa.') };
 
   const byRaw = (a: Pair, b: Pair) => a.raw - b.raw;
   const inconsistent = (against: readonly string[]): DirectionVerdict => ({
     status: 'inconsistent',
-    reason: `${String(against.length)} skor komponen bergerak berlawanan dengan arah indikator (${input.polarity}).`,
+    reason: t(
+      '{0} skor komponen bergerak berlawanan dengan arah indikator ({1}).',
+      String(against.length),
+      input.polarity,
+    ),
     examples: against.slice(0, MAX_EXAMPLES),
   });
 
@@ -157,7 +166,11 @@ export function checkComponentDirection(input: DirectionCheckInput): DirectionVe
     return {
       status: 'unverified',
       imputedCount: imputed.length,
-      reason: `Hanya ${String(independent.length)} pengamatan yang bukan estimasi; ${String(imputed.length)} nilai adalah estimasi tingkat provinsi. Urutan nilai mentah terhadap skor tidak dapat diverifikasi secara independen.`,
+      reason: t(
+        'Hanya {0} pengamatan yang bukan estimasi; {1} nilai adalah estimasi tingkat provinsi. Urutan nilai mentah terhadap skor tidak dapat diverifikasi secara independen.',
+        String(independent.length),
+        String(imputed.length),
+      ),
     };
   }
 
@@ -174,7 +187,10 @@ export function checkComponentDirection(input: DirectionCheckInput): DirectionVe
       status: 'partial',
       checked,
       unverified,
-      reason: `${String(unverified.length)} nilai estimasi tingkat provinsi tidak mengikuti urutan nilai mentah pengamatan lain; skornya tidak dapat diverifikasi terhadap nilai mentahnya.`,
+      reason: t(
+        '{0} nilai estimasi tingkat provinsi tidak mengikuti urutan nilai mentah pengamatan lain; skornya tidak dapat diverifikasi terhadap nilai mentahnya.',
+        String(unverified.length),
+      ),
     };
   }
   return { status: 'consistent', checked, imputedChecked: imputed.length };

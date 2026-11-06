@@ -3,6 +3,7 @@ import type { EarthquakeEventDTO } from '@/services/api';
 import { describeEvent, formatEventTime, formatMagnitudeShort } from './format';
 import { toneStyle } from './magnitudeTones';
 import styles from './EarthquakeCallout.module.css';
+import { t } from '@/lib/i18n';
 
 interface EarthquakeCalloutProps {
   readonly event: EarthquakeEventDTO;
@@ -25,7 +26,7 @@ export function EarthquakeCallout({ event, selected, onSelect }: EarthquakeCallo
     >
       <span className={styles.head}>
         <span>
-          <span className={styles.kind}>Gempa Bumi</span>
+          <span className={styles.kind}>{t('Gempa Bumi')}</span>
           <span className={styles.magnitude}>{formatMagnitudeShort(event.magnitude)}</span>
         </span>
         <svg className={styles.trace} viewBox="0 0 32 20" width="32" height="20" aria-hidden="true">
@@ -37,7 +38,7 @@ export function EarthquakeCallout({ event, selected, onSelect }: EarthquakeCallo
           <path d="M8 14.5s5-4.6 5-8.5a5 5 0 0 0-10 0c0 3.9 5 8.5 5 8.5Z" />
           <circle cx="8" cy="6" r="1.75" />
         </svg>
-        <span className={styles.place}>{event.area ?? 'Lokasi tidak disebutkan'}</span>
+        <span className={styles.place}>{event.area ?? t('Lokasi tidak disebutkan')}</span>
       </span>
       <span className={styles.line}>
         <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">

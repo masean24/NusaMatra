@@ -7,6 +7,7 @@ import { useStaggeredNavigate } from '@/features/navigation';
 import { GUIDED_QUESTIONS, type GuidedQuestion, type QuestionId } from './howItWorksQuestions';
 import { QuestionPreviewArt } from './QuestionPreviewArt';
 import styles from './HowItWorksSection.module.css';
+import { t } from '@/lib/i18n';
 
 /* G3: heading rises 24px (600ms); the question cards follow one by one, 80ms apart. */
 const G3_STEP_STAGGER_MS = 80;
@@ -38,16 +39,16 @@ function QuestionPanel({
       inert={!active}
     >
       <div className={styles.panelHead}>
-        <p className={`kk-small ${styles.answers}`}>Menjawab: “{question.question}”</p>
+        <p className={`kk-small ${styles.answers}`}>{t('Menjawab: “{0}”', question.question)}</p>
         <h3 className={`kk-h3 ${styles.panelTitle}`}>{question.title}</h3>
       </div>
       <div className={styles.picture}>
-        <span className={styles.tag}>Contoh</span>
+        <span className={styles.tag}>{t('Contoh')}</span>
         <QuestionPreviewArt id={question.id} />
       </div>
       <div className={styles.panelBody}>
         <p className={`kk-body ${styles.description}`}>{question.description}</p>
-        <p className={`kk-caption ${styles.stepsLabel}`}>Mulai di sini</p>
+        <p className={`kk-caption ${styles.stepsLabel}`}>{t('Mulai di sini')}</p>
         <ol className={styles.steps}>
           {question.steps.map((step, index) => (
             <li key={step}>
@@ -103,13 +104,13 @@ export function HowItWorksSection() {
     <section id="cara-kerja" tabIndex={-1} className={styles.section} aria-labelledby="cara-kerja-title">
       <Reveal distance={24} duration={600}>
         <h2 id="cara-kerja-title" className={`kk-h1 ${styles.title}`}>
-          Dari pertanyaan sederhana ke keputusan yang bisa diperiksa
+          {t('Dari pertanyaan sederhana ke keputusan yang bisa diperiksa')}
         </h2>
       </Reveal>
       <div className={styles.canvas}>
         <div
           role="tablist"
-          aria-label="Pertanyaan yang bisa dijawab"
+          aria-label={t('Pertanyaan yang bisa dijawab')}
           aria-orientation="vertical"
           className={styles.tabs}
         >

@@ -1,5 +1,6 @@
 import type { DataMode } from '@/services/api';
 import type { SourceStatus } from './evidenceTypes';
+import { t } from '@/lib/i18n';
 
 /** Route of the Paspor Bukti page. */
 export const PASSPORT_PATH = '/paspor-bukti';
@@ -171,54 +172,58 @@ export function parseEvidenceQuery(params: URLSearchParams): ParsedEvidenceQuery
   const rawKind = params.get(PARAM.kind);
   if (rawKind === null) {
     return invalid(
-      'Tautan tidak menyebut jenis bukti. Buka Paspor Bukti dari Jelajahi, Bandingkan, atau Lab Prioritas.',
+      t(
+        'Tautan tidak menyebut jenis bukti. Buka Paspor Bukti dari Jelajahi, Bandingkan, atau Lab Prioritas.',
+      ),
     );
   }
   const kind = KIND_OF_PARAM[rawKind];
-  if (!kind) return invalid(`Jenis bukti "${rawKind}" tidak dikenal.`);
+  if (!kind) return invalid(t('Jenis bukti "{0}" tidak dikenal.', rawKind));
 
   const mode = readMode(params.get(PARAM.mode));
-  if (mode === 'invalid') return invalid('Mode pada tautan harus "live" atau "demo".');
+  if (mode === 'invalid') return invalid(t('Mode pada tautan harus "live" atau "demo".'));
 
   const rawSnapshot = params.get(PARAM.snapshot);
   if (rawSnapshot !== null && !SNAPSHOT_ID.test(rawSnapshot)) {
-    return invalid('ID versi data pada tautan tidak valid.');
+    return invalid(t('ID versi data pada tautan tidak valid.'));
   }
   const context: QueryContext = { mode, snapshotId: rawSnapshot };
 
   if (kind === 'lab') {
     const weights = readWeights(params.get(PARAM.weights));
     if (!weights) {
-      return invalid('Bobot pada tautan harus berupa bilangan bulat basis poin dengan total tepat 10.000.');
+      return invalid(
+        t('Bobot pada tautan harus berupa bilangan bulat basis poin dengan total tepat 10.000.'),
+      );
     }
     const province = params.get(PARAM.province);
     if (province !== null && !PROVINCE_ID.test(province)) {
-      return invalid('Kode provinsi pada tautan tidak valid.');
+      return invalid(t('Kode provinsi pada tautan tidak valid.'));
     }
     const focus = params.get(PARAM.region);
-    if (focus !== null && !REGION_ID.test(focus)) return invalid('Kode wilayah pada tautan tidak valid.');
+    if (focus !== null && !REGION_ID.test(focus)) return invalid(t('Kode wilayah pada tautan tidak valid.'));
     return { ok: true, query: { kind, ...context, weights, provinceId: province, focusRegionId: focus } };
   }
 
   const indicatorIds = readIndicatorIds(params.get(PARAM.indicators));
-  if (indicatorIds === 'invalid') return invalid('Daftar indikator pada tautan tidak valid.');
+  if (indicatorIds === 'invalid') return invalid(t('Daftar indikator pada tautan tidak valid.'));
 
   if (kind === 'wilayah') {
     const regionId = params.get(PARAM.region);
-    if (regionId === null) return invalid('Tautan tidak menyebut kode wilayah.');
-    if (!REGION_ID.test(regionId)) return invalid('Kode wilayah pada tautan tidak valid.');
+    if (regionId === null) return invalid(t('Tautan tidak menyebut kode wilayah.'));
+    if (!REGION_ID.test(regionId)) return invalid(t('Kode wilayah pada tautan tidak valid.'));
     return { ok: true, query: { kind, ...context, regionId, indicatorIds } };
   }
 
   const regionA = params.get(PARAM.regionA);
   const regionB = params.get(PARAM.regionB);
   if (regionA === null || regionB === null) {
-    return invalid('Perbandingan memerlukan dua kode wilayah (A dan B).');
+    return invalid(t('Perbandingan memerlukan dua kode wilayah (A dan B).'));
   }
   if (!REGION_ID.test(regionA) || !REGION_ID.test(regionB)) {
-    return invalid('Kode wilayah pada tautan tidak valid.');
+    return invalid(t('Kode wilayah pada tautan tidak valid.'));
   }
-  if (regionA === regionB) return invalid('Perbandingan memerlukan dua wilayah yang berbeda.');
+  if (regionA === regionB) return invalid(t('Perbandingan memerlukan dua wilayah yang berbeda.'));
   return { ok: true, query: { kind, ...context, regionA, regionB, indicatorIds } };
 }
 

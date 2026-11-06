@@ -3,6 +3,7 @@ import { useStaggeredEnter } from '@/features/motion';
 import { BackButton } from '@/features/navigation';
 import type { FeatureShell } from './featureShells';
 import styles from './FeaturePageFrame.module.css';
+import { t } from '@/lib/i18n';
 
 interface FeaturePageFrameProps {
   readonly shell: FeatureShell;
@@ -60,7 +61,7 @@ export function FeaturePageFrame({
           : undefined
       }
     >
-      <title>{`${shell.title} — Nusa Matra`}</title>
+      <title>{t('{0} — Nusa Matra', shell.title)}</title>
       {immersive ? (
         <header className="visually-hidden">
           <h1>{shell.title}</h1>

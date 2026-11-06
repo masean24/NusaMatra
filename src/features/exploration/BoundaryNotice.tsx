@@ -5,6 +5,7 @@ import { ApiError } from '@/services/api';
 import { loadBoundaries } from './boundaryCache';
 import { describeBoundaryReadiness } from './boundaryReadiness';
 import styles from './BoundaryNotice.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * States what the Data Hub's boundary endpoint really returned. In DEMO the map is labelled
@@ -21,7 +22,7 @@ export function BoundaryNotice({ compact = false }: { readonly compact?: boolean
   return (
     <div className={styles.notice} data-compact={compact || undefined}>
       {dataMode === 'DEMO' && (
-        <Chip tone="warning">Geometri Ilustratif DEMO (Batas Poligon Resmi Belum Tersedia)</Chip>
+        <Chip tone="warning">{t('Geometri Ilustratif DEMO (Batas Poligon Resmi Belum Tersedia)')}</Chip>
       )}
       {dataMode === 'DEMO' &&
       boundaries.state.status === 'error' &&
@@ -30,15 +31,16 @@ export function BoundaryNotice({ compact = false }: { readonly compact?: boolean
         // (REAL_OFFICIAL). The mode guard rejects them (they are never drawn); a retry would get the
         // same answer, so none is offered, and nothing is called "failed to load". In LIVE a mode
         // conflict stays with ResourceView, which reports LIVE as blocked.
-        <StatusMessage kind="unavailable" title="Batas wilayah tidak dipakai di mode ini">
-          Data Hub mengirim batas berlabel resmi (BIG) untuk mode DEMO. Karena labelnya tidak cocok dengan
-          mode, batas itu tidak dipakai dan peta DEMO tetap ilustratif.
+        <StatusMessage kind="unavailable" title={t('Batas wilayah tidak dipakai di mode ini')}>
+          {t(
+            'Data Hub mengirim batas berlabel resmi (BIG) untuk mode DEMO. Karena labelnya tidak cocok dengan mode, batas itu tidak dipakai dan peta DEMO tetap ilustratif.',
+          )}
         </StatusMessage>
       ) : (
         <ResourceView
           state={boundaries.state}
           onRetry={boundaries.retry}
-          loadingTitle="Memeriksa data batas wilayah…"
+          loadingTitle={t('Memeriksa data batas wilayah…')}
           loadingIcon="layers"
         >
           {(envelope) => {
@@ -49,13 +51,13 @@ export function BoundaryNotice({ compact = false }: { readonly compact?: boolean
                 {dataMode === 'LIVE' && (
                   <Chip tone={readiness.hasPolygons ? 'neutral' : 'warning'}>
                     {readiness.hasPolygons
-                      ? 'Batas wilayah resmi (BIG)'
-                      : 'Batas wilayah resmi belum tersedia'}
+                      ? t('Batas wilayah resmi (BIG)')
+                      : t('Batas wilayah resmi belum tersedia')}
                   </Chip>
                 )}
                 {compact ? (
                   <details className={styles.more}>
-                    <summary className="kk-small">Tentang batas wilayah</summary>
+                    <summary className="kk-small">{t('Tentang batas wilayah')}</summary>
                     {detail}
                   </details>
                 ) : (

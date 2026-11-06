@@ -1,4 +1,5 @@
 import type { StatusTone } from './StatusPanel';
+import { t } from '@/lib/i18n';
 
 /**
  * How far a LIVE ranking that is on screen can be trusted. A ranking that failed a blocking check never
@@ -37,10 +38,10 @@ export interface ResultStatus {
 }
 
 const TITLE: Readonly<Record<ResultTrust, string>> = {
-  verified: 'Hasil lolos semua pemeriksaan',
-  limited: 'Hasil dapat dibaca dengan catatan',
-  unfinished: 'Pemeriksaan hasil belum selesai',
-  stale: 'Peringkat belum memakai bobot terbaru',
+  verified: t('Hasil lolos semua pemeriksaan'),
+  limited: t('Hasil dapat dibaca dengan catatan'),
+  unfinished: t('Pemeriksaan hasil belum selesai'),
+  stale: t('Peringkat belum memakai bobot terbaru'),
 };
 
 const FULL_AVAILABILITY_PCT = 100;
@@ -50,36 +51,50 @@ function limitationsOf(facts: ResultFacts): string[] {
   const available = facts.requestedWeightAvailabilityPct;
   if (available !== null && available < FULL_AVAILABILITY_PCT) {
     limits.push(
-      `Kriteria senilai ${(FULL_AVAILABILITY_PCT - available).toFixed(0)}% dari bobot Anda belum punya data untuk seluruh Indonesia, jadi tidak ikut dihitung; bobotnya dibagi ke kriteria lain.`,
+      t(
+        'Kriteria senilai {0}% dari bobot Anda belum punya data untuk seluruh Indonesia, jadi tidak ikut dihitung; bobotnya dibagi ke kriteria lain.',
+        (FULL_AVAILABILITY_PCT - available).toFixed(0),
+      ),
     );
   }
   if (facts.imputedRegions > 0) {
     limits.push(
-      `${String(facts.imputedRegions)} wilayah memakai estimasi tingkat provinsi untuk sebagian kriteria.`,
+      t(
+        '{0} wilayah memakai estimasi tingkat provinsi untuk sebagian kriteria.',
+        String(facts.imputedRegions),
+      ),
     );
   }
   if (facts.partialRegions > 0) {
     limits.push(
-      `${String(facts.partialRegions)} wilayah dihitung dari sebagian kriteria saja (diberi tanda).`,
+      t('{0} wilayah dihitung dari sebagian kriteria saja (diberi tanda).', String(facts.partialRegions)),
     );
   }
   if (facts.insufficientRegions > 0) {
-    limits.push(`${String(facts.insufficientRegions)} wilayah tidak diperingkat karena datanya belum cukup.`);
+    limits.push(
+      t('{0} wilayah tidak diperingkat karena datanya belum cukup.', String(facts.insufficientRegions)),
+    );
   }
   if (facts.unlistedRegions > 0) {
-    limits.push(`${String(facts.unlistedRegions)} wilayah lain tidak tercantum di hasil Data Hub.`);
+    limits.push(t('{0} wilayah lain tidak tercantum di hasil Data Hub.', String(facts.unlistedRegions)));
   }
   if (facts.unverifiedDirectionLabels.length > 0) {
     limits.push(
-      `Arah skor belum terverifikasi penuh terhadap data sumber untuk: ${facts.unverifiedDirectionLabels.join(', ')}.`,
+      t(
+        'Arah skor belum terverifikasi penuh terhadap data sumber untuk: {0}.',
+        facts.unverifiedDirectionLabels.join(', '),
+      ),
     );
   }
   if (facts.nationalRankWithheldRegions.length > 0) {
     limits.push(
-      `Peringkat nasional tidak ditampilkan: skor sumber ${facts.nationalRankWithheldRegions.join(', ')} (di luar daftar ini) tidak konsisten, dan peringkat nasional dihitung bersama wilayah itu.`,
+      t(
+        'Peringkat nasional tidak ditampilkan: skor sumber {0} (di luar daftar ini) tidak konsisten, dan peringkat nasional dihitung bersama wilayah itu.',
+        facts.nationalRankWithheldRegions.join(', '),
+      ),
     );
   }
-  if (facts.directionCheckFailed) limits.push('Arah skor belum dapat dicocokkan dengan data sumber.');
+  if (facts.directionCheckFailed) limits.push(t('Arah skor belum dapat dicocokkan dengan data sumber.'));
   return limits;
 }
 

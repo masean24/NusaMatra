@@ -9,6 +9,7 @@ import { hexDatasetUrl, loadHexDatasetOnce, type HexDataset } from './hexDataset
 import { HexGraticule } from './HexGraticule';
 import { HexScene } from './HexScene';
 import styles from './HexIndonesiaMap.module.css';
+import { t } from '@/lib/i18n';
 
 /** The entrance plays once, when this share of the zone is on screen. */
 const VISIBLE_THRESHOLD = 0.3;
@@ -138,7 +139,7 @@ export function HexIndonesiaMap({
           </Canvas>
         </div>
       )}
-      <p className={styles.badge}>Garis pantai dari Natural Earth, sel hexagon berisi data simulasi</p>
+      <p className={styles.badge}>{t('Garis pantai dari Natural Earth, sel hexagon berisi data simulasi')}</p>
     </div>
   );
 }

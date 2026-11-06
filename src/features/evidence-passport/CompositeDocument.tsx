@@ -14,6 +14,7 @@ import { SourceStatusSection } from './SourceStatusSection';
 import { LimitationsSection, SourcesSection } from './SourcesAndLimitations';
 import { usePassportActions } from './usePassportActions';
 import { bpsLabel } from './weightLabel';
+import { t } from '@/lib/i18n';
 
 /** Lines that make a citation of a Lab result say what was asked and whether a ranking exists. */
 function citationDetails(record: CompositeEvidenceRecord): string[] {
@@ -22,17 +23,23 @@ function citationDetails(record: CompositeEvidenceRecord): string[] {
     .join(', ');
   const scope = scopeLabel(record.scope.provinceId, record.scope.provinceName);
   return [
-    `Cakupan: ${scope}. Bobot diminta: ${weights}.`,
+    t('Cakupan: {0}. Bobot diminta: {1}.', scope, weights),
     record.ranking === 'SHOWN'
-      ? 'Peringkat: dikutip apa adanya dari Data Hub (skor tinggi = kebutuhan intervensi tinggi).'
-      : 'Peringkat: ditahan, tidak ada peringkat yang dinyatakan oleh catatan ini.',
+      ? t('Peringkat: dikutip apa adanya dari Data Hub (skor tinggi = kebutuhan intervensi tinggi).')
+      : t('Peringkat: ditahan, tidak ada peringkat yang dinyatakan oleh catatan ini.'),
   ];
 }
 
 function exportNote(record: CompositeEvidenceRecord): string {
   return record.ranking === 'SHOWN'
-    ? `Unduh JSON memuat catatan lengkap: ${String(record.rows.length)} wilayah berperingkat dan ${String(record.insufficient.length)} wilayah tidak diperingkat, setiap respons Data Hub beserta permintaannya, dan semua batasan.`
-    : 'Unduh JSON memuat catatan lengkap: alasan peringkat ditahan, setiap respons Data Hub beserta permintaannya, dan semua batasan. Tidak ada peringkat di dalamnya.';
+    ? t(
+        'Unduh JSON memuat catatan lengkap: {0} wilayah berperingkat dan {1} wilayah tidak diperingkat, setiap respons Data Hub beserta permintaannya, dan semua batasan.',
+        String(record.rows.length),
+        String(record.insufficient.length),
+      )
+    : t(
+        'Unduh JSON memuat catatan lengkap: alasan peringkat ditahan, setiap respons Data Hub beserta permintaannya, dan semua batasan. Tidak ada peringkat di dalamnya.',
+      );
 }
 
 /**
@@ -55,27 +62,27 @@ export function CompositeDocument({ record }: { readonly record: CompositeEviden
   });
   const shown = record.ranking === 'SHOWN';
   const toc: TocEntry[] = [
-    { id: 'paspor-atas', label: 'Ringkasan' },
-    { id: 'paspor-keterpercayaan', label: 'Keterpercayaan' },
-    { id: 'paspor-ringkasan', label: 'Hasil' },
-    { id: 'paspor-status-sumber', label: 'Status sumber data' },
-    { id: 'paspor-pemeriksaan', label: 'Pemeriksaan hasil' },
-    { id: 'paspor-cakupan', label: 'Cakupan dan bobot' },
-    { id: 'paspor-kriteria', label: 'Kriteria' },
+    { id: 'paspor-atas', label: t('Ringkasan') },
+    { id: 'paspor-keterpercayaan', label: t('Keterpercayaan') },
+    { id: 'paspor-ringkasan', label: t('Hasil') },
+    { id: 'paspor-status-sumber', label: t('Status sumber data') },
+    { id: 'paspor-pemeriksaan', label: t('Pemeriksaan hasil') },
+    { id: 'paspor-cakupan', label: t('Cakupan dan bobot') },
+    { id: 'paspor-kriteria', label: t('Kriteria') },
     ...(shown
       ? [
-          { id: 'paspor-peringkat', label: 'Peringkat' },
-          { id: 'paspor-tidak-diperingkat', label: 'Tidak diperingkat' },
+          { id: 'paspor-peringkat', label: t('Peringkat') },
+          { id: 'paspor-tidak-diperingkat', label: t('Tidak diperingkat') },
         ]
       : []),
-    { id: 'paspor-sumber', label: 'Sumber data' },
-    { id: 'batasan', label: `Batasan (${String(notes.length)})` },
+    { id: 'paspor-sumber', label: t('Sumber data') },
+    { id: 'batasan', label: t('Batasan ({0})', String(notes.length)) },
   ];
 
   return (
     <PassportLayout
       record={record}
-      kindLabel={`Lab Prioritas, ${scopeLabel(record.scope.provinceId, record.scope.provinceName)}`}
+      kindLabel={t('Lab Prioritas, {0}', scopeLabel(record.scope.provinceId, record.scope.provinceName))}
       notes={notes}
       agencies={agencies}
       toc={toc}

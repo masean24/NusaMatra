@@ -6,6 +6,7 @@ import { isLiveBlockedError } from './liveBlocked';
 import { useDataHub } from './useDataHub';
 import type { ResourceState } from './useDataHubResource';
 import styles from './ResourceView.module.css';
+import { t } from '@/lib/i18n';
 
 interface ResourceViewProps<T> {
   readonly state: ResourceState<T>;
@@ -40,13 +41,15 @@ export function ResourceView<T>({
       return <StatusMessage kind="loading" title={loadingTitle} loadingIcon={loadingIcon} />;
     case 'unconfigured':
       return (
-        <StatusMessage kind="unavailable" title="Data Hub belum dihubungkan">
-          Alamat Data Hub belum diatur pada konfigurasi aplikasi, jadi tidak ada data yang bisa ditampilkan.
+        <StatusMessage kind="unavailable" title={t('Data Hub belum dihubungkan')}>
+          {t(
+            'Alamat Data Hub belum diatur pada konfigurasi aplikasi, jadi tidak ada data yang bisa ditampilkan.',
+          )}
         </StatusMessage>
       );
     case 'error':
       if (isLiveBlockedError(state.error, dataMode)) {
-        return <QuietNote onRetry={onRetry}>Tidak ada data LIVE untuk ditampilkan di sini.</QuietNote>;
+        return <QuietNote onRetry={onRetry}>{t('Tidak ada data LIVE untuk ditampilkan di sini.')}</QuietNote>;
       }
       if (state.error instanceof ApiError && state.error.isNetworkFailure) {
         return <QuietNote onRetry={onRetry}>{getIndonesianErrorCopy(state.error)}</QuietNote>;
@@ -71,7 +74,7 @@ function QuietNote({
         <>
           {' '}
           <button type="button" className={styles.retry} onClick={onRetry}>
-            Coba lagi
+            {t('Coba lagi')}
           </button>
         </>
       )}

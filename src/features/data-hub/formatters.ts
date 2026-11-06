@@ -1,6 +1,7 @@
 import type { AdminLevel, ObservationValue, PreferredDirection } from '@/services/api';
+import { LOCALE, t } from '@/lib/i18n';
 
-const NUMBER_FORMAT = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 });
+const NUMBER_FORMAT = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 2 });
 
 /** "70.6875" → "70,69". Decimal strings the API sends stay untouched when they are not numbers. */
 export function formatDecimalId(decimal: string): string {
@@ -14,14 +15,14 @@ export function describeObservation(value: ObservationValue): string {
     case 'AVAILABLE':
       return formatDecimalId(value.decimal);
     case 'MISSING':
-      return 'Data belum tersedia';
+      return t('Data belum tersedia');
     case 'SUPPRESSED':
-      return 'Nilai tidak dipublikasikan oleh sumber';
+      return t('Nilai tidak dipublikasikan oleh sumber');
   }
 }
 
 const QUALITY_FLAG_NOTE: Readonly<Record<string, string>> = {
-  IMPUTED_PROVINCE: 'Diimputasi dari nilai tingkat provinsi, bukan pengukuran kabupaten/kota',
+  IMPUTED_PROVINCE: t('Diimputasi dari nilai tingkat provinsi, bukan pengukuran kabupaten/kota'),
 };
 
 /**
@@ -30,7 +31,7 @@ const QUALITY_FLAG_NOTE: Readonly<Record<string, string>> = {
  */
 export function qualityFlagNote(flag: string | null): string | null {
   if (flag === null || flag === 'VERIFIED' || flag === 'DEMO_EXAMPLE') return null;
-  return QUALITY_FLAG_NOTE[flag] ?? `Penanda kualitas dari sumber: ${flag}`;
+  return QUALITY_FLAG_NOTE[flag] ?? t('Penanda kualitas dari sumber: {0}', flag);
 }
 
 /** Only real web links are made clickable; `internal://…` and anything else stay plain text. */
@@ -45,9 +46,9 @@ export function publicHttpUrl(url: string | null): string | null {
 }
 
 const ADMIN_LEVEL_LABEL: Readonly<Record<AdminLevel, string>> = {
-  PROVINCE: 'Provinsi',
-  REGENCY: 'Kabupaten',
-  CITY: 'Kota',
+  PROVINCE: t('Provinsi'),
+  REGENCY: t('Kabupaten'),
+  CITY: t('Kota'),
 };
 
 export function adminLevelLabel(level: AdminLevel): string {
@@ -55,10 +56,10 @@ export function adminLevelLabel(level: AdminLevel): string {
 }
 
 const DIRECTION_LABEL: Readonly<Record<PreferredDirection, string>> = {
-  HIGHER_IS_WORSE: 'Semakin tinggi, semakin buruk',
-  HIGHER_IS_BETTER: 'Semakin tinggi, semakin baik',
-  CONTEXTUAL: 'Arti nilai tinggi bergantung pada konteks',
-  UNAPPROVED: 'Arah penilaian belum disetujui',
+  HIGHER_IS_WORSE: t('Semakin tinggi, semakin buruk'),
+  HIGHER_IS_BETTER: t('Semakin tinggi, semakin baik'),
+  CONTEXTUAL: t('Arti nilai tinggi bergantung pada konteks'),
+  UNAPPROVED: t('Arah penilaian belum disetujui'),
 };
 
 export function preferredDirectionLabel(direction: PreferredDirection): string {
@@ -66,12 +67,12 @@ export function preferredDirectionLabel(direction: PreferredDirection): string {
 }
 
 const CATEGORY_LABEL: Readonly<Record<string, string>> = {
-  data_reliability: 'Keandalan data',
-  disaster_risk: 'Risiko bencana',
-  education_access: 'Akses pendidikan',
-  healthcare_access: 'Akses kesehatan',
-  infrastructure: 'Infrastruktur',
-  socioeconomic: 'Sosial ekonomi',
+  data_reliability: t('Keandalan data'),
+  disaster_risk: t('Risiko bencana'),
+  education_access: t('Akses pendidikan'),
+  healthcare_access: t('Akses kesehatan'),
+  infrastructure: t('Infrastruktur'),
+  socioeconomic: t('Sosial ekonomi'),
 };
 
 /** Interface label for the backend's category key; unknown keys are shown humanised, not hidden. */

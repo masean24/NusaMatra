@@ -6,10 +6,11 @@ import { prefersReducedMotion } from '@/features/motion';
 import type { ExploratoryRegionRankDTO } from '@/services/api';
 import { contributions, imputedCriteria, percentLabel, qualityFlagLabel } from './labModel';
 import styles from './PriorityLab.module.css';
+import { LOCALE, t } from '@/lib/i18n';
 
 /** Composite scores always with two decimals (Indonesian comma), e.g. 72,80. */
 function formatScore(score: number): string {
-  return score.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return score.toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /** Six series colours (theme tokens); a criterion keeps its colour across the three charts. */
@@ -89,7 +90,7 @@ export function RankingChart({
       ref={listRef}
       role="list"
       className={`glass-group ${styles.rankChart}`}
-      aria-label="Daftar peringkat wilayah"
+      aria-label={t('Daftar peringkat wilayah')}
     >
       {rows.map((item) => {
         const score = item.compositeScoreDecimal === null ? null : Number(item.compositeScoreDecimal);
@@ -114,7 +115,7 @@ export function RankingChart({
                 {item.regionDisplayName}
                 {move !== 0 && (
                   <span className={styles.rankMove}>
-                    {move > 0 ? ` ▲ naik ${String(move)}` : ` ▼ turun ${String(-move)}`}
+                    {move > 0 ? t(' ▲ naik {0}', String(move)) : t(' ▼ turun {0}', String(-move))}
                   </span>
                 )}
                 {(partial ||
@@ -123,14 +124,16 @@ export function RankingChart({
                   <span className={styles.rankBadges}>
                     {partial && (
                       <span className={`${styles.badge} ${styles.badgeWarn}`}>
-                        Data sebagian ({formatDecimalId(String(item.coveragePct))}% bobot)
+                        {t('Data sebagian ({0}% bobot)', formatDecimalId(String(item.coveragePct)))}
                       </span>
                     )}
                     {imputed && (
-                      <span className={`${styles.badge} ${styles.badgeWarn}`}>Estimasi tingkat provinsi</span>
+                      <span className={`${styles.badge} ${styles.badgeWarn}`}>
+                        {t('Estimasi tingkat provinsi')}
+                      </span>
                     )}
                     {item.nationalRank !== null && item.nationalRank !== item.rankPosition && (
-                      <span className={styles.badge}>Peringkat nasional {item.nationalRank}</span>
+                      <span className={styles.badge}>{t('Peringkat nasional {0}', item.nationalRank)}</span>
                     )}
                   </span>
                 )}
@@ -139,7 +142,7 @@ export function RankingChart({
                 <span style={{ width: `${String(Math.max(0, Math.min(100, score ?? 0)))}%` }} />
               </span>
               <span className={styles.rankScore}>
-                {score === null ? 'Tidak dapat dihitung' : formatScore(score)}
+                {score === null ? t('Tidak dapat dihitung') : formatScore(score)}
               </span>
               <span className={styles.chevron} aria-hidden="true" />
             </button>
@@ -180,8 +183,8 @@ export function ContributionChart({
   return (
     <figure className={`${styles.chart} ${styles.whyDetail}`} aria-labelledby={`sumbangan-${item.regionId}`}>
       <figcaption id={`sumbangan-${item.regionId}`} className={styles.chartTitle}>
-        Mengapa {score === null ? '—' : formatScore(score)}?
-        <span className={styles.visuallyHidden}> Rincian skor {item.regionDisplayName}</span>
+        {t('Mengapa {0}?', score === null ? '—' : formatScore(score))}
+        <span className={styles.visuallyHidden}> {t('Rincian skor {0}', item.regionDisplayName)}</span>
       </figcaption>
       <span className={styles.contributionTrack} aria-hidden="true">
         {rows.map((row) => (
@@ -195,18 +198,20 @@ export function ContributionChart({
       </span>
       <table className={`${styles.table} ${styles.contributionTable}`}>
         <caption className={styles.visuallyHidden}>
-          Sumbangan setiap kriteria ke skor {item.regionDisplayName}
+          {t('Sumbangan setiap kriteria ke skor {0}', item.regionDisplayName)}
         </caption>
         <thead>
           <tr>
-            <th scope="col">Kriteria</th>
+            <th scope="col">{t('Kriteria')}</th>
             <th scope="col">
-              Skor<span className={styles.visuallyHidden}> 0–100</span>
+              {t('Skor')}
+              <span className={styles.visuallyHidden}> 0–100</span>
             </th>
             <th scope="col">
-              Bobot<span className={styles.visuallyHidden}> wilayah ini</span>
+              {t('Bobot')}
+              <span className={styles.visuallyHidden}> {t('wilayah ini')}</span>
             </th>
-            <th scope="col">Sumbangan</th>
+            <th scope="col">{t('Sumbangan')}</th>
           </tr>
         </thead>
         <tbody>
@@ -221,9 +226,9 @@ export function ContributionChart({
                   </span>
                 )}
               </th>
-              <td data-label="Skor">{formatDecimalId(String(row.score))}</td>
-              <td data-label="Bobot">{percentLabel(row.weight)}</td>
-              <td data-label="Sumbangan">{formatScore(row.points)}</td>
+              <td data-label={t('Skor')}>{formatDecimalId(String(row.score))}</td>
+              <td data-label={t('Bobot')}>{percentLabel(row.weight)}</td>
+              <td data-label={t('Sumbangan')}>{formatScore(row.points)}</td>
             </tr>
           ))}
           {omitted.map((id) => (
@@ -232,8 +237,8 @@ export function ContributionChart({
                 <span className={styles.swatch} data-series={seriesOf(id)} aria-hidden="true" />
                 {labelOf(id)}
               </th>
-              <td data-label="Skor" colSpan={3}>
-                Data tidak tersedia untuk wilayah ini — tidak dihitung, bukan dihitung sebagai 0
+              <td data-label={t('Skor')} colSpan={3}>
+                {t('Data tidak tersedia untuk wilayah ini — tidak dihitung, bukan dihitung sebagai 0')}
               </td>
             </tr>
           ))}
@@ -241,28 +246,34 @@ export function ContributionChart({
         <tfoot>
           <tr>
             <th scope="row" colSpan={3}>
-              Skor gabungan
+              {t('Skor gabungan')}
             </th>
             <td>{score === null ? '—' : formatDecimalId(String(score))}</td>
           </tr>
         </tfoot>
       </table>
       <p className={styles.chartNote}>
-        Sumbangan = skor kriteria × bobot wilayah ini, pada skala 100. Jumlahnya bisa selisih 0,01–0,03 karena
-        pembulatan.
+        {t(
+          'Sumbangan = skor kriteria × bobot wilayah ini, pada skala 100. Jumlahnya bisa selisih 0,01–0,03 karena pembulatan.',
+        )}
         {partial &&
-          ` Wilayah ini dihitung dari sebagian kriteria saja (cakupan ${formatDecimalId(String(item.coveragePct))}%): kriteria yang datanya kosong tidak dihitung, dan bobotnya dibagi ke kriteria lain.`}
+          t(
+            ' Wilayah ini dihitung dari sebagian kriteria saja (cakupan {0}%): kriteria yang datanya kosong tidak dihitung, dan bobotnya dibagi ke kriteria lain.',
+            formatDecimalId(String(item.coveragePct)),
+          )}
         {imputedCriteria(item).length > 0 &&
-          ' Sedikitnya satu nilai berasal dari estimasi tingkat provinsi, bukan pengukuran kabupaten/kota.'}
+          t(
+            ' Sedikitnya satu nilai berasal dari estimasi tingkat provinsi, bukan pengukuran kabupaten/kota.',
+          )}
       </p>
       <div className={styles.whyActions}>
         {passportHref && (
           <ButtonLink variant="secondary" to={passportHref}>
-            Buka Paspor Bukti
+            {t('Buka Paspor Bukti')}
           </ButtonLink>
         )}
         <ButtonLink variant="secondary" to={`/bandingkan?a=${encodeURIComponent(item.regionId)}`}>
-          Bandingkan
+          {t('Bandingkan')}
         </ButtonLink>
       </div>
     </figure>

@@ -1,6 +1,7 @@
 import type { MagnitudeBand } from '@/domain/hazards';
 import { MAGNITUDE_TONES } from './magnitudeTones';
 import styles from './EarthquakeLegend.module.css';
+import { t } from '@/lib/i18n';
 
 const BANDS: readonly MagnitudeBand[] = ['strong', 'moderate', 'light'];
 
@@ -10,8 +11,8 @@ const BANDS: readonly MagnitudeBand[] = ['strong', 'moderate', 'light'];
  */
 export function EarthquakeLegend({ className }: { readonly className?: string | undefined }) {
   return (
-    <aside className={`${styles.legend} ${className ?? ''}`} aria-label="Keterangan simbol gempa">
-      <p className={styles.title}>Titik gempa</p>
+    <aside className={`${styles.legend} ${className ?? ''}`} aria-label={t('Keterangan simbol gempa')}>
+      <p className={styles.title}>{t('Titik gempa')}</p>
       <ul role="list" className={styles.items}>
         {BANDS.map((band) => (
           <li key={band} className={styles.item}>
@@ -21,7 +22,7 @@ export function EarthquakeLegend({ className }: { readonly className?: string | 
         ))}
         <li className={styles.item}>
           <span className={styles.ring} />
-          Cincin ikut magnitudo, bukan radius guncangan
+          {t('Cincin ikut magnitudo, bukan radius guncangan')}
         </li>
       </ul>
     </aside>

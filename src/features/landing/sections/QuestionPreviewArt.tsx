@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import silhouetteUrl from '@/assets/landing/indonesia-silhouette.svg';
 import type { QuestionId } from './howItWorksQuestions';
 import styles from './QuestionPreviewArt.module.css';
+import { LOCALE, t } from '@/lib/i18n';
 
 /*
  * Static illustrations for the Guided Question Canvas. Every name and number here is an example
@@ -38,7 +39,7 @@ function ExploreArt() {
             className={styles.marker}
             style={{ left: `${String(item.x)}%`, top: `${String(item.y)}%` }}
             aria-pressed={item.key === selected}
-            aria-label={`Wilayah contoh ${item.key}`}
+            aria-label={t('Wilayah contoh {0}', item.key)}
             onClick={() => {
               setSelected(item.key);
             }}
@@ -48,31 +49,31 @@ function ExploreArt() {
         ))}
       </div>
       <div className={styles.infoCard} aria-live="polite">
-        <p className={styles.infoName}>Wilayah contoh {region?.key}</p>
-        <p className={styles.infoLabel}>Penduduk miskin (P0)</p>
+        <p className={styles.infoName}>{t('Wilayah contoh {0}', region?.key)}</p>
+        <p className={styles.infoLabel}>{t('Penduduk miskin (P0)')}</p>
         <p className={styles.infoNumber}>{region?.value}</p>
-        <p className={styles.infoSource}>Sumber: BPS, 2025</p>
+        <p className={styles.infoSource}>{t('Sumber: BPS, 2025')}</p>
       </div>
     </div>
   );
 }
 
 const COMPARE_ROWS = [
-  { name: 'Penduduk miskin', a: 8.9, b: 14.2, unit: '%', better: 'a' },
-  { name: 'Air minum layak', a: 91.4, b: 86.0, unit: '%', better: 'a' },
-  { name: 'Lama sekolah', a: 8.1, b: 8.6, unit: ' th', better: 'b' },
+  { name: t('Penduduk miskin'), a: 8.9, b: 14.2, unit: '%', better: 'a' },
+  { name: t('Air minum layak'), a: 91.4, b: 86.0, unit: '%', better: 'a' },
+  { name: t('Lama sekolah'), a: 8.1, b: 8.6, unit: t(' th'), better: 'b' },
 ] as const;
 
-const formatExample = (value: number) => value.toLocaleString('id-ID', { minimumFractionDigits: 1 });
+const formatExample = (value: number) => value.toLocaleString(LOCALE, { minimumFractionDigits: 1 });
 
 /** Two regions face each other: each row's bars grow outwards from the middle, the better one in jade. */
 function CompareArt() {
   return (
     <div className={styles.compare}>
       <div className={styles.versus} aria-hidden="true">
-        <span>Wilayah A</span>
+        <span>{t('Wilayah A')}</span>
         <b>vs</b>
-        <span>Wilayah B</span>
+        <span>{t('Wilayah B')}</span>
       </div>
       <dl className={styles.compareRows}>
         {COMPARE_ROWS.map((row) => {
@@ -95,16 +96,16 @@ function CompareArt() {
         })}
       </dl>
       <p className={styles.compareResult}>
-        <span aria-hidden="true">✓</span> A lebih baik pada 2 dari 3 indikator
+        <span aria-hidden="true">✓</span> {t('A lebih baik pada 2 dari 3 indikator')}
       </p>
     </div>
   );
 }
 
 const LAB_WEIGHTS = [
-  { name: 'Kemiskinan', weight: 40, series: 'a' },
-  { name: 'Air minum', weight: 35, series: 'b' },
-  { name: 'Kesehatan', weight: 25, series: 'c' },
+  { name: t('Kemiskinan'), weight: 40, series: 'a' },
+  { name: t('Air minum'), weight: 35, series: 'b' },
+  { name: t('Kesehatan'), weight: 25, series: 'c' },
 ] as const;
 
 const LAB_RANKING = [
@@ -118,7 +119,7 @@ function LabArt() {
   return (
     <div className={styles.lab}>
       <div className={styles.weightsBlock}>
-        <p className={styles.blockLabel}>Bobot (total 100%)</p>
+        <p className={styles.blockLabel}>{t('Bobot (total 100%)')}</p>
         <div className={styles.stack} aria-hidden="true">
           {LAB_WEIGHTS.map((item) => (
             <span key={item.name} data-series={item.series} style={{ flexGrow: item.weight }} />
@@ -132,11 +133,11 @@ function LabArt() {
           ))}
         </ul>
       </div>
-      <ol className={styles.ranking} aria-label="Urutan contoh">
+      <ol className={styles.ranking} aria-label={t('Urutan contoh')}>
         {LAB_RANKING.map((item, index) => (
           <li key={item.key}>
             <span className={styles.rank}>{index + 1}</span>
-            <span className={styles.rankName}>Wilayah {item.key}</span>
+            <span className={styles.rankName}>{t('Wilayah {0}', item.key)}</span>
             <span className={styles.rankTrack} aria-hidden="true">
               <span style={{ width: `${String(item.score)}%` }} />
             </span>
@@ -149,10 +150,10 @@ function LabArt() {
 }
 
 const PASSPORT_ROWS = [
-  ['Sumber', 'BPS, BNPB'],
-  ['Tahun data', '2025'],
-  ['Model', 'Rata-rata berbobot'],
-  ['Batasan', '2 indikator belum ada'],
+  [t('Sumber'), 'BPS, BNPB'],
+  [t('Tahun data'), '2025'],
+  [t('Model'), t('Rata-rata berbobot')],
+  [t('Batasan'), t('2 indikator belum ada')],
 ] as const;
 
 /** A small stack of papers: the passport sheet on top, its stamp landing in the corner. */
@@ -162,8 +163,8 @@ function PassportArt() {
       <div className={styles.sheetBack} aria-hidden="true" />
       <div className={styles.sheet}>
         <p className={styles.sheetTitle}>
-          <span>Paspor Bukti</span>
-          <small>Contoh</small>
+          <span>{t('Paspor Bukti')}</span>
+          <small>{t('Contoh')}</small>
         </p>
         <dl className={styles.passportRows}>
           {PASSPORT_ROWS.map(([term, detail]) => (
@@ -174,7 +175,7 @@ function PassportArt() {
           ))}
         </dl>
         <span className={styles.stamp} aria-hidden="true">
-          Tercatat
+          {t('Tercatat')}
         </span>
       </div>
     </div>

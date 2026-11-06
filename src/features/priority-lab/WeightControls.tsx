@@ -10,6 +10,7 @@ import {
 import type { CompositePresetDTO } from '@/services/api';
 import { percentLabel, unavailableReason, type IndicatorOption } from './labModel';
 import styles from './PriorityLab.module.css';
+import { t } from '@/lib/i18n';
 
 type Weights = WeightsBps<string>;
 
@@ -43,7 +44,7 @@ export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPick
           <span className={styles.stepNumber} aria-hidden="true">
             1
           </span>
-          <span id={labelId}>Skenario awal</span>
+          <span id={labelId}>{t('Skenario awal')}</span>
         </h3>
       </div>
       {presets && presets.length > 0 && (
@@ -51,7 +52,7 @@ export function ScenarioPicker({ weights, presets, note, onApply }: ScenarioPick
           labelledBy={labelId}
           value={active?.presetId ?? ''}
           options={[
-            { value: '', label: 'Bobot sendiri' },
+            { value: '', label: t('Bobot sendiri') },
             ...presets.map((preset) => ({
               value: preset.presetId,
               label: preset.label,
@@ -76,9 +77,15 @@ function availabilityNote(preset: CompositePresetDTO): string | null {
   const availability = preset.availability;
   if (!availability) return null;
   if (!availability.rankable)
-    return `Belum dapat diperingkat: baru ${String(availability.requestedWeightAvailabilityPct)}% bobot yang punya data untuk seluruh Indonesia`;
+    return t(
+      'Belum dapat diperingkat: baru {0}% bobot yang punya data untuk seluruh Indonesia',
+      String(availability.requestedWeightAvailabilityPct),
+    );
   if (availability.requestedWeightAvailabilityPct < 100)
-    return `${String(100 - availability.requestedWeightAvailabilityPct)}% bobot belum punya data untuk seluruh Indonesia, jadi dibagi ke kriteria lain`;
+    return t(
+      '{0}% bobot belum punya data untuk seluruh Indonesia, jadi dibagi ke kriteria lain',
+      String(100 - availability.requestedWeightAvailabilityPct),
+    );
   return null;
 }
 
@@ -93,9 +100,9 @@ interface WeightSlidersProps {
 
 /** "Total 100%", or how far off it is. */
 function totalLabel(total: number): string {
-  if (total === TOTAL_BASIS_POINTS) return `Total ${percentLabel(total)}`;
+  if (total === TOTAL_BASIS_POINTS) return t('Total {0}', percentLabel(total));
   const gap = percentLabel(Math.abs(TOTAL_BASIS_POINTS - total));
-  return total < TOTAL_BASIS_POINTS ? `Kurang ${gap}` : `Lebih ${gap}`;
+  return total < TOTAL_BASIS_POINTS ? t('Kurang {0}', gap) : t('Lebih {0}', gap);
 }
 
 /**
@@ -120,7 +127,7 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
           <span className={styles.stepNumber} aria-hidden="true">
             2
           </span>
-          Atur bobot
+          {t('Atur bobot')}
         </h3>
         <span
           className={styles.totalChip}
@@ -128,7 +135,7 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
           role="status"
         >
           {totalLabel(total)}
-          {total === TOTAL_BASIS_POINTS ? '' : ' — harus tepat 100%'}
+          {total === TOTAL_BASIS_POINTS ? '' : t(' — harus tepat 100%')}
         </span>
       </div>
       {ids.length > 0 && (
@@ -146,18 +153,18 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
         </span>
       )}
       {ids.length === 0 ? (
-        <p className={styles.hint}>Pilih minimal satu kriteria di bawah.</p>
+        <p className={styles.hint}>{t('Pilih minimal satu kriteria di bawah.')}</p>
       ) : (
         <ul role="list" className={styles.sliders}>
           {ids.map((id) => {
             const option = options.find((entry) => entry.id === id);
-            const reason = option ? unavailableReason(option) : 'Indikator tidak ada di katalog Data Hub.';
+            const reason = option ? unavailableReason(option) : t('Indikator tidak ada di katalog Data Hub.');
             return (
               <li key={id} className={styles.slider}>
                 <span className={styles.swatch} data-series={seriesOf(id)} aria-hidden="true" />
                 <label htmlFor={`bobot-${id}`} className={styles.sliderLabel}>
                   {/* Distinct from the criterion's checkbox, which has the indicator name alone. */}
-                  <span className={styles.visuallyHidden}>Bobot </span>
+                  <span className={styles.visuallyHidden}>{t('Bobot')} </span>
                   {labelOf(id)}
                 </label>
                 <output htmlFor={`bobot-${id}`} className={styles.sliderValue}>
@@ -166,8 +173,8 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
                 <button
                   type="button"
                   className={styles.iconButton}
-                  aria-label={`Lepas kriteria ${labelOf(id)}`}
-                  title="Lepas kriteria"
+                  aria-label={t('Lepas kriteria {0}', labelOf(id))}
+                  title={t('Lepas kriteria')}
                   onClick={() => {
                     setLastChange(null);
                     onChange(removeCriterion(weights, id));
@@ -192,7 +199,9 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
                     onChange(redistributeWeights(weights, id, Number(event.target.value) * 100));
                   }}
                 />
-                {reason && <p className={styles.sliderNote}>Belum ada data — bobotnya akan dialihkan.</p>}
+                {reason && (
+                  <p className={styles.sliderNote}>{t('Belum ada data — bobotnya akan dialihkan.')}</p>
+                )}
               </li>
             );
           })}
@@ -200,7 +209,7 @@ export function WeightSliders({ weights, options, onChange, seriesOf, children }
       )}
       {adjusted.length > 0 && (
         <p className={styles.hint} aria-live="polite">
-          Bobot lain ikut menyesuaikan agar total tetap 100%: {adjusted.map(labelOf).join(', ')}.
+          {t('Bobot lain ikut menyesuaikan agar total tetap 100%: {0}.', adjusted.map(labelOf).join(', '))}
         </p>
       )}
       {children}

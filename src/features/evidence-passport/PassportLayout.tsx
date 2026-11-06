@@ -10,8 +10,9 @@ import { PrintRunningHeader } from './PrintRunningHeader';
 import { ModeTag, Section } from './Section';
 import type { PassportActions } from './usePassportActions';
 import styles from './EvidencePassport.module.css';
+import { LOCALE, t } from '@/lib/i18n';
 
-const formatPercent = (value: number) => `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+const formatPercent = (value: number) => `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
 
 interface HeroProps {
   readonly record: AnyEvidenceRecord;
@@ -31,35 +32,35 @@ function Hero({ record, kindLabel, actions }: HeroProps) {
           <span className={styles.heroChip}>{kindLabel}</span>
           {coverage && (
             <span className={styles.heroChip}>
-              {coverage.availableIndicators} / {coverage.totalIndicators} indikator berdata
+              {t('{0} / {1} indikator berdata', coverage.availableIndicators, coverage.totalIndicators)}
             </span>
           )}
         </div>
-        <p className={styles.heroKicker}>Paspor Bukti</p>
+        <p className={styles.heroKicker}>{t('Paspor Bukti')}</p>
         <h1 className={styles.heroTitle}>{heroTitle(record)}</h1>
         <div className={styles.heroQuestion}>
-          <p className={styles.heroQuestionLabel}>Pertanyaan yang dijawab paspor ini</p>
+          <p className={styles.heroQuestionLabel}>{t('Pertanyaan yang dijawab paspor ini')}</p>
           <p>{record.question}</p>
         </div>
         <div className={`${styles.heroActions} ${styles.noPrint}`}>
           <Button variant="accent" onClick={actions.copyLink}>
             <PassportIcon name={actions.linkCopied ? 'check' : 'link'} />
-            {actions.linkCopied ? 'Tautan tersalin' : 'Salin tautan'}
+            {actions.linkCopied ? t('Tautan tersalin') : t('Salin tautan')}
           </Button>
           <Button variant="glass" onClick={actions.download}>
             <PassportIcon name="download" />
-            Unduh JSON
+            {t('Unduh JSON')}
           </Button>
           {actions.shareable && (
             <Button variant="glass" onClick={actions.share}>
               <PassportIcon name="share" />
-              Bagikan
+              {t('Bagikan')}
             </Button>
           )}
           {/* Short visible label keeps the actions on one row; the name starts with it (WCAG 2.5.3). */}
-          <Button variant="glass" onClick={actions.print} aria-label="Cetak atau simpan PDF">
+          <Button variant="glass" onClick={actions.print} aria-label={t('Cetak atau simpan PDF')}>
             <PassportIcon name="printer" />
-            Cetak
+            {t('Cetak')}
           </Button>
         </div>
         <div className={styles.noPrint}>
@@ -68,7 +69,7 @@ function Hero({ record, kindLabel, actions }: HeroProps) {
           </p>
           {actions.manualText !== null && (
             <label className={styles.manualCopy}>
-              Salin teks ini secara manual
+              {t('Salin teks ini secara manual')}
               <textarea
                 className={styles.fallbackField}
                 readOnly
@@ -94,7 +95,7 @@ function LinkWarnings({ record }: { readonly record: AnyEvidenceRecord }) {
     <div role="alert" className={styles.linkWarnings}>
       {warnings.map((warning) => (
         <p key={warning.code} className={styles.linkWarning} data-severity="warning">
-          <strong>Peringatan tautan: </strong>
+          <strong>{t('Peringatan tautan:')} </strong>
           {warning.message}
         </p>
       ))}
@@ -104,10 +105,10 @@ function LinkWarnings({ record }: { readonly record: AnyEvidenceRecord }) {
 
 function bannerHint(record: AnyEvidenceRecord): string {
   if (record.source.dataMode === 'DEMO')
-    return 'termasuk: semua angka adalah data simulasi, bukan observasi resmi.';
+    return t('termasuk: semua angka adalah data simulasi, bukan observasi resmi.');
   return record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
-    ? 'termasuk risiko versi data tidak tersedia lagi setelah pembaruan server.'
-    : 'termasuk: data tidak dikunci ke versi data, jadi membuka tautan lagi dapat memberi data berbeda.';
+    ? t('termasuk risiko versi data tidak tersedia lagi setelah pembaruan server.')
+    : t('termasuk: data tidak dikunci ke versi data, jadi membuka tautan lagi dapat memberi data berbeda.');
 }
 
 /** The whole callout is one link to the limitations, so the hit area is the full row. */
@@ -118,11 +119,11 @@ function LimitsBanner({ record, count }: { readonly record: AnyEvidenceRecord; r
         <PassportIcon name="alert" />
       </span>
       <span className={styles.limitsText}>
-        <span className={styles.limitsTitle}>{count} batasan berlaku untuk paspor ini</span>
-        <span className={styles.limitsHint}>Baca sebelum mengutip — {bannerHint(record)}</span>
+        <span className={styles.limitsTitle}>{t('{0} batasan berlaku untuk paspor ini', count)}</span>
+        <span className={styles.limitsHint}>{t('Baca sebelum mengutip — {0}', bannerHint(record))}</span>
       </span>
       <span className={`${styles.limitsLink} ${styles.noPrint}`}>
-        Baca batasan
+        {t('Baca batasan')}
         <PassportIcon name="arrowRight" size={14} />
       </span>
     </a>
@@ -149,9 +150,11 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
   return (
     <Section
       id="paspor-keterpercayaan"
-      title="Seberapa bisa dipercaya?"
+      title={t('Seberapa bisa dipercaya?')}
       mode={source.dataMode}
-      description="Ringkasan dari status sumber data. Semua angka berasal dari server Data Hub, tidak dihitung ulang oleh peramban."
+      description={t(
+        'Ringkasan dari status sumber data. Semua angka berasal dari server Data Hub, tidak dihitung ulang oleh peramban.',
+      )}
       plain
     >
       <ul role="list" className={styles.trustGrid}>
@@ -159,17 +162,21 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
           <Surface radius="control" className={styles.trustCard}>
             <p className={styles.trustLabel}>
               <PassportIcon name="layers" size={14} />
-              Kelengkapan indikator
+              {t('Kelengkapan indikator')}
             </p>
             <p className={styles.trustValue}>
-              {completeness === null ? 'Belum tersedia' : formatPercent(completeness)}
+              {completeness === null ? t('Belum tersedia') : formatPercent(completeness)}
             </p>
             {completeness !== null && <Meter value={completeness} />}
             <p className={styles.trustText}>
               {coverage
-                ? `${String(coverage.availableIndicators)} dari ${String(coverage.totalIndicators)} indikator berdata di versi data ini.`
-                : 'Jumlah indikator berdata belum tersedia.'}
-              {disagree && ' Persentase server berbeda dari jumlah ini.'}
+                ? t(
+                    '{0} dari {1} indikator berdata di versi data ini.',
+                    String(coverage.availableIndicators),
+                    String(coverage.totalIndicators),
+                  )
+                : t('Jumlah indikator berdata belum tersedia.')}
+              {disagree && t(' Persentase server berbeda dari jumlah ini.')}
             </p>
           </Surface>
         </li>
@@ -177,14 +184,14 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
           <Surface radius="control" className={styles.trustCard}>
             <p className={styles.trustLabel}>
               <PassportIcon name="globe" size={14} />
-              Wilayah dengan observasi
+              {t('Wilayah dengan observasi')}
             </p>
             <p className={styles.trustValue}>
-              {regionPct === null ? 'Belum tersedia' : formatPercent(regionPct)}
+              {regionPct === null ? t('Belum tersedia') : formatPercent(regionPct)}
             </p>
             {regionPct !== null && <Meter value={regionPct} />}
             <p className={styles.trustText}>
-              Persentase wilayah yang punya observasi — bukan jumlah indikator.
+              {t('Persentase wilayah yang punya observasi — bukan jumlah indikator.')}
             </p>
           </Surface>
         </li>
@@ -192,21 +199,21 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
           <Surface radius="control" className={styles.trustCard}>
             <p className={styles.trustLabel}>
               <PassportIcon name={pinned ? 'lock' : 'unlock'} size={14} />
-              Reproduksibilitas
+              {t('Reproduksibilitas')}
             </p>
-            <p className={styles.trustValue}>{pinned ? 'Terkunci' : 'Tidak terkunci'}</p>
+            <p className={styles.trustValue}>{pinned ? t('Terkunci') : t('Tidak terkunci')}</p>
             <span className={pinned ? styles.trustChip : `${styles.trustChip} ${styles.chipWarn}`}>
               <PassportIcon name={pinned ? 'check' : 'alert'} size={12} />
               {pinned
                 ? source.reproducibility.origin === 'LINK'
-                  ? 'Ke versi data di tautan'
-                  : 'Ke versi data aktif saat dibuka'
-                : 'Tanpa penguncian versi data'}
+                  ? t('Ke versi data di tautan')
+                  : t('Ke versi data aktif saat dibuka')
+                : t('Tanpa penguncian versi data')}
             </span>
             <p className={styles.trustText}>
               {pinned
-                ? 'Setiap respons membawa sidik SHA-256 yang sama.'
-                : 'Membuka tautan ini lagi dapat memberi data berbeda.'}
+                ? t('Setiap respons membawa sidik SHA-256 yang sama.')
+                : t('Membuka tautan ini lagi dapat memberi data berbeda.')}
             </p>
           </Surface>
         </li>
@@ -214,17 +221,17 @@ function TrustOverview({ record }: { readonly record: AnyEvidenceRecord }) {
           <Surface radius="control" className={styles.trustCard}>
             <p className={styles.trustLabel}>
               <PassportIcon name="shield" size={14} />
-              Konsistensi respons
+              {t('Konsistensi respons')}
             </p>
-            <p className={styles.trustValue}>{source.consistent ? 'Konsisten' : 'Tidak konsisten'}</p>
+            <p className={styles.trustValue}>{source.consistent ? t('Konsisten') : t('Tidak konsisten')}</p>
             <span className={source.consistent ? styles.trustChip : `${styles.trustChip} ${styles.chipWarn}`}>
               <PassportIcon name={source.consistent ? 'check' : 'alert'} size={12} />
-              {record.fetched.length} respons diperiksa
+              {t('{0} respons diperiksa', record.fetched.length)}
             </span>
             <p className={styles.trustText}>
               {source.consistent
-                ? 'Mode, versi data, dan sidik sama di semua respons.'
-                : 'Mode, versi data, atau sidik berbeda antarrespons; perbandingan ditahan.'}
+                ? t('Mode, versi data, dan sidik sama di semua respons.')
+                : t('Mode, versi data, atau sidik berbeda antarrespons; perbandingan ditahan.')}
             </p>
           </Surface>
         </li>
@@ -252,14 +259,14 @@ function Aside({
   readonly actions: PassportActions;
 }) {
   return (
-    <aside className={styles.aside} aria-label="Navigasi dan kutipan paspor">
+    <aside className={styles.aside} aria-label={t('Navigasi dan kutipan paspor')}>
       <Surface
         as="nav"
         radius="control"
         className={`${styles.asideCard} ${styles.noPrint}`}
-        aria-label="Isi paspor"
+        aria-label={t('Isi paspor')}
       >
-        <p className={styles.eyebrow}>Isi paspor</p>
+        <p className={styles.eyebrow}>{t('Isi paspor')}</p>
         <ol role="list" className={styles.toc}>
           {toc.map((entry, index) => (
             <li key={entry.id}>
@@ -276,24 +283,24 @@ function Aside({
         reading
         className={`${styles.asideCard} ${styles.citationCard} ${styles.noPrint}`}
       >
-        <h2 className={styles.asideTitle}>Kutip paspor ini</h2>
+        <h2 className={styles.asideTitle}>{t('Kutip paspor ini')}</h2>
         {/* The full citation, scrollable; a keyboard user can reach and scroll it. */}
         {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
-        <div className={styles.citation} role="region" aria-label="Teks kutipan" tabIndex={0}>
+        <div className={styles.citation} role="region" aria-label={t('Teks kutipan')} tabIndex={0}>
           {citation}
         </div>
         <Button variant="secondary" className={styles.fullButton} onClick={actions.copyCitation}>
           <PassportIcon name="copy" />
-          Salin kutipan
+          {t('Salin kutipan')}
         </Button>
-        <p className={styles.asideNote}>Sertakan batasan saat mengutip angka dari paspor ini.</p>
+        <p className={styles.asideNote}>{t('Sertakan batasan saat mengutip angka dari paspor ini.')}</p>
         <p className={styles.asideNote}>{exportNote}</p>
       </Surface>
       <Surface
         as="nav"
         radius="control"
         className={`${styles.asideCard} ${styles.noPrint}`}
-        aria-label="Lanjutkan"
+        aria-label={t('Lanjutkan')}
       >
         <ul role="list" className={styles.related}>
           {relatedLinks(record).map((link) => (
@@ -361,8 +368,11 @@ export function PassportLayout({
         </div>
         {wide && <div className={styles.wideSections}>{wide}</div>}
         <p className={styles.footerLine}>
-          Nusa Matra. Data dari {agencies.length > 0 ? agencies.join(', ') : 'sumber yang belum tersedia'}{' '}
-          melalui Data Hub ({record.source.dataMode}). Paspor dirangkai di peramban dan bukan arsip resmi.
+          {t(
+            'Nusa Matra. Data dari {0} melalui Data Hub ({1}). Paspor dirangkai di peramban dan bukan arsip resmi.',
+            agencies.length > 0 ? agencies.join(', ') : t('sumber yang belum tersedia'),
+            record.source.dataMode,
+          )}
         </p>
       </article>
     </>

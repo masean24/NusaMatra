@@ -12,12 +12,13 @@ import { ScrollRegion } from './ScrollRegion';
 import { Section } from './Section';
 import { bpsLabel } from './weightLabel';
 import styles from './EvidencePassport.module.css';
+import { LOCALE, t } from '@/lib/i18n';
 
 /** Rows a printout carries of each long table; the exact number is printed with it. */
 export const PRINT_EXCERPT_ROWS = 20;
 
 const percentLabel = (value: number | null): string =>
-  value === null ? 'belum tersedia' : `${value.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`;
+  value === null ? t('belum tersedia') : `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
 
 const WARN_CLASSES: ReadonlySet<EvidenceClass> = new Set([
   'IMPUTED_PROVINCE',
@@ -27,7 +28,7 @@ const WARN_CLASSES: ReadonlySet<EvidenceClass> = new Set([
 ]);
 
 function FocusTag() {
-  return <span className={styles.tag}>Wilayah yang Anda buka</span>;
+  return <span className={styles.tag}>{t('Wilayah yang Anda buka')}</span>;
 }
 
 function CoverageCell({
@@ -40,14 +41,14 @@ function CoverageCell({
   return (
     <div className={styles.cell}>
       <span className={styles.value}>{percentLabel(row.coveragePct)}</span>
-      {row.tier === 'complete' && <span className={styles.tag}>Lengkap</span>}
+      {row.tier === 'complete' && <span className={styles.tag}>{t('Lengkap')}</span>}
       {row.tier === 'partial' && (
-        <span className={`${styles.tag} ${styles.tagWarn}`}>Parsial, bobot dialihkan</span>
+        <span className={`${styles.tag} ${styles.tagWarn}`}>{t('Parsial, bobot dialihkan')}</span>
       )}
-      {row.tier === 'unreported' && <span className={styles.tag}>Cakupan tidak dilaporkan</span>}
+      {row.tier === 'unreported' && <span className={styles.tag}>{t('Cakupan tidak dilaporkan')}</span>}
       {row.missingIndicators.length > 0 && (
         <span className="kk-small">
-          Tidak ada data: {row.missingIndicators.map((id) => labelOf(id)).join(', ')}
+          {t('Tidak ada data: {0}', row.missingIndicators.map((id) => labelOf(id)).join(', '))}
         </span>
       )}
     </div>
@@ -66,22 +67,24 @@ function ComponentLine({
   if (!component.hasScore) {
     return (
       <li>
-        <strong>{component.label}</strong>: tidak tersedia (tidak dihitung, bukan nol)
+        <strong>{component.label}</strong>
+        {t(': tidak tersedia (tidak dihitung, bukan nol)')}
       </li>
     );
   }
   if (component.weightBps === null) {
     return (
       <li>
-        <strong>{component.label}</strong>: skor {component.scoreText}, bobot wilayah belum dilaporkan
+        <strong>{component.label}</strong>
+        {t(': skor {0}, bobot wilayah belum dilaporkan', component.scoreText)}
       </li>
     );
   }
   return (
     <li>
-      <strong>{component.label}</strong>: skor {component.scoreText}, bobot wilayah{' '}
-      {bpsLabel(component.weightBps)}
-      {differs && requestedBps !== undefined && ` (diminta ${bpsLabel(requestedBps)})`}
+      <strong>{component.label}</strong>
+      {t(': skor {0}, bobot wilayah {1}', component.scoreText, bpsLabel(component.weightBps))}
+      {differs && requestedBps !== undefined && t(' (diminta {0})', bpsLabel(requestedBps))}
       <ObservationSource component={component} />
     </li>
   );
@@ -96,8 +99,7 @@ function ObservationSource({ component }: { readonly component: RegionComponent 
   if (!observationDatasetId || observationDatasetId === catalogDatasetId) return null;
   return (
     <>
-      {'; sumber observasi: '}
-      <span className={styles.code}>{observationDatasetId}</span>
+      {t('; sumber observasi:')} <span className={styles.code}>{observationDatasetId}</span>
       {sourceRecordRef && ` (${sourceRecordRef})`}
     </>
   );
@@ -129,7 +131,7 @@ function QualityCell({ row }: { readonly row: CompositeRegionRow }) {
         </span>
       ))}
       {row.imputedIndicators.length > 0 && (
-        <span className="kk-small">Estimasi tingkat provinsi, bukan pengukuran kabupaten/kota.</span>
+        <span className="kk-small">{t('Estimasi tingkat provinsi, bukan pengukuran kabupaten/kota.')}</span>
       )}
     </div>
   );
@@ -152,13 +154,13 @@ function RankingTable({
         <caption className="kk-body-strong">{caption}</caption>
         <thead>
           <tr>
-            <th scope="col">Peringkat</th>
-            <th scope="col">Peringkat nasional</th>
-            <th scope="col">Wilayah</th>
-            <th scope="col">Skor</th>
-            <th scope="col">Cakupan data</th>
-            <th scope="col">Kriteria, skor, dan bobot wilayah</th>
-            <th scope="col">Kualitas data</th>
+            <th scope="col">{t('Peringkat')}</th>
+            <th scope="col">{t('Peringkat nasional')}</th>
+            <th scope="col">{t('Wilayah')}</th>
+            <th scope="col">{t('Skor')}</th>
+            <th scope="col">{t('Cakupan data')}</th>
+            <th scope="col">{t('Kriteria, skor, dan bobot wilayah')}</th>
+            <th scope="col">{t('Kualitas data')}</th>
           </tr>
         </thead>
         <tbody>
@@ -168,16 +170,16 @@ function RankingTable({
               className={row.isFocus ? styles.focusRow : undefined}
               data-focus={row.isFocus || undefined}
             >
-              <td className={styles.numeric}>{row.rank ?? 'belum tersedia'}</td>
-              <td className={styles.numeric}>{row.nationalRank ?? 'belum tersedia'}</td>
+              <td className={styles.numeric}>{row.rank ?? t('belum tersedia')}</td>
+              <td className={styles.numeric}>{row.nationalRank ?? t('belum tersedia')}</td>
               <th scope="row">
                 <div className={styles.cell}>
                   <span>{row.name}</span>
-                  <span className={`kk-small ${styles.muted}`}>Kode {row.regionId}</span>
+                  <span className={`kk-small ${styles.muted}`}>{t('Kode {0}', row.regionId)}</span>
                   {row.isFocus && <FocusTag />}
                 </div>
               </th>
-              <td className={styles.numeric}>{row.scoreText ?? 'belum tersedia'}</td>
+              <td className={styles.numeric}>{row.scoreText ?? t('belum tersedia')}</td>
               <td>
                 <CoverageCell row={row} labelOf={labelOf} />
               </td>
@@ -194,8 +196,10 @@ function RankingTable({
                 </ul>
                 {row.weightsDiffer && (
                   <span className="kk-small">
-                    <span className={`${styles.tag} ${styles.tagWarn}`}>Bobot berbeda dari bobot global</span>{' '}
-                    karena sebagian kriteria tidak punya nilai.
+                    <span className={`${styles.tag} ${styles.tagWarn}`}>
+                      {t('Bobot berbeda dari bobot global')}
+                    </span>{' '}
+                    {t('karena sebagian kriteria tidak punya nilai.')}
                   </span>
                 )}
               </td>
@@ -216,35 +220,46 @@ function RankingTable({
  */
 function printExcerptNote(printed: number, total: number, noun: string): string {
   return printed >= total
-    ? `Cetakan ini memuat seluruh ${String(total)} ${noun}.`
-    : `Cetakan ringkas: hanya ${String(printed)} baris pertama (urutan 1–${String(printed)}) dari ${String(total)} ${noun} yang dicetak. Daftar lengkap ada di berkas JSON ("Unduh JSON" pada halaman Paspor Bukti); cetakan ini bukan daftar lengkap.`;
+    ? t('Cetakan ini memuat seluruh {0} {1}.', String(total), noun)
+    : t(
+        'Cetakan ringkas: hanya {0} baris pertama (urutan 1–{1}) dari {2} {3} yang dicetak. Daftar lengkap ada di berkas JSON ("Unduh JSON" pada halaman Paspor Bukti); cetakan ini bukan daftar lengkap.',
+        String(printed),
+        String(printed),
+        String(total),
+        noun,
+      );
 }
 
 /** Caption of a printed table: an excerpt says so; a table that fits whole says it is complete. */
 function printCaption(printed: number, total: number, noun: string): string {
   return printed >= total
-    ? `Cetakan lengkap: ${String(total)} ${noun}`
-    : `Kutipan cetak: ${String(printed)} dari ${String(total)} ${noun}`;
+    ? t('Cetakan lengkap: {0} {1}', String(total), noun)
+    : t('Kutipan cetak: {0} dari {1} {2}', String(printed), String(total), noun);
 }
 
 export function RankingSection({ record }: { readonly record: CompositeEvidenceRecord }) {
   const paged = usePagedRows(record.rows);
   const total = record.rows.length;
-  const caption = `Peringkat ${String(total)} wilayah, urutan dari Data Hub`;
+  const caption = t('Peringkat {0} wilayah, urutan dari Data Hub', String(total));
   const focusIndex = record.rows.findIndex((row) => row.isFocus);
   const focusPage = focusIndex < 0 ? null : Math.floor(focusIndex / ROWS_PER_PAGE);
   const focusRow = focusIndex < 0 ? null : record.rows[focusIndex];
   const excerpt = record.rows.slice(0, PRINT_EXCERPT_ROWS);
 
   return (
-    <Section id="paspor-peringkat" title="Peringkat dari Data Hub" mode={record.source.dataMode}>
+    <Section id="paspor-peringkat" title={t('Peringkat dari Data Hub')} mode={record.source.dataMode}>
       <p className="kk-body">{record.scoreMeaning}</p>
       <p className={`kk-small ${styles.muted}`}>
-        Peringkat dan skor dikutip apa adanya dari Data Hub; paspor ini tidak menghitung atau mengurutkan
-        ulang.
+        {t(
+          'Peringkat dan skor dikutip apa adanya dari Data Hub; paspor ini tidak menghitung atau mengurutkan ulang.',
+        )}
         <span className={styles.noPrint}>
           {' '}
-          Halaman ini menampilkan {ROWS_PER_PAGE} baris sekaligus; berkas JSON memuat seluruh {total} wilayah.
+          {t(
+            'Halaman ini menampilkan {0} baris sekaligus; berkas JSON memuat seluruh {1} wilayah.',
+            ROWS_PER_PAGE,
+            total,
+          )}
         </span>
       </p>
       <div className={styles.screenOnly}>
@@ -256,21 +271,26 @@ export function RankingSection({ record }: { readonly record: CompositeEvidenceR
                 paged.setPage(focusPage);
               }}
             >
-              Tampilkan wilayah yang Anda buka (urutan {focusIndex + 1})
+              {t('Tampilkan wilayah yang Anda buka (urutan')} {focusIndex + 1})
             </Button>
           </p>
         )}
         <RankingTable record={record} rows={paged.pageRows} caption={caption} />
-        <Pagination label="peringkat wilayah" noun="wilayah berperingkat" total={total} paging={paged} />
+        <Pagination
+          label={t('peringkat wilayah')}
+          noun={t('wilayah berperingkat')}
+          total={total}
+          paging={paged}
+        />
       </div>
       <div className={styles.printOnly}>
         <p className={`kk-small ${styles.printExcerptNote}`}>
-          {printExcerptNote(excerpt.length, total, 'wilayah berperingkat')}
+          {printExcerptNote(excerpt.length, total, t('wilayah berperingkat'))}
         </p>
         <RankingTable
           record={record}
           rows={excerpt}
-          caption={printCaption(excerpt.length, total, 'wilayah berperingkat')}
+          caption={printCaption(excerpt.length, total, t('wilayah berperingkat'))}
         />
       </div>
     </Section>
@@ -292,11 +312,11 @@ function InsufficientTable({
         <caption className="kk-body-strong">{caption}</caption>
         <thead>
           <tr>
-            <th scope="col">Wilayah</th>
-            <th scope="col">Cakupan data</th>
-            <th scope="col">Kriteria yang punya data</th>
-            <th scope="col">Kriteria tanpa data</th>
-            <th scope="col">Alasan</th>
+            <th scope="col">{t('Wilayah')}</th>
+            <th scope="col">{t('Cakupan data')}</th>
+            <th scope="col">{t('Kriteria yang punya data')}</th>
+            <th scope="col">{t('Kriteria tanpa data')}</th>
+            <th scope="col">{t('Alasan')}</th>
           </tr>
         </thead>
         <tbody>
@@ -309,16 +329,16 @@ function InsufficientTable({
               <th scope="row">
                 <div className={styles.cell}>
                   <span>{row.name}</span>
-                  <span className={`kk-small ${styles.muted}`}>Kode {row.regionId}</span>
+                  <span className={`kk-small ${styles.muted}`}>{t('Kode {0}', row.regionId)}</span>
                   {row.isFocus && <FocusTag />}
                 </div>
               </th>
               <td className={styles.numeric}>{percentLabel(row.coveragePct)}</td>
-              <td>{row.componentsUsed.map((id) => labelOf(id)).join(', ') || 'tidak ada'}</td>
-              <td>{row.missingIndicators.map((id) => labelOf(id)).join(', ') || 'tidak ada'}</td>
+              <td>{row.componentsUsed.map((id) => labelOf(id)).join(', ') || t('tidak ada')}</td>
+              <td>{row.missingIndicators.map((id) => labelOf(id)).join(', ') || t('tidak ada')}</td>
               <td>
                 <div className={styles.cell}>
-                  <span className={`${styles.tag} ${styles.tagWarn}`}>Tidak diperingkat</span>
+                  <span className={`${styles.tag} ${styles.tagWarn}`}>{t('Tidak diperingkat')}</span>
                   <span>{row.reasonText}</span>
                   <span className={`kk-small ${styles.code}`}>{row.reason}</span>
                 </div>
@@ -342,23 +362,23 @@ function InsufficientList({ record }: { readonly record: CompositeEvidenceRecord
       <div className={styles.screenOnly}>
         <InsufficientTable
           rows={paged.pageRows}
-          caption={`Wilayah tidak diperingkat (${String(total)})`}
+          caption={t('Wilayah tidak diperingkat ({0})', String(total))}
           labelOf={labelOf}
         />
         <Pagination
-          label="wilayah tidak diperingkat"
-          noun="wilayah tidak diperingkat"
+          label={t('wilayah tidak diperingkat')}
+          noun={t('wilayah tidak diperingkat')}
           total={total}
           paging={paged}
         />
       </div>
       <div className={styles.printOnly}>
         <p className={`kk-small ${styles.printExcerptNote}`}>
-          {printExcerptNote(excerpt.length, total, 'wilayah tidak diperingkat')}
+          {printExcerptNote(excerpt.length, total, t('wilayah tidak diperingkat'))}
         </p>
         <InsufficientTable
           rows={excerpt}
-          caption={printCaption(excerpt.length, total, 'wilayah tidak diperingkat')}
+          caption={printCaption(excerpt.length, total, t('wilayah tidak diperingkat'))}
           labelOf={labelOf}
         />
       </div>
@@ -368,16 +388,21 @@ function InsufficientList({ record }: { readonly record: CompositeEvidenceRecord
 
 export function InsufficientSection({ record }: { readonly record: CompositeEvidenceRecord }) {
   return (
-    <Section id="paspor-tidak-diperingkat" title="Wilayah tidak diperingkat" mode={record.source.dataMode}>
+    <Section
+      id="paspor-tidak-diperingkat"
+      title={t('Wilayah tidak diperingkat')}
+      mode={record.source.dataMode}
+    >
       {record.insufficient.length === 0 ? (
         <p className="kk-body">
-          Data Hub tidak melaporkan wilayah yang dikecualikan karena data tidak cukup pada hasil ini.
+          {t('Data Hub tidak melaporkan wilayah yang dikecualikan karena data tidak cukup pada hasil ini.')}
         </p>
       ) : (
         <>
           <p className="kk-body">
-            Wilayah berikut tidak mendapat skor ataupun peringkat. Ini bukan skor nol: datanya tidak cukup
-            untuk dihitung.
+            {t(
+              'Wilayah berikut tidak mendapat skor ataupun peringkat. Ini bukan skor nol: datanya tidak cukup untuk dihitung.',
+            )}
           </p>
           <InsufficientList record={record} />
         </>

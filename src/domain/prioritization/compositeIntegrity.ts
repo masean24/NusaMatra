@@ -17,6 +17,7 @@
  *   have data nationally at all). Only the second one drives the Nusa Matra frontend policy gate.
  */
 import { TOTAL_BASIS_POINTS } from './weights';
+import { t } from '@/lib/i18n';
 
 /**
  * Largest gap between the reported score and the weighted sum of its (2-decimal) components for the
@@ -263,23 +264,26 @@ function renormalizationProblem(
   const kept = Object.keys(echoed).filter((id) => (echoed[id] ?? 0) > 0 && !unavailable.includes(id));
   const extra = Object.keys(effective).filter((id) => !kept.includes(id) && (effective[id] ?? 0) > 0);
   if (extra.length > 0)
-    return `Bobot efektif memuat indikator yang tidak diminta atau dinyatakan kosong: ${extra.join(', ')}.`;
+    return t(
+      'Bobot efektif memuat indikator yang tidak diminta atau dinyatakan kosong: {0}.',
+      extra.join(', '),
+    );
   const unknown = unavailable.filter((id) => !(id in echoed));
   if (unknown.length > 0)
-    return `Indikator yang dinyatakan kosong tidak ada di permintaan: ${unknown.join(', ')}.`;
+    return t('Indikator yang dinyatakan kosong tidak ada di permintaan: {0}.', unknown.join(', '));
   const keptTotal = kept.reduce((sum, id) => sum + (echoed[id] ?? 0), 0);
-  if (keptTotal === 0) return 'Tidak ada indikator berdata yang tersisa untuk diberi bobot.';
+  if (keptTotal === 0) return t('Tidak ada indikator berdata yang tersisa untuk diberi bobot.');
   const drifted = kept.filter((id) => {
     const exact = ((echoed[id] ?? 0) * TOTAL_BASIS_POINTS) / keptTotal;
     return Math.abs((effective[id] ?? 0) - exact) > WEIGHT_ROUNDING_BPS;
   });
   if (drifted.length > 0)
-    return `Bobot efektif tidak sebanding dengan bobot yang diminta untuk: ${drifted.join(', ')}.`;
+    return t('Bobot efektif tidak sebanding dengan bobot yang diminta untuk: {0}.', drifted.join(', '));
   const redistributed = unavailable.some((id) => (echoed[id] ?? 0) > 0);
   if (renormalized !== null && renormalized !== redistributed) {
     return renormalized
-      ? 'Respons menyatakan bobot dialihkan, padahal tidak ada indikator berbobot yang kosong.'
-      : 'Ada indikator berbobot yang kosong, tetapi respons menyatakan bobot tidak dialihkan.';
+      ? t('Respons menyatakan bobot dialihkan, padahal tidak ada indikator berbobot yang kosong.')
+      : t('Ada indikator berbobot yang kosong, tetapi respons menyatakan bobot tidak dialihkan.');
   }
   return null;
 }
@@ -328,12 +332,16 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (echoedTotal !== TOTAL_BASIS_POINTS) {
     block(
       'WEIGHTS_NOT_100_PERCENT',
-      `Bobot yang dikembalikan berjumlah ${n(echoedTotal)} basis poin, bukan ${n(TOTAL_BASIS_POINTS)}.`,
+      t(
+        'Bobot yang dikembalikan berjumlah {0} basis poin, bukan {1}.',
+        n(echoedTotal),
+        n(TOTAL_BASIS_POINTS),
+      ),
       Math.abs(echoedTotal - TOTAL_BASIS_POINTS),
     );
   }
   if (input.requestedWeights && !sameWeights(input.requestedWeights, echoed)) {
-    block('WEIGHTS_ECHO_MISMATCH', 'Bobot yang dikembalikan tidak sama dengan bobot yang dikirim.', 1);
+    block('WEIGHTS_ECHO_MISMATCH', t('Bobot yang dikembalikan tidak sama dengan bobot yang dikirim.'), 1);
   }
 
   // Score orientation: the whole ranking is read as "higher = higher need"; anything else, or a LIVE
@@ -341,20 +349,28 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (direction !== null && direction !== EXPECTED_SCORE_DIRECTION) {
     block(
       'SCORE_DIRECTION_MISMATCH',
-      `Data Hub menyatakan arah skor "${direction}", bukan "${EXPECTED_SCORE_DIRECTION}" (skor tinggi = kebutuhan intervensi tinggi). Peringkat tidak dapat dibaca dengan aman.`,
+      t(
+        'Data Hub menyatakan arah skor "{0}", bukan "{1}" (skor tinggi = kebutuhan intervensi tinggi). Peringkat tidak dapat dibaca dengan aman.',
+        direction,
+        EXPECTED_SCORE_DIRECTION,
+      ),
       1,
     );
   } else if (direction === null && input.dataMode === 'LIVE') {
     block(
       'SCORE_DIRECTION_UNREPORTED',
-      `Respons LIVE tidak menyebut arah skor (score_direction). Tanpa itu, skor tinggi bisa berarti kondisi baik atau kebutuhan tinggi, jadi peringkat ditahan.`,
+      t(
+        'Respons LIVE tidak menyebut arah skor (score_direction). Tanpa itu, skor tinggi bisa berarti kondisi baik atau kebutuhan tinggi, jadi peringkat ditahan.',
+      ),
       1,
     );
   } else if (direction === null && input.dataMode === 'DEMO') {
     add(
       'disclose',
       'SCORE_DIRECTION_UNREPORTED',
-      'Respons simulasi ini tidak menyebut arah skor (score_direction); arah dibaca sebagai kebutuhan intervensi.',
+      t(
+        'Respons simulasi ini tidak menyebut arah skor (score_direction); arah dibaca sebagai kebutuhan intervensi.',
+      ),
       1,
     );
   }
@@ -362,15 +378,20 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (input.declaredRankable === false) {
     block(
       'PRESET_NOT_RANKABLE',
-      'Data Hub menandai skenario ini tidak dapat diperingkat (rankable = false) karena sebagian besar kriterianya belum punya data. Hasil peringkat ditahan, meskipun server tetap mengembalikannya.',
+      t(
+        'Data Hub menandai skenario ini tidak dapat diperingkat (rankable = false) karena sebagian besar kriterianya belum punya data. Hasil peringkat ditahan, meskipun server tetap mengembalikannya.',
+      ),
       1,
     );
   }
   if (input.responseRankable === false) {
-    const reason = input.notRankableReason ? ` Alasan dari Data Hub: "${input.notRankableReason}".` : '';
+    const reason = input.notRankableReason ? t(' Alasan dari Data Hub: "{0}".', input.notRankableReason) : '';
     block(
       'COMPOSITE_NOT_RANKABLE',
-      `Data Hub menyatakan kombinasi bobot ini tidak dapat diperingkat (rankable = false) dan tidak mengirim peringkat apa pun.${reason}`,
+      t(
+        'Data Hub menyatakan kombinasi bobot ini tidak dapat diperingkat (rankable = false) dan tidak mengirim peringkat apa pun.{0}',
+        reason,
+      ),
       1,
     );
   }
@@ -382,7 +403,11 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
     if (effectiveTotal !== TOTAL_BASIS_POINTS) {
       block(
         'EFFECTIVE_WEIGHTS_NOT_100_PERCENT',
-        `Bobot yang benar-benar dipakai berjumlah ${n(effectiveTotal)} basis poin, bukan ${n(TOTAL_BASIS_POINTS)}.`,
+        t(
+          'Bobot yang benar-benar dipakai berjumlah {0} basis poin, bukan {1}.',
+          n(effectiveTotal),
+          n(TOTAL_BASIS_POINTS),
+        ),
         Math.abs(effectiveTotal - TOTAL_BASIS_POINTS),
       );
     }
@@ -406,7 +431,11 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (availabilityPct !== null && policyMinimum !== null && availabilityPct < policyMinimum - 1e-9) {
     block(
       'REQUESTED_WEIGHT_AVAILABILITY_LOW',
-      `Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub): peringkat hanya ditampilkan bila minimal ${n(policyMinimum)}% bobot pilihan Anda jatuh pada indikator yang punya data nasional. Di sini hanya ${availabilityPct.toFixed(1)}%; sisanya akan diganti diam-diam oleh kriteria lain.`,
+      t(
+        'Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub): peringkat hanya ditampilkan bila minimal {0}% bobot pilihan Anda jatuh pada indikator yang punya data nasional. Di sini hanya {1}%; sisanya akan diganti diam-diam oleh kriteria lain.',
+        n(policyMinimum),
+        availabilityPct.toFixed(1),
+      ),
       1,
     );
   }
@@ -414,7 +443,11 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (input.reportedTotalRegions !== rows.length) {
     block(
       'REPORTED_COUNT_MISMATCH',
-      `Respons menyebut ${n(input.reportedTotalRegions)} wilayah tetapi hanya memuat ${n(rows.length)}.`,
+      t(
+        'Respons menyebut {0} wilayah tetapi hanya memuat {1}.',
+        n(input.reportedTotalRegions),
+        n(rows.length),
+      ),
       Math.abs(input.reportedTotalRegions - rows.length),
     );
   }
@@ -427,8 +460,16 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
       block(
         'ELIGIBLE_COUNT_INCONSISTENT',
         eligible < rows.length
-          ? `Respons menyebut ${n(eligible)} wilayah layak secara nasional, lebih sedikit dari ${n(rows.length)} wilayah yang diperingkat.`
-          : `Tanpa filter provinsi, respons menyebut ${n(eligible)} wilayah layak secara nasional tetapi memuat ${n(rows.length)} baris peringkat.`,
+          ? t(
+              'Respons menyebut {0} wilayah layak secara nasional, lebih sedikit dari {1} wilayah yang diperingkat.',
+              n(eligible),
+              n(rows.length),
+            )
+          : t(
+              'Tanpa filter provinsi, respons menyebut {0} wilayah layak secara nasional tetapi memuat {1} baris peringkat.',
+              n(eligible),
+              n(rows.length),
+            ),
         Math.abs(eligible - rows.length),
       );
     }
@@ -440,7 +481,11 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   ) {
     block(
       'ELIGIBLE_COUNT_INCONSISTENT',
-      `Respons menyebut ${n(input.totalExcluded)} wilayah dikecualikan, tetapi merinci ${n(insufficientRows.length)}.`,
+      t(
+        'Respons menyebut {0} wilayah dikecualikan, tetapi merinci {1}.',
+        n(input.totalExcluded),
+        n(insufficientRows.length),
+      ),
       Math.abs(input.totalExcluded - insufficientRows.length),
     );
   }
@@ -454,8 +499,17 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
       severity: registry > accountedFor ? 'disclose' : 'block',
       message:
         registry > accountedFor
-          ? `${n(registry - accountedFor)} dari ${n(registry)} wilayah tidak tercantum di peringkat maupun di daftar data belum cukup; peringkat hanya berlaku untuk ${n(rows.length)} wilayah yang dihitung.`
-          : `Peringkat dan daftar data belum cukup memuat ${n(accountedFor)} wilayah, lebih banyak dari ${n(registry)} wilayah di daftar snapshot ini.`,
+          ? t(
+              '{0} dari {1} wilayah tidak tercantum di peringkat maupun di daftar data belum cukup; peringkat hanya berlaku untuk {2} wilayah yang dihitung.',
+              n(registry - accountedFor),
+              n(registry),
+              n(rows.length),
+            )
+          : t(
+              'Peringkat dan daftar data belum cukup memuat {0} wilayah, lebih banyak dari {1} wilayah di daftar snapshot ini.',
+              n(accountedFor),
+              n(registry),
+            ),
       count: Math.abs(registry - accountedFor),
     });
   }
@@ -467,7 +521,11 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
     if (outside.length > 0) {
       block(
         'PROVINCE_FILTER_MISMATCH',
-        `${n(outside.length)} wilayah di luar provinsi ${province} ikut dalam peringkat yang difilter.`,
+        t(
+          '{0} wilayah di luar provinsi {1} ikut dalam peringkat yang difilter.',
+          n(outside.length),
+          province,
+        ),
         outside.length,
         outside.slice(0, MAX_EXAMPLES),
       );
@@ -543,7 +601,10 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (withoutData.length > 0) {
     block(
       'CRITERION_WITHOUT_DATA',
-      `Kriteria berikut berbobot tetapi tidak punya data untuk satu pun wilayah: ${withoutData.join(', ')}.`,
+      t(
+        'Kriteria berikut berbobot tetapi tidak punya data untuk satu pun wilayah: {0}.',
+        withoutData.join(', '),
+      ),
       withoutData.length,
     );
   }
@@ -553,50 +614,73 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   report(
     'DUPLICATE_REGION',
     found.duplicates,
-    `${n(found.duplicates.length)} wilayah muncul lebih dari sekali.`,
+    t('{0} wilayah muncul lebih dari sekali.', n(found.duplicates.length)),
   );
   report(
     'SCORE_OUT_OF_RANGE',
     found.outOfRange,
-    `${n(found.outOfRange.length)} wilayah punya skor di luar rentang 0–100 atau bukan angka.`,
+    t('{0} wilayah punya skor di luar rentang 0–100 atau bukan angka.', n(found.outOfRange.length)),
   );
   report(
     'REGION_WEIGHTS_MISSING',
     found.weightsMissing,
-    `${n(found.weightsMissing.length)} wilayah diberi skor tanpa bobot per wilayah (effective_weights_region), sehingga skornya tidak dapat dihitung ulang.`,
+    t(
+      '{0} wilayah diberi skor tanpa bobot per wilayah (effective_weights_region), sehingga skornya tidak dapat dihitung ulang.',
+      n(found.weightsMissing.length),
+    ),
   );
   report(
     'REGION_WEIGHTS_NOT_100_PERCENT',
     found.weightsNot100,
-    `${n(found.weightsNot100.length)} wilayah punya bobot per wilayah yang tidak berjumlah tepat ${n(TOTAL_BASIS_POINTS)} basis poin.`,
+    t(
+      '{0} wilayah punya bobot per wilayah yang tidak berjumlah tepat {1} basis poin.',
+      n(found.weightsNot100.length),
+      n(TOTAL_BASIS_POINTS),
+    ),
   );
   report(
     'REGION_WEIGHTS_INCONSISTENT',
     found.weightsInconsistent,
-    `${n(found.weightsInconsistent.length)} wilayah punya bobot per wilayah yang tidak sebanding dengan bobot efektif, atau memuat indikator di luar permintaan.`,
+    t(
+      '{0} wilayah punya bobot per wilayah yang tidak sebanding dengan bobot efektif, atau memuat indikator di luar permintaan.',
+      n(found.weightsInconsistent.length),
+    ),
   );
   report(
     'REGION_COMPONENTS_INCONSISTENT',
     found.componentsInconsistent,
-    `${n(found.componentsInconsistent.length)} wilayah punya daftar komponen (components_used / missing_indicators) yang tidak cocok dengan skor komponennya.`,
+    t(
+      '{0} wilayah punya daftar komponen (components_used / missing_indicators) yang tidak cocok dengan skor komponennya.',
+      n(found.componentsInconsistent.length),
+    ),
   );
   report(
     'COVERAGE_MISMATCH',
     found.coverageMismatch,
-    `${n(found.coverageMismatch.length)} wilayah punya cakupan (coverage_pct) yang tidak cocok dengan bobot komponen yang dipakainya.`,
+    t(
+      '{0} wilayah punya cakupan (coverage_pct) yang tidak cocok dengan bobot komponen yang dipakainya.',
+      n(found.coverageMismatch.length),
+    ),
   );
   report(
     'RANKED_BELOW_THRESHOLD',
     found.belowThreshold,
-    `${n(found.belowThreshold.length)} wilayah diberi peringkat padahal cakupannya di bawah ambang ${minCoverage === null ? '' : `${n(minCoverage)}% `}atau komponennya kurang dari ${minComponents === null ? 'minimum' : n(minComponents)}; seharusnya masuk daftar data belum cukup.`,
+    t(
+      '{0} wilayah diberi peringkat padahal cakupannya di bawah ambang {1}atau komponennya kurang dari {2}; seharusnya masuk daftar data belum cukup.',
+      n(found.belowThreshold.length),
+      minCoverage === null ? '' : `${n(minCoverage)}% `,
+      minComponents === null ? 'minimum' : n(minComponents),
+    ),
   );
   if (found.missing.length > 0) {
     block(
       'MISSING_COMPONENT',
-      `${n(found.missing.length)} wilayah punya skor gabungan tanpa semua skor komponen berbobot.` +
+      t('{0} wilayah punya skor gabungan tanpa semua skor komponen berbobot.', n(found.missing.length)) +
         (found.zeroFilled === found.missing.length
-          ? ' Skor itu hanya cocok bila data yang kosong dihitung sebagai 0, padahal data kosong bukan nol.'
-          : ' Skor itu tidak bisa dihitung ulang dari komponennya.'),
+          ? t(
+              ' Skor itu hanya cocok bila data yang kosong dihitung sebagai 0, padahal data kosong bukan nol.',
+            )
+          : t(' Skor itu tidak bisa dihitung ulang dari komponennya.')),
       found.missing.length,
       found.missing.slice(0, MAX_EXAMPLES),
     );
@@ -604,7 +688,11 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (found.mismatched.length > 0) {
     block(
       'SCORE_MISMATCH',
-      `${n(found.mismatched.length)} skor gabungan tidak sama dengan jumlah berbobot skor komponennya (selisih terbesar ${found.maxScoreError.toFixed(2)}).`,
+      t(
+        '{0} skor gabungan tidak sama dengan jumlah berbobot skor komponennya (selisih terbesar {1}).',
+        n(found.mismatched.length),
+        found.maxScoreError.toFixed(2),
+      ),
       found.mismatched.length,
       found.mismatched.slice(0, MAX_EXAMPLES),
     );
@@ -633,14 +721,18 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
   if (rankViolations > 0) {
     block(
       'RANK_ORDER',
-      `Urutan peringkat tidak konsisten dengan skor pada ${n(rankViolations)} baris.`,
+      t('Urutan peringkat tidak konsisten dengan skor pada {0} baris.', n(rankViolations)),
       rankViolations,
     );
   }
   if (beyond > 0) {
     block(
       'RANK_BEYOND_POPULATION',
-      `${n(beyond)} wilayah diberi peringkat lebih besar dari jumlah wilayah yang dihitung (${n(scored.length)}).`,
+      t(
+        '{0} wilayah diberi peringkat lebih besar dari jumlah wilayah yang dihitung ({1}).',
+        n(beyond),
+        n(scored.length),
+      ),
       beyond,
     );
   }
@@ -652,7 +744,10 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
     add(
       'disclose',
       'PARTIAL_COVERAGE',
-      `${n(found.partial.length)} wilayah dihitung dari sebagian kriteria saja (cakupan 70% hingga di bawah 100%, bobot dialihkan ke kriteria yang datanya ada). Skornya tetap bisa dibandingkan, tetapi bukan dari kriteria yang sama dengan wilayah berdata lengkap.`,
+      t(
+        '{0} wilayah dihitung dari sebagian kriteria saja (cakupan 70% hingga di bawah 100%, bobot dialihkan ke kriteria yang datanya ada). Skornya tetap bisa dibandingkan, tetapi bukan dari kriteria yang sama dengan wilayah berdata lengkap.',
+        n(found.partial.length),
+      ),
       found.partial.length,
       found.partial.slice(0, MAX_EXAMPLES),
     );
@@ -661,7 +756,10 @@ export function assessCompositeIntegrity(input: CompositeIntegrityInput): Compos
     add(
       'disclose',
       'IMPUTED_PROVINCE_DATA',
-      `${n(found.imputed.length)} wilayah memakai nilai yang diperkirakan dari tingkat provinsi (IMPUTED_PROVINCE) untuk sedikitnya satu kriteria. Itu bukan pengukuran tingkat kabupaten/kota, berapa pun cakupannya.`,
+      t(
+        '{0} wilayah memakai nilai yang diperkirakan dari tingkat provinsi (IMPUTED_PROVINCE) untuk sedikitnya satu kriteria. Itu bukan pengukuran tingkat kabupaten/kota, berapa pun cakupannya.',
+        n(found.imputed.length),
+      ),
       found.imputed.length,
       found.imputed.slice(0, MAX_EXAMPLES),
     );
@@ -829,7 +927,10 @@ function checkNationalRank(
   if (bad.length > 0) {
     block(
       'NATIONAL_RANK_INCONSISTENT',
-      `${n(bad.length)} wilayah punya peringkat nasional (national_rank) yang hilang atau tidak konsisten: tidak boleh di atas peringkat dalam daftar, tidak boleh menurun sepanjang daftar, dan tanpa filter provinsi harus sama dengan peringkat.`,
+      t(
+        '{0} wilayah punya peringkat nasional (national_rank) yang hilang atau tidak konsisten: tidak boleh di atas peringkat dalam daftar, tidak boleh menurun sepanjang daftar, dan tanpa filter provinsi harus sama dengan peringkat.',
+        n(bad.length),
+      ),
       bad.length,
       bad.slice(0, MAX_EXAMPLES),
     );
@@ -848,7 +949,7 @@ function checkInsufficientRows(
   if (both.length > 0) {
     block(
       'INSUFFICIENT_REGION_RANKED',
-      `${n(both.length)} wilayah muncul di peringkat sekaligus di daftar data belum cukup.`,
+      t('{0} wilayah muncul di peringkat sekaligus di daftar data belum cukup.', n(both.length)),
       both.length,
       both.slice(0, MAX_EXAMPLES),
     );
@@ -864,7 +965,10 @@ function checkInsufficientRows(
   if (unjustified.length > 0) {
     block(
       'INSUFFICIENT_NOT_JUSTIFIED',
-      `${n(unjustified.length)} wilayah dikecualikan dari peringkat padahal cakupan dan jumlah komponennya memenuhi ambang Data Hub sendiri.`,
+      t(
+        '{0} wilayah dikecualikan dari peringkat padahal cakupan dan jumlah komponennya memenuhi ambang Data Hub sendiri.',
+        n(unjustified.length),
+      ),
       unjustified.length,
       unjustified.slice(0, MAX_EXAMPLES),
     );

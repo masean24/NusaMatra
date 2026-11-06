@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 /**
  * Whether an earthquake feed may be shown, and how. Pure and deterministic: given what the Data Hub
  * declares about the data and the current time, it decides between official, stale, an explicitly
@@ -48,17 +50,17 @@ const FIXTURE_FALLBACK = /FIXTURE|DEMO|LOCAL|SYNTHETIC/i;
 function staleReasons(input: FeedAssessmentInput, fallback: string, ageMinutes: number | null): string[] {
   const reasons: string[] = [];
   if (input.declaredStale === true) {
-    reasons.push('Data Hub menandai data ini usang: pengambilan terbaru dari BMKG belum berhasil.');
+    reasons.push(t('Data Hub menandai data ini usang: pengambilan terbaru dari BMKG belum berhasil.'));
   }
   if (fallback !== 'NONE' && fallback !== '') {
-    reasons.push('Data Hub menyajikan data pengganti, bukan pengambilan terbaru dari BMKG.');
+    reasons.push(t('Data Hub menyajikan data pengganti, bukan pengambilan terbaru dari BMKG.'));
   }
   const staleAfter = Math.max(STALE_AFTER_MINUTES, (input.cacheTtlSeconds ?? 0) / 60);
   if (ageMinutes === null) {
-    reasons.push('Waktu pengambilan terakhir yang berhasil dari BMKG tidak disebutkan.');
+    reasons.push(t('Waktu pengambilan terakhir yang berhasil dari BMKG tidak disebutkan.'));
   } else if (ageMinutes > staleAfter) {
     reasons.push(
-      `Data terakhir berhasil diambil dari BMKG sekitar ${String(Math.round(ageMinutes))} menit lalu.`,
+      t('Data terakhir berhasil diambil dari BMKG sekitar {0} menit lalu.', String(Math.round(ageMinutes))),
     );
   }
   return reasons;
@@ -74,7 +76,7 @@ export function assessEarthquakeFeed(input: FeedAssessmentInput): FeedAssessment
       display: 'WITHHELD',
       isStale: true,
       ageMinutes,
-      reasons: ['Data Hub menyatakan data ini berasal dari fixture lokal, bukan peristiwa BMKG.'],
+      reasons: [t('Data Hub menyatakan data ini berasal dari fixture lokal, bukan peristiwa BMKG.')],
     };
   }
 
@@ -82,8 +84,9 @@ export function assessEarthquakeFeed(input: FeedAssessmentInput): FeedAssessment
   const isStale = reasons.length > 0;
 
   if (input.origin === 'UNDECLARED') {
-    const undeclared =
-      'Data Hub belum menyatakan apakah data ini langsung dari BMKG, dari cache, atau dari fixture lokal.';
+    const undeclared = t(
+      'Data Hub belum menyatakan apakah data ini langsung dari BMKG, dari cache, atau dari fixture lokal.',
+    );
     return input.allowUnverifiedPreview
       ? { display: 'PREVIEW_UNVERIFIED', isStale, ageMinutes, reasons: [undeclared, ...reasons] }
       : { display: 'WITHHELD', isStale, ageMinutes, reasons: [undeclared, ...reasons] };

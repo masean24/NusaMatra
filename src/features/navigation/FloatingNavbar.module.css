@@ -116,6 +116,13 @@
   gap: 0;
 }
 
+.compactControls {
+  display: inline-flex;
+  flex: none;
+  gap: 6px;
+  align-items: center;
+}
+
 .home {
   display: inline-flex;
   flex: none;
@@ -156,6 +163,17 @@
 }
 
 /* Below this width the full navbar (~950px with four destinations) no longer fits with 24px margins. */
+/* A narrow desktop has no room for the wordmark beside the links and both switches. */
+@media (width >= 1024px) and (width < 1240px) {
+  .desktop [data-wordmark] {
+    display: none;
+  }
+
+  .desktop .home > span {
+    gap: 0;
+  }
+}
+
 @media (width < 1024px) {
   .desktop {
     display: none;

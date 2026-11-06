@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 // Nusa Matra Data Hub adapter.
 
 export type ApiErrorCode =
@@ -108,34 +110,38 @@ export class ApiError extends Error {
   }
 }
 
-const NETWORK_UNAVAILABLE_COPY = 'Koneksi sedang bermasalah. Silakan coba lagi.';
+const NETWORK_UNAVAILABLE_COPY = t('Koneksi sedang bermasalah. Silakan coba lagi.');
 
 /**
  * Localized Bahasa Indonesia user-facing copy lookup for error messageIds.
  * Matches docs/08-API-SPECIFICATION.md Section 15.3 plus LIVE 503 gate copy.
  */
 export const INDONESIAN_ERROR_COPY: Readonly<Record<string, string>> = {
-  'data.demo_disclaimer': 'Simulasi — bukan data atau rekomendasi resmi.',
-  'data.live_unavailable':
+  'data.demo_disclaimer': t('Simulasi — bukan data atau rekomendasi resmi.'),
+  'data.live_unavailable': t(
     'Mode LIVE belum tersedia karena sumber data resmi belum diverifikasi dan dihubungkan. Tidak ada fallback otomatis ke data DEMO.',
-  'data.no_observation': 'Data untuk wilayah dan periode ini belum tersedia.',
-  'data.suppressed': 'Nilai tidak dipublikasikan oleh sumber.',
-  'comparison.definition_incompatible': 'Indikator ini tidak dapat dibandingkan karena definisinya berbeda.',
-  'comparison.year_warning': 'Tahun data berbeda. Baca catatan sebelum menyimpulkan.',
-  'analysis.weight_sum_invalid': 'Total bobot harus 100% (10.000 basis poin).',
-  'analysis.weights_invalid':
+  ),
+  'data.no_observation': t('Data untuk wilayah dan periode ini belum tersedia.'),
+  'data.suppressed': t('Nilai tidak dipublikasikan oleh sumber.'),
+  'comparison.definition_incompatible': t(
+    'Indikator ini tidak dapat dibandingkan karena definisinya berbeda.',
+  ),
+  'comparison.year_warning': t('Tahun data berbeda. Baca catatan sebelum menyimpulkan.'),
+  'analysis.weight_sum_invalid': t('Total bobot harus 100% (10.000 basis poin).'),
+  'analysis.weights_invalid': t(
     'Konfigurasi bobot indikator tidak valid. Gunakan bilangan bulat positif dengan total 10.000 basis poin.',
-  'analysis.model_not_approved': 'Metode analisis belum tersedia untuk data resmi.',
-  'analysis.running': 'Menghitung hasil berdasarkan bobot terpilih…',
-  'analysis.stale': 'Hasil sebelumnya — menunggu perhitungan terbaru.',
-  'analysis.blocked': 'Sebagian wilayah tidak dapat dihitung karena data belum memenuhi syarat.',
-  'quality.audit_not_run': 'Pemeriksaan kualitas data belum dijalankan.',
-  'evidence.not_ready': 'Paspor Bukti masih disiapkan.',
+  ),
+  'analysis.model_not_approved': t('Metode analisis belum tersedia untuk data resmi.'),
+  'analysis.running': t('Menghitung hasil berdasarkan bobot terpilih…'),
+  'analysis.stale': t('Hasil sebelumnya — menunggu perhitungan terbaru.'),
+  'analysis.blocked': t('Sebagian wilayah tidak dapat dihitung karena data belum memenuhi syarat.'),
+  'quality.audit_not_run': t('Pemeriksaan kualitas data belum dijalankan.'),
+  'evidence.not_ready': t('Paspor Bukti masih disiapkan.'),
   'network.unavailable': NETWORK_UNAVAILABLE_COPY,
-  'network.offline': 'Perangkat Anda sedang offline. Periksa koneksi internet, lalu coba lagi.',
-  'server.unavailable': 'Server Data Hub sedang bermasalah. Silakan coba lagi beberapa saat lagi.',
-  'request.rate_limited': 'Terlalu banyak permintaan ke Data Hub. Tunggu sebentar, lalu coba lagi.',
-  'request.aborted': 'Permintaan dibatalkan karena ada pembaruan pilihan.',
+  'network.offline': t('Perangkat Anda sedang offline. Periksa koneksi internet, lalu coba lagi.'),
+  'server.unavailable': t('Server Data Hub sedang bermasalah. Silakan coba lagi beberapa saat lagi.'),
+  'request.rate_limited': t('Terlalu banyak permintaan ke Data Hub. Tunggu sebentar, lalu coba lagi.'),
+  'request.aborted': t('Permintaan dibatalkan karena ada pembaruan pilihan.'),
 };
 
 export function getIndonesianErrorCopy(error: unknown): string {

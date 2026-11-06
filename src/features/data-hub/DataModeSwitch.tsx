@@ -3,6 +3,7 @@ import { publicConfig } from '@/lib/publicConfig';
 import type { DataMode } from '@/services/api';
 import { useDataHub } from './useDataHub';
 import styles from './DataModeSwitch.module.css';
+import { t } from '@/lib/i18n';
 
 const MODES: readonly DataMode[] = ['DEMO', 'LIVE'];
 
@@ -20,7 +21,7 @@ export function DataModeSwitch() {
   return (
     <div role="radiogroup" aria-labelledby={labelId} className={styles.switch}>
       <span id={labelId} className={styles.label}>
-        Mode data
+        {t('Mode data')}
       </span>
       {MODES.map((mode) => (
         <label key={mode} className={styles.option} data-selected={mode === dataMode || undefined}>

@@ -3,6 +3,7 @@ import type { DisplayMode } from './displayModePreference';
 import { Icon } from '@/components/ui/Icon/Icon';
 import { useDisplayMode } from './DisplayModeContext';
 import styles from './DisplayModeSwitch.module.css';
+import { t } from '@/lib/i18n';
 
 interface DisplayModeSwitchProps {
   /** `compact` hides the segment labels visually (narrow screens); the accessible name stays the same. */
@@ -33,7 +34,7 @@ export function DisplayModeSwitch({ size = 'regular', className }: DisplayModeSw
         type="button"
         role="switch"
         aria-checked={isGlass}
-        aria-label="Mode tampilan kaca"
+        aria-label={t('Mode tampilan kaca')}
         aria-describedby={glassAvailable ? undefined : hintId}
         aria-busy={isTransitioning || undefined}
         disabled={!glassAvailable}
@@ -52,16 +53,16 @@ export function DisplayModeSwitch({ size = 'regular', className }: DisplayModeSw
         />
         <span className={styles.segment} data-segment="normal">
           <Icon name="sun" size={18} />
-          <span className={styles.label}>Normal</span>
+          <span className={styles.label}>{t('Normal')}</span>
         </span>
         <span className={styles.segment} data-segment="glass">
           <Icon name="drop" size={18} />
-          <span className={styles.label}>Kaca</span>
+          <span className={styles.label}>{t('Kaca')}</span>
         </span>
       </button>
       {!glassAvailable && (
         <span id={hintId} className="visually-hidden">
-          Mode kaca dimatikan karena perangkat Anda meminta kontras tinggi atau transparansi rendah.
+          {t('Mode kaca dimatikan karena perangkat Anda meminta kontras tinggi atau transparansi rendah.')}
         </span>
       )}
     </>

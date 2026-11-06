@@ -7,6 +7,7 @@
 import { ApiError } from './apiError';
 import type { HttpResponseContext } from './httpClient';
 import type { DataMode } from './wireTypes';
+import { t } from '@/lib/i18n';
 
 /** Where the Data Hub says the events came from. `UNDECLARED` = it does not say. */
 export type EarthquakeOrigin = 'BMKG_LIVE' | 'BMKG_CACHE' | 'FIXTURE' | 'UNDECLARED';
@@ -114,7 +115,7 @@ function toEvent(feature: unknown): EarthquakeEventDTO | null {
     potency: text(properties.potency),
     felt: text(properties.felt),
     shakemapUrl: safeShakemap(properties.shakemap_url),
-    source: text(properties.source) ?? 'tidak disebutkan',
+    source: text(properties.source) ?? t('tidak disebutkan'),
   };
 }
 

@@ -18,6 +18,7 @@ import { passportHref } from '@/features/evidence-passport';
 import { ApiError, type RegionProfileDTO } from '@/services/api';
 import { buildRegionInsight, type InsightIndicator } from './regionInsight';
 import styles from './RegionDetailPanel.module.css';
+import { t } from '@/lib/i18n';
 
 const TONE_OF: Readonly<Record<ConditionVerdict, ConditionTone>> = {
   FAVORABLE: 'positive',
@@ -54,12 +55,14 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
 
   if (regionId === null) {
     return (
-      <p className="kk-body">Pilih wilayah di peta atau dari daftar untuk melihat profil dan indikatornya.</p>
+      <p className="kk-body">
+        {t('Pilih wilayah di peta atau dari daftar untuk melihat profil dan indikatornya.')}
+      </p>
     );
   }
 
   const profile = detail.state.status === 'success' ? detail.state.data.data : null;
-  const name = profile?.region.displayName ?? fallbackName ?? `Wilayah kode ${regionId}`;
+  const name = profile?.region.displayName ?? fallbackName ?? t('Wilayah kode {0}', regionId);
 
   return (
     <div className={styles.panel}>
@@ -70,7 +73,7 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
           </h2>
           {onClose && (
             <Button variant="secondary" onClick={onClose}>
-              Tutup profil
+              {t('Tutup profil')}
             </Button>
           )}
         </div>
@@ -78,8 +81,8 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
           {profile
             ? describeRegion(profile)
             : detail.state.status === 'loading'
-              ? `Kode ${regionId}, memuat provinsi dan indikator…`
-              : `Kode ${regionId}`}
+              ? t('Kode {0}, memuat provinsi dan indikator…', regionId)
+              : t('Kode {0}', regionId)}
         </p>
         <DataStatus dataMode={dataMode} />
       </header>
@@ -87,20 +90,26 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
       {isNotFound(detail.state) ? (
         <StatusMessage
           kind="unavailable"
-          title="Wilayah tidak ditemukan"
+          title={t('Wilayah tidak ditemukan')}
           action={
             onClose && (
               <Button variant="secondary" onClick={onClose}>
-                Pilih wilayah lain
+                {t('Pilih wilayah lain')}
               </Button>
             )
           }
         >
-          Kode {regionId} tidak ada pada versi data ini. Tautan mungkin berasal dari mode data lain atau dari
-          kode yang keliru.
+          {t(
+            'Kode {0} tidak ada pada versi data ini. Tautan mungkin berasal dari mode data lain atau dari kode yang keliru.',
+            regionId,
+          )}
         </StatusMessage>
       ) : (
-        <ResourceView state={detail.state} onRetry={detail.retry} loadingTitle="Memuat indikator wilayah…">
+        <ResourceView
+          state={detail.state}
+          onRetry={detail.retry}
+          loadingTitle={t('Memuat indikator wilayah…')}
+        >
           {(envelope) =>
             // Never show another region's numbers under this region's name.
             envelope.data.region.regionId === regionId ? (
@@ -117,9 +126,12 @@ export function RegionDetailPanel({ regionId, fallbackName = null, onClose }: Re
                 scoreDirection={envelope.meta.scoreDirection}
               />
             ) : (
-              <StatusMessage kind="error" title="Data wilayah tidak cocok">
-                Data Hub menjawab untuk kode {envelope.data.region.regionId}, bukan {regionId}, jadi profil
-                tidak ditampilkan.
+              <StatusMessage kind="error" title={t('Data wilayah tidak cocok')}>
+                {t(
+                  'Data Hub menjawab untuk kode {0}, bukan {1}, jadi profil tidak ditampilkan.',
+                  envelope.data.region.regionId,
+                  regionId,
+                )}
               </StatusMessage>
             )
           }
@@ -137,29 +149,29 @@ function describeRegion(profile: RegionProfileDTO): string {
   const { region } = profile;
   const parts = [
     adminLevelLabel(region.adminLevel),
-    region.provinceName ?? 'provinsi tidak diketahui',
+    region.provinceName ?? t('provinsi tidak diketahui'),
     ...(region.islandGroup && !region.provinceName?.endsWith(region.islandGroup) ? [region.islandGroup] : []),
     ...(region.areaKm2 === null
       ? []
       : [
           region.areaKm2 > 0
             ? `${formatDecimalId(String(region.areaKm2))} km²`
-            : 'luas wilayah dari sumber tidak valid (0 km²)',
+            : t('luas wilayah dari sumber tidak valid (0 km²)'),
         ]),
   ];
   const codes = region.identifiers.map(({ codeSystem, code }) => `${codeSystem} ${code}`).join(', ');
-  return codes ? `${parts.join(', ')}, kode ${codes}` : parts.join(', ');
+  return codes ? t('{0}, kode {1}', parts.join(', '), codes) : parts.join(', ');
 }
 
 function DataStatus({ dataMode }: { readonly dataMode: 'DEMO' | 'LIVE' }) {
   return dataMode === 'LIVE' ? (
     <p className={`kk-small ${styles.status}`}>
-      <Chip>Data resmi</Chip>
+      <Chip>{t('Data resmi')}</Chip>
     </p>
   ) : (
     <p className={`kk-small ${styles.status}`}>
-      <Chip tone="warning">Data simulasi (DEMO)</Chip>
-      <span className={styles.muted}>nama dan angka bukan data resmi</span>
+      <Chip tone="warning">{t('Data simulasi (DEMO)')}</Chip>
+      <span className={styles.muted}>{t('nama dan angka bukan data resmi')}</span>
     </p>
   );
 }
@@ -183,15 +195,18 @@ function ProfileBody({
   if (insight.indicatorCount === 0) {
     return (
       <p className="kk-body">
-        Belum ada data indikator untuk wilayah ini pada versi data ini. Wilayahnya terdaftar, tetapi Data Hub
-        belum memuat datanya, jadi wilayah ini tidak ikut dalam perbandingan dan peringkat.
+        {t(
+          'Belum ada data indikator untuk wilayah ini pada versi data ini. Wilayahnya terdaftar, tetapi Data Hub belum memuat datanya, jadi wilayah ini tidak ikut dalam perbandingan dan peringkat.',
+        )}
       </p>
     );
   }
 
   return (
     <>
-      {region.isSyntheticDemoName && <Chip tone="warning">Nama sintetis (DEMO), bukan nama resmi</Chip>}
+      {region.isSyntheticDemoName && (
+        <Chip tone="warning">{t('Nama sintetis (DEMO), bukan nama resmi')}</Chip>
+      )}
 
       {/*
        * The way to the evidence, first and in the accent colour (owner revision 2026-10-28): the
@@ -199,8 +214,8 @@ function ProfileBody({
        */}
       <Link to={passportTo} className={styles.passportCard}>
         <span className={styles.passportText}>
-          <span className="kk-body-strong">Paspor Bukti wilayah ini</span>
-          <span className="kk-small">Sumber, tahun data, dan batasan setiap angka</span>
+          <span className="kk-body-strong">{t('Paspor Bukti wilayah ini')}</span>
+          <span className="kk-small">{t('Sumber, tahun data, dan batasan setiap angka')}</span>
         </span>
         <span className={styles.passportArrow} aria-hidden="true">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
@@ -217,7 +232,7 @@ function ProfileBody({
 
       <section aria-labelledby="ringkasan-wilayah" className={styles.section}>
         <h3 id="ringkasan-wilayah" className="kk-body-strong">
-          Ringkasan
+          {t('Ringkasan')}
         </h3>
         <ul role="list" className={styles.summary}>
           {/* The essentials only: what is measured, its value and the verdict; the reasoning behind
@@ -239,20 +254,21 @@ function ProfileBody({
           ))}
         </ul>
         <p className={`kk-small ${styles.muted} ${styles.justified}`}>
-          Penilaian membandingkan wilayah ini dengan wilayah lain yang datanya tersedia, satu indikator sekali
-          waktu. Itu bukan penilaian atas seluruh kondisi wilayah.
+          {t(
+            'Penilaian membandingkan wilayah ini dengan wilayah lain yang datanya tersedia, satu indikator sekali waktu. Itu bukan penilaian atas seluruh kondisi wilayah.',
+          )}
         </p>
       </section>
 
       <section aria-labelledby="indikator-wilayah" className={styles.section}>
         <h3 id="indikator-wilayah" className="kk-body-strong">
-          Semua indikator ({insight.indicatorCount})
+          {t('Semua indikator ({0})', insight.indicatorCount)}
         </h3>
         {insight.groups.map(([category, items]) => (
           <details key={category} className={styles.group}>
             <summary className={styles.groupSummary}>
               <span className="kk-body-strong">{categoryLabel(category)}</span>
-              <span className={`kk-small ${styles.muted}`}>{items.length} indikator</span>
+              <span className={`kk-small ${styles.muted}`}>{t('{0} indikator', items.length)}</span>
             </summary>
             <ul role="list" className={styles.rows}>
               {items.map((indicator) => (
@@ -308,18 +324,20 @@ function IndicatorItem({
           <p className="kk-small">{indicator.reading.explanation}</p>
           {direction && <p className={`kk-small ${styles.muted}`}>{direction}</p>}
           {indicator.definition && indicator.definition !== indicator.label && (
-            <p className={`kk-small ${styles.muted}`}>Arti: {indicator.definition}</p>
+            <p className={`kk-small ${styles.muted}`}>{t('Arti: {0}', indicator.definition)}</p>
           )}
           {indicator.derivationFormula && (
-            <p className={`kk-small ${styles.muted}`}>Rumus turunan: {indicator.derivationFormula}</p>
+            <p className={`kk-small ${styles.muted}`}>
+              {t('Rumus turunan: {0}', indicator.derivationFormula)}
+            </p>
           )}
           {qualityNote && <Chip tone="warning">{qualityNote}</Chip>}
-          {indicator.unit.warning && <Chip tone="warning">Satuan dari sumber tidak konsisten</Chip>}
+          {indicator.unit.warning && <Chip tone="warning">{t('Satuan dari sumber tidak konsisten')}</Chip>}
           {indicator.unit.warning && <p className={`kk-small ${styles.muted}`}>{indicator.unit.warning}</p>}
 
           <dl className={styles.facts}>
             <div>
-              <dt>Nilai asli (dari sumber)</dt>
+              <dt>{t('Nilai asli (dari sumber)')}</dt>
               <dd>
                 {indicator.valueText}
                 {indicator.hasValue && indicator.unit.label ? ` ${indicator.unit.label}` : ''}
@@ -327,28 +345,28 @@ function IndicatorItem({
             </div>
             {indicator.normalizedScore !== null && (
               <div>
-                <dt>Skor ternormalisasi (0–100; makin tinggi, makin membutuhkan)</dt>
+                <dt>{t('Skor ternormalisasi (0–100; makin tinggi, makin membutuhkan)')}</dt>
                 <dd>{formatDecimalId(indicator.normalizedScore)}</dd>
               </div>
             )}
             {indicator.percentile !== null && (
               <div>
-                <dt>Persentil nasional dari Data Hub</dt>
-                <dd>{formatDecimalId(indicator.percentile)} (arah persentil belum dijelaskan)</dd>
+                <dt>{t('Persentil nasional dari Data Hub')}</dt>
+                <dd>{t('{0} (arah persentil belum dijelaskan)', formatDecimalId(indicator.percentile))}</dd>
               </div>
             )}
             {indicator.nationalRank !== null && (
               <div>
-                <dt>Peringkat dari Data Hub</dt>
-                <dd>{indicator.nationalRank} (dasar penghitungan peringkat belum dijelaskan)</dd>
+                <dt>{t('Peringkat dari Data Hub')}</dt>
+                <dd>{t('{0} (dasar penghitungan peringkat belum dijelaskan)', indicator.nationalRank)}</dd>
               </div>
             )}
             <div>
-              <dt>Tahun data</dt>
-              <dd>{indicator.referenceYear === null ? 'belum tersedia' : indicator.referenceYear}</dd>
+              <dt>{t('Tahun data')}</dt>
+              <dd>{indicator.referenceYear === null ? t('belum tersedia') : indicator.referenceYear}</dd>
             </div>
             <div>
-              <dt>Sumber</dt>
+              <dt>{t('Sumber')}</dt>
               <dd>
                 {sourceUrl ? (
                   <a href={sourceUrl} target="_blank" rel="noreferrer noopener">

@@ -11,14 +11,16 @@ import { RegionsSection } from './RegionsSection';
 import { SourceStatusSection } from './SourceStatusSection';
 import { LimitationsSection, SourcesSection } from './SourcesAndLimitations';
 import { usePassportActions } from './usePassportActions';
+import { t } from '@/lib/i18n';
 
 const KIND_LABEL: Readonly<Record<EvidenceRecord['kind'], string>> = {
-  wilayah: 'Satu wilayah',
-  bandingkan: 'Perbandingan dua wilayah',
+  wilayah: t('Satu wilayah'),
+  bandingkan: t('Perbandingan dua wilayah'),
 };
 
-const EXPORT_NOTE =
-  'Unduh JSON memuat catatan lengkap: setiap nilai indikator dengan sumber dan penandanya, setiap respons Data Hub beserta permintaannya, dan semua batasan.';
+const EXPORT_NOTE = t(
+  'Unduh JSON memuat catatan lengkap: setiap nilai indikator dengan sumber dan penandanya, setiap respons Data Hub beserta permintaannya, dan semua batasan.',
+);
 
 /** One region or one pair: how it is pinned, the regions, every indicator value, the sources, the limits. */
 export function EvidenceDocument({ record }: { readonly record: EvidenceRecord }) {
@@ -36,13 +38,13 @@ export function EvidenceDocument({ record }: { readonly record: EvidenceRecord }
     buildExportText: () => serializeExport(buildExportPayload(record, link)),
   });
   const toc: TocEntry[] = [
-    { id: 'paspor-atas', label: 'Ringkasan' },
-    { id: 'paspor-keterpercayaan', label: 'Keterpercayaan' },
-    { id: 'paspor-status-sumber', label: 'Status sumber data' },
-    { id: 'paspor-wilayah', label: 'Wilayah' },
-    { id: 'paspor-indikator', label: 'Indikator' },
-    { id: 'paspor-sumber', label: 'Sumber data' },
-    { id: 'batasan', label: `Batasan (${String(notes.length)})` },
+    { id: 'paspor-atas', label: t('Ringkasan') },
+    { id: 'paspor-keterpercayaan', label: t('Keterpercayaan') },
+    { id: 'paspor-status-sumber', label: t('Status sumber data') },
+    { id: 'paspor-wilayah', label: t('Wilayah') },
+    { id: 'paspor-indikator', label: t('Indikator') },
+    { id: 'paspor-sumber', label: t('Sumber data') },
+    { id: 'batasan', label: t('Batasan ({0})', String(notes.length)) },
   ];
 
   return (

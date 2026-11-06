@@ -32,6 +32,7 @@ import { fetchedForRegions } from './fetchLog';
 import { buildLimitations } from './limitations';
 import { NOT_PINNED_CONSEQUENCE, REPRODUCIBLE_SNAPSHOT_STATEMENT } from './notices';
 import type { SnapshotPinning } from './snapshotResolution';
+import { t } from '@/lib/i18n';
 
 /** The adapter fills these in when the Data Hub names no dataset or agency; they are not real names. */
 export const UNKNOWN_DATASET = 'unknown_dataset';
@@ -93,7 +94,11 @@ function reproducibilityOf(
       pinnedSnapshotId: pin.snapshotId,
       contentSha256: pin.contentSha256,
       origin,
-      statement: `Versi data ${pin.snapshotId} tidak dinyatakan immutable, atau respons tidak sepakat soal sidik isinya. ${NOT_PINNED_CONSEQUENCE}`,
+      statement: t(
+        'Versi data {0} tidak dinyatakan immutable, atau respons tidak sepakat soal sidik isinya. {1}',
+        pin.snapshotId,
+        NOT_PINNED_CONSEQUENCE,
+      ),
     };
   }
   return {
@@ -183,7 +188,11 @@ export function assessLinkContext(
     warnings.push({
       code: 'MODE_DIFFERS',
       severity: 'warning',
-      message: `Tautan dibuat untuk mode ${link.mode.toUpperCase()}, tetapi data yang diterima berstatus ${source.dataMode}. Catatan ini tidak sama dengan yang dimaksud tautan.`,
+      message: t(
+        'Tautan dibuat untuk mode {0}, tetapi data yang diterima berstatus {1}. Catatan ini tidak sama dengan yang dimaksud tautan.',
+        link.mode.toUpperCase(),
+        source.dataMode,
+      ),
     });
   }
   if (!link.snapshotId) {
@@ -192,14 +201,24 @@ export function assessLinkContext(
       code: 'SNAPSHOT_NOT_PINNED',
       severity: 'info',
       message: pinned
-        ? `Tautan yang dibuka tidak mencantumkan versi data, jadi Paspor ini dikunci ke versi data aktif saat dibuka (${source.snapshotId}). Belum dapat diperiksa apakah itu data yang dilihat pembuat tautan; tautan untuk disalin dan dibagikan sudah mencantumkan versi data ini.`
-        : 'Tautan tidak mencantumkan versi data, jadi tidak dapat diperiksa apakah data ini sama dengan yang dilihat pembuat tautan.',
+        ? t(
+            'Tautan yang dibuka tidak mencantumkan versi data, jadi Paspor ini dikunci ke versi data aktif saat dibuka ({0}). Belum dapat diperiksa apakah itu data yang dilihat pembuat tautan; tautan untuk disalin dan dibagikan sudah mencantumkan versi data ini.',
+            source.snapshotId,
+          )
+        : t(
+            'Tautan tidak mencantumkan versi data, jadi tidak dapat diperiksa apakah data ini sama dengan yang dilihat pembuat tautan.',
+          ),
     });
   } else if (link.snapshotId !== source.snapshotId) {
     warnings.push({
       code: 'SNAPSHOT_CHANGED',
       severity: 'warning',
-      message: `Tautan dibuat saat versi data ${link.snapshotId}, sedangkan Data Hub kini memberi versi data ${source.snapshotId}. Angka di bawah berasal dari versi data ${source.snapshotId} dan dapat berbeda dari yang dilihat pembuat tautan; catatan ini tidak sama dengan tautan.`,
+      message: t(
+        'Tautan dibuat saat versi data {0}, sedangkan Data Hub kini memberi versi data {1}. Angka di bawah berasal dari versi data {2} dan dapat berbeda dari yang dilihat pembuat tautan; catatan ini tidak sama dengan tautan.',
+        link.snapshotId,
+        source.snapshotId,
+        source.snapshotId,
+      ),
     });
   }
   return warnings;
@@ -319,7 +338,7 @@ function compareIndicator(
   if (!consistent) {
     return {
       allowed: false,
-      blockers: ['Kedua wilayah berasal dari mode atau versi data yang berbeda, jadi tidak dibandingkan.'],
+      blockers: [t('Kedua wilayah berasal dari mode atau versi data yang berbeda, jadi tidak dibandingkan.')],
       warnings: [],
       differenceText: null,
     };
@@ -335,8 +354,8 @@ function compareIndicator(
     const amount = `${formatDecimalId(String(Math.abs(absolute)))}${unitLabel ? ` ${unitLabel}` : ''}`;
     differenceText =
       higher === 'EQUAL'
-        ? 'Nilai kedua wilayah sama.'
-        : `Selisih ${amount}; ${higher === 'A' ? regionNames[0] : regionNames[1]} lebih tinggi.`;
+        ? t('Nilai kedua wilayah sama.')
+        : t('Selisih {0}; {1} lebih tinggi.', amount, higher === 'A' ? regionNames[0] : regionNames[1]);
   }
   return {
     allowed: assessment.allowed,
@@ -376,8 +395,8 @@ function coverageOf(
       label: item.labelId,
       reason:
         item.availabilityStatus === 'UNAVAILABLE'
-          ? 'Belum ada data resmi untuk indikator ini pada versi data ini (status katalog: UNAVAILABLE).'
-          : 'Tidak ada nilai untuk wilayah ini pada versi data ini.',
+          ? t('Belum ada data resmi untuk indikator ini pada versi data ini (status katalog: UNAVAILABLE).')
+          : t('Tidak ada nilai untuk wilayah ini pada versi data ini.'),
     });
   }
   const known = new Set([...present.keys(), ...(catalogItems ?? []).map((item) => item.indicatorId)]);
@@ -387,8 +406,8 @@ function coverageOf(
         indicatorId: id,
         label: id,
         reason: catalogItems
-          ? 'Indikator ini tidak dikenal pada versi data ini.'
-          : 'Indikator ini tidak ada pada profil wilayah.',
+          ? t('Indikator ini tidak dikenal pada versi data ini.')
+          : t('Indikator ini tidak ada pada profil wilayah.'),
       });
     }
   }
@@ -506,8 +525,8 @@ export function buildEvidenceRecord(query: SupportedQuery, raw: RawEvidenceSourc
     (profile) => new Map(profile.indicators.map((item) => [item.indicatorId, item])),
   );
   const regionNames: readonly [string, string] = [
-    regions[0]?.name ?? 'Wilayah A',
-    regions[1]?.name ?? 'Wilayah B',
+    regions[0]?.name ?? t('Wilayah A'),
+    regions[1]?.name ?? t('Wilayah B'),
   ];
 
   const indicators = shownIds.map((indicatorId): EvidenceIndicator => {
@@ -558,22 +577,29 @@ export function buildEvidenceRecord(query: SupportedQuery, raw: RawEvidenceSourc
   );
 
   const unavailableSources = [
-    ...(raw.catalog ? [] : ['katalog indikator']),
-    ...(raw.datasets ? [] : ['daftar dataset']),
-    ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar versi data']),
-    ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : ['cakupan indikator (/indicators/coverage)']),
+    ...(raw.catalog ? [] : [t('katalog indikator')]),
+    ...(raw.datasets ? [] : [t('daftar dataset')]),
+    ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : [t('daftar versi data')]),
+    ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : [t('cakupan indikator (/indicators/coverage)')]),
   ];
 
   const linkWarnings = assessLinkContext(query, source);
   const sources = summariseSources(indicators, datasetsById);
   const title =
     query.kind === 'wilayah'
-      ? `Bukti indikator ${regionNames[0]}`
-      : `Bukti perbandingan ${regionNames[0]} dan ${regionNames[1]}`;
+      ? t('Bukti indikator {0}', regionNames[0])
+      : t('Bukti perbandingan {0} dan {1}', regionNames[0], regionNames[1]);
   const question =
     query.kind === 'wilayah'
-      ? `Indikator apa saja yang tercatat untuk ${regionNames[0]}, dari sumber dan tahun apa, dan seberapa jauh nilainya dapat dipercaya?`
-      : `Dapatkah ${regionNames[0]} dan ${regionNames[1]} dibandingkan indikator demi indikator, dan berapa selisihnya bila boleh dibandingkan?`;
+      ? t(
+          'Indikator apa saja yang tercatat untuk {0}, dari sumber dan tahun apa, dan seberapa jauh nilainya dapat dipercaya?',
+          regionNames[0],
+        )
+      : t(
+          'Dapatkah {0} dan {1} dibandingkan indikator demi indikator, dan berapa selisihnya bila boleh dibandingkan?',
+          regionNames[0],
+          regionNames[1],
+        );
 
   const record: EvidenceRecord = {
     kind: query.kind,

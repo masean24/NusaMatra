@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQualityProfile } from '@/features/graphics-quality';
 import { useMediaQuery } from '@/features/motion';
 import styles from './MapGestureHint.module.css';
+import { t } from '@/lib/i18n';
 
 const SEEN_KEY = 'nusa-matra:map-hint-seen';
 /** How long the hint stays when the visitor does not touch the map first. */
@@ -87,32 +88,32 @@ export function MapGestureHint() {
           </span>
           <p className={styles.text}>
             {flat
-              ? 'Cubit untuk memperbesar, geser dengan satu jari untuk menggeser peta'
-              : 'Cubit untuk memperbesar, geser dengan satu jari untuk memutar peta'}
+              ? t('Cubit untuk memperbesar, geser dengan satu jari untuk menggeser peta')
+              : t('Cubit untuk memperbesar, geser dengan satu jari untuk memutar peta')}
           </p>
         </>
       ) : (
         <ul
           role="list"
           className={styles.list}
-          aria-label={flat ? 'Cara memakai peta' : 'Cara memakai peta 3D'}
+          aria-label={flat ? t('Cara memakai peta') : t('Cara memakai peta 3D')}
         >
           {flat ? (
             <li>
-              <span className={styles.key}>Klik kiri</span> + geser untuk menggeser peta
+              <span className={styles.key}>{t('Klik kiri')}</span> {t('+ geser untuk menggeser peta')}
             </li>
           ) : (
             <>
               <li>
-                <span className={styles.key}>Klik kiri</span> + geser untuk memutar 3D
+                <span className={styles.key}>{t('Klik kiri')}</span> {t('+ geser untuk memutar 3D')}
               </li>
               <li>
-                <span className={styles.key}>Klik kanan</span> + geser untuk menggeser peta
+                <span className={styles.key}>{t('Klik kanan')}</span> {t('+ geser untuk menggeser peta')}
               </li>
             </>
           )}
           <li>
-            <span className={styles.key}>Scroll</span> untuk memperbesar atau memperkecil
+            <span className={styles.key}>{t('Scroll')}</span> {t('untuk memperbesar atau memperkecil')}
           </li>
         </ul>
       )}

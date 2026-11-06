@@ -5,9 +5,10 @@ import { HeroDioramaSlot } from '@/features/geo3d';
 import { Reveal, STAGGER_ITEM_PROPS, useReducedMotion } from '@/features/motion';
 import { RegionSearchForm } from '../components/RegionSearchForm';
 import styles from './HeroSection.module.css';
+import { t } from '@/lib/i18n';
 
 /* The title rises word by word out of its mask; lead, search, buttons and note fade up after it. */
-const HERO_TITLE_WORDS = ['Memahami', 'wilayah,', 'menentukan', 'arah.'];
+const HERO_TITLE_WORDS = t('Memahami wilayah, menentukan arah.').split(' ');
 const G1_STAGGER_MS = 90;
 const G1_DISTANCE = 28;
 const G1_AFTER_TITLE_MS = 240;
@@ -57,9 +58,9 @@ export function HeroSection() {
         </h1>
         <Reveal trigger="load" distance={G1_DISTANCE} delay={G1_AFTER_TITLE_MS} introStep={0.22}>
           <p className={`kk-lead ${styles.lead}`}>
-            Jelajahi kondisi kabupaten/kota di Indonesia, bandingkan indikator pembangunan, dan susun
-            prioritas yang dapat diperiksa. Hasilnya bergantung pada indikator, bobot, data yang tersedia, dan
-            metode yang dipakai.
+            {t(
+              'Jelajahi kondisi kabupaten/kota di Indonesia, bandingkan indikator pembangunan, dan susun prioritas yang dapat diperiksa. Hasilnya bergantung pada indikator, bobot, data yang tersedia, dan metode yang dipakai.',
+            )}
           </p>
         </Reveal>
         <Reveal
@@ -69,7 +70,10 @@ export function HeroSection() {
           introStep={0.32}
           className={styles.search}
         >
-          <RegionSearchForm placeholder="Ketik nama kabupaten/kota Anda" landmarkLabel="Cari wilayah" />
+          <RegionSearchForm
+            placeholder={t('Ketik nama kabupaten/kota Anda')}
+            landmarkLabel={t('Cari wilayah')}
+          />
         </Reveal>
         <Reveal
           trigger="load"
@@ -78,7 +82,7 @@ export function HeroSection() {
           introStep={0.4}
           className={styles.actions}
         >
-          <ButtonLink to={EXPLORE_PATH}>Mulai jelajahi</ButtonLink>
+          <ButtonLink to={EXPLORE_PATH}>{t('Mulai jelajahi')}</ButtonLink>
           <a
             href={`#${HOW_IT_WORKS_ID}`}
             className={buttonClassName('secondary')}
@@ -89,7 +93,7 @@ export function HeroSection() {
               scrollToCentre(section, reducedMotion);
             }}
           >
-            Lihat cara kerjanya
+            {t('Lihat cara kerjanya')}
           </a>
         </Reveal>
         <Reveal
@@ -99,7 +103,7 @@ export function HeroSection() {
           introStep={0.4}
         >
           <p className={`kk-small ${styles.note}`}>
-            Gratis dan tanpa daftar. Setiap angka menyebutkan sumber dan tahunnya.
+            {t('Gratis dan tanpa daftar. Setiap angka menyebutkan sumber dan tahunnya.')}
           </p>
         </Reveal>
       </div>
@@ -117,11 +121,13 @@ export function HeroSection() {
             {/* Hexagon map (default engine); its still poster is the fallback. */}
             <HeroDioramaSlot
               scene="hero"
-              description="Peta hexagon Indonesia (ilustrasi dekoratif): setiap sel hexagon mewakili sebagian daratan, diwarnai dari putih ke oranye tua."
+              description={t(
+                'Peta hexagon Indonesia (ilustrasi dekoratif): setiap sel hexagon mewakili sebagian daratan, diwarnai dari putih ke oranye tua.',
+              )}
             />
           </Reveal>
         </div>
-        <p className={`kk-caption ${styles.caption}`}>Ilustrasi, bukan peta geografis akurat.</p>
+        <p className={`kk-caption ${styles.caption}`}>{t('Ilustrasi, bukan peta geografis akurat.')}</p>
       </div>
     </section>
   );

@@ -48,6 +48,7 @@ import type {
 import { classifyEvidence } from './evidenceClass';
 import type { LabEvidenceQuery } from './evidenceQuery';
 import type { IndicatorSourceInfo } from './evidenceTypes';
+import { t } from '@/lib/i18n';
 
 const ORIGIN_OF: Readonly<Partial<Record<CompositeIssueCode, IssueOrigin>>> = {
   REQUESTED_WEIGHT_AVAILABILITY_LOW: 'policy',
@@ -55,19 +56,21 @@ const ORIGIN_OF: Readonly<Partial<Record<CompositeIssueCode, IssueOrigin>>> = {
 };
 
 export const ORIGIN_LABEL: Readonly<Record<IssueOrigin, string>> = {
-  policy: 'Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub)',
-  datahub: 'Penanda dari Data Hub (rankable = false)',
-  check: 'Pemeriksaan konsistensi antarmuka atas respons Data Hub',
+  policy: t('Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub)'),
+  datahub: t('Penanda dari Data Hub (rankable = false)'),
+  check: t('Pemeriksaan konsistensi antarmuka atas respons Data Hub'),
 };
 
 /** What a score and rank mean, stated only when the Data Hub declared the expected direction. */
-const SCORE_MEANING_NEED =
-  'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria dan bobot ini: makin tinggi skor, makin tinggi kebutuhan, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak dan bukan keputusan kebijakan.';
-const SCORE_MEANING_UNCONFIRMED =
-  'Arah skor tidak dinyatakan sebagai "higher_is_need" oleh Data Hub, sehingga arti skor dan peringkat tidak dapat dibaca dengan aman.';
+const SCORE_MEANING_NEED = t(
+  'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria dan bobot ini: makin tinggi skor, makin tinggi kebutuhan, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak dan bukan keputusan kebijakan.',
+);
+const SCORE_MEANING_UNCONFIRMED = t(
+  'Arah skor tidak dinyatakan sebagai "higher_is_need" oleh Data Hub, sehingga arti skor dan peringkat tidak dapat dibaca dengan aman.',
+);
 
 const REASON_TEXT: Readonly<Record<string, string>> = {
-  COVERAGE_BELOW_THRESHOLD: 'Data kriteria terlalu sedikit (cakupan di bawah batas minimum Data Hub).',
+  COVERAGE_BELOW_THRESHOLD: t('Data kriteria terlalu sedikit (cakupan di bawah batas minimum Data Hub).'),
 };
 
 function issueView(issue: CompositeIssue): CompositeIssueView {
@@ -129,7 +132,7 @@ function rowOf(item: ExploratoryRegionRankDTO, lookups: Lookups): CompositeRegio
         indicatorId: id,
         label: catalogItem?.labelId ?? id,
         // A missing score is "tidak tersedia"; only a score the Data Hub sent can be shown as a number.
-        scoreText: raw === null ? 'tidak tersedia' : formatDecimalId(raw),
+        scoreText: raw === null ? t('tidak tersedia') : formatDecimalId(raw),
         scoreRaw: raw,
         hasScore: raw !== null,
         weightBps: item.effectiveWeightsRegion?.[id] ?? null,
@@ -178,7 +181,7 @@ function insufficientRowOf(region: InsufficientRegionDTO, lookups: Lookups): Ins
     componentsUsed: region.componentsUsed,
     missingIndicators: region.missingIndicators,
     reason: region.reason,
-    reasonText: REASON_TEXT[region.reason] ?? `Alasan dari Data Hub: ${region.reason}`,
+    reasonText: REASON_TEXT[region.reason] ?? t('Alasan dari Data Hub: {0}', region.reason),
     componentScores: region.componentScoresDecimal,
     isFocus: region.regionId === lookups.focusRegionId,
   };
@@ -211,7 +214,7 @@ function focusOf(
       regionId,
       status: 'WITHHELD',
       name: null,
-      message: `Peringkat ditahan, sehingga posisi wilayah ${regionId} tidak dinyatakan dari hasil ini.`,
+      message: t('Peringkat ditahan, sehingga posisi wilayah {0} tidak dinyatakan dari hasil ini.', regionId),
     };
   }
   const row = rows.find((candidate) => candidate.regionId === regionId);
@@ -220,7 +223,17 @@ function focusOf(
       regionId,
       status: 'RANKED',
       name: row.name,
-      message: `${row.name}: peringkat ${String(row.rank ?? 'belum tersedia')} dari ${String(result.totalRegions)} wilayah pada daftar ini; peringkat nasional ${String(row.nationalRank ?? 'belum tersedia')}${result.totalEligibleNational === null ? '' : ` dari ${String(result.totalEligibleNational)} wilayah yang memenuhi syarat`}; cakupan data ${row.coveragePct === null ? 'belum tersedia' : `${String(row.coveragePct)}%`}.`,
+      message: t(
+        '{0}: peringkat {1} dari {2} wilayah pada daftar ini; peringkat nasional {3}{4}; cakupan data {5}.',
+        row.name,
+        String(row.rank ?? t('belum tersedia')),
+        String(result.totalRegions),
+        String(row.nationalRank ?? t('belum tersedia')),
+        result.totalEligibleNational === null
+          ? ''
+          : t(' dari {0} wilayah yang memenuhi syarat', String(result.totalEligibleNational)),
+        row.coveragePct === null ? t('belum tersedia') : `${String(row.coveragePct)}%`,
+      ),
     };
   }
   const unranked = insufficient.find((candidate) => candidate.regionId === regionId);
@@ -229,7 +242,11 @@ function focusOf(
       regionId,
       status: 'NOT_RANKED',
       name: unranked.name,
-      message: `${unranked.name} tidak diperingkat: ${unranked.reasonText} Wilayah ini tidak mendapat skor ataupun peringkat.`,
+      message: t(
+        '{0} tidak diperingkat: {1} Wilayah ini tidak mendapat skor ataupun peringkat.',
+        unranked.name,
+        unranked.reasonText,
+      ),
     };
   }
   const outsideProvince = provinceId !== null && !regionId.startsWith(provinceId);
@@ -237,7 +254,13 @@ function focusOf(
     regionId,
     status: 'ABSENT',
     name: null,
-    message: `Wilayah ${regionId} tidak ada dalam hasil ini, baik di daftar peringkat maupun di daftar tidak diperingkat.${outsideProvince ? ` Kodenya bukan bagian dari provinsi ${provinceId} yang menjadi cakupan hasil.` : ''}`,
+    message: t(
+      'Wilayah {0} tidak ada dalam hasil ini, baik di daftar peringkat maupun di daftar tidak diperingkat.{1}',
+      regionId,
+      outsideProvince
+        ? t(' Kodenya bukan bagian dari provinsi {0} yang menjadi cakupan hasil.', provinceId)
+        : '',
+    ),
   };
 }
 
@@ -384,19 +407,22 @@ export function buildCompositeRecord(
 
   const base = {
     kind: 'lab' as const,
-    title: `Bukti hasil Lab Prioritas (${scopeText})`,
-    question:
+    title: t('Bukti hasil Lab Prioritas ({0})', scopeText),
+    question: t(
       'Wilayah mana yang paling membutuhkan intervensi menurut kriteria dan bobot ini, seberapa lengkap datanya, dan apakah hasilnya dapat dipercaya untuk dibaca sebagai peringkat?',
+    ),
     source,
     sources,
     linkWarnings: assessLinkContext(query, source),
     unavailableSources: [
-      ...(raw.presets ? [] : ['daftar skenario (preset)']),
-      ...(raw.catalog ? [] : ['katalog indikator']),
-      ...(raw.datasets ? [] : ['daftar dataset']),
-      ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : ['daftar versi data']),
-      ...(raw.coverage || raw.requestedMode === 'DEMO' ? [] : ['cakupan indikator (/indicators/coverage)']),
-      ...(query.provinceId && !raw.regions ? ['daftar wilayah (nama provinsi)'] : []),
+      ...(raw.presets ? [] : [t('daftar skenario (preset)')]),
+      ...(raw.catalog ? [] : [t('katalog indikator')]),
+      ...(raw.datasets ? [] : [t('daftar dataset')]),
+      ...(raw.snapshots || raw.pinning.status === 'PINNED' ? [] : [t('daftar versi data')]),
+      ...(raw.coverage || raw.requestedMode === 'DEMO'
+        ? []
+        : [t('cakupan indikator (/indicators/coverage)')]),
+      ...(query.provinceId && !raw.regions ? [t('daftar wilayah (nama provinsi)')] : []),
     ],
     fetched: fetchedForComposite(query, raw),
     scope: {

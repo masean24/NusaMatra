@@ -12,6 +12,7 @@ import { ScenarioPicker, WeightSliders } from './WeightControls';
 import { weightsKey } from './criteria';
 import { buildIndicatorOptions, provinceOptions, startingWeights, type IndicatorOption } from './labModel';
 import styles from './PriorityLab.module.css';
+import { t } from '@/lib/i18n';
 
 /** Enough criteria to express a policy, few enough that every slider stays meaningful. */
 const MAX_CRITERIA = 8;
@@ -45,7 +46,7 @@ function LabInputs() {
     <ResourceView
       state={inputs.state}
       onRetry={inputs.retry}
-      loadingTitle="Memuat kriteria dan ketersediaan data…"
+      loadingTitle={t('Memuat kriteria dan ketersediaan data…')}
     >
       {(options) => <Workbench options={options} />}
     </ResourceView>
@@ -129,7 +130,7 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
   const controls = (
     <aside
       className={`glass glass--read ${styles.config}`}
-      aria-label="Pengaturan"
+      aria-label={t('Pengaturan')}
       data-collapsed={settingsOpen ? undefined : true}
     >
       {/* One column only (hidden by CSS on desktop, where the panel is always open). */}
@@ -142,10 +143,10 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
           setSettingsOpen((open) => !open);
         }}
       >
-        Atur prioritas
+        {t('Atur prioritas')}
         <span className={styles.chevron} aria-hidden="true" />
       </button>
-      <h2 className={styles.panelTitle}>Pengaturan</h2>
+      <h2 className={styles.panelTitle}>{t('Pengaturan')}</h2>
       <div id={settingsBodyId} className={styles.configBody}>
         <ScenarioPicker
           weights={weights}
@@ -156,8 +157,10 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
         <WeightSliders weights={weights} options={options} onChange={changeWeights} seriesOf={seriesOf}>
           {start.dropped.length > 0 && (
             <p className={styles.hint}>
-              Kriteria awal tanpa data tidak dipakai: {start.dropped.join(', ')}. Tidak ada pengganti
-              otomatis.
+              {t(
+                'Kriteria awal tanpa data tidak dipakai: {0}. Tidak ada pengganti otomatis.',
+                start.dropped.join(', '),
+              )}
             </p>
           )}
           <IndicatorPicker
@@ -175,17 +178,17 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
               <span className={styles.stepNumber} aria-hidden="true">
                 3
               </span>
-              <span id={provinceFieldId}>Cakupan wilayah</span>
+              <span id={provinceFieldId}>{t('Cakupan wilayah')}</span>
             </div>
             <GlassSelect
               labelledBy={provinceFieldId}
               value={provinceId ?? ''}
               options={[
-                { value: '', label: 'Seluruh Indonesia' },
+                { value: '', label: t('Seluruh Indonesia') },
                 ...provinces.map((province) => ({
                   value: province.id,
                   label: province.name,
-                  detail: `${String(province.regionCount)} kab/kota`,
+                  detail: t('{0} kab/kota', String(province.regionCount)),
                 })),
               ]}
               onChange={(next) => {
@@ -196,8 +199,9 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
         )}
         {regions === null && registry.state.status === 'error' && (
           <p className={styles.hint}>
-            Daftar wilayah tidak dapat dimuat: peringkat tetap dihitung, tetapi wilayah yang tidak ikut tidak
-            dapat dicantumkan.
+            {t(
+              'Daftar wilayah tidak dapat dimuat: peringkat tetap dihitung, tetapi wilayah yang tidak ikut tidak dapat dicantumkan.',
+            )}
           </p>
         )}
         <div className={styles.configActions}>
@@ -207,7 +211,7 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
               changeWeights(start.weights);
             }}
           >
-            Atur ulang bobot
+            {t('Atur ulang bobot')}
           </Button>
         </div>
       </div>
@@ -234,19 +238,24 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
 
 function presetsNote(state: ResourceState<{ readonly data: CompositePresetsDTO }>): string | null {
   if (state.status === 'error')
-    return 'Skenario dari Data Hub tidak dapat dimuat. Bobot tetap bisa diatur sendiri.';
+    return t('Skenario dari Data Hub tidak dapat dimuat. Bobot tetap bisa diatur sendiri.');
   if (state.status !== 'success') return null;
   const { presets, rejectedCount } = state.data.data;
   const notes: string[] = [];
-  if (presets.length > 0) notes.push('Titik awal saja, bukan rekomendasi resmi.');
+  if (presets.length > 0) notes.push(t('Titik awal saja, bukan rekomendasi resmi.'));
   if (rejectedCount > 0) {
     notes.push(
-      `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobot atau keterangan ketersediaannya tidak sesuai kontrak.`,
+      t(
+        '{0} skenario dari Data Hub tidak ditampilkan karena bobot atau keterangan ketersediaannya tidak sesuai kontrak.',
+        String(rejectedCount),
+      ),
     );
   }
   if (presets.some((preset) => preset.availability?.rankable === false)) {
     notes.push(
-      'Skenario bertanda “belum dapat diperingkat” tetap bisa dipilih untuk melihat bobotnya, tetapi peringkatnya tidak ditampilkan.',
+      t(
+        'Skenario bertanda “belum dapat diperingkat” tetap bisa dipilih untuk melihat bobotnya, tetapi peringkatnya tidak ditampilkan.',
+      ),
     );
   }
   return notes.length > 0 ? notes.join(' ') : null;

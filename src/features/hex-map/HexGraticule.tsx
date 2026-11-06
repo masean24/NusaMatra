@@ -1,15 +1,16 @@
 import { HERO_ORIGIN, lonLatToPlane, projectToHeroFrame } from '@/lib/heroMapCamera';
 import styles from './HexGraticule.module.css';
+import { t } from '@/lib/i18n';
 
 /** Drawn in the zone's 720 × 660 design units; the SVG stretches to the zone, which keeps that ratio. */
 const WIDTH = 720;
 const HEIGHT = 660;
 
 const PARALLELS = [
-  { lat: 5, label: '5° LU' },
+  { lat: 5, label: t('5° LU') },
   { lat: 0, label: '0°' },
-  { lat: -5, label: '5° LS' },
-  { lat: -10, label: '10° LS' },
+  { lat: -5, label: t('5° LS') },
+  { lat: -10, label: t('10° LS') },
 ] as const;
 const MERIDIANS = [100, 110, 120, 130, 140] as const;
 const MERIDIAN_LAT_SPAN = [8, -13] as const;

@@ -1,6 +1,7 @@
 import type { EvidenceRecord } from './evidenceTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
 import { snapshotIdentityNote } from './notices';
+import { t } from '@/lib/i18n';
 
 /**
  * The caveats a reader needs next to the numbers, derived from the record itself so none is boilerplate
@@ -14,23 +15,27 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
   if (record.source.dataMode === 'DEMO') {
     add(
       'Data',
-      'Data simulasi, bukan observasi resmi',
-      'Seluruh nilai dan nama pada catatan ini adalah data simulasi (DEMO) untuk mencoba aplikasi. Bukan observasi resmi dan tidak boleh dikutip sebagai fakta.',
+      t('Data simulasi, bukan observasi resmi'),
+      t(
+        'Seluruh nilai dan nama pada catatan ini adalah data simulasi (DEMO) untuk mencoba aplikasi. Bukan observasi resmi dan tidak boleh dikutip sebagai fakta.',
+      ),
     );
   }
   if (!record.source.consistent) {
     add(
       'Reproduksibilitas',
-      'Respons dari mode atau versi data berbeda',
-      'Respons Data Hub untuk catatan ini berasal dari mode atau versi data yang berbeda. Perbandingan antarwilayah tidak ditampilkan karena angkanya tidak setara.',
+      t('Respons dari mode atau versi data berbeda'),
+      t(
+        'Respons Data Hub untuk catatan ini berasal dari mode atau versi data yang berbeda. Perbandingan antarwilayah tidak ditampilkan karena angkanya tidak setara.',
+      ),
     );
   }
 
   add(
     'Reproduksibilitas',
     record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT'
-      ? 'Data terkunci, tetapi versi data bisa hilang'
-      : 'Data tidak dikunci ke versi data',
+      ? t('Data terkunci, tetapi versi data bisa hilang')
+      : t('Data tidak dikunci ke versi data'),
     snapshotIdentityNote(record.source.reproducibility),
   );
 
@@ -39,23 +44,35 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
     if (coverage.imputedCount > 0) {
       add(
         'Data',
-        `${name}: sebagian nilai adalah estimasi provinsi`,
-        `${name}: ${String(coverage.imputedCount)} nilai diimputasi dari tingkat provinsi (IMPUTED_PROVINCE). Itu bukan pengukuran kabupaten/kota, berapa pun kelengkapan indikatornya.`,
+        t('{0}: sebagian nilai adalah estimasi provinsi', name),
+        t(
+          '{0}: {1} nilai diimputasi dari tingkat provinsi (IMPUTED_PROVINCE). Itu bukan pengukuran kabupaten/kota, berapa pun kelengkapan indikatornya.',
+          name,
+          String(coverage.imputedCount),
+        ),
       );
     }
     if (coverage.indicatorsWithoutValue > 0) {
       add(
         'Cakupan',
-        `${name}: ada indikator tanpa nilai`,
-        `${name}: ${String(coverage.indicatorsWithoutValue)} indikator tidak memiliki nilai pada versi data ini. Nilai kosong tidak dihitung sebagai nol.`,
+        t('{0}: ada indikator tanpa nilai', name),
+        t(
+          '{0}: {1} indikator tidak memiliki nilai pada versi data ini. Nilai kosong tidak dihitung sebagai nol.',
+          name,
+          String(coverage.indicatorsWithoutValue),
+        ),
       );
     }
     const unclassified = coverage.byClass.UNSPECIFIED ?? 0;
     if (unclassified > 0) {
       add(
         'Data',
-        `${name}: ada nilai yang belum tergolong`,
-        `${name}: ${String(unclassified)} nilai belum dapat digolongkan (penanda kualitas tidak ada atau katalog tidak termuat).`,
+        t('{0}: ada nilai yang belum tergolong', name),
+        t(
+          '{0}: {1} nilai belum dapat digolongkan (penanda kualitas tidak ada atau katalog tidak termuat).',
+          name,
+          String(unclassified),
+        ),
       );
     }
   }
@@ -70,8 +87,12 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
     const sorted = [...years].sort((a, b) => a - b);
     add(
       'Data',
-      'Tahun data berbeda antarindikator',
-      `Tahun data berbeda antarindikator (${String(sorted[0])} sampai ${String(sorted[sorted.length - 1])}). Setiap nilai mencantumkan tahunnya sendiri.`,
+      t('Tahun data berbeda antarindikator'),
+      t(
+        'Tahun data berbeda antarindikator ({0} sampai {1}). Setiap nilai mencantumkan tahunnya sendiri.',
+        String(sorted[0]),
+        String(sorted[sorted.length - 1]),
+      ),
     );
   }
 
@@ -79,7 +100,7 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
   for (const indicator of unitWarnings) {
     add(
       'Metode',
-      `${indicator.label}: satuan perlu dicermati`,
+      t('{0}: satuan perlu dicermati', indicator.label),
       `${indicator.label}: ${indicator.unitWarning ?? ''}`,
     );
   }
@@ -91,29 +112,39 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
     if (blocked.length > 0) {
       add(
         'Metode',
-        'Sebagian indikator tidak dibandingkan',
-        `${String(blocked.length)} indikator tidak dibandingkan secara numerik karena tidak setara (nilai kosong, satuan atau dataset berbeda, atau nilai imputasi). Nilainya tetap ditampilkan terpisah.`,
+        t('Sebagian indikator tidak dibandingkan'),
+        t(
+          '{0} indikator tidak dibandingkan secara numerik karena tidak setara (nilai kosong, satuan atau dataset berbeda, atau nilai imputasi). Nilainya tetap ditampilkan terpisah.',
+          String(blocked.length),
+        ),
       );
     }
     add(
       'Metode',
-      'Selisih bukan penilaian atau penyebab',
-      'Selisih yang tampil adalah selisih yang teramati. Nilai lebih tinggi tidak otomatis berarti lebih baik atau lebih buruk, dan selisih tidak menjelaskan penyebab.',
+      t('Selisih bukan penilaian atau penyebab'),
+      t(
+        'Selisih yang tampil adalah selisih yang teramati. Nilai lebih tinggi tidak otomatis berarti lebih baik atau lebih buruk, dan selisih tidak menjelaskan penyebab.',
+      ),
     );
   }
 
   for (const gap of record.unavailableSources) {
     add(
       'Cakupan',
-      `Data pendukung "${gap}" tidak termuat`,
-      `Data pendukung "${gap}" tidak dapat dimuat, sehingga bagian yang bergantung padanya ditandai belum tersedia.`,
+      t('Data pendukung "{0}" tidak termuat', gap),
+      t(
+        'Data pendukung "{0}" tidak dapat dimuat, sehingga bagian yang bergantung padanya ditandai belum tersedia.',
+        gap,
+      ),
     );
   }
 
   add(
     'Metode',
-    'Tanpa bobot, skor gabungan, atau peringkat',
-    'Catatan ini tidak memuat bobot, skor gabungan, peringkat, atau uji ketahanan. Nilai indikator di sini adalah nilai yang diterima dari Data Hub, tanpa dihitung ulang.',
+    t('Tanpa bobot, skor gabungan, atau peringkat'),
+    t(
+      'Catatan ini tidak memuat bobot, skor gabungan, peringkat, atau uji ketahanan. Nilai indikator di sini adalah nilai yang diterima dari Data Hub, tanpa dihitung ulang.',
+    ),
   );
   return notes;
 }

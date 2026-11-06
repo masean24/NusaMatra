@@ -4,6 +4,7 @@ import { hexDatasetUrl, loadHexDatasetOnce, type HexDataset } from './hexDataset
 import { HexGraticule } from './HexGraticule';
 import { POSTER_HEIGHT, POSTER_WIDTH, buildHexPoster } from './posterGeometry';
 import styles from './HexIndonesiaMap.module.css';
+import { t } from '@/lib/i18n';
 
 /** Soft contact shadow: one blur over the whole shadow layer, not one filter per tile. */
 const SHADOW_BLUR = 1.6;
@@ -65,7 +66,7 @@ export function HexPoster({ theme }: HexPosterProps) {
           ))}
         </svg>
       )}
-      <p className={styles.badge}>Garis pantai dari Natural Earth, sel hexagon berisi data simulasi</p>
+      <p className={styles.badge}>{t('Garis pantai dari Natural Earth, sel hexagon berisi data simulasi')}</p>
     </div>
   );
 }

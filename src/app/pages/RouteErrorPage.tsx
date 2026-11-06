@@ -1,6 +1,7 @@
 import { useRouteError } from 'react-router';
 import { Button, ButtonLink } from '@/components/ui/Button/Button';
 import styles from './StaticPage.module.css';
+import { t } from '@/lib/i18n';
 
 /** A page's code could not be downloaded (lost connection, or a new version was just deployed). */
 function isChunkLoadError(error: unknown): boolean {
@@ -21,12 +22,14 @@ export function RouteErrorPage() {
   const chunk = isChunkLoadError(error);
   return (
     <div className={styles.page} role="alert">
-      <title>Halaman gagal dimuat — Nusa Matra</title>
-      <h1 className="kk-h1">Halaman gagal dimuat</h1>
+      <title>{t('Halaman gagal dimuat — Nusa Matra')}</title>
+      <h1 className="kk-h1">{t('Halaman gagal dimuat')}</h1>
       <p className={`kk-lead ${styles.muted}`}>
         {chunk
-          ? 'Bagian halaman ini tidak dapat diunduh. Koneksi mungkin terputus, atau versi baru situs baru saja dipasang. Muat ulang untuk mencoba lagi.'
-          : 'Terjadi kesalahan saat menampilkan halaman ini. Muat ulang untuk mencoba lagi.'}
+          ? t(
+              'Bagian halaman ini tidak dapat diunduh. Koneksi mungkin terputus, atau versi baru situs baru saja dipasang. Muat ulang untuk mencoba lagi.',
+            )
+          : t('Terjadi kesalahan saat menampilkan halaman ini. Muat ulang untuk mencoba lagi.')}
       </p>
       <div className={styles.actions}>
         <Button
@@ -34,10 +37,10 @@ export function RouteErrorPage() {
             window.location.reload();
           }}
         >
-          Muat ulang
+          {t('Muat ulang')}
         </Button>
         <ButtonLink to="/" variant="secondary" reloadDocument>
-          Kembali ke beranda
+          {t('Kembali ke beranda')}
         </ButtonLink>
       </div>
     </div>

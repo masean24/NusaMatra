@@ -20,9 +20,9 @@
   align-items: center;
 }
 
-/* The links stay together in the middle of the bar's free width. */
+/* The links stay together at the right of the bar's free width, next to the divider. */
 .pill .list {
-  justify-content: center;
+  justify-content: flex-end;
 }
 
 .tab .list {

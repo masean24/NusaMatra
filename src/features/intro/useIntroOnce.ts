@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { consumeSkipIntro } from '@/lib/i18n';
 
 /**
  * How long the Beranda entrance runs after the overlay has gone: the last step (the buttons) starts
@@ -27,7 +28,7 @@ export function setIntroStage(stage: IntroStage | null): void {
  * Beranda, until the opening has played. Module state, so a reload starts it again while moving
  * between pages inside the site does not.
  */
-let introPending = window.location.pathname === BERANDA_PATH;
+let introPending = window.location.pathname === BERANDA_PATH && !consumeSkipIntro();
 
 /** For tests: start a fresh page load at `path`. */
 export function resetIntroForTests(path = BERANDA_PATH): void {

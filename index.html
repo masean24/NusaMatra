@@ -24,6 +24,11 @@
         var root = document.documentElement;
         root.classList.add('js');
         try {
+          if (window.localStorage.getItem('nusa-matra:language') === 'en') root.setAttribute('lang', 'en');
+        } catch (error) {
+          // Storage blocked: the page stays in Indonesian.
+        }
+        try {
           var forceNormal = window.matchMedia(
             '(prefers-reduced-transparency: reduce), (prefers-contrast: more)',
           ).matches;

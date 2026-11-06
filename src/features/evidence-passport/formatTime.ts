@@ -1,4 +1,6 @@
-const BROWSER_TIME = new Intl.DateTimeFormat('id-ID', {
+import { LOCALE, t } from '@/lib/i18n';
+
+const BROWSER_TIME = new Intl.DateTimeFormat(LOCALE, {
   day: 'numeric',
   month: 'long',
   year: 'numeric',
@@ -10,7 +12,7 @@ const BROWSER_TIME = new Intl.DateTimeFormat('id-ID', {
 
 /** The moment the browser received a response, in the viewer's own time zone. Unparseable input is shown as sent. */
 export function formatBrowserTime(iso: string | null): string {
-  if (iso === null) return 'belum tersedia';
+  if (iso === null) return t('belum tersedia');
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? iso : BROWSER_TIME.format(date);
 }
@@ -20,5 +22,5 @@ export function formatBrowserTime(iso: string | null): string {
  * sent, with that fact stated, because adding a zone would be inventing one.
  */
 export function formatServerTime(value: string | null): string {
-  return value === null ? 'belum tersedia' : `${value} (zona waktu tidak dinyatakan server)`;
+  return value === null ? t('belum tersedia') : t('{0} (zona waktu tidak dinyatakan server)', value);
 }

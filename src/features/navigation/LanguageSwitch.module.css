@@ -1,0 +1,37 @@
+/* The same track and knob colours as the display mode switch beside it, in the smallest touch size. */
+.switch {
+  display: inline-grid;
+  flex: none;
+  grid-template-columns: repeat(2, 40px);
+  align-items: center;
+  height: 48px;
+  padding: 3px;
+  border: 1px solid var(--c-switch-border);
+  border-radius: 24px;
+  background: var(--c-switch-track);
+  backdrop-filter: var(--c-nav-blur);
+}
+
+.option {
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.option[aria-pressed='true'] {
+  background: var(--c-switch-knob);
+  box-shadow: var(--nm-shadow-knob);
+  cursor: default;
+}
+
+.option:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}

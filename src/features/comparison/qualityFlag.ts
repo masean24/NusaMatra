@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 export interface QualityFlagDescription {
   readonly label: string;
   /** True when the reader should be careful with the number (not a direct kabupaten/kota measurement). */
@@ -11,16 +13,16 @@ export interface QualityFlagDescription {
 export function describeQualityFlag(flag: string | null): QualityFlagDescription | null {
   if (flag === null) return null;
   if (flag.startsWith('IMPUTED')) {
-    return { label: 'Imputasi provinsi, bukan observasi kab/kota', caution: true };
+    return { label: t('Imputasi provinsi, bukan observasi kab/kota'), caution: true };
   }
   switch (flag) {
     case 'VERIFIED':
-      return { label: 'Terverifikasi', caution: false };
+      return { label: t('Terverifikasi'), caution: false };
     case 'DERIVED':
-      return { label: 'Turunan (dihitung, bukan pengukuran langsung)', caution: true };
+      return { label: t('Turunan (dihitung, bukan pengukuran langsung)'), caution: true };
     case 'DEMO_EXAMPLE':
-      return { label: 'Contoh DEMO, bukan observasi resmi', caution: true };
+      return { label: t('Contoh DEMO, bukan observasi resmi'), caution: true };
     default:
-      return { label: `Penanda kualitas: ${flag}`, caution: true };
+      return { label: t('Penanda kualitas: {0}', flag), caution: true };
   }
 }

@@ -1,4 +1,5 @@
 import { qualityFlagNote } from '@/features/data-hub';
+import { t } from '@/lib/i18n';
 
 /**
  * How much a reader may rely on one value, in the four classes the Paspor Bukti distinguishes plus
@@ -40,7 +41,7 @@ export function classifyEvidence({
   catalogLoaded,
 }: ClassificationInput): Classification {
   if (isDemoExample || flag === 'DEMO_EXAMPLE') {
-    return { evidenceClass: 'DEMO_EXAMPLE', note: 'Nilai contoh simulasi, bukan observasi resmi.' };
+    return { evidenceClass: 'DEMO_EXAMPLE', note: t('Nilai contoh simulasi, bukan observasi resmi.') };
   }
   if (flag === 'IMPUTED_PROVINCE') {
     return { evidenceClass: 'IMPUTED_PROVINCE', note: qualityFlagNote(flag) };
@@ -49,19 +50,23 @@ export function classifyEvidence({
     if (!catalogLoaded) {
       return {
         evidenceClass: 'UNSPECIFIED',
-        note: 'Data Hub menandainya sebagai angka sumber, tetapi katalog indikator tidak termuat sehingga tidak dapat dibedakan dari hasil hitungan.',
+        note: t(
+          'Data Hub menandainya sebagai angka sumber, tetapi katalog indikator tidak termuat sehingga tidak dapat dibedakan dari hasil hitungan.',
+        ),
       };
     }
     if (catalogAvailability === 'DERIVED') {
       return {
         evidenceClass: 'DERIVED',
-        note: 'Dihitung oleh Data Hub dari data lain, meski ditandai sebagai angka sumber.',
+        note: t('Dihitung oleh Data Hub dari data lain, meski ditandai sebagai angka sumber.'),
       };
     }
     if (catalogAvailability === null) {
       return {
         evidenceClass: 'UNSPECIFIED',
-        note: 'Data Hub menandainya sebagai angka sumber, tetapi indikator ini tidak ada di katalog sehingga asalnya tidak dapat dipastikan.',
+        note: t(
+          'Data Hub menandainya sebagai angka sumber, tetapi indikator ini tidak ada di katalog sehingga asalnya tidak dapat dipastikan.',
+        ),
       };
     }
     return { evidenceClass: 'VERIFIED', note: null };
@@ -69,40 +74,40 @@ export function classifyEvidence({
   if (flag !== null) {
     return { evidenceClass: 'OTHER_FLAG', note: qualityFlagNote(flag) };
   }
-  return { evidenceClass: 'UNSPECIFIED', note: 'Penanda kualitas belum tersedia dari Data Hub.' };
+  return { evidenceClass: 'UNSPECIFIED', note: t('Penanda kualitas belum tersedia dari Data Hub.') };
 }
 
 /** Plain-language names; the Data Hub's own codes stay in the data, never in the reader's way. */
 const CLASS_LABEL: Readonly<Record<EvidenceClass, string>> = {
-  VERIFIED: 'Angka langsung dari sumber',
-  DERIVED: 'Hasil hitungan',
-  IMPUTED_PROVINCE: 'Perkiraan dari provinsi',
-  DEMO_EXAMPLE: 'Contoh simulasi',
-  OTHER_FLAG: 'Penanda lain',
-  UNSPECIFIED: 'Belum dinyatakan',
+  VERIFIED: t('Angka langsung dari sumber'),
+  DERIVED: t('Hasil hitungan'),
+  IMPUTED_PROVINCE: t('Perkiraan dari provinsi'),
+  DEMO_EXAMPLE: t('Contoh simulasi'),
+  OTHER_FLAG: t('Penanda lain'),
+  UNSPECIFIED: t('Belum dinyatakan'),
 };
 
 const CLASS_MEANING: Readonly<Record<EvidenceClass, string>> = {
-  VERIFIED: 'Penanda dari Data Hub; bukan pemeriksaan independen oleh Nusa Matra.',
-  DERIVED: 'Dihitung oleh Data Hub dari data lain, bukan angka yang dilaporkan langsung oleh sumber.',
-  IMPUTED_PROVINCE: 'Diimputasi dari nilai provinsi; bukan pengukuran kabupaten/kota.',
-  DEMO_EXAMPLE: 'Contoh simulasi; bukan observasi resmi.',
-  OTHER_FLAG: 'Penanda kualitas lain dari Data Hub, ditampilkan apa adanya.',
-  UNSPECIFIED: 'Data Hub tidak menyatakan atau tidak cukup menyatakan kelas nilai ini.',
+  VERIFIED: t('Penanda dari Data Hub; bukan pemeriksaan independen oleh Nusa Matra.'),
+  DERIVED: t('Dihitung oleh Data Hub dari data lain, bukan angka yang dilaporkan langsung oleh sumber.'),
+  IMPUTED_PROVINCE: t('Diimputasi dari nilai provinsi; bukan pengukuran kabupaten/kota.'),
+  DEMO_EXAMPLE: t('Contoh simulasi; bukan observasi resmi.'),
+  OTHER_FLAG: t('Penanda kualitas lain dari Data Hub, ditampilkan apa adanya.'),
+  UNSPECIFIED: t('Data Hub tidak menyatakan atau tidak cukup menyatakan kelas nilai ini.'),
 };
 
 /** Plain names for server flags outside the passport's classes; any other code is shown as sent. */
 const OTHER_FLAG_NAME: Readonly<Record<string, string>> = {
-  DERIVED: 'hasil hitungan',
-  ESTIMATED: 'perkiraan',
-  PROVISIONAL: 'angka sementara',
-  PARTIAL: 'sebagian',
+  DERIVED: t('hasil hitungan'),
+  ESTIMATED: t('perkiraan'),
+  PROVISIONAL: t('angka sementara'),
+  PARTIAL: t('sebagian'),
 };
 
 /** Label of the class; for another server flag, a plain-language lead and the flag in words. */
 export function evidenceClassLabel(evidenceClass: EvidenceClass, rawFlag: string | null): string {
   if (evidenceClass === 'OTHER_FLAG' && rawFlag) {
-    return `Penanda lain: ${OTHER_FLAG_NAME[rawFlag] ?? rawFlag}`;
+    return t('Penanda lain: {0}', OTHER_FLAG_NAME[rawFlag] ?? rawFlag);
   }
   return CLASS_LABEL[evidenceClass];
 }

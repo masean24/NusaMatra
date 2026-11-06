@@ -1,4 +1,4 @@
-const LOCALE = 'id-ID';
+import { LOCALE } from '@/lib/i18n';
 
 const decimalFormatters = new Map<number, Intl.NumberFormat>();
 

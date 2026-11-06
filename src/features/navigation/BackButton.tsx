@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import { Icon } from '@/components/ui/Icon/Icon';
 import styles from './BackButton.module.css';
+import { t } from '@/lib/i18n';
 
 /** React Router keeps this visit's position in the history stack as `idx` (0 = the first page). */
 function hasPreviousPage(): boolean {
@@ -27,7 +28,7 @@ export function BackButton() {
       }}
     >
       <Icon name="chevronLeft" size={18} />
-      <span>Kembali</span>
+      <span>{t('Kembali')}</span>
     </button>
   );
 }

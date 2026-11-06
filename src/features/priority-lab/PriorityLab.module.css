@@ -78,7 +78,8 @@
  * The glass panel is its own stacking context, so the cards after it would paint over an open
  * list; while one is open, the panel rises above them.
  */
-.config:has([role='combobox'][aria-expanded='true']) {
+.config:has([role='combobox'][aria-expanded='true']),
+.config:has(.picker[open]) {
   position: relative;
   z-index: var(--nm-z-popover);
 }
@@ -304,8 +305,34 @@
 
 /* Criteria picker: a disclosure, so the sliders stay the first thing in the panel. */
 .picker {
+  position: relative;
   border-top: 1px solid var(--lab-panel-border);
   padding-top: 12px;
+}
+
+/* Floats like the glass select's list, opaque so the text under it cannot show through. */
+.pickerList {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: var(--nm-z-popover);
+  max-height: min(340px, 55svh);
+  padding: 4px 12px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 16px;
+  background: var(--nm-land-1);
+  box-shadow: 0 16px 40px rgb(18 30 90 / 24%);
+}
+
+:global([data-display-mode='glass']) .pickerList {
+  background: rgb(20 26 62);
+}
+
+/* Narrow lines read badly justified. */
+.pickerList li {
+  text-align: left;
 }
 
 .picker > summary,

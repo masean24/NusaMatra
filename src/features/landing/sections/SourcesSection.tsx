@@ -1,6 +1,7 @@
 import { Surface } from '@/components/ui/Surface/Surface';
 import { Reveal } from '@/features/motion';
 import styles from './SourcesSection.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * Figma 41:406. The two sources the Data Hub ingests (LIVE v2.2 dataset list, captured 2026-10-24,
@@ -10,13 +11,13 @@ import styles from './SourcesSection.module.css';
 const SOURCES = [
   {
     name: 'BNPB (InaRISK)',
-    description: 'Indeks dan kelas risiko bencana per kabupaten/kota.',
-    status: 'Terhubung lewat Data Hub',
+    description: t('Indeks dan kelas risiko bencana per kabupaten/kota.'),
+    status: t('Terhubung lewat Data Hub'),
   },
   {
-    name: 'Badan Pusat Statistik',
-    description: 'Kemiskinan, kependudukan, dan layanan dasar.',
-    status: 'Terhubung lewat Data Hub',
+    name: t('Badan Pusat Statistik'),
+    description: t('Kemiskinan, kependudukan, dan layanan dasar.'),
+    status: t('Terhubung lewat Data Hub'),
   },
 ] as const;
 
@@ -28,7 +29,7 @@ export function SourcesSection() {
     <section id="sumber" className={styles.section} aria-labelledby="sumber-title">
       <Reveal distance={24} duration={600}>
         <h2 id="sumber-title" className="kk-h1">
-          Sumber dan metodologi
+          {t('Sumber dan metodologi')}
         </h2>
       </Reveal>
       <ul role="list" className={styles.cards}>
@@ -50,8 +51,9 @@ export function SourcesSection() {
         ))}
       </ul>
       <p className={`kk-small ${styles.note}`}>
-        Belum semua indikator punya data. Ketersediaan dan tahun tiap indikator ditampilkan di Jelajahi dan
-        Lab Prioritas.
+        {t(
+          'Belum semua indikator punya data. Ketersediaan dan tahun tiap indikator ditampilkan di Jelajahi dan Lab Prioritas.',
+        )}
       </p>
     </section>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { downloadTextFile } from '@/lib/downloadTextFile';
 import { canShare, copyText } from './browserActions';
+import { t } from '@/lib/i18n';
 
 const LINK_COPIED_MS = 1600;
 
@@ -44,22 +45,24 @@ export function usePassportActions({
     const outcome = await copyText(text);
     if (outcome === 'failed') {
       setManualText(text);
-      setMessage(`${what} tidak dapat disalin otomatis. Teksnya ditampilkan di bawah; salin secara manual.`);
+      setMessage(
+        t('{0} tidak dapat disalin otomatis. Teksnya ditampilkan di bawah; salin secara manual.', what),
+      );
       return false;
     }
     setManualText(null);
-    setMessage(`${what} disalin ke papan klip.`);
+    setMessage(t('{0} disalin ke papan klip.', what));
     return true;
   };
 
   const share = async () => {
     try {
-      await navigator.share({ title: `Nusa Matra: ${title}`, url: link });
-      setMessage('Tautan dibagikan.');
+      await navigator.share({ title: t('Nusa Matra: {0}', title), url: link });
+      setMessage(t('Tautan dibagikan.'));
     } catch (error: unknown) {
       // Closing the share sheet is a choice, not a failure.
       if (error instanceof DOMException && error.name === 'AbortError') return;
-      setMessage('Tautan tidak dapat dibagikan dari peramban ini. Gunakan "Salin tautan".');
+      setMessage(t('Tautan tidak dapat dibagikan dari peramban ini. Gunakan "Salin tautan".'));
     }
   };
 
@@ -69,17 +72,17 @@ export function usePassportActions({
     linkCopied,
     shareable: canShare(),
     copyLink: () => {
-      void copy(link, 'Tautan').then(setLinkCopied);
+      void copy(link, t('Tautan')).then(setLinkCopied);
     },
     copyCitation: () => {
-      void copy(buildCitationText(), 'Kutipan');
+      void copy(buildCitationText(), t('Kutipan'));
     },
     copyDigest: (digest: string) => {
-      void copy(digest, 'Sidik isi data');
+      void copy(digest, t('Sidik isi data'));
     },
     download: () => {
       downloadTextFile(filename, buildExportText(), 'application/json');
-      setMessage(`Berkas ${filename} diunduh dari peramban.`);
+      setMessage(t('Berkas {0} diunduh dari peramban.', filename));
     },
     print: () => {
       window.print();

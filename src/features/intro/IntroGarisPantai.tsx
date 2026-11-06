@@ -5,6 +5,7 @@ import { prefersReducedMotion } from '@/features/motion';
 import { COASTLINE_ISLANDS, COASTLINE_VIEWBOX, COASTLINE_WIDTH } from './introCoastline';
 import { setIntroStage } from './useIntroOnce';
 import styles from './IntroGarisPantai.module.css';
+import { t } from '@/lib/i18n';
 
 /** The opening leaves by itself at 4.7 s; the progress line runs to that moment. */
 const AUTO_EXIT_MS = 4700;
@@ -143,7 +144,7 @@ export function IntroGarisPantai({ onDone }: IntroGarisPantaiProps) {
       data-reduced={reduced || undefined}
       role="dialog"
       aria-modal="true"
-      aria-label="Pembuka Nusa Matra. Tekan Enter untuk masuk."
+      aria-label={t('Pembuka Nusa Matra. Tekan Enter untuk masuk.')}
       tabIndex={-1}
     >
       <div ref={mapRef} className={styles.map} aria-hidden="true">
@@ -193,7 +194,6 @@ export function IntroGarisPantai({ onDone }: IntroGarisPantaiProps) {
 
       <div className={styles.ink} aria-hidden="true" />
       <div className={styles.cursorLight} aria-hidden="true" />
-      <div className={styles.vignette} aria-hidden="true" />
 
       <div className={styles.lockupExit}>
         <div className={styles.lockup}>
@@ -208,17 +208,10 @@ export function IntroGarisPantai({ onDone }: IntroGarisPantaiProps) {
           </div>
           <span className={styles.divider} aria-hidden="true" />
           <p className={styles.tagline}>
-            <span>Memahami wilayah</span> <span>Menentukan arah</span>
+            <span>{t('Memahami wilayah')}</span> <span>{t('Menentukan arah')}</span>
           </p>
         </div>
       </div>
-
-      <svg className={styles.grain} aria-hidden="true">
-        <filter id={`${id}-grain`}>
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter={`url(#${id}-grain)`} />
-      </svg>
 
       <span className={styles.progress} aria-hidden="true">
         <span className={styles.progressFill} />

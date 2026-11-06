@@ -40,6 +40,7 @@ import { impactRowsOf } from './directionChecks';
 import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
 import { useRankScroll } from './useRankScroll';
 import styles from './PriorityLab.module.css';
+import { t } from '@/lib/i18n';
 
 const PAGE_SIZE = 10;
 
@@ -273,22 +274,22 @@ function AnalysisStatus(props: AnalysisStatusProps) {
 
   if (!ready) {
     return (
-      <StatusPanel tone="warning" title="Pilih minimal satu kriteria">
-        Peringkat dihitung setelah ada kriteria berdata.
+      <StatusPanel tone="warning" title={t('Pilih minimal satu kriteria')}>
+        {t('Peringkat dihitung setelah ada kriteria berdata.')}
       </StatusPanel>
     );
   }
   if (state.status === 'loading' || state.status === 'idle') {
-    return <StatusPanel tone="loading" title="Menghitung peringkat…" />;
+    return <StatusPanel tone="loading" title={t('Menghitung peringkat…')} />;
   }
   if (state.status === 'error' || state.status === 'unconfigured') {
     const error = state.status === 'error' ? state.error : null;
     if (isLiveBlockedError(error, dataMode)) {
       return (
         <p className={styles.quietNote}>
-          Tidak ada data LIVE untuk ditampilkan di sini.{' '}
+          {t('Tidak ada data LIVE untuk ditampilkan di sini.')}{' '}
           <button type="button" className={styles.quietRetry} onClick={onRetry}>
-            Coba lagi
+            {t('Coba lagi')}
           </button>
         </p>
       );
@@ -296,25 +297,31 @@ function AnalysisStatus(props: AnalysisStatusProps) {
     return (
       <StatusPanel
         tone="error"
-        title="Perhitungan belum berhasil"
+        title={t('Perhitungan belum berhasil')}
         details={
           error instanceof ApiError ? (
             <p>
-              Kode {error.code}, HTTP {String(error.status)}
-              {error.serverMessage ? `: ${error.serverMessage}` : ''}
+              {t(
+                'Kode {0}, HTTP {1}{2}',
+                error.code,
+                String(error.status),
+                error.serverMessage ? `: ${error.serverMessage}` : '',
+              )}
             </p>
           ) : undefined
         }
         action={
           state.status === 'error' ? (
             <Button variant="secondary" onClick={onRetry}>
-              Coba lagi
+              {t('Coba lagi')}
             </Button>
           ) : undefined
         }
       >
-        {error === null ? 'Data Hub tidak memberi hasil.' : getIndonesianErrorCopy(error)} Tidak ada peringkat
-        lain yang ditampilkan sebagai gantinya.
+        {t(
+          '{0} Tidak ada peringkat lain yang ditampilkan sebagai gantinya.',
+          error === null ? t('Data Hub tidak memberi hasil.') : getIndonesianErrorCopy(error),
+        )}
       </StatusPanel>
     );
   }
@@ -325,31 +332,32 @@ function AnalysisStatus(props: AnalysisStatusProps) {
     return (
       <StatusPanel
         tone="blocked"
-        title="Peringkat belum dapat ditampilkan"
+        title={t('Peringkat belum dapat ditampilkan')}
         details={<BlockedDetails issues={blocking} registry={registry} />}
       >
         {blockedSummary(blocking, props.activePreset, integrity.requestedWeightAvailabilityPct)}
       </StatusPanel>
     );
   }
-  if (checking) return <StatusPanel tone="loading" title="Memeriksa hasil terhadap data sumber…" />;
+  if (checking) return <StatusPanel tone="loading" title={t('Memeriksa hasil terhadap data sumber…')} />;
   if (live && wrongDirection.length > 0) {
     return (
       <StatusPanel
         tone="blocked"
-        title="Peringkat belum dapat ditampilkan"
+        title={t('Peringkat belum dapat ditampilkan')}
         details={
           <ul role="list" className={styles.issueList}>
             {wrongDirection.map(({ indicatorId, verdict }) => (
               <li key={indicatorId}>
                 {props.labelOf(indicatorId)}: {verdict.status === 'inconsistent' ? verdict.reason : ''}
-                {verdict.status === 'inconsistent' && ` Contoh kode wilayah: ${verdict.examples.join(', ')}.`}
+                {verdict.status === 'inconsistent' &&
+                  t(' Contoh kode wilayah: {0}.', verdict.examples.join(', '))}
               </li>
             ))}
           </ul>
         }
       >
-        Arah skor tidak cocok dengan data sumber. Hasil ditahan agar tidak menyesatkan.
+        {t('Arah skor tidak cocok dengan data sumber. Hasil ditahan agar tidak menyesatkan.')}
       </StatusPanel>
     );
   }
@@ -360,29 +368,35 @@ function AnalysisStatus(props: AnalysisStatusProps) {
     return (
       <StatusPanel
         tone="blocked"
-        title="Peringkat ditahan: skor sumber tidak konsisten"
+        title={t('Peringkat ditahan: skor sumber tidak konsisten')}
         details={<AnomalyList anomalies={anomalies} labelOf={props.labelOf} registry={registry} />}
       >
-        Skor {criteria} untuk {regions} di Data Hub tidak sesuai dengan nilai mentahnya (nilai estimasi
-        tingkat provinsi). Wilayah itu ada di daftar ini dengan bobot kriteria tersebut, jadi urutannya bisa
-        keliru. Tanpa kriteria itu, atau dengan cakupan provinsi lain, peringkat dapat ditampilkan.
+        {t(
+          'Skor {0} untuk {1} di Data Hub tidak sesuai dengan nilai mentahnya (nilai estimasi tingkat provinsi). Wilayah itu ada di daftar ini dengan bobot kriteria tersebut, jadi urutannya bisa keliru. Tanpa kriteria itu, atau dengan cakupan provinsi lain, peringkat dapat ditampilkan.',
+          criteria,
+          regions,
+        )}
       </StatusPanel>
     );
   }
 
   const province = result.filterProvinceId
     ? (registry.find((region) => region.parentRegionId === result.filterProvinceId)?.provinceName ??
-      `provinsi ${result.filterProvinceId}`)
+      t('provinsi {0}', result.filterProvinceId))
     : null;
-  const counted = `${String(result.items.length)} wilayah${province ? ` di ${province}` : ''} dihitung`;
+  const counted = t(
+    '{0} wilayah{1} dihitung',
+    String(result.items.length),
+    province ? ` di ${province}` : '',
+  );
   if (!live) {
     return (
       <StatusPanel
         tone={integrity.ok ? 'demo' : 'warning'}
-        title={integrity.ok ? 'Data simulasi (DEMO)' : 'Hasil simulasi tidak konsisten'}
+        title={integrity.ok ? t('Data simulasi (DEMO)') : t('Hasil simulasi tidak konsisten')}
         details={integrity.ok ? undefined : <BlockedDetails issues={blocking} registry={registry} />}
       >
-        {counted}. Nama wilayah sintetis; bukan data atau rekomendasi resmi.
+        {t('{0}. Nama wilayah sintetis; bukan data atau rekomendasi resmi.', counted)}
       </StatusPanel>
     );
   }
@@ -405,20 +419,20 @@ function AnalysisStatus(props: AnalysisStatusProps) {
   return (
     <StatusPanel
       tone={props.updating ? 'loading' : status.tone}
-      title={props.updating ? 'Memperbarui peringkat…' : status.title}
+      title={props.updating ? t('Memperbarui peringkat…') : status.title}
       notes={status.limitations}
       stats={
         <dl className={styles.statusStats}>
           <div>
-            <dt>Wilayah dihitung</dt>
+            <dt>{t('Wilayah dihitung')}</dt>
             <dd>{result.items.length}</dd>
           </div>
           <div>
-            <dt>Dari sebagian kriteria</dt>
+            <dt>{t('Dari sebagian kriteria')}</dt>
             <dd>{partial}</dd>
           </div>
           <div>
-            <dt>Tidak diperingkat</dt>
+            <dt>{t('Tidak diperingkat')}</dt>
             <dd>
               {result.insufficient.length > 0 ? (
                 <a href="#tidak">{result.insufficient.length}</a>
@@ -444,16 +458,16 @@ function AnalysisStatus(props: AnalysisStatusProps) {
       action={
         props.directionFailed ? (
           <Button variant="secondary" onClick={props.onRetryDirection}>
-            Periksa arah skor lagi
+            {t('Periksa arah skor lagi')}
           </Button>
         ) : undefined
       }
     >
       {status.trust === 'stale'
         ? props.updating
-          ? 'Sedang dihitung ulang dari bobot terbaru.'
-          : 'Daftar di bawah masih dihitung dari bobot sebelumnya.'
-        : `${counted} dari data resmi LIVE.`}
+          ? t('Sedang dihitung ulang dari bobot terbaru.')
+          : t('Daftar di bawah masih dihitung dari bobot sebelumnya.')
+        : t('{0} dari data resmi LIVE.', counted)}
     </StatusPanel>
   );
 }
@@ -467,24 +481,35 @@ function blockedSummary(
   const has = (...codes: string[]) => blocking.some((issue) => codes.includes(issue.code));
   if (has('PRESET_NOT_RANKABLE')) {
     const availability = preset?.availability;
-    return `Skenario${preset ? ` “${preset.label}”` : ''} ditandai Data Hub belum dapat diperingkat di LIVE${
+    return t(
+      'Skenario{0} ditandai Data Hub belum dapat diperingkat di LIVE{1}. Skor yang tetap dikirim server tidak ditampilkan.',
+      preset ? ` “${preset.label}”` : '',
       availability
-        ? ` (hanya ${availability.requestedWeightAvailabilityPct.toFixed(0)}% bobotnya punya data nasional)`
-        : ''
-    }. Skor yang tetap dikirim server tidak ditampilkan.`;
+        ? t(
+            ' (hanya {0}% bobotnya punya data nasional)',
+            availability.requestedWeightAvailabilityPct.toFixed(0),
+          )
+        : '',
+    );
   }
   if (has('REQUESTED_WEIGHT_AVAILABILITY_LOW')) {
-    return `Peringkat hanya ditampilkan bila minimal ${String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT)}% bobot pilihan Anda punya data untuk seluruh Indonesia${
-      requestedWeightPct === null ? '' : `; saat ini ${requestedWeightPct.toFixed(0)}%`
-    }. Aturan ini ditetapkan Nusa Matra agar hasilnya tidak menyesatkan.`;
+    return t(
+      'Peringkat hanya ditampilkan bila minimal {0}% bobot pilihan Anda punya data untuk seluruh Indonesia{1}. Aturan ini ditetapkan Nusa Matra agar hasilnya tidak menyesatkan.',
+      String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT),
+      requestedWeightPct === null ? '' : t('; saat ini {0}%', requestedWeightPct.toFixed(0)),
+    );
   }
   if (has('SCORE_DIRECTION_MISMATCH', 'SCORE_DIRECTION_UNREPORTED')) {
-    return 'Arah skor dari Data Hub tidak jelas atau berbeda dari kontrak (skor tinggi = kebutuhan tinggi). Hasil ditahan agar tidak menyesatkan.';
+    return t(
+      'Arah skor dari Data Hub tidak jelas atau berbeda dari kontrak (skor tinggi = kebutuhan tinggi). Hasil ditahan agar tidak menyesatkan.',
+    );
   }
   if (has('MISSING_COMPONENT', 'CRITERION_WITHOUT_DATA', 'REGION_WEIGHTS_MISSING')) {
-    return 'Sebagian data wilayah belum lengkap atau tidak bisa dihitung ulang. Hasil ditahan agar tidak menyesatkan.';
+    return t(
+      'Sebagian data wilayah belum lengkap atau tidak bisa dihitung ulang. Hasil ditahan agar tidak menyesatkan.',
+    );
   }
-  return 'Hasil dari Data Hub tidak konsisten. Hasil ditahan agar tidak menyesatkan.';
+  return t('Hasil dari Data Hub tidak konsisten. Hasil ditahan agar tidak menyesatkan.');
 }
 
 function BlockedDetails({
@@ -497,7 +522,7 @@ function BlockedDetails({
   return (
     <>
       <IssueList issues={issues} registry={registry} />
-      <p>Data Hub perlu memperbaikinya. Antarmuka tidak menghitung ulang atau menutup selisih ini.</p>
+      <p>{t('Data Hub perlu memperbaikinya. Antarmuka tidak menghitung ulang atau menutup selisih ini.')}</p>
     </>
   );
 }
@@ -506,8 +531,8 @@ function BlockedDetails({
 type Order = 'high' | 'low';
 
 const ORDER_LABEL: Readonly<Record<Order, string>> = {
-  high: 'Prioritas tertinggi',
-  low: 'Terendah',
+  high: t('Prioritas tertinggi'),
+  low: t('Terendah'),
 };
 
 interface RankingWorkspaceProps {
@@ -583,13 +608,13 @@ function RankingWorkspace({
         <div className={styles.rankingHead}>
           <div className={styles.rankingTitleBlock}>
             <h2 id="lab-peringkat" className={styles.cardTitle}>
-              Peringkat wilayah
+              {t('Peringkat wilayah')}
             </h2>
             {basis.length > 0 && (
               // What the ranking is based on: the weights actually used, largest first, one per line.
               <>
                 <p id="lab-peringkat-dasar" className={styles.rankingBasisLead}>
-                  Berdasarkan bobot:
+                  {t('Berdasarkan bobot:')}
                 </p>
                 <ul role="list" className={styles.rankingBasis} aria-labelledby="lab-peringkat-dasar">
                   {basis.map(([id, basisPoints]) => (
@@ -602,7 +627,7 @@ function RankingWorkspace({
               </>
             )}
           </div>
-          <div className={`glass-seg ${styles.orderToggle}`} role="group" aria-label="Urutan tampilan">
+          <div className={`glass-seg ${styles.orderToggle}`} role="group" aria-label={t('Urutan tampilan')}>
             {(['high', 'low'] as const).map((value) => (
               <button
                 key={value}
@@ -623,12 +648,12 @@ function RankingWorkspace({
         <p className={styles.cardLead}>{SCORE_SUMMARY}</p>
         {stale && !updating && (
           <div className={styles.staleBanner} role="status">
-            <p>Total bobot belum 100%, jadi peringkat masih memakai bobot sebelumnya.</p>
+            <p>{t('Total bobot belum 100%, jadi peringkat masih memakai bobot sebelumnya.')}</p>
           </div>
         )}
         <div className={styles.searchRow}>
           <label htmlFor={searchId} className={styles.visuallyHidden}>
-            Cari wilayah dalam peringkat
+            {t('Cari wilayah dalam peringkat')}
           </label>
           <span className={`glass-field ${styles.searchField}`}>
             <Icon name="search" size={16} className={styles.searchIcon} />
@@ -636,7 +661,7 @@ function RankingWorkspace({
               id={searchId}
               type="search"
               value={query}
-              placeholder="Cari kabupaten/kota"
+              placeholder={t('Cari kabupaten/kota')}
               onChange={(event) => {
                 setQuery(event.target.value);
                 setShown(PAGE_SIZE);
@@ -646,8 +671,8 @@ function RankingWorkspace({
           </span>
           <p className={styles.muted} role="status">
             {needle
-              ? `${String(matching.length)} hasil pencarian`
-              : `${String(rows.length)} dari ${String(pool.length)} wilayah`}
+              ? t('{0} hasil pencarian', String(matching.length))
+              : t('{0} dari {1} wilayah', String(rows.length), String(pool.length))}
           </p>
         </div>
         {hasPartial && (
@@ -663,19 +688,25 @@ function RankingWorkspace({
                 resetScroll();
               }}
             />
-            <label htmlFor={completeId}>Hanya data lengkap</label>
+            <label htmlFor={completeId}>{t('Hanya data lengkap')}</label>
             <p className={styles.hint}>
               {completeOnly
-                ? `${String(integrity.coverageTiers.partial)} wilayah berdata sebagian disembunyikan dari tampilan ini; nomor peringkat tetap milik Data Hub dan tidak dihitung ulang.`
-                : `${String(integrity.coverageTiers.partial)} wilayah ditandai “Data sebagian”: skornya hanya memakai kriteria yang datanya ada.`}
+                ? t(
+                    '{0} wilayah berdata sebagian disembunyikan dari tampilan ini; nomor peringkat tetap milik Data Hub dan tidak dihitung ulang.',
+                    String(integrity.coverageTiers.partial),
+                  )
+                : t(
+                    '{0} wilayah ditandai “Data sebagian”: skornya hanya memakai kriteria yang datanya ada.',
+                    String(integrity.coverageTiers.partial),
+                  )}
             </p>
           </div>
         )}
         {rows.length === 0 ? (
           <p className={styles.muted}>
             {needle
-              ? `Tidak ada wilayah yang cocok dengan “${query}”.`
-              : 'Tidak ada wilayah untuk ditampilkan.'}
+              ? t('Tidak ada wilayah yang cocok dengan “{0}”.', query)
+              : t('Tidak ada wilayah untuk ditampilkan.')}
           </p>
         ) : (
           // The card keeps the height of the first page: further rows scroll inside it.
@@ -709,7 +740,7 @@ function RankingWorkspace({
               setShown((current) => current + PAGE_SIZE);
             }}
           >
-            Tampilkan {Math.min(PAGE_SIZE, matching.length - shown)} lagi
+            {t('Tampilkan {0} lagi', Math.min(PAGE_SIZE, matching.length - shown))}
           </Button>
         )}
       </section>
@@ -729,7 +760,7 @@ function TopSummary({ result }: { readonly result: ExploratoryCompositeResultDTO
   return (
     <section className={`glass ${styles.card} ${styles.topSummary}`} aria-labelledby="lab-teratas">
       <h2 id="lab-teratas" className={styles.cardTitle}>
-        Tiga prioritas teratas
+        {t('Tiga prioritas teratas')}
       </h2>
       <ol role="list" className={styles.topList}>
         {top.map((item) => (
@@ -742,7 +773,7 @@ function TopSummary({ result }: { readonly result: ExploratoryCompositeResultDTO
           </li>
         ))}
       </ol>
-      <p className={styles.hint}>Rincian setiap wilayah ada di daftar peringkat di bawah.</p>
+      <p className={styles.hint}>{t('Rincian setiap wilayah ada di daftar peringkat di bawah.')}</p>
     </section>
   );
 }
@@ -764,7 +795,7 @@ function InsufficientCard({
       aria-labelledby="lab-kurang"
     >
       <h2 id="lab-kurang" className={styles.cardTitle}>
-        Tidak diperingkat: data belum cukup ({result.insufficient.length})
+        {t('Tidak diperingkat: data belum cukup ({0})', result.insufficient.length)}
       </h2>
       <ul role="list" className={styles.insufficientList}>
         {result.insufficient.map((region) => (
@@ -773,11 +804,13 @@ function InsufficientCard({
               {region.regionDisplayName} <span className={styles.code}>{region.regionId}</span>
             </span>
             <span className={styles.muted}>
-              Cakupan{' '}
-              {region.coveragePct === null
-                ? 'tidak dilaporkan'
-                : `${formatDecimalId(String(region.coveragePct))}%`}
-              {result.minCoveragePct !== null && ` (ambang ${String(result.minCoveragePct)}%)`}
+              {t(
+                'Cakupan {0}',
+                region.coveragePct === null
+                  ? t('tidak dilaporkan')
+                  : `${formatDecimalId(String(region.coveragePct))}%`,
+              )}
+              {result.minCoveragePct !== null && t(' (ambang {0}%)', String(result.minCoveragePct))}
             </span>
             {region.coveragePct !== null && (
               <span className={styles.coverageTrack} aria-hidden="true">
@@ -792,7 +825,7 @@ function InsufficientCard({
               ))}
               {region.missingIndicators.length > 0 && (
                 <span className={`${styles.badge} ${styles.badgeWarn}`}>
-                  Kosong: {region.missingIndicators.map(labelOf).join(', ')}
+                  {t('Kosong: {0}', region.missingIndicators.map(labelOf).join(', '))}
                 </span>
               )}
             </span>
@@ -819,9 +852,13 @@ function AnomalyList({
     <ul role="list" className={styles.issueList}>
       {anomalies.map(({ indicatorId, regionId, raw, score }) => (
         <li key={`${indicatorId}|${regionId}`}>
-          {labelOf(indicatorId)} di {regionLabel(regionId, registry)}: nilai mentah{' '}
-          {formatDecimalId(String(raw))}, skor terpublikasi {formatDecimalId(String(score))}. Frontend tidak
-          mengoreksi skor ini.
+          {t(
+            '{0} di {1}: nilai mentah {2}, skor terpublikasi {3}. Frontend tidak mengoreksi skor ini.',
+            labelOf(indicatorId),
+            regionLabel(regionId, registry),
+            formatDecimalId(String(raw)),
+            formatDecimalId(String(score)),
+          )}
         </li>
       ))}
     </ul>

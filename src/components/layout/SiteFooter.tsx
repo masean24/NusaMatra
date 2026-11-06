@@ -1,32 +1,33 @@
 import { Link } from 'react-router';
 import { Logo } from '@/components/brand/Logo';
 import styles from './SiteFooter.module.css';
+import { t } from '@/lib/i18n';
 
 const FOOTER_GROUPS = [
   {
-    title: 'Produk',
+    title: t('Produk'),
     links: [
-      { label: 'Jelajahi peta', to: '/jelajahi' },
-      { label: 'Bandingkan wilayah', to: '/bandingkan' },
-      { label: 'Lab Prioritas', to: '/lab-prioritas' },
-      { label: 'Paspor Bukti', to: '/paspor-bukti' },
+      { label: t('Jelajahi peta'), to: '/jelajahi' },
+      { label: t('Bandingkan wilayah'), to: '/bandingkan' },
+      { label: t('Lab Prioritas'), to: '/lab-prioritas' },
+      { label: t('Paspor Bukti'), to: '/paspor-bukti' },
     ],
   },
   {
-    title: 'Transparansi',
+    title: t('Transparansi'),
     links: [
-      { label: 'Sumber data', to: '/#sumber' },
-      { label: 'Cara skor dihitung', to: '/metodologi' },
-      { label: 'Batasan data', to: '/titik-buta-data' },
-      { label: 'Aksesibilitas', to: '/aksesibilitas' },
+      { label: t('Sumber data'), to: '/#sumber' },
+      { label: t('Cara skor dihitung'), to: '/metodologi' },
+      { label: t('Batasan data'), to: '/titik-buta-data' },
+      { label: t('Aksesibilitas'), to: '/aksesibilitas' },
     ],
   },
 ] as const;
 
 /** The team that built Nusa Matra for Web In Action 2026. */
 const TEAM = {
-  name: 'Sedang Mengetik...',
-  members: ['Mgs. M. Fahim Rahmatullah', 'Khalil Amin Adillah', 'Raihan Daris Ramadhan'],
+  name: t('Sedang Mengetik...'),
+  members: [t('Mgs. M. Fahim Rahmatullah'), t('Khalil Amin Adillah'), t('Raihan Daris Ramadhan')],
 } as const;
 
 /** Figma 41:433: dark band (cobalt-deep in Kaca), brand statement, two link groups and the team. */
@@ -37,8 +38,9 @@ export function SiteFooter() {
         <div className={styles.brand}>
           <Logo size="footer" surface="dark" />
           <p className={`kk-small ${styles.statement}`}>
-            Memahami Wilayah, Menentukan Arah. Platform eksplorasi dan analisis wilayah Indonesia berbasis
-            data. Bukan aplikasi resmi pemerintah. Web In Action, Multimedia In Action 2026.
+            {t(
+              'Memahami Wilayah, Menentukan Arah. Platform eksplorasi dan analisis wilayah Indonesia berbasis data. Bukan aplikasi resmi pemerintah. Web In Action, Multimedia In Action 2026.',
+            )}
           </p>
         </div>
         {FOOTER_GROUPS.map((group) => (
@@ -59,7 +61,7 @@ export function SiteFooter() {
         ))}
         <section className={styles.group} aria-labelledby="footer-tim">
           <h2 id="footer-tim" className="kk-body-strong">
-            Tim {TEAM.name}
+            {t('Tim {0}', TEAM.name)}
           </h2>
           <ul role="list" className={styles.links}>
             {TEAM.members.map((member) => (

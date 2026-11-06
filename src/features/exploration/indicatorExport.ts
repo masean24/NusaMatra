@@ -1,8 +1,10 @@
 import type { DataHubIndicatorDTO, IndicatorValuesMapDTO } from '@/services/api';
+import { t } from '@/lib/i18n';
 
 /** What a downloaded file says about itself, so it can still be traced once it leaves the site. */
-const COPY_NOTE =
-  'Salinan dari Data Hub Nusa Matra, bukan berkas asli penerbit. Periksa angka pada sumber resmi sebelum mengutip.';
+const COPY_NOTE = t(
+  'Salinan dari Data Hub Nusa Matra, bukan berkas asli penerbit. Periksa angka pada sumber resmi sebelum mengutip.',
+);
 
 const CSV_COLUMNS = [
   'kode_wilayah',

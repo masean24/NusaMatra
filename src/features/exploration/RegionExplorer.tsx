@@ -10,15 +10,16 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { AdminLevel } from '@/services/api';
 import { useRegionBrowserParams } from './regionCode';
 import styles from './RegionExplorer.module.css';
+import { t } from '@/lib/i18n';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE = 30;
 
 type LevelFilter = AdminLevel | 'ALL';
 const LEVEL_FILTERS: readonly { readonly value: LevelFilter; readonly label: string }[] = [
-  { value: 'ALL', label: 'Semua' },
-  { value: 'REGENCY', label: 'Kabupaten' },
-  { value: 'CITY', label: 'Kota' },
+  { value: 'ALL', label: t('Semua') },
+  { value: 'REGENCY', label: t('Kabupaten') },
+  { value: 'CITY', label: t('Kota') },
 ];
 
 interface RegionExplorerProps {
@@ -69,15 +70,15 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
   return (
     <Frame {...frameProps}>
       <h2 className={compact ? `kk-body-strong ${styles.compactHeading}` : 'kk-h3'}>
-        {compact ? 'Cari wilayah lain' : 'Cari wilayah'}
+        {compact ? t('Cari wilayah lain') : t('Cari wilayah')}
       </h2>
       <TextField
         glass
-        label="Cari kabupaten/kota"
+        label={t('Cari kabupaten/kota')}
         icon="search"
         type="search"
         value={query}
-        placeholder="Ketik nama kabupaten/kota"
+        placeholder={t('Ketik nama kabupaten/kota')}
         autoComplete="off"
         onChange={(event) => {
           setQuery(event.target.value);
@@ -86,7 +87,7 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
 
       {showResults && (
         <>
-          <div role="group" aria-label="Jenis wilayah" className="glass-seg">
+          <div role="group" aria-label={t('Jenis wilayah')} className="glass-seg">
             {LEVEL_FILTERS.map((filter) => (
               <button
                 key={filter.value}
@@ -101,7 +102,7 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
             ))}
           </div>
 
-          <ResourceView state={regions.state} onRetry={regions.retry} loadingTitle="Mencari wilayah…">
+          <ResourceView state={regions.state} onRetry={regions.retry} loadingTitle={t('Mencari wilayah…')}>
             {(envelope) => {
               const allItems = envelope.data;
               const provinces = [
@@ -124,8 +125,8 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                     kind="empty"
                     title={
                       dataMode === 'LIVE'
-                        ? 'Tidak ada kabupaten/kota yang cocok'
-                        : 'Tidak ada wilayah yang cocok pada dataset DEMO saat ini'
+                        ? t('Tidak ada kabupaten/kota yang cocok')
+                        : t('Tidak ada wilayah yang cocok pada dataset DEMO saat ini')
                     }
                     action={
                       query ? (
@@ -135,14 +136,18 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                             setQuery('');
                           }}
                         >
-                          Hapus pencarian
+                          {t('Hapus pencarian')}
                         </Button>
                       ) : undefined
                     }
                   >
                     {dataMode === 'LIVE'
-                      ? 'Periksa ejaan atau coba sebagian nama, misalnya “Bogor”; ubah juga filter jenis wilayah bila perlu.'
-                      : 'Nama wilayah pada dataset DEMO bersifat sintetis (misalnya “Kabupaten Demo Jabar 1”), jadi nama kabupaten/kota yang sebenarnya tidak akan ditemukan.'}
+                      ? t(
+                          'Periksa ejaan atau coba sebagian nama, misalnya “Bogor”; ubah juga filter jenis wilayah bila perlu.',
+                        )
+                      : t(
+                          'Nama wilayah pada dataset DEMO bersifat sintetis (misalnya “Kabupaten Demo Jabar 1”), jadi nama kabupaten/kota yang sebenarnya tidak akan ditemukan.',
+                        )}
                   </StatusMessage>
                 );
               }
@@ -152,13 +157,13 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                   {provinces.length > 1 && (
                     <div className={styles.province}>
                       <span id={provinceLabelId} className="kk-small">
-                        Provinsi
+                        {t('Provinsi')}
                       </span>
                       <GlassSelect
                         labelledBy={provinceLabelId}
                         value={activeProvince}
                         options={[
-                          { value: '', label: 'Semua provinsi' },
+                          { value: '', label: t('Semua provinsi') },
                           ...provinces.map((name) => ({ value: name, label: name })),
                         ]}
                         onChange={setProvince}
@@ -167,10 +172,10 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                   )}
                   <div className={styles.summary}>
                     <p className="kk-small" role="status">
-                      Menampilkan {Math.min(visibleCount, items.length)} dari {total} wilayah
+                      {t('Menampilkan')} {Math.min(visibleCount, items.length)} {t('dari {0} wilayah', total)}
                     </p>
                     {items.some((region) => region.isSyntheticDemoName) && (
-                      <Chip tone="warning">Nama sintetis (DEMO), bukan nama resmi</Chip>
+                      <Chip tone="warning">{t('Nama sintetis (DEMO), bukan nama resmi')}</Chip>
                     )}
                   </div>
                   <ul role="list" className={`glass-group ${styles.list}`}>
@@ -186,8 +191,12 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                         >
                           <span className="kk-body-strong">{region.displayName}</span>
                           <span className={`kk-small ${styles.regionMeta}`}>
-                            {adminLevelLabel(region.adminLevel)} di{' '}
-                            {region.provinceName ?? 'provinsi tidak diketahui'}, kode {region.regionId}
+                            {t(
+                              '{0} di {1}, kode {2}',
+                              adminLevelLabel(region.adminLevel),
+                              region.provinceName ?? t('provinsi tidak diketahui'),
+                              region.regionId,
+                            )}
                           </span>
                         </button>
                       </li>
@@ -200,7 +209,7 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
                         setExpanded({ key: pageKey, count: visibleCount + PAGE_SIZE });
                       }}
                     >
-                      Tampilkan {Math.min(PAGE_SIZE, items.length - visibleCount)} lagi
+                      {t('Tampilkan {0} lagi', Math.min(PAGE_SIZE, items.length - visibleCount))}
                     </Button>
                   )}
                 </>

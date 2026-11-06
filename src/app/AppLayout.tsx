@@ -7,6 +7,7 @@ import { useScrollbarCompensation } from '@/hooks/useScrollbarCompensation';
 import { useSmoothHashLinks } from '@/hooks/useSmoothHashLinks';
 import { usePreloadExploreOnIntent } from './preloadExplore';
 import styles from './AppLayout.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * After a client-side navigation: jump to a `#hash` target if there is one, otherwise move focus
@@ -51,7 +52,7 @@ export function AppLayout() {
     <>
       <AppBackground />
       <a href="#konten-utama" className={styles.skipLink}>
-        Lewati ke konten utama
+        {t('Lewati ke konten utama')}
       </a>
       {/* navSlot: the navbar gets its own layer during a page change (AppLayout.module.css). */}
       <div className={`${styles.screenOnly} ${styles.navSlot}`}>

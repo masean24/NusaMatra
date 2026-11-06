@@ -1,6 +1,7 @@
 import type { RefObject } from 'react';
 import type { GeoCameraHandle } from '@/features/geo3d';
 import styles from './MapControls.module.css';
+import { t } from '@/lib/i18n';
 
 /** One wheel-notch-like step: about a fifth closer or farther, within the map's own limits. */
 const ZOOM_IN = 0.8;
@@ -15,11 +16,11 @@ interface MapControlsProps {
 /** Zoom and reset for the 3D map: the same camera the mouse wheel and drag move. */
 export function MapControls({ cameraRef, ready }: MapControlsProps) {
   return (
-    <div role="group" aria-label="Kontrol peta" className={styles.controls}>
+    <div role="group" aria-label={t('Kontrol peta')} className={styles.controls}>
       <button
         type="button"
         className={styles.button}
-        aria-label="Perbesar peta"
+        aria-label={t('Perbesar peta')}
         disabled={!ready}
         onClick={() => {
           cameraRef.current?.zoomBy(ZOOM_IN);
@@ -32,7 +33,7 @@ export function MapControls({ cameraRef, ready }: MapControlsProps) {
       <button
         type="button"
         className={styles.button}
-        aria-label="Perkecil peta"
+        aria-label={t('Perkecil peta')}
         disabled={!ready}
         onClick={() => {
           cameraRef.current?.zoomBy(ZOOM_OUT);
@@ -45,7 +46,7 @@ export function MapControls({ cameraRef, ready }: MapControlsProps) {
       <button
         type="button"
         className={styles.button}
-        aria-label="Kembalikan tampilan seluruh Indonesia"
+        aria-label={t('Kembalikan tampilan seluruh Indonesia')}
         disabled={!ready}
         onClick={() => {
           cameraRef.current?.resetView();

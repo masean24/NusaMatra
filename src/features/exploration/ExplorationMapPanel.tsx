@@ -18,6 +18,7 @@ import { buildLiveGeography } from './liveGeography';
 import { useRegionBrowserParams } from './regionCode';
 import { useRegionSelection } from './regionSelection';
 import styles from './ExplorationMapPanel.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * No verified geography exists until the Data Hub is connected. `null` tells the engine to show
@@ -135,11 +136,11 @@ function LiveMapWorkspace({
         // The map's own size, so the page does not jump when the map replaces this.
         <div className={`${styles.map} ${styles.loadingFrame}`}>
           <MapLoader
-            title="Mengunduh batas wilayah resmi…"
+            title={t('Mengunduh batas wilayah resmi…')}
             text={
               boundaryResolution() === 'mobile'
-                ? 'Versi ringan, sekitar 0,5 MB, dari BIG lewat Data Hub; hanya sekali per sesi.'
-                : 'Sekitar 1,6 MB dari BIG lewat Data Hub; hanya sekali per sesi.'
+                ? t('Versi ringan, sekitar 0,5 MB, dari BIG lewat Data Hub; hanya sekali per sesi.')
+                : t('Sekitar 1,6 MB dari BIG lewat Data Hub; hanya sekali per sesi.')
             }
           />
         </div>
@@ -147,7 +148,7 @@ function LiveMapWorkspace({
         <ResourceView
           state={boundaries.state}
           onRetry={boundaries.retry}
-          loadingTitle="Memuat batas wilayah resmi…"
+          loadingTitle={t('Memuat batas wilayah resmi…')}
         >
           {(envelope) => (
             <LiveMap
@@ -217,9 +218,10 @@ function LiveMap({
       className={styles.map}
     />
   ) : (
-    <StatusMessage kind="unavailable" title="Batas wilayah resmi tidak dapat dipakai">
-      Data Hub tidak mengirim poligon batas resmi untuk snapshot ini, jadi peta tidak ditampilkan. Pilih
-      wilayah dari daftar.
+    <StatusMessage kind="unavailable" title={t('Batas wilayah resmi tidak dapat dipakai')}>
+      {t(
+        'Data Hub tidak mengirim poligon batas resmi untuk snapshot ini, jadi peta tidak ditampilkan. Pilih wilayah dari daftar.',
+      )}
     </StatusMessage>
   );
 }
@@ -279,9 +281,9 @@ function DemoMapWorkspace({
 
   const selection = (
     <>
-      <Chip>Mode data: simulasi (DEMO)</Chip>
+      <Chip>{t('Mode data: simulasi (DEMO)')}</Chip>
       <fieldset className={styles.regionList}>
-        <legend className="kk-body-strong">Pilih wilayah ilustratif</legend>
+        <legend className="kk-body-strong">{t('Pilih wilayah ilustratif')}</legend>
         <ul role="list" className={styles.regionItems}>
           {DEMO_GEO_REGIONS.map((region) => (
             <li key={region.regionId}>
@@ -305,16 +307,17 @@ function DemoMapWorkspace({
           title={`${selectedName ?? selectedRegionId} dipilih`}
           action={
             <Button variant="secondary" onClick={handleClear}>
-              Hapus pilihan
+              {t('Hapus pilihan')}
             </Button>
           }
         >
-          Ini wilayah ilustratif untuk demonstrasi. Data indikator belum tersedia karena katalog wilayah resmi
-          belum terhubung.
+          {t(
+            'Ini wilayah ilustratif untuk demonstrasi. Data indikator belum tersedia karena katalog wilayah resmi belum terhubung.',
+          )}
         </StatusMessage>
       ) : (
-        <StatusMessage kind="empty" title="Belum ada wilayah dipilih">
-          Klik salah satu pulau di peta 3D, atau pilih dari daftar di atas.
+        <StatusMessage kind="empty" title={t('Belum ada wilayah dipilih')}>
+          {t('Klik salah satu pulau di peta 3D, atau pilih dari daftar di atas.')}
         </StatusMessage>
       )}
     </>
@@ -335,8 +338,8 @@ function DemoMapWorkspace({
         // Over a full-screen map the list folds into a small labelled disclosure in a corner.
         <details className={styles.selectionFloat}>
           <summary className={styles.selectionSummary}>
-            <span className="kk-body-strong">Wilayah ilustratif (DEMO)</span>
-            <span className="kk-small">{selectedName ?? 'belum dipilih'}</span>
+            <span className="kk-body-strong">{t('Wilayah ilustratif (DEMO)')}</span>
+            <span className="kk-small">{selectedName ?? t('belum dipilih')}</span>
           </summary>
           <div className={styles.selection}>{selection}</div>
         </details>

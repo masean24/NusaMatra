@@ -19,6 +19,7 @@ import {
 } from './labModel';
 import type { DirectionCheck } from './useDirectionCheck';
 import styles from './PriorityLab.module.css';
+import { t } from '@/lib/i18n';
 
 /** The integrity issues in full: message, and the regions concerned by name. */
 export function IssueList({
@@ -34,7 +35,7 @@ export function IssueList({
         <li key={issue.code}>
           {issue.message}
           {issue.examples && issue.examples.length > 0 && (
-            <> Contoh: {issue.examples.map((id) => regionLabel(id, registry)).join(', ')}.</>
+            <> {t('Contoh: {0}.', issue.examples.map((id) => regionLabel(id, registry)).join(', '))}</>
           )}{' '}
           <span className={styles.code}>[{issue.code}]</span>
         </li>
@@ -82,61 +83,66 @@ export function LabDetails({
   return (
     <section className={`glass glass--read ${styles.card} ${styles.details}`} aria-labelledby="lab-rincian">
       <h2 id="lab-rincian" className={styles.cardTitle}>
-        Sumber, metodologi &amp; pemeriksaan
+        {t('Sumber, metodologi & pemeriksaan')}
       </h2>
       <details className={styles.accordion}>
-        <summary>Cara membaca skor</summary>
+        <summary>{t('Cara membaca skor')}</summary>
         <div className={styles.accordionBody}>
           <p className={styles.muted}>{SCORE_MEANING}</p>
           <ul role="list" className={styles.methodList}>
             <li>
-              Data Hub mengubah setiap kriteria ke skala kebutuhan 0–100 (100 = kebutuhan tertinggi di antara
-              wilayah yang dihitung; nilai mentah yang lebih baik memberi skor lebih rendah). Skor gabungan =
-              jumlah skor kriteria × bobot wilayah itu. Peringkat 1 = prioritas tertinggi; peringkat dan
-              peringkat nasional dipakai apa adanya dari Data Hub, termasuk peringkat yang sama untuk skor
-              yang sama.
+              {t(
+                'Data Hub mengubah setiap kriteria ke skala kebutuhan 0–100 (100 = kebutuhan tertinggi di antara wilayah yang dihitung; nilai mentah yang lebih baik memberi skor lebih rendah). Skor gabungan = jumlah skor kriteria × bobot wilayah itu. Peringkat 1 = prioritas tertinggi; peringkat dan peringkat nasional dipakai apa adanya dari Data Hub, termasuk peringkat yang sama untuk skor yang sama.',
+              )}
             </li>
             <li>
-              Bobot dikirim sebagai bilangan bulat dengan total tepat 10.000 (= 100%). Kriteria tanpa data
-              nasional tidak dihitung; bobotnya dibagi ke kriteria lain. Tiap wilayah punya bobot sendiri
-              (total 10.000) atas kriteria yang datanya ada; wilayah berdata sebagian diberi tanda.
+              {t(
+                'Bobot dikirim sebagai bilangan bulat dengan total tepat 10.000 (= 100%). Kriteria tanpa data nasional tidak dihitung; bobotnya dibagi ke kriteria lain. Tiap wilayah punya bobot sendiri (total 10.000) atas kriteria yang datanya ada; wilayah berdata sebagian diberi tanda.',
+              )}
             </li>
           </ul>
         </div>
       </details>
       <details className={styles.accordion}>
-        <summary>Data sebagian</summary>
+        <summary>{t('Data sebagian')}</summary>
         <div className={styles.accordionBody}>
           <ul role="list" className={styles.methodList}>
             <li>
-              Dua ukuran cakupan yang berbeda: <strong>ketersediaan data nasional</strong> atas bobot pilihan
-              Anda{' '}
-              {integrity?.requestedWeightAvailabilityPct == null
-                ? '(tidak dilaporkan)'
-                : `(${integrity.requestedWeightAvailabilityPct.toFixed(0)}%)`}{' '}
-              dan <strong>cakupan per wilayah</strong> (bagian bobot yang punya data di wilayah itu). Syarat
-              minimal {String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT)}% ketersediaan nasional adalah kebijakan
-              antarmuka Nusa Matra, bukan aturan Data Hub.
+              {t('Dua ukuran cakupan yang berbeda:')} <strong>{t('ketersediaan data nasional')}</strong>{' '}
+              {t(
+                'atas bobot pilihan Anda {0} dan',
+                integrity?.requestedWeightAvailabilityPct == null
+                  ? t('(tidak dilaporkan)')
+                  : `(${integrity.requestedWeightAvailabilityPct.toFixed(0)}%)`,
+              )}{' '}
+              <strong>{t('cakupan per wilayah')}</strong>{' '}
+              {t(
+                '(bagian bobot yang punya data di wilayah itu). Syarat minimal {0}% ketersediaan nasional adalah kebijakan antarmuka Nusa Matra, bukan aturan Data Hub.',
+                String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT),
+              )}
             </li>
           </ul>
           {result && (
             <section aria-labelledby="lab-bobot">
               <h3 id="lab-bobot" className={styles.detailsHeading}>
-                Bobot pilihan dan bobot dipakai
+                {t('Bobot pilihan dan bobot dipakai')}
               </h3>
               <p className={styles.muted}>
-                <strong>Pilihan</strong> adalah bobot yang Anda atur. <strong>Dipakai</strong> adalah bobot
-                global yang benar-benar dihitung, setelah bobot indikator tanpa data dibagi ke indikator lain.
+                <strong>{t('Pilihan')}</strong> {t('adalah bobot yang Anda atur.')}{' '}
+                <strong>{t('Dipakai')}</strong>{' '}
+                {t(
+                  'adalah bobot global yang benar-benar dihitung, setelah bobot indikator tanpa data dibagi ke indikator lain.',
+                )}
               </p>
               <table className={styles.table}>
                 <caption className={styles.visuallyHidden}>
-                  Bobot pilihan Anda dan bobot yang benar-benar dipakai
+                  {t('Bobot pilihan Anda dan bobot yang benar-benar dipakai')}
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Kriteria</th>
-                    <th scope="col">Pilihan</th>
-                    <th scope="col">Dipakai</th>
+                    <th scope="col">{t('Kriteria')}</th>
+                    <th scope="col">{t('Pilihan')}</th>
+                    <th scope="col">{t('Dipakai')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -144,7 +150,7 @@ export function LabDetails({
                     <tr key={row.id}>
                       <th scope="row">{labelOf(row.id)}</th>
                       <td>{percentLabel(row.chosen)}</td>
-                      <td>{row.used === null ? 'Tidak dipakai (tanpa data)' : percentLabel(row.used)}</td>
+                      <td>{row.used === null ? t('Tidak dipakai (tanpa data)') : percentLabel(row.used)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -155,11 +161,12 @@ export function LabDetails({
           {excluded.length > 0 && (
             <section aria-labelledby="lab-keluar">
               <h3 id="lab-keluar" className={styles.detailsHeading}>
-                {excluded.length} wilayah tidak ikut dihitung
+                {t('{0} wilayah tidak ikut dihitung', excluded.length)}
               </h3>
               <p className={styles.muted}>
-                Wilayah ini tidak tercantum di peringkat maupun di daftar “data belum cukup” dari Data Hub.
-                Mereka tidak diberi skor, bukan diberi skor nol.
+                {t(
+                  'Wilayah ini tidak tercantum di peringkat maupun di daftar “data belum cukup” dari Data Hub. Mereka tidak diberi skor, bukan diberi skor nol.',
+                )}
               </p>
               <ul role="list" className={styles.excludedList}>
                 {excluded.map((region) => (
@@ -171,11 +178,11 @@ export function LabDetails({
         </div>
       </details>
       <details className={styles.accordion}>
-        <summary>Sumber data</summary>
+        <summary>{t('Sumber data')}</summary>
         <div className={styles.accordionBody}>
           <section aria-labelledby="lab-sumber">
             <h3 id="lab-sumber" className={styles.detailsHeading}>
-              Sumber data
+              {t('Sumber data')}
             </h3>
             <ul role="list" className={styles.sourceList}>
               {chosenIds.map((id) => {
@@ -184,12 +191,12 @@ export function LabDetails({
                   <li key={id}>
                     <span className={styles.sourceName}>{labelOf(id)}</span>
                     <span className={styles.muted}>
-                      {option?.agency ?? 'Sumber tidak disebutkan'}
+                      {option?.agency ?? t('Sumber tidak disebutkan')}
                       {option?.referenceYear != null && ` ${String(option.referenceYear)}`}
-                      {option && `, satuan ${option.unit}. ${directionLabel(option.polarity)}`}
+                      {option && t(', satuan {0}. {1}', option.unit, directionLabel(option.polarity))}
                       {option &&
                         indicatorCoverageText(option) !== null &&
-                        `. Data untuk ${indicatorCoverageText(option) ?? ''}`}
+                        t('. Data untuk {0}', indicatorCoverageText(option) ?? '')}
                     </span>
                   </li>
                 );
@@ -199,21 +206,24 @@ export function LabDetails({
         </div>
       </details>
       <details className={styles.accordion}>
-        <summary>Pemeriksaan konsistensi</summary>
+        <summary>{t('Pemeriksaan konsistensi')}</summary>
         <div className={styles.accordionBody}>
           <ul role="list" className={styles.methodList}>
             {integrity && (
               <li>
-                Diperiksa di peramban: total bobot, bobot yang dipakai, arah skor, rentang 0–100, setiap skor
-                sama dengan jumlah komponennya menurut bobot wilayahnya (selisih terbesar{' '}
-                {integrity.maxScoreError.toFixed(3)}, batas pembulatan 0,01 + 0,005 per komponen), urutan
-                peringkat dan peringkat nasional, ambang cakupan, dan tidak ada data kosong yang dihitung nol.
+                {t(
+                  'Diperiksa di peramban: total bobot, bobot yang dipakai, arah skor, rentang 0–100, setiap skor sama dengan jumlah komponennya menurut bobot wilayahnya (selisih terbesar {0}, batas pembulatan 0,01 + 0,005 per komponen), urutan peringkat dan peringkat nasional, ambang cakupan, dan tidak ada data kosong yang dihitung nol.',
+                  integrity.maxScoreError.toFixed(3),
+                )}
               </li>
             )}
             {checks?.map(({ indicatorId, verdict }) => (
               <li key={indicatorId}>
-                Arah skor {labelOf(indicatorId)}:{' '}
-                {directionVerdictText(verdict, (regionId) => regionLabel(regionId, registry))}
+                {t(
+                  'Arah skor {0}: {1}',
+                  labelOf(indicatorId),
+                  directionVerdictText(verdict, (regionId) => regionLabel(regionId, registry)),
+                )}
               </li>
             ))}
           </ul>
@@ -224,7 +234,7 @@ export function LabDetails({
           {result && integrity && (
             <section aria-labelledby="lab-catatan">
               <h3 id="lab-catatan" className={styles.detailsHeading}>
-                Catatan perhitungan (bahan Paspor Bukti)
+                {t('Catatan perhitungan (bahan Paspor Bukti)')}
               </h3>
               <dl className={styles.record}>
                 <div>
@@ -232,36 +242,45 @@ export function LabDetails({
                   <dd>{result.snapshotId}</dd>
                 </div>
                 <div>
-                  <dt>Mode data</dt>
+                  <dt>{t('Mode data')}</dt>
                   <dd>{result.dataMode}</dd>
                 </div>
                 <div>
-                  <dt>Cakupan</dt>
+                  <dt>{t('Cakupan')}</dt>
                   <dd>
-                    {result.filterProvinceId ? `Provinsi ${result.filterProvinceId}` : 'Seluruh Indonesia'},{' '}
-                    {result.items.length} wilayah dihitung
+                    {t(
+                      '{0}, {1} wilayah dihitung',
+                      result.filterProvinceId
+                        ? t('Provinsi {0}', result.filterProvinceId)
+                        : t('Seluruh Indonesia'),
+                      result.items.length,
+                    )}
                   </dd>
                 </div>
                 <div>
-                  <dt>Arah skor</dt>
+                  <dt>{t('Arah skor')}</dt>
                   <dd>
                     {result.scoreDirection === 'higher_is_need'
-                      ? 'Skor tinggi = kebutuhan intervensi tinggi (peringkat 1 = prioritas tertinggi)'
-                      : 'Tidak dinyatakan Data Hub'}
+                      ? t('Skor tinggi = kebutuhan intervensi tinggi (peringkat 1 = prioritas tertinggi)')
+                      : t('Tidak dinyatakan Data Hub')}
                   </dd>
                 </div>
                 <div>
-                  <dt>Layak nasional</dt>
+                  <dt>{t('Layak nasional')}</dt>
                   <dd>
                     {result.totalEligibleNational === null
-                      ? 'Tidak dilaporkan'
-                      : `${String(result.totalEligibleNational)} wilayah (di Data Hub); ${String(result.items.length)} diperingkat di tampilan ini`}
+                      ? t('Tidak dilaporkan')
+                      : t(
+                          '{0} wilayah (di Data Hub); {1} diperingkat di tampilan ini',
+                          String(result.totalEligibleNational),
+                          String(result.items.length),
+                        )}
                     {result.insufficient.length > 0 &&
-                      `; ${String(result.insufficient.length)} data belum cukup`}
+                      t('; {0} data belum cukup', String(result.insufficient.length))}
                   </dd>
                 </div>
                 <div>
-                  <dt>Bobot dipakai</dt>
+                  <dt>{t('Bobot dipakai')}</dt>
                   <dd>
                     {Object.entries(integrity.weightsUsed)
                       .filter(([, bps]) => bps > 0)
@@ -282,11 +301,11 @@ export function LabDetails({
                       snapshotId: result.snapshotId,
                     })}
                   >
-                    Buat Paspor Bukti
+                    {t('Buat Paspor Bukti')}
                   </ButtonLink>
                 </p>
               ) : (
-                <p className={styles.muted}>Paspor Bukti tidak dibuat karena peringkat ditahan.</p>
+                <p className={styles.muted}>{t('Paspor Bukti tidak dibuat karena peringkat ditahan.')}</p>
               )}
             </section>
           )}

@@ -1,5 +1,6 @@
 import type { ComparisonAssessment } from '@/domain/comparability';
 import { isPolarity, polarityReading } from './interpretIndicator';
+import { t } from '@/lib/i18n';
 
 export interface ComparisonReadingInput {
   readonly indicatorLabel: string;
@@ -36,7 +37,7 @@ export function readComparison(input: ComparisonReadingInput): ComparisonReading
   if (!assessment.allowed || difference === null) return null;
 
   if (difference.higher === 'EQUAL') {
-    return { verdict: 'EQUAL', sentence: `${indicatorLabel} ${nameA} dan ${nameB} sama.` };
+    return { verdict: 'EQUAL', sentence: t('{0} {1} dan {2} sama.', indicatorLabel, nameA, nameB) };
   }
 
   const higher = difference.higher === 'A' ? nameA : nameB;
@@ -46,9 +47,9 @@ export function readComparison(input: ComparisonReadingInput): ComparisonReading
     : formatNumber(Math.abs(difference.absolute), 2);
   const what =
     input.useRatio && difference.ratio !== null && difference.ratio >= 1.05
-      ? `sekitar ${formatNumber(difference.ratio, 1)}× lebih tinggi`
-      : `lebih tinggi ${gap}`;
-  const parts = [`${indicatorLabel} ${higher} ${what} dibanding ${lower}.`];
+      ? t('sekitar {0}× lebih tinggi', formatNumber(difference.ratio, 1))
+      : t('lebih tinggi {0}', gap);
+  const parts = [t('{0} {1} {2} dibanding {3}.', indicatorLabel, higher, what, lower)];
 
   let verdict: ComparisonVerdict = 'NO_JUDGEMENT';
   const direction = polarityReading(polarity);
@@ -57,10 +58,10 @@ export function readComparison(input: ComparisonReadingInput): ComparisonReading
     const higherIsBetter = polarity === 'positive';
     const better = higherIsBetter ? higher : lower;
     verdict = better === nameA ? 'A_BETTER' : 'B_BETTER';
-    parts.push(`Karena itu, ${better} berada pada kondisi yang relatif lebih baik pada indikator ini.`);
+    parts.push(t('Karena itu, {0} berada pada kondisi yang relatif lebih baik pada indikator ini.', better));
   } else {
     parts.push(
-      'Arah baik atau buruk indikator ini belum ditetapkan, jadi tidak ada pihak yang dinilai lebih baik.',
+      t('Arah baik atau buruk indikator ini belum ditetapkan, jadi tidak ada pihak yang dinilai lebih baik.'),
     );
   }
 

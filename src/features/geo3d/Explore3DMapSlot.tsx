@@ -10,22 +10,23 @@ import { EngineSlot, type EngineSlotState } from './EngineSlot';
 import { geoEngineRegistry } from './engineRegistry';
 import { MapLoader } from './MapLoader';
 import styles from './Explore3DMapSlot.module.css';
+import { t } from '@/lib/i18n';
 
 const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
   loading: {
     kind: 'loading',
-    title: 'Memuat peta 3D…',
-    children: 'Pratinjau di bawah ini adalah ilustrasi, bukan peta geografis akurat.',
+    title: t('Memuat peta 3D…'),
+    children: t('Pratinjau di bawah ini adalah ilustrasi, bukan peta geografis akurat.'),
   },
   failed: {
     kind: 'unavailable',
-    title: 'Peta 3D tidak dapat ditampilkan',
-    children: 'Perangkat atau browser ini tidak dapat menjalankan peta 3D. Gambar ini hanya ilustrasi.',
+    title: t('Peta 3D tidak dapat ditampilkan'),
+    children: t('Perangkat atau browser ini tidak dapat menjalankan peta 3D. Gambar ini hanya ilustrasi.'),
   },
   absent: {
     kind: 'info',
-    title: 'Peta 3D belum tersedia',
-    children: 'Gambar ini hanya ilustrasi, bukan peta geografis akurat.',
+    title: t('Peta 3D belum tersedia'),
+    children: t('Gambar ini hanya ilustrasi, bukan peta geografis akurat.'),
   },
 };
 
@@ -33,19 +34,20 @@ const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: str
 const LIVE_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
   loading: {
     kind: 'loading',
-    title: 'Menyiapkan peta…',
-    children: 'Membangun batas wilayah resmi dari BIG.',
+    title: t('Menyiapkan peta…'),
+    children: t('Membangun batas wilayah resmi dari BIG.'),
   },
   failed: {
     kind: 'unavailable',
-    title: 'Peta 3D tidak dapat ditampilkan',
-    children:
+    title: t('Peta 3D tidak dapat ditampilkan'),
+    children: t(
       'Perangkat atau browser ini tidak dapat menjalankan peta 3D. Pilih wilayah lewat daftar di panel.',
+    ),
   },
   absent: {
     kind: 'info',
-    title: 'Peta 3D belum tersedia',
-    children: 'Pilih wilayah lewat daftar di panel.',
+    title: t('Peta 3D belum tersedia'),
+    children: t('Pilih wilayah lewat daftar di panel.'),
   },
 };
 
@@ -90,7 +92,10 @@ export function Explore3DMapSlot({
   const reducedMotion = useReducedMotion();
 
   return (
-    <section className={[styles.frame, className].filter(Boolean).join(' ')} aria-label="Peta 3D wilayah">
+    <section
+      className={[styles.frame, className].filter(Boolean).join(' ')}
+      aria-label={t('Peta 3D wilayah')}
+    >
       <EngineSlot
         engine={geoEngineRegistry.Explore3DMap}
         engineProps={{

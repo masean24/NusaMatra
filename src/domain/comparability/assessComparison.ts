@@ -1,3 +1,5 @@
+import { t } from '@/lib/i18n';
+
 /**
  * Decides whether two regions' values for the same indicator may be compared, and what the
  * difference is. Pure: a blocked pair never gets a computed difference, so nothing downstream can
@@ -73,7 +75,7 @@ export function assessComparison(a: ComparableMeasurement, b: ComparableMeasurem
   if (a.value === null || b.value === null) {
     blockers.push({
       code: 'MISSING_VALUE',
-      message: 'Salah satu wilayah tidak memiliki data untuk indikator ini.',
+      message: t('Salah satu wilayah tidak memiliki data untuk indikator ini.'),
     });
   }
 
@@ -82,36 +84,42 @@ export function assessComparison(a: ComparableMeasurement, b: ComparableMeasurem
     if (a.unit !== b.unit) {
       blockers.push({
         code: 'INCOMPATIBLE_UNIT',
-        message: `Satuan berbeda (${a.unit || 'tanpa satuan'} dan ${b.unit || 'tanpa satuan'}).`,
+        message: t('Satuan berbeda ({0} dan {1}).', a.unit || t('tanpa satuan'), b.unit || t('tanpa satuan')),
       });
     }
     if (!isKnown(a) || !isKnown(b)) {
       blockers.push({
         code: 'UNKNOWN_PROVENANCE',
-        message: 'Sumber dataset salah satu angka tidak diketahui, jadi definisinya tidak dapat dicocokkan.',
+        message: t(
+          'Sumber dataset salah satu angka tidak diketahui, jadi definisinya tidak dapat dicocokkan.',
+        ),
       });
     } else if (a.datasetId !== b.datasetId) {
       blockers.push({
         code: 'INCOMPATIBLE_DEFINITION',
-        message: 'Kedua angka berasal dari dataset dengan definisi yang bisa berbeda.',
+        message: t('Kedua angka berasal dari dataset dengan definisi yang bisa berbeda.'),
       });
     }
     if (isImputed(a.qualityFlag) || isImputed(b.qualityFlag)) {
       blockers.push({
         code: 'IMPUTED_VALUE',
-        message: 'Salah satu angka diimputasi dari nilai provinsi, bukan pengukuran kabupaten/kota.',
+        message: t('Salah satu angka diimputasi dari nilai provinsi, bukan pengukuran kabupaten/kota.'),
       });
     }
     if (a.value !== null && b.value !== null) {
       if (a.referenceYear === null || b.referenceYear === null) {
         blockers.push({
           code: 'YEAR_UNKNOWN',
-          message: 'Tahun data salah satu wilayah tidak diketahui, jadi selisih tidak dihitung.',
+          message: t('Tahun data salah satu wilayah tidak diketahui, jadi selisih tidak dihitung.'),
         });
       } else if (a.referenceYear !== b.referenceYear) {
         blockers.push({
           code: 'YEAR_MISMATCH',
-          message: `Tahun data berbeda (${String(a.referenceYear)} dan ${String(b.referenceYear)}), jadi selisih tidak dihitung.`,
+          message: t(
+            'Tahun data berbeda ({0} dan {1}), jadi selisih tidak dihitung.',
+            String(a.referenceYear),
+            String(b.referenceYear),
+          ),
         });
       }
     }

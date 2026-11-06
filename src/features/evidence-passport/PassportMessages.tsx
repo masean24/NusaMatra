@@ -1,19 +1,20 @@
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import styles from './EvidencePassport.module.css';
+import { t } from '@/lib/i18n';
 
 /** Where to go to make a Paspor Bukti; shown whenever a link cannot produce one. */
 function EntryLinks() {
   return (
     <span className={styles.actionRow}>
       <ButtonLink to="/jelajahi" variant="secondary">
-        Buka Jelajahi
+        {t('Buka Jelajahi')}
       </ButtonLink>
       <ButtonLink to="/bandingkan" variant="secondary">
-        Buka Bandingkan
+        {t('Buka Bandingkan')}
       </ButtonLink>
       <ButtonLink to="/lab-prioritas" variant="secondary">
-        Buka Lab Prioritas
+        {t('Buka Lab Prioritas')}
       </ButtonLink>
     </span>
   );
@@ -23,21 +24,21 @@ function EntryLinks() {
 const PASSPORT_SOURCES = [
   {
     to: '/jelajahi',
-    feature: 'Jelajahi',
-    kind: 'Paspor satu wilayah',
-    how: 'Pilih kabupaten/kota, lalu tekan kartu “Paspor Bukti wilayah ini” di profilnya.',
+    feature: t('Jelajahi'),
+    kind: t('Paspor satu wilayah'),
+    how: t('Pilih kabupaten/kota, lalu tekan kartu “Paspor Bukti wilayah ini” di profilnya.'),
   },
   {
     to: '/bandingkan',
-    feature: 'Bandingkan',
-    kind: 'Paspor perbandingan dua wilayah',
-    how: 'Pilih Wilayah A dan Wilayah B, lalu tekan “Buat Paspor Bukti” di atas tabel.',
+    feature: t('Bandingkan'),
+    kind: t('Paspor perbandingan dua wilayah'),
+    how: t('Pilih Wilayah A dan Wilayah B, lalu tekan “Buat Paspor Bukti” di atas tabel.'),
   },
   {
     to: '/lab-prioritas',
-    feature: 'Lab Prioritas',
-    kind: 'Paspor peringkat',
-    how: 'Hitung peringkat, buka satu wilayah di daftar, lalu tekan “Buka Paspor Bukti”.',
+    feature: t('Lab Prioritas'),
+    kind: t('Paspor peringkat'),
+    how: t('Hitung peringkat, buka satu wilayah di daftar, lalu tekan “Buka Paspor Bukti”.'),
   },
 ] as const;
 
@@ -70,16 +71,16 @@ export function PassportEntry() {
       <CrossedPassportArt />
       <div className={styles.entryBody}>
         <h2 id="paspor-belum-ada" className="kk-h3">
-          Belum ada Paspor Bukti untuk ditampilkan
+          {t('Belum ada Paspor Bukti untuk ditampilkan')}
         </h2>
         <p className={`kk-body ${styles.entryLead}`}>
-          Paspor Bukti selalu dibuat dari satu analisis: profil satu wilayah, perbandingan dua wilayah, atau
-          peringkat di Lab Prioritas. Isinya sumber, tahun, kelas bukti, dan batasan setiap angka pada
-          analisis itu. Halaman ini dibuka langsung dari menu, jadi belum ada analisis yang dirangkum.
+          {t(
+            'Paspor Bukti selalu dibuat dari satu analisis: profil satu wilayah, perbandingan dua wilayah, atau peringkat di Lab Prioritas. Isinya sumber, tahun, kelas bukti, dan batasan setiap angka pada analisis itu. Halaman ini dibuka langsung dari menu, jadi belum ada analisis yang dirangkum.',
+          )}
         </p>
       </div>
       <div className={styles.entryChoices}>
-        <p className="kk-body-strong">Buat Paspor Bukti dari salah satu fitur berikut:</p>
+        <p className="kk-body-strong">{t('Buat Paspor Bukti dari salah satu fitur berikut:')}</p>
         <ol role="list" className={styles.entrySteps}>
           {PASSPORT_SOURCES.map((source) => (
             <li key={source.to} className={styles.entryStep}>
@@ -87,7 +88,7 @@ export function PassportEntry() {
               <span className="kk-body-strong">{source.kind}</span>
               <span className={`kk-small ${styles.entryHow}`}>{source.how}</span>
               <ButtonLink to={source.to} variant="secondary">
-                Buka {source.feature}
+                {t('Buka {0}', source.feature)}
               </ButtonLink>
             </li>
           ))}
@@ -101,10 +102,10 @@ export function InvalidLink({ message }: { readonly message: string }) {
   return (
     <StatusMessage
       kind="unavailable"
-      title="Paspor Bukti tidak dapat dibuat dari tautan ini"
+      title={t('Paspor Bukti tidak dapat dibuat dari tautan ini')}
       action={<EntryLinks />}
     >
-      {message} Tidak ada laporan yang dibuat atau ditampilkan.
+      {t('{0} Tidak ada laporan yang dibuat atau ditampilkan.', message)}
     </StatusMessage>
   );
 }

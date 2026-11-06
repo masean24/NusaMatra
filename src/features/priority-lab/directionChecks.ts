@@ -5,6 +5,7 @@ import {
   type ReferenceValue,
 } from '@/domain/prioritization';
 import type { ExploratoryCompositeResultDTO, IndicatorValuesMapDTO } from '@/services/api';
+import { t } from '@/lib/i18n';
 
 export interface DirectionCheck {
   readonly indicatorId: string;
@@ -35,10 +36,10 @@ function referenceOf(values: IndicatorValuesMapDTO): Record<string, ReferenceVal
   );
 }
 
-const UNAVAILABLE: DirectionVerdict = { status: 'unverifiable', reason: 'Nilai sumber tidak tersedia.' };
+const UNAVAILABLE: DirectionVerdict = { status: 'unverifiable', reason: t('Nilai sumber tidak tersedia.') };
 const OTHER_SNAPSHOT: DirectionVerdict = {
   status: 'unverifiable',
-  reason: 'Nilai sumber berasal dari snapshot lain daripada peringkat ini.',
+  reason: t('Nilai sumber berasal dari snapshot lain daripada peringkat ini.'),
 };
 
 /**

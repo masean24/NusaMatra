@@ -8,6 +8,7 @@ import {
   type SnapshotDetailDTO,
   type SnapshotPin,
 } from '@/services/api';
+import { t } from '@/lib/i18n';
 
 /**
  * Which snapshot a passport's requests are pinned to (Data Hub v2.2), decided before any data request.
@@ -66,7 +67,10 @@ export async function resolvePassportSnapshot(
     return {
       pinning: {
         status: 'UNPINNED',
-        reason: `Data Hub menyatakan versi data ${data.snapshotId} tidak dapat direproduksi (tanpa sidik isi data).`,
+        reason: t(
+          'Data Hub menyatakan versi data {0} tidak dapat direproduksi (tanpa sidik isi data).',
+          data.snapshotId,
+        ),
       },
       list: null,
     };
@@ -80,7 +84,7 @@ export async function resolvePassportSnapshot(
     return {
       pinning: {
         status: 'UNPINNED',
-        reason: 'Daftar versi data tidak dapat dimuat, jadi tidak ada versi data yang dapat dikunci.',
+        reason: t('Daftar versi data tidak dapat dimuat, jadi tidak ada versi data yang dapat dikunci.'),
       },
       list: null,
     };
@@ -90,8 +94,9 @@ export async function resolvePassportSnapshot(
     return {
       pinning: {
         status: 'UNPINNED',
-        reason:
+        reason: t(
           'Data Hub tidak menandai tepat satu versi data aktif yang dapat direproduksi dengan sidik isi data.',
+        ),
       },
       list,
     };

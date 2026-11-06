@@ -7,6 +7,7 @@ import { DataModeSwitch } from './DataModeSwitch';
 import { useDataHub } from './useDataHub';
 import { useDataHubResource } from './useDataHubResource';
 import styles from './DataHubBanner.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * Says which data a page is showing only when there is something to say: DEMO (always labelled),
@@ -30,7 +31,7 @@ export function DataHubBanner({ compact = false }: { readonly compact?: boolean 
       radius="card"
       className={styles.banner}
       data-compact={compact || undefined}
-      aria-label="Sumber dan mode data"
+      aria-label={t('Sumber dan mode data')}
     >
       {showRow && (
         <div className={styles.row}>
@@ -48,7 +49,9 @@ export function DataHubBanner({ compact = false }: { readonly compact?: boolean 
         <DataHubErrorMessage error={snapshots.state.error} onRetry={snapshots.retry} />
       )}
       {snapshots.state.status === 'unconfigured' && (
-        <p className={`kk-small ${styles.note}`}>Alamat Data Hub belum diatur pada konfigurasi aplikasi.</p>
+        <p className={`kk-small ${styles.note}`}>
+          {t('Alamat Data Hub belum diatur pada konfigurasi aplikasi.')}
+        </p>
       )}
     </Surface>
   );

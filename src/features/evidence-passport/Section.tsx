@@ -3,6 +3,7 @@ import { Surface } from '@/components/ui/Surface/Surface';
 import { publicConfig } from '@/lib/publicConfig';
 import type { DataMode } from '@/services/api';
 import styles from './EvidencePassport.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * LIVE or DEMO as words in a chip: it must read on screen, in print, and without colour. DEMO keeps
@@ -18,7 +19,7 @@ export function ModeTag({ mode }: { readonly mode: DataMode }) {
       LIVE
     </span>
   ) : (
-    <span className={`${styles.modeChip} ${styles.tagWarn}`}>DEMO: data simulasi</span>
+    <span className={`${styles.modeChip} ${styles.tagWarn}`}>{t('DEMO: data simulasi')}</span>
   );
 }
 

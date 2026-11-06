@@ -1,5 +1,6 @@
 import { setMapView, useMapView } from './graphicsQuality';
 import styles from './MapViewToggle.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * The 3D / 2D switch on the Jelajahi map: on, the map is drawn flat from above, lighter to draw and
@@ -13,8 +14,8 @@ export function MapViewToggle() {
       type="button"
       role="switch"
       aria-checked={flat}
-      aria-label="Peta 2D"
-      title={flat ? 'Peta 2D aktif: tekan untuk kembali ke 3D' : 'Tampilkan peta 2D yang lebih ringan'}
+      aria-label={t('Peta 2D')}
+      title={flat ? t('Peta 2D aktif: tekan untuk kembali ke 3D') : t('Tampilkan peta 2D yang lebih ringan')}
       className={styles.toggle}
       onClick={() => {
         setMapView(flat ? '3d' : '2d');

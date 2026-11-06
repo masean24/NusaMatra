@@ -10,6 +10,7 @@ import {
   SNAPSHOT_MUTABILITY_NOTE,
   snapshotIdentityNote,
 } from './notices';
+import { t } from '@/lib/i18n';
 
 /** Name of the file format, so a reader (or a later importer) can tell what they hold. */
 export const EXPORT_SCHEMA = 'nusa-matra.paspor-bukti/browser-assembled-v0';
@@ -46,8 +47,9 @@ export function buildExportPayload(
       snapshotId: pinned ? snapshotIdentityNote(record.source.reproducibility) : SNAPSHOT_MUTABILITY_NOTE,
       'source.snapshot.reportedManifestChecksum': MANIFEST_CHECKSUM_LABEL,
       'source.snapshot.completenessPct': `Menurut server. ${COMPLETENESS_CLAIM_NOTE}`,
-      fetched:
+      fetched: t(
         'Permintaan yang dikirim peramban (tanpa host atau kredensial) dan respons yang diterima; waktu terima memakai jam peramban. "contentSha256" disalin dari respons Data Hub; tidak ada ID laporan, hash, atau tanda waktu server yang dibuat peramban.',
+      ),
     },
     reproducibility: pinned
       ? { pinnedInputs: true, statement: PINNED_STATEMENT }

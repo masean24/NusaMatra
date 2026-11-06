@@ -5,6 +5,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
 import { applyGraphicsModeToDocument } from './features/graphics-quality';
+import { LANGUAGE } from './lib/i18n';
 
 /*
  * A page chunk that fails to download usually means a new version was deployed while this tab was
@@ -35,6 +36,16 @@ window.addEventListener('load', () => {
 
 // The graphics mode goes on <html> before the first paint, where the glass styles read it.
 applyGraphicsModeToDocument();
+
+if (LANGUAGE === 'en') {
+  document.title = 'Nusa Matra — Understand regions, set direction';
+  document
+    .querySelector('meta[name="description"]')
+    ?.setAttribute(
+      'content',
+      'Nusa Matra helps you explore conditions across Indonesian regencies and cities, compare indicators and set priorities you can check.',
+    );
+}
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root is missing from index.html.');

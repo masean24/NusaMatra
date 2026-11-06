@@ -14,6 +14,7 @@ import type {
   IndicatorCoverageDTO,
 } from '@/services/api';
 import { DEFAULT_CRITERIA, LIVE_CRITERIA } from './criteria';
+import { LOCALE, t } from '@/lib/i18n';
 
 export type Availability = 'available' | 'empty' | 'undeclared';
 
@@ -37,11 +38,11 @@ export interface IndicatorOption {
 export function indicatorCoverageText(option: IndicatorOption): string | null {
   if (option.coverageCount === null) return null;
   if (option.totalRegions !== null) {
-    return `${String(option.coverageCount)} dari ${String(option.totalRegions)} wilayah`;
+    return t('{0} dari {1} wilayah', String(option.coverageCount), String(option.totalRegions));
   }
-  if (option.coveragePct === null) return `${String(option.coverageCount)} wilayah`;
-  const pct = option.coveragePct.toLocaleString('id-ID', { maximumFractionDigits: 1 });
-  return `${String(option.coverageCount)} wilayah (${pct}%)`;
+  if (option.coveragePct === null) return t('{0} wilayah', String(option.coverageCount));
+  const pct = option.coveragePct.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
+  return t('{0} wilayah ({1}%)', String(option.coverageCount), pct);
 }
 
 /** Joins the catalog with the coverage matrix. Without coverage (DEMO) every indicator is selectable. */
@@ -80,9 +81,10 @@ export function buildIndicatorOptions(
 
 /** Why an indicator cannot be chosen, in plain Indonesian; `null` when it can. */
 export function unavailableReason(option: IndicatorOption): string | null {
-  if (option.availability === 'empty') return 'Belum ada data resmi untuk indikator ini pada snapshot LIVE.';
+  if (option.availability === 'empty')
+    return t('Belum ada data resmi untuk indikator ini pada snapshot LIVE.');
   if (option.availability === 'undeclared')
-    return 'Data Hub belum menyatakan ketersediaan data indikator ini.';
+    return t('Data Hub belum menyatakan ketersediaan data indikator ini.');
   return null;
 }
 
@@ -92,24 +94,26 @@ export function unavailableReason(option: IndicatorOption): string | null {
  * lowers the score as it rises and a "negative" one (poverty, hazard) raises it.
  */
 export function directionLabel(polarity: string): string {
-  if (polarity === 'positive') return 'Nilai tinggi = kondisi lebih baik (skor kebutuhan lebih rendah)';
-  if (polarity === 'negative') return 'Nilai rendah = kondisi lebih baik (skor kebutuhan lebih rendah)';
-  return 'Arah tergantung konteks';
+  if (polarity === 'positive') return t('Nilai tinggi = kondisi lebih baik (skor kebutuhan lebih rendah)');
+  if (polarity === 'negative') return t('Nilai rendah = kondisi lebih baik (skor kebutuhan lebih rendah)');
+  return t('Arah tergantung konteks');
 }
 
 /** What the 0–100 score and rank mean (contract v2.1, `score_direction: higher_is_need`). */
 /** The one sentence above the ranking; SCORE_MEANING is the full reading, under "Cara membaca skor". */
-export const SCORE_SUMMARY =
-  'Skor 0–100: makin tinggi, makin tinggi kebutuhan intervensi menurut kriteria pilihan Anda (relatif, bukan mutlak).';
+export const SCORE_SUMMARY = t(
+  'Skor 0–100: makin tinggi, makin tinggi kebutuhan intervensi menurut kriteria pilihan Anda (relatif, bukan mutlak).',
+);
 
-export const SCORE_MEANING =
-  'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria pilihan Anda: makin tinggi skor, makin tinggi kebutuhannya, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak.';
+export const SCORE_MEANING = t(
+  'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria pilihan Anda: makin tinggi skor, makin tinggi kebutuhannya, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak.',
+);
 
 /** Reader-facing names of the quality flags the Data Hub sends; unknown ones are shown as they are. */
 export function qualityFlagLabel(flag: string): string {
-  if (flag === 'VERIFIED') return 'Terverifikasi';
-  if (flag === 'IMPUTED_PROVINCE') return 'Estimasi tingkat provinsi';
-  if (flag === 'DEMO_EXAMPLE') return 'Contoh simulasi';
+  if (flag === 'VERIFIED') return t('Terverifikasi');
+  if (flag === 'IMPUTED_PROVINCE') return t('Estimasi tingkat provinsi');
+  if (flag === 'DEMO_EXAMPLE') return t('Contoh simulasi');
   return flag;
 }
 
@@ -156,7 +160,7 @@ export function startingWeights(
 
 /** Basis points as a percentage for display ("43,75 %"). */
 export function percentLabel(basisPoints: number): string {
-  return `${(basisPoints / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`;
+  return `${(basisPoints / 100).toLocaleString(LOCALE, { maximumFractionDigits: 2 })}%`;
 }
 
 /**
@@ -305,22 +309,35 @@ export function directionVerdictText(
   switch (verdict.status) {
     case 'consistent':
       return verdict.imputedChecked === 0
-        ? `sesuai data sumber (${String(verdict.checked)} wilayah)`
-        : `sesuai data sumber (${String(verdict.checked)} wilayah, termasuk ${String(verdict.imputedChecked)} estimasi tingkat provinsi yang cocok dengan urutan)`;
+        ? t('sesuai data sumber ({0} wilayah)', String(verdict.checked))
+        : t(
+            'sesuai data sumber ({0} wilayah, termasuk {1} estimasi tingkat provinsi yang cocok dengan urutan)',
+            String(verdict.checked),
+            String(verdict.imputedChecked),
+          );
     case 'partial': {
       const named = verdict.unverified
-        .map(
-          (item) =>
-            `${regionName(item.regionId)}: nilai mentah ${String(item.raw)} → skor ${String(item.score)}`,
+        .map((item) =>
+          t(
+            '{0}: nilai mentah {1} → skor {2}',
+            regionName(item.regionId),
+            String(item.raw),
+            String(item.score),
+          ),
         )
         .join('; ');
-      return `BELUM TERVERIFIKASI PENUH — ${verdict.reason} ${String(verdict.checked)} wilayah lain sesuai. Tidak diverifikasi: ${named}.`;
+      return t(
+        'BELUM TERVERIFIKASI PENUH — {0} {1} wilayah lain sesuai. Tidak diverifikasi: {2}.',
+        verdict.reason,
+        String(verdict.checked),
+        named,
+      );
     }
     case 'unverified':
-      return `BELUM TERVERIFIKASI — ${verdict.reason}`;
+      return t('BELUM TERVERIFIKASI — {0}', verdict.reason);
     case 'unverifiable':
-      return `belum dapat diperiksa — ${verdict.reason}`;
+      return t('belum dapat diperiksa — {0}', verdict.reason);
     case 'inconsistent':
-      return `tidak sesuai — ${verdict.reason}`;
+      return t('tidak sesuai — {0}', verdict.reason);
   }
 }

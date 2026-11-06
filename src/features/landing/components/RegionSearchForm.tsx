@@ -20,6 +20,7 @@ import {
 } from './regionSearch';
 import { SUGGESTION_MIN_LENGTH, useRegionSuggestions } from './useRegionSuggestions';
 import styles from './RegionSearchForm.module.css';
+import { t } from '@/lib/i18n';
 
 interface RegionSearchFormProps {
   /** Visible placeholder text from Figma; the field also has a real (visually hidden) label. */
@@ -35,9 +36,10 @@ interface RegionSearchFormProps {
 
 /** One line under the suggestions: progress, the empty case, or the DEMO naming caveat. */
 function suggestionNote(loading: boolean, regions: readonly DataHubRegionDTO[]): string | null {
-  if (loading) return 'Mencari wilayah…';
-  if (regions.length === 0) return 'Tidak ada nama yang cocok. Tekan Enter untuk mencari di Jelajahi.';
-  if (regions.some((region) => region.isSyntheticDemoName)) return 'Nama sintetis (DEMO), bukan nama resmi.';
+  if (loading) return t('Mencari wilayah…');
+  if (regions.length === 0) return t('Tidak ada nama yang cocok. Tekan Enter untuk mencari di Jelajahi.');
+  if (regions.some((region) => region.isSyntheticDemoName))
+    return t('Nama sintetis (DEMO), bukan nama resmi.');
   return null;
 }
 
@@ -107,7 +109,7 @@ export function RegionSearchForm({
       return;
     }
     if (typed.length < SUGGESTION_MIN_LENGTH) {
-      setError('Ketik minimal 2 huruf nama kabupaten/kota.');
+      setError(t('Ketik minimal 2 huruf nama kabupaten/kota.'));
       return;
     }
     setError(null);
@@ -142,7 +144,7 @@ export function RegionSearchForm({
         <div className={styles.combobox}>
           <TextField
             fieldClassName={shimmerOnce ? styles.shimmer : undefined}
-            label="Cari kabupaten/kota"
+            label={t('Cari kabupaten/kota')}
             hideLabel
             icon="search"
             name="wilayah"
@@ -175,13 +177,13 @@ export function RegionSearchForm({
             trailing={
               actions ? undefined : (
                 <button type="submit" className="visually-hidden">
-                  Cari
+                  {t('Cari')}
                 </button>
               )
             }
           />
           <div className={styles.popup} hidden={!showList}>
-            <div id={listId} role="listbox" aria-label="Saran kabupaten/kota" className={styles.options}>
+            <div id={listId} role="listbox" aria-label={t('Saran kabupaten/kota')} className={styles.options}>
               {current &&
                 regions.map((region, index) => (
                   // The keyboard stays in the combobox field (arrows + Enter, aria-activedescendant), as

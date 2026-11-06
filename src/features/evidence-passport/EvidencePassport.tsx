@@ -19,30 +19,37 @@ import { BackButton } from '@/features/navigation';
 import { InvalidLink, PassportEntry } from './PassportMessages';
 import { useCompositeSources, useEvidenceSources } from './useEvidenceSources';
 import type { SourcesState } from './useSourceLoader';
+import { t } from '@/lib/i18n';
 
 /** Why a pinned passport could not be made, by error code; `null` for any other failure. */
 function snapshotFailureCopy(code: string): { readonly title: string; readonly body: string } | null {
   switch (code) {
     case 'SNAPSHOT_NOT_FOUND':
       return {
-        title: 'Versi data pada tautan tidak tersedia',
-        body: 'Data Hub tidak lagi menyimpan versi data yang disebut tautan ini (versi data lama dapat hilang setelah pembaruan server).',
+        title: t('Versi data pada tautan tidak tersedia'),
+        body: t(
+          'Data Hub tidak lagi menyimpan versi data yang disebut tautan ini (versi data lama dapat hilang setelah pembaruan server).',
+        ),
       };
     case 'SNAPSHOT_NOT_REPRODUCIBLE':
       return {
-        title: 'Versi data pada tautan tidak dapat direproduksi',
-        body: 'Data Hub menyatakan versi data pada tautan ini tidak dapat direproduksi, dan versi data itu bukan lagi versi data aktif.',
+        title: t('Versi data pada tautan tidak dapat direproduksi'),
+        body: t(
+          'Data Hub menyatakan versi data pada tautan ini tidak dapat direproduksi, dan versi data itu bukan lagi versi data aktif.',
+        ),
       };
     case 'SNAPSHOT_MODE_MISMATCH':
       return {
-        title: 'Versi data pada tautan berasal dari mode lain',
-        body: 'Versi data pada tautan ini milik mode data yang berbeda (DEMO/LIVE).',
+        title: t('Versi data pada tautan berasal dari mode lain'),
+        body: t('Versi data pada tautan ini milik mode data yang berbeda (DEMO/LIVE).'),
       };
     case 'SNAPSHOT_MISMATCH':
     case 'SNAPSHOT_DIGEST_MISMATCH':
       return {
-        title: 'Respons tidak berasal dari versi data yang dikunci',
-        body: 'Salah satu respons Data Hub membawa ID versi data atau sidik isi data (SHA-256) yang berbeda dari versi data yang dikunci, jadi tidak dipakai.',
+        title: t('Respons tidak berasal dari versi data yang dikunci'),
+        body: t(
+          'Salah satu respons Data Hub membawa ID versi data atau sidik isi data (SHA-256) yang berbeda dari versi data yang dikunci, jadi tidak dipakai.',
+        ),
       };
     default:
       return null;
@@ -60,18 +67,19 @@ function LoadFailure({
 }) {
   const retry = (
     <Button variant="secondary" onClick={onRetry}>
-      Coba lagi
+      {t('Coba lagi')}
     </Button>
   );
   if (isLiveBlockedError(error, mode)) {
     return (
       <StatusMessage
         kind="unavailable"
-        title="Data LIVE tidak dapat dimuat, Paspor Bukti tidak dibuat"
+        title={t('Data LIVE tidak dapat dimuat, Paspor Bukti tidak dibuat')}
         action={retry}
       >
-        Data Hub tidak memberi jawaban LIVE yang dapat dibaca. Paspor tidak dibuat dari data DEMO sebagai
-        pengganti.
+        {t(
+          'Data Hub tidak memberi jawaban LIVE yang dapat dibaca. Paspor tidak dibuat dari data DEMO sebagai pengganti.',
+        )}
       </StatusMessage>
     );
   }
@@ -79,27 +87,28 @@ function LoadFailure({
   if (snapshotFailure) {
     return (
       <StatusMessage kind="error" title={snapshotFailure.title} action={retry}>
-        {snapshotFailure.body} Paspor tidak beralih diam-diam ke snapshot terbaru.
+        {t('{0} Paspor tidak beralih diam-diam ke snapshot terbaru.', snapshotFailure.body)}
       </StatusMessage>
     );
   }
   if (error instanceof ApiError && error.status === 404) {
     return (
-      <StatusMessage kind="empty" title="Wilayah tidak ditemukan" action={retry}>
-        Data Hub tidak mengenal salah satu kode wilayah pada tautan ini untuk snapshot yang aktif.
+      <StatusMessage kind="empty" title={t('Wilayah tidak ditemukan')} action={retry}>
+        {t('Data Hub tidak mengenal salah satu kode wilayah pada tautan ini untuk snapshot yang aktif.')}
       </StatusMessage>
     );
   }
   if (!(error instanceof ApiError) || error.code === 'MALFORMED_ENVELOPE') {
     return (
-      <StatusMessage kind="error" title="Respons Data Hub ditolak" action={retry}>
-        Respons Data Hub tidak sesuai kontrak data yang diharapkan, jadi tidak dipakai. Paspor Bukti tidak
-        dibuat dari respons yang tidak dapat dipercaya.
+      <StatusMessage kind="error" title={t('Respons Data Hub ditolak')} action={retry}>
+        {t(
+          'Respons Data Hub tidak sesuai kontrak data yang diharapkan, jadi tidak dipakai. Paspor Bukti tidak dibuat dari respons yang tidak dapat dipercaya.',
+        )}
       </StatusMessage>
     );
   }
   return (
-    <StatusMessage kind="error" title="Paspor Bukti belum dapat dibuat" action={retry}>
+    <StatusMessage kind="error" title={t('Paspor Bukti belum dapat dibuat')} action={retry}>
       {getIndonesianErrorCopy(error)}
     </StatusMessage>
   );
@@ -110,7 +119,7 @@ function WithoutRecord({ children }: { readonly children: ReactNode }) {
   return (
     <>
       <BackButton />
-      <h1 className="kk-h1">Paspor Bukti</h1>
+      <h1 className="kk-h1">{t('Paspor Bukti')}</h1>
       {children}
     </>
   );
@@ -128,12 +137,12 @@ function stateBody(state: SourcesState<unknown>, mode: DataMode, onRetry: () => 
       return <></>;
     case 'unconfigured':
       return (
-        <StatusMessage kind="unavailable" title="Data Hub belum dihubungkan">
-          Alamat Data Hub belum diatur pada konfigurasi aplikasi, jadi Paspor Bukti tidak dapat dibuat.
+        <StatusMessage kind="unavailable" title={t('Data Hub belum dihubungkan')}>
+          {t('Alamat Data Hub belum diatur pada konfigurasi aplikasi, jadi Paspor Bukti tidak dapat dibuat.')}
         </StatusMessage>
       );
     case 'loading':
-      return <StatusMessage kind="loading" title="Merangkai Paspor Bukti dari Data Hub…" />;
+      return <StatusMessage kind="loading" title={t('Merangkai Paspor Bukti dari Data Hub…')} />;
     case 'error':
       return <LoadFailure error={state.error} mode={mode} onRetry={onRetry} />;
     case 'ready':

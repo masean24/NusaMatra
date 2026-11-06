@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from '@/components/ui/Icon/Icon';
 import styles from './PriorityLab.module.css';
+import { t } from '@/lib/i18n';
 
 /**
  * ok: validated · loading: (re)calculating · warning: incomplete data, shown with a caveat ·
@@ -43,7 +44,7 @@ export function StatusPanel({
   children,
   notes = [],
   details,
-  detailsLabel = 'Lihat alasan dan detail teknis',
+  detailsLabel = t('Lihat alasan dan detail teknis'),
   action,
   stats,
 }: StatusPanelProps) {

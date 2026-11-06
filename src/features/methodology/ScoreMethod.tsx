@@ -10,6 +10,7 @@ import { ResultSection } from './ResultSection';
 import { useScoreMethod, type Loadable, type ScoreMethodData } from './useScoreMethod';
 import { ScaleStep, ValueStep } from './ValueAndScaleSteps';
 import styles from './Methodology.module.css';
+import { t } from '@/lib/i18n';
 
 /** The id a link uses to open the page at the worked example (see scoreMethodHref in Jelajahi). */
 export const EXAMPLE_ID = 'contoh';
@@ -63,44 +64,47 @@ function MethodSummary({ method }: { readonly method: ScoreMethodData }) {
   return (
     <section id="ringkasan" aria-labelledby="metode-ringkas" className={styles.section}>
       <h2 id="metode-ringkas" className="kk-h2">
-        Tiga langkah dari angka resmi ke peringkat
+        {t('Tiga langkah dari angka resmi ke peringkat')}
       </h2>
       <ol role="list" className={styles.summary}>
         <SummaryCard
           step={1}
-          title="Ambil nilai asli"
+          title={t('Ambil nilai asli')}
           figure={liveFigure(example, (value) => (value.status === 'ready' ? value.valueText : null))}
           unit={ready?.unitText.trim() ?? ''}
           caption={
             example.status === 'ready'
               ? `${example.value.indicatorLabel} (${`${example.value.agency} ${String(example.value.referenceYear ?? '')}`.trim()})`
-              : 'Nilai resmi dari sumber'
+              : t('Nilai resmi dari sumber')
           }
         >
-          Angka resmi tiap kabupaten/kota dari BPS, BNPB, Kemenkes, Kemendikdasmen, BIG, dan BMKG, lengkap
-          dengan satuan dan tahunnya.
+          {t(
+            'Angka resmi tiap kabupaten/kota dari BPS, BNPB, Kemenkes, Kemendikdasmen, BIG, dan BMKG, lengkap dengan satuan dan tahunnya.',
+          )}
         </SummaryCard>
         <SummaryCard
           step={2}
-          title="Ubah ke skala kebutuhan 0–100"
+          title={t('Ubah ke skala kebutuhan 0–100')}
           figure={liveFigure(example, (value) =>
             value.status === 'ready' && value.reported !== null ? formatNumber(value.reported) : null,
           )}
-          unit="dari 100"
-          caption="Skor kebutuhan untuk indikator ini"
+          unit={t('dari 100')}
+          caption={t('Skor kebutuhan untuk indikator ini')}
         >
-          Setiap indikator diletakkan di antara nilai terendah dan tertinggi nasional. Skor 100 berarti
-          kebutuhan paling tinggi.
+          {t(
+            'Setiap indikator diletakkan di antara nilai terendah dan tertinggi nasional. Skor 100 berarti kebutuhan paling tinggi.',
+          )}
         </SummaryCard>
         <SummaryCard
           step={3}
-          title="Gabungkan dengan bobot"
+          title={t('Gabungkan dengan bobot')}
           figure={liveFigure(composite, (value) => (value.total === null ? null : formatNumber(value.total)))}
-          unit="skor gabungan"
-          caption="Contoh 4 indikator berbobot"
+          unit={t('skor gabungan')}
+          caption={t('Contoh 4 indikator berbobot')}
         >
-          Di Lab Prioritas, skor kebutuhan beberapa indikator dijumlahkan menurut bobot pilihan Anda, lalu
-          wilayah diurutkan.
+          {t(
+            'Di Lab Prioritas, skor kebutuhan beberapa indikator dijumlahkan menurut bobot pilihan Anda, lalu wilayah diurutkan.',
+          )}
         </SummaryCard>
       </ol>
     </section>
@@ -150,11 +154,11 @@ function ControlBar({ method }: { readonly method: ScoreMethodData }) {
     <div className={styles.controlBar}>
       <span className={styles.modeChip} data-mode={method.dataMode}>
         <span className={styles.modeDot} aria-hidden="true" />
-        Data {method.dataMode}
+        {t('Data {0}', method.dataMode)}
       </span>
       <div className={styles.controlPicker}>
         <span id={pickerId} className="kk-small kk-body-strong">
-          Indikator contoh
+          {t('Indikator contoh')}
         </span>
         {indicators.status === 'ready' ? (
           <GlassSelect
@@ -166,14 +170,14 @@ function ControlBar({ method }: { readonly method: ScoreMethodData }) {
         ) : (
           <span className={`kk-small ${styles.muted}`}>
             {indicators.status === 'loading'
-              ? 'Memuat daftar indikator…'
-              : 'Daftar indikator tidak tersedia.'}
+              ? t('Memuat daftar indikator…')
+              : t('Daftar indikator tidak tersedia.')}
           </span>
         )}
       </div>
       <p className={`kk-small ${styles.controlRegion}`}>
-        Wilayah contoh: <strong>{method.regionName}</strong>. Pilih wilayah lain di Jelajahi, lalu tekan
-        “Bagaimana skor tersebut dihitung”.
+        {t('Wilayah contoh:')} <strong>{method.regionName}</strong>
+        {t('. Pilih wilayah lain di Jelajahi, lalu tekan “Bagaimana skor tersebut dihitung”.')}
       </p>
     </div>
   );
