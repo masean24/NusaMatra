@@ -8,8 +8,10 @@ import {
   ResourceView,
   categoryLabel,
   formatDecimalId,
+  isSourceUnverified,
   publicHttpUrl,
   sourceLinkName,
+  sourceVerificationLabel,
   useDataHub,
   useDataHubResource,
   type ResourceState,
@@ -565,6 +567,11 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
   const datasets = [...new Set(sides.map((side) => side.datasetId))];
   const linked = sides.find((side) => publicHttpUrl(side.officialUrl) !== null);
   const href = publicHttpUrl(linked?.officialUrl ?? null);
+  // The weaker status speaks for the row: one unchecked side is enough to warn.
+  const verification = sourceVerificationLabel(
+    (sides.find((side) => isSourceUnverified(side.sourceVerification)) ?? sides[0])?.sourceVerification ??
+      null,
+  );
   return (
     <span className={`kk-small ${styles.muted}`}>
       {t('{0}, dataset', describeProvenance(row))} {datasets.join(', ') || '—'}.{' '}
@@ -575,6 +582,7 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
       ) : (
         t('tautan sumber tidak tersedia')
       )}
+      {verification && `. ${verification}.`}
     </span>
   );
 }

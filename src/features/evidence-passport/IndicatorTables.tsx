@@ -1,4 +1,9 @@
-import { categoryLabel, sourceLinkName } from '@/features/data-hub';
+import {
+  categoryLabel,
+  isSourceUnverified,
+  sourceLinkName,
+  sourceVerificationLabel,
+} from '@/features/data-hub';
 import { evidenceClassLabel, evidenceClassMeaning, type EvidenceClass } from './evidenceClass';
 import type { EvidenceIndicator, EvidenceRecord, EvidenceValue, IndicatorSourceInfo } from './evidenceTypes';
 import { Disclosure } from './Disclosure';
@@ -75,6 +80,7 @@ function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
 
 export function SourceLine({ source }: { readonly source: IndicatorSourceInfo }) {
   const name = `${source.agencyCode ?? t('Lembaga belum tersedia')}: ${source.datasetTitle ?? source.datasetId ?? t('judul dataset belum tersedia')}`;
+  const verification = sourceVerificationLabel(source.sourceVerification);
   return (
     <div className={styles.cell}>
       {source.officialUrl ? (
@@ -90,6 +96,15 @@ export function SourceLine({ source }: { readonly source: IndicatorSourceInfo })
           <span>{name}</span>
           <span className={`kk-small ${styles.muted}`}>{t('Tautan sumber belum tersedia.')}</span>
         </>
+      )}
+      {verification && (
+        <span>
+          <span
+            className={`${styles.tag} ${isSourceUnverified(source.sourceVerification) ? styles.tagWarn : ''}`}
+          >
+            {verification}
+          </span>
+        </span>
       )}
       {source.sourceNote && (
         <Disclosure variant="inline" title={t('Catatan sumber')} context={name}>

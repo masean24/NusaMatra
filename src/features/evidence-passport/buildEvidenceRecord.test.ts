@@ -158,6 +158,7 @@ describe('buildEvidenceRecord, gaps', () => {
       datasetTitle: null,
       officialUrl: null,
       sourceLinkLevel: null,
+      sourceVerification: null,
       sourceNote: null,
     });
     expect(valueOf(record, 'soc_poverty_rate').source.officialUrl).toBeNull();
@@ -178,6 +179,7 @@ describe('buildEvidenceRecord, gaps', () => {
       agency_code: 'BPS',
       official_url: 'https://example.org/indikator',
       source_link_level: 'table',
+      source_verification: 'made-up-status',
       source_note_idn: 'Catatan indikator',
     };
     const poverty = indicatorOf(profile, 'soc_poverty_rate');
@@ -186,6 +188,7 @@ describe('buildEvidenceRecord, gaps', () => {
       agency_code: 'BPS',
       official_url: null,
       source_link_level: 'something-new',
+      source_verification: 'pending',
       source_note_idn: 'Tautan dikosongkan',
     };
     const catalog = bodies['/api/v1/indicators'] as { data: Record<string, Record<string, unknown>[]> };
@@ -223,6 +226,12 @@ describe('buildEvidenceRecord, gaps', () => {
       sourceNote: 'Catatan dataset',
     });
     expect(record.limitations.join('\n')).toContain('versi referensi ref-1');
+    expect(valueOf(record, 'soc_hdi').source.sourceVerification).toBeNull();
+    expect(valueOf(record, 'soc_poverty_rate').source.sourceVerification).toBe('pending');
+    const povertyLabel = record.indicators.find((item) => item.indicatorId === 'soc_poverty_rate')?.label;
+    const unverifiedNote = record.limitations.find((text) => text.includes('belum dicocokkan penuh'));
+    expect(unverifiedNote).toContain('angka 1 indikator');
+    expect(unverifiedNote).toContain(povertyLabel);
   });
 });
 

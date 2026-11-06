@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { sourceLinkAction } from '@/features/data-hub';
+import { isSourceUnverified, sourceLinkAction, sourceVerificationLabel } from '@/features/data-hub';
 import { Disclosure } from './Disclosure';
 import type { EvidenceBase } from './evidenceTypes';
 import type { LimitationNote } from './limitationNote';
@@ -59,6 +59,17 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                     <li className={styles.softChip}>
                       {t('Akses: {0}', source.accessMethod ?? t('belum tersedia'))}
                     </li>
+                    {sourceVerificationLabel(source.sourceVerification) && (
+                      <li
+                        className={
+                          isSourceUnverified(source.sourceVerification)
+                            ? `${styles.softChip} ${styles.chipWarn}`
+                            : styles.softChip
+                        }
+                      >
+                        {sourceVerificationLabel(source.sourceVerification)}
+                      </li>
+                    )}
                   </ul>
                   <p className={styles.sourceMeta}>
                     {t(

@@ -1,6 +1,7 @@
 import type { EvidenceRecord } from './evidenceTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
-import { snapshotIdentityNote, sourceLinksNote } from './notices';
+import { isSourceUnverified } from '@/features/data-hub';
+import { snapshotIdentityNote, sourceLinksNote, unverifiedSourcesNote } from './notices';
 import { t } from '@/lib/i18n';
 
 /**
@@ -43,6 +44,16 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
       'Reproduksibilitas',
       t('Tautan sumber dapat diperbaiki'),
       sourceLinksNote(record.source.referenceVersion),
+    );
+  }
+  const unverified = record.indicators.filter((indicator) =>
+    indicator.values.some((value) => value && isSourceUnverified(value.source.sourceVerification)),
+  );
+  if (unverified.length > 0) {
+    add(
+      'Data',
+      t('Sebagian angka belum dicocokkan dengan sumber'),
+      unverifiedSourcesNote(unverified.map((indicator) => indicator.label)),
     );
   }
 

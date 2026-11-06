@@ -55,8 +55,17 @@ export const REPRODUCIBLE_SNAPSHOT_STATEMENT = localized(() =>
  */
 export function sourceLinksNote(referenceVersion: string): string {
   return t(
-    'Sidik isi mengunci angka, bukan tautan dan catatan sumber. Tautan dan catatan mengikuti versi referensi {0}, jadi dapat diperbaiki tanpa mengubah angka.',
+    'Sidik isi mengunci angka, bukan tautan, catatan, dan status pencocokan sumber. Ketiganya mengikuti versi referensi {0}, jadi dapat diperbaiki tanpa mengubah angka.',
     referenceVersion,
+  );
+}
+
+/** Figures the Data Hub has not matched against their source must not read as checked. */
+export function unverifiedSourcesNote(labels: readonly string[]): string {
+  return t(
+    'Menurut Data Hub, angka {0} indikator belum dicocokkan penuh dengan sumbernya: {1}. Periksa sumber sebelum mengutip.',
+    String(labels.length),
+    labels.join(', '),
   );
 }
 

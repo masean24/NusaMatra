@@ -7,6 +7,7 @@ import type {
   IndicatorCoverageDTO,
   RegionProfileDTO,
   SourceLinkLevel,
+  SourceVerification,
 } from '@/services/api';
 import type { EvidenceClass } from './evidenceClass';
 import type { SnapshotPinning } from './snapshotResolution';
@@ -150,6 +151,7 @@ export interface IndicatorSourceInfo {
   /** Only an http(s) address; anything else is dropped, not shown as a link. */
   readonly officialUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
+  readonly sourceVerification: SourceVerification | null;
   /** The Data Hub's note on this source, in the record's language. */
   readonly sourceNote: string | null;
 }
@@ -203,6 +205,7 @@ export interface EvidenceSourceSummary {
   /** The dataset's own link from `/datasets`; an indicator's link can point elsewhere in the dataset. */
   readonly officialUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
+  readonly sourceVerification: SourceVerification | null;
   readonly sourceNote: string | null;
   readonly licenseName: string | null;
   readonly updateFrequency: string | null;

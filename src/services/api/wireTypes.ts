@@ -102,9 +102,13 @@ export interface ObservationDTO {
 /** How far a source link reaches. Anything else the server sends is read as "not stated". */
 export type SourceLinkLevel = 'table' | 'dataset' | 'publication' | 'portal' | 'dashboard';
 
+/** Whether the Data Hub has matched the figures against the source. Unknown values read as not stated. */
+export type SourceVerification = 'verified' | 'pending' | 'partial' | 'problem_unresolved' | 'not_applicable';
+
 /** What the Data Hub says about a source link. All `null` where it says nothing (DEMO, older servers). */
 export interface SourceLinkInfo {
   readonly sourceLinkLevel: SourceLinkLevel | null;
+  readonly sourceVerification: SourceVerification | null;
   readonly sourceNoteIdn: string | null;
   readonly sourceNoteEn: string | null;
 }
@@ -578,6 +582,7 @@ export interface WireRegionItem {
 
 export interface WireSourceLinkInfo {
   source_link_level?: string | null;
+  source_verification?: string | null;
   source_note_idn?: string | null;
   source_note_en?: string | null;
 }

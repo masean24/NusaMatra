@@ -104,6 +104,7 @@ export function indicatorJson(input: IndicatorExportInput): string {
         judul: provenance.datasetTitle,
         tautan_resmi: provenance.officialPortalUrl,
         tingkat_tautan: provenance.sourceLinkLevel,
+        status_verifikasi: provenance.sourceVerification,
         catatan: sourceNote(provenance),
         versi_referensi: input.referenceVersion,
       },

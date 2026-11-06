@@ -1,8 +1,19 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { applyLanguage, prepareLanguage } from '@/lib/i18n';
-import { sourceLinkAction, sourceLinkName, sourceNote } from './sourceLink';
+import {
+  isSourceUnverified,
+  sourceLinkAction,
+  sourceLinkName,
+  sourceNote,
+  sourceVerificationLabel,
+} from './sourceLink';
 
-const NOTE = { sourceLinkLevel: 'table', sourceNoteIdn: 'Catatan', sourceNoteEn: 'Note' } as const;
+const NOTE = {
+  sourceLinkLevel: 'table',
+  sourceVerification: 'verified',
+  sourceNoteIdn: 'Catatan',
+  sourceNoteEn: 'Note',
+} as const;
 
 describe('source link wording', () => {
   afterEach(() => {
@@ -18,6 +29,17 @@ describe('source link wording', () => {
   it('promises nothing about the reach of a link without a level', () => {
     expect(sourceLinkAction(null)).toBe('Buka sumber resmi');
     expect(sourceLinkName(null)).toBe('Sumber resmi');
+  });
+
+  it('never presents an unstated or inapplicable status as checked', () => {
+    expect(sourceVerificationLabel('verified')).toBe('Sudah dicocokkan dengan sumber');
+    expect(sourceVerificationLabel('pending')).toBe('Belum dicocokkan dengan sumber');
+    expect(sourceVerificationLabel('not_applicable')).toBeNull();
+    expect(sourceVerificationLabel(null)).toBeNull();
+    expect(isSourceUnverified('partial')).toBe(true);
+    expect(isSourceUnverified('problem_unresolved')).toBe(true);
+    expect(isSourceUnverified('verified')).toBe(false);
+    expect(isSourceUnverified(null)).toBe(false);
   });
 
   it('gives the note in the reader language', async () => {

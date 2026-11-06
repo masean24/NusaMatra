@@ -3,7 +3,12 @@ import {
   type ComparableMeasurement,
   type ComparisonAssessment,
 } from '@/domain/comparability';
-import type { RegionProfileDTO, RegionProfileIndicatorValueDTO, SourceLinkLevel } from '@/services/api';
+import type {
+  RegionProfileDTO,
+  RegionProfileIndicatorValueDTO,
+  SourceLinkLevel,
+  SourceVerification,
+} from '@/services/api';
 
 /** The Data Hub's placeholders for a source that sent no dataset or agency (see domainMappers). */
 const UNKNOWN_DATASET = 'unknown_dataset';
@@ -23,6 +28,7 @@ export interface ComparisonSide {
   readonly provenanceKnown: boolean;
   readonly officialUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
+  readonly sourceVerification: SourceVerification | null;
   readonly qualityFlag: string | null;
 }
 
@@ -53,6 +59,7 @@ function sideOf(item: RegionProfileIndicatorValueDTO | undefined): ComparisonSid
     provenanceKnown: provenance.datasetId !== UNKNOWN_DATASET && provenance.agencyCode !== UNKNOWN_AGENCY,
     officialUrl: provenance.officialUrl,
     sourceLinkLevel: provenance.sourceLinkLevel,
+    sourceVerification: provenance.sourceVerification,
     qualityFlag: item.qualityFlag,
   };
 }

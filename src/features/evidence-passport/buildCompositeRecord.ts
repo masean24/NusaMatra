@@ -109,6 +109,7 @@ function sourceOfCatalog(
     // A null link stays null: the Data Hub empties one it could not verify.
     officialUrl: publicHttpUrl(item?.provenance.officialPortalUrl ?? null),
     sourceLinkLevel: item?.provenance.sourceLinkLevel ?? null,
+    sourceVerification: item?.provenance.sourceVerification ?? null,
     sourceNote: item ? sourceNote(item.provenance) : null,
   };
 }

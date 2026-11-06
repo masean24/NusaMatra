@@ -1,7 +1,8 @@
 import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
-import { snapshotIdentityNote, sourceLinksNote } from './notices';
+import { isSourceUnverified } from '@/features/data-hub';
+import { snapshotIdentityNote, sourceLinksNote, unverifiedSourcesNote } from './notices';
 import { locale, t } from '@/lib/i18n';
 
 const percent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
@@ -40,6 +41,16 @@ export function buildCompositeLimitationNotes(
       'Reproduksibilitas',
       t('Tautan sumber dapat diperbaiki'),
       sourceLinksNote(record.source.referenceVersion),
+    );
+  }
+  const unverified = record.indicators.filter((indicator) =>
+    isSourceUnverified(indicator.source.sourceVerification),
+  );
+  if (unverified.length > 0) {
+    add(
+      'Data',
+      t('Sebagian angka belum dicocokkan dengan sumber'),
+      unverifiedSourcesNote(unverified.map((indicator) => indicator.label)),
     );
   }
 

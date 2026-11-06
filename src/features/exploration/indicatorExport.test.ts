@@ -32,6 +32,7 @@ const input: IndicatorExportInput = {
       datasetTitle: 'IPM 2025',
       officialPortalUrl: 'https://www.bps.go.id/x',
       sourceLinkLevel: 'publication',
+      sourceVerification: 'verified',
       sourceNoteIdn: 'Publikasi IPM 2025.',
       sourceNoteEn: 'IPM 2025 publication.',
     },
@@ -75,6 +76,7 @@ describe('indicator export', () => {
     expect(json.sumber).toMatchObject({
       tautan_resmi: 'https://www.bps.go.id/x',
       tingkat_tautan: 'publication',
+      status_verifikasi: 'verified',
       catatan: 'Publikasi IPM 2025.',
       versi_referensi: '2026-11-sources-1',
     });

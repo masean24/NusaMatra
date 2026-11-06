@@ -1,5 +1,30 @@
-import type { SourceLinkInfo, SourceLinkLevel } from '@/services/api';
+import type { SourceLinkInfo, SourceLinkLevel, SourceVerification } from '@/services/api';
 import { language, t } from '@/lib/i18n';
+
+/**
+ * What the Data Hub says about matching the figures against the source. `null` where there is nothing
+ * to say: figures with no outside source, or a status not stated, are never shown as checked.
+ */
+export function sourceVerificationLabel(status: SourceVerification | null): string | null {
+  switch (status) {
+    case 'verified':
+      return t('Sudah dicocokkan dengan sumber');
+    case 'partial':
+      return t('Baru sebagian dicocokkan');
+    case 'pending':
+      return t('Belum dicocokkan dengan sumber');
+    case 'problem_unresolved':
+      return t('Belum dapat diverifikasi');
+    case 'not_applicable':
+    case null:
+      return null;
+  }
+}
+
+/** The statuses a reader must be warned about. */
+export function isSourceUnverified(status: SourceVerification | null): boolean {
+  return status === 'pending' || status === 'partial' || status === 'problem_unresolved';
+}
 
 /** What the link is called: the Data Hub says how far it reaches, so the page need not promise more. */
 export function sourceLinkName(level: SourceLinkLevel | null): string {

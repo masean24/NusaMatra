@@ -16,4 +16,10 @@ export {
   publicHttpUrl,
   qualityFlagNote,
 } from './formatters';
-export { sourceLinkAction, sourceLinkName, sourceNote } from './sourceLink';
+export {
+  isSourceUnverified,
+  sourceLinkAction,
+  sourceLinkName,
+  sourceNote,
+  sourceVerificationLabel,
+} from './sourceLink';

@@ -12,6 +12,7 @@ import {
   publicHttpUrl,
   qualityFlagNote,
   sourceLinkName,
+  sourceVerificationLabel,
   useDataHub,
   useDataHubResource,
 } from '@/features/data-hub';
@@ -299,6 +300,7 @@ function IndicatorItem({
   readonly polarity: string;
 }) {
   const sourceUrl = publicHttpUrl(indicator.sourceUrl);
+  const verification = sourceVerificationLabel(indicator.sourceVerification);
   const qualityNote = qualityFlagNote(indicator.qualityFlag);
   const direction = polarityReading(polarity);
 
@@ -378,6 +380,7 @@ function IndicatorItem({
                 )}
                 {indicator.datasetTitle ? `, ${indicator.datasetTitle}` : ''}
                 {sourceUrl && ` (${sourceLinkName(indicator.sourceLinkLevel)})`}
+                {verification && `. ${verification}.`}
               </dd>
             </div>
           </dl>

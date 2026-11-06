@@ -13,6 +13,7 @@ import {
   qualityFlagNote,
   sourceLinkName,
   sourceNote,
+  sourceVerificationLabel,
   useDataHubResource,
 } from '@/features/data-hub';
 import type {
@@ -169,6 +170,7 @@ function IndicatorHeading({
 function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicatorDTO }) {
   const portalUrl = publicHttpUrl(indicator.provenance.officialPortalUrl);
   const note = sourceNote(indicator.provenance);
+  const verification = sourceVerificationLabel(indicator.provenance.sourceVerification);
   return (
     <details className={styles.more}>
       <summary className={styles.moreSummary}>
@@ -194,6 +196,7 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
             </>
           )}
         </p>
+        {verification && <p className="kk-small">{verification}</p>}
         {note && <p className={`kk-small ${styles.muted}`}>{t('Catatan sumber: {0}', note)}</p>}
         {indicator.stats && (
           <dl className={styles.stats}>

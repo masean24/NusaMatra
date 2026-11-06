@@ -19,6 +19,7 @@ import type {
   SnapshotDetailDTO,
   SourceLinkInfo,
   SourceLinkLevel,
+  SourceVerification,
   ExploratoryCompositeResultDTO,
   ExploratoryRegionRankDTO,
   InsufficientRegionDTO,
@@ -1308,9 +1309,18 @@ const SOURCE_LINK_LEVELS: readonly SourceLinkLevel[] = [
   'dashboard',
 ];
 
+const SOURCE_VERIFICATIONS: readonly SourceVerification[] = [
+  'verified',
+  'pending',
+  'partial',
+  'problem_unresolved',
+  'not_applicable',
+];
+
 function readSourceLinkInfo(raw: Record<string, unknown>): SourceLinkInfo {
   return {
     sourceLinkLevel: SOURCE_LINK_LEVELS.find((level) => level === raw.source_link_level) ?? null,
+    sourceVerification: SOURCE_VERIFICATIONS.find((status) => status === raw.source_verification) ?? null,
     sourceNoteIdn: readString(raw.source_note_idn),
     sourceNoteEn: readString(raw.source_note_en),
   };
