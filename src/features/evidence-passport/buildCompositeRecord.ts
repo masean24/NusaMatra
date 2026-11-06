@@ -110,6 +110,7 @@ function sourceOfCatalog(
     officialUrl: publicHttpUrl(item?.provenance.officialPortalUrl ?? null),
     sourceLinkLevel: item?.provenance.sourceLinkLevel ?? null,
     sourceVerification: item?.provenance.sourceVerification ?? null,
+    verificationScope: item?.provenance.verificationScope ?? null,
     sourceNote: item ? sourceNote(item.provenance) : null,
   };
 }

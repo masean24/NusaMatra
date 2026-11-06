@@ -159,6 +159,7 @@ describe('buildEvidenceRecord, gaps', () => {
       officialUrl: null,
       sourceLinkLevel: null,
       sourceVerification: null,
+      verificationScope: null,
       sourceNote: null,
     });
     expect(valueOf(record, 'soc_poverty_rate').source.officialUrl).toBeNull();
@@ -180,6 +181,7 @@ describe('buildEvidenceRecord, gaps', () => {
       official_url: 'https://example.org/indikator',
       source_link_level: 'table',
       source_verification: 'made-up-status',
+      verification_scope: 'made-up-scope',
       source_note_idn: 'Catatan indikator',
     };
     const poverty = indicatorOf(profile, 'soc_poverty_rate');
@@ -190,6 +192,13 @@ describe('buildEvidenceRecord, gaps', () => {
       source_link_level: 'something-new',
       source_verification: 'pending',
       source_note_idn: 'Tautan dikosongkan',
+    };
+    indicatorOf(profile, 'soc_unemployment_rate').provenance = {
+      dataset_id: datasetId,
+      agency_code: 'BPS',
+      official_url: 'https://example.org/tpt',
+      source_verification: 'verified',
+      verification_scope: 'sample',
     };
     const catalog = bodies['/api/v1/indicators'] as { data: Record<string, Record<string, unknown>[]> };
     const catalogPoverty = Object.values(catalog.data)
@@ -228,6 +237,14 @@ describe('buildEvidenceRecord, gaps', () => {
     expect(record.limitations.join('\n')).toContain('versi referensi ref-1');
     expect(valueOf(record, 'soc_hdi').source.sourceVerification).toBeNull();
     expect(valueOf(record, 'soc_poverty_rate').source.sourceVerification).toBe('pending');
+    expect(valueOf(record, 'soc_hdi').source.verificationScope).toBeNull();
+    expect(valueOf(record, 'soc_unemployment_rate').source.verificationScope).toBe('sample');
+    const unemploymentLabel = record.indicators.find(
+      (item) => item.indicatorId === 'soc_unemployment_rate',
+    )?.label;
+    expect(record.limitations.find((text) => text.includes('belum pada seluruh baris'))).toContain(
+      unemploymentLabel,
+    );
     const povertyLabel = record.indicators.find((item) => item.indicatorId === 'soc_poverty_rate')?.label;
     const unverifiedNote = record.limitations.find((text) => text.includes('belum dicocokkan penuh'));
     expect(unverifiedNote).toContain('angka 1 indikator');

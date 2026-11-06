@@ -1,8 +1,13 @@
 import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
-import { isSourceUnverified } from '@/features/data-hub';
-import { snapshotIdentityNote, sourceLinksNote, unverifiedSourcesNote } from './notices';
+import { isMatchedInPart, isSourceUnverified } from '@/features/data-hub';
+import {
+  partlyMatchedSourcesNote,
+  snapshotIdentityNote,
+  sourceLinksNote,
+  unverifiedSourcesNote,
+} from './notices';
 import { locale, t } from '@/lib/i18n';
 
 const percent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
@@ -51,6 +56,14 @@ export function buildCompositeLimitationNotes(
       'Data',
       t('Sebagian angka belum dicocokkan dengan sumber'),
       unverifiedSourcesNote(unverified.map((indicator) => indicator.label)),
+    );
+  }
+  const partlyMatched = record.indicators.filter((indicator) => isMatchedInPart(indicator.source));
+  if (partlyMatched.length > 0) {
+    add(
+      'Data',
+      t('Sebagian kecocokan belum mencakup seluruh baris'),
+      partlyMatchedSourcesNote(partlyMatched.map((indicator) => indicator.label)),
     );
   }
 

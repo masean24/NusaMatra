@@ -1,7 +1,12 @@
 import type { EvidenceRecord } from './evidenceTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
-import { isSourceUnverified } from '@/features/data-hub';
-import { snapshotIdentityNote, sourceLinksNote, unverifiedSourcesNote } from './notices';
+import { isMatchedInPart, isSourceUnverified } from '@/features/data-hub';
+import {
+  partlyMatchedSourcesNote,
+  snapshotIdentityNote,
+  sourceLinksNote,
+  unverifiedSourcesNote,
+} from './notices';
 import { t } from '@/lib/i18n';
 
 /**
@@ -54,6 +59,16 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
       'Data',
       t('Sebagian angka belum dicocokkan dengan sumber'),
       unverifiedSourcesNote(unverified.map((indicator) => indicator.label)),
+    );
+  }
+  const partlyMatched = record.indicators.filter((indicator) =>
+    indicator.values.some((value) => value && isMatchedInPart(value.source)),
+  );
+  if (partlyMatched.length > 0) {
+    add(
+      'Data',
+      t('Sebagian kecocokan belum mencakup seluruh baris'),
+      partlyMatchedSourcesNote(partlyMatched.map((indicator) => indicator.label)),
     );
   }
 

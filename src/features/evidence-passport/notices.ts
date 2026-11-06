@@ -60,6 +60,15 @@ export function sourceLinksNote(referenceVersion: string): string {
   );
 }
 
+/** A match on a sample or a province level says nothing about the other rows. */
+export function partlyMatchedSourcesNote(labels: readonly string[]): string {
+  return t(
+    'Menurut Data Hub, {0} indikator cocok hanya pada baris contoh atau tingkat provinsi, belum pada seluruh baris: {1}.',
+    String(labels.length),
+    labels.join(', '),
+  );
+}
+
 /** Figures the Data Hub has not matched against their source must not read as checked. */
 export function unverifiedSourcesNote(labels: readonly string[]): string {
   return t(

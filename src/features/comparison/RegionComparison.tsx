@@ -8,12 +8,12 @@ import {
   ResourceView,
   categoryLabel,
   formatDecimalId,
-  isSourceUnverified,
   publicHttpUrl,
   sourceLinkName,
   sourceVerificationLabel,
   useDataHub,
   useDataHubResource,
+  weakestVerification,
   type ResourceState,
 } from '@/features/data-hub';
 import { passportHref } from '@/features/evidence-passport';
@@ -568,10 +568,8 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
   const linked = sides.find((side) => publicHttpUrl(side.officialUrl) !== null);
   const href = publicHttpUrl(linked?.officialUrl ?? null);
   // The weaker status speaks for the row: one unchecked side is enough to warn.
-  const verification = sourceVerificationLabel(
-    (sides.find((side) => isSourceUnverified(side.sourceVerification)) ?? sides[0])?.sourceVerification ??
-      null,
-  );
+  const weakest = weakestVerification(sides);
+  const verification = weakest ? sourceVerificationLabel(weakest) : null;
   return (
     <span className={`kk-small ${styles.muted}`}>
       {t('{0}, dataset', describeProvenance(row))} {datasets.join(', ') || '—'}.{' '}

@@ -8,6 +8,7 @@ import type {
   RegionProfileDTO,
   SourceLinkLevel,
   SourceVerification,
+  VerificationScope,
 } from '@/services/api';
 import type { EvidenceClass } from './evidenceClass';
 import type { SnapshotPinning } from './snapshotResolution';
@@ -152,6 +153,7 @@ export interface IndicatorSourceInfo {
   readonly officialUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
   readonly sourceVerification: SourceVerification | null;
+  readonly verificationScope: VerificationScope | null;
   /** The Data Hub's note on this source, in the record's language. */
   readonly sourceNote: string | null;
 }
@@ -206,6 +208,7 @@ export interface EvidenceSourceSummary {
   readonly officialUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
   readonly sourceVerification: SourceVerification | null;
+  readonly verificationScope: VerificationScope | null;
   readonly sourceNote: string | null;
   readonly licenseName: string | null;
   readonly updateFrequency: string | null;

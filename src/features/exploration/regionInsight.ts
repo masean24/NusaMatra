@@ -14,6 +14,7 @@ import type {
   RegionProfileIndicatorValueDTO,
   SourceLinkLevel,
   SourceVerification,
+  VerificationScope,
 } from '@/services/api';
 
 /**
@@ -46,6 +47,7 @@ export interface InsightIndicator {
   readonly sourceUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
   readonly sourceVerification: SourceVerification | null;
+  readonly verificationScope: VerificationScope | null;
   readonly datasetTitle: string | null;
   readonly reading: IndicatorReading;
   /** 0–100 score the Data Hub derived from the value (higher = more need); not the value itself. */
@@ -105,6 +107,7 @@ function toInsightIndicator(
     sourceUrl: item.provenance.officialUrl,
     sourceLinkLevel: item.provenance.sourceLinkLevel,
     sourceVerification: item.provenance.sourceVerification,
+    verificationScope: item.provenance.verificationScope,
     datasetTitle: definition?.provenance.datasetTitle ?? null,
     reading: readIndicator({
       polarity: definition?.polarity ?? 'unknown',

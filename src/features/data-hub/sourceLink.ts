@@ -1,14 +1,30 @@
 import type { SourceLinkInfo, SourceLinkLevel, SourceVerification } from '@/services/api';
 import { language, t } from '@/lib/i18n';
 
+type VerificationInfo = Pick<SourceLinkInfo, 'sourceVerification' | 'verificationScope'>;
+
+function verifiedLabel(scope: SourceLinkInfo['verificationScope']): string {
+  switch (scope) {
+    case 'all_rows':
+      return t('Seluruh baris cocok dengan sumber');
+    case 'province_level':
+      return t('Cocok pada tingkat provinsi');
+    case 'sample':
+      return t('Baru baris contoh yang dicocokkan');
+    default:
+      return t('Dicocokkan, cakupan tidak dinyatakan');
+  }
+}
+
 /**
- * What the Data Hub says about matching the figures against the source. `null` where there is nothing
- * to say: figures with no outside source, or a status not stated, are never shown as checked.
+ * What the Data Hub says about matching the figures against the source. A match is named with its
+ * scope, so one checked row never reads as all of them. `null` where there is nothing to say: figures
+ * with no outside source, or a status not stated, are never shown as checked.
  */
-export function sourceVerificationLabel(status: SourceVerification | null): string | null {
-  switch (status) {
+export function sourceVerificationLabel(info: VerificationInfo): string | null {
+  switch (info.sourceVerification) {
     case 'verified':
-      return t('Sudah dicocokkan dengan sumber');
+      return verifiedLabel(info.verificationScope);
     case 'partial':
       return t('Baru sebagian dicocokkan');
     case 'pending':
@@ -24,6 +40,20 @@ export function sourceVerificationLabel(status: SourceVerification | null): stri
 /** The statuses a reader must be warned about. */
 export function isSourceUnverified(status: SourceVerification | null): boolean {
   return status === 'pending' || status === 'partial' || status === 'problem_unresolved';
+}
+
+/** Matched, but not row by row: a sample, a province level, or a scope not stated. */
+export function isMatchedInPart(info: VerificationInfo): boolean {
+  return info.sourceVerification === 'verified' && info.verificationScope !== 'all_rows';
+}
+
+/** The weakest status among several sources, which is the one that may speak for all of them. */
+export function weakestVerification<T extends VerificationInfo>(items: readonly T[]): T | undefined {
+  return (
+    items.find((item) => isSourceUnverified(item.sourceVerification)) ??
+    items.find(isMatchedInPart) ??
+    items[0]
+  );
 }
 
 /** What the link is called: the Data Hub says how far it reaches, so the page need not promise more. */

@@ -280,6 +280,7 @@ function sourceOf(
     sourceLinkLevel: item.provenance.sourceLinkLevel ?? catalogItem?.provenance.sourceLinkLevel ?? null,
     sourceVerification:
       item.provenance.sourceVerification ?? catalogItem?.provenance.sourceVerification ?? null,
+    verificationScope: item.provenance.verificationScope ?? catalogItem?.provenance.verificationScope ?? null,
     sourceNote: sourceNote(item.provenance) ?? (catalogItem ? sourceNote(catalogItem.provenance) : null),
   };
 }
@@ -503,6 +504,7 @@ export function summariseSourceUses(
         officialUrl: publicHttpUrl(dataset?.officialPortalUrl ?? null),
         sourceLinkLevel: dataset?.sourceLinkLevel ?? null,
         sourceVerification: dataset?.sourceVerification ?? null,
+        verificationScope: dataset?.verificationScope ?? null,
         sourceNote: dataset ? sourceNote(dataset) : null,
         licenseName: dataset?.licenseName ?? null,
         updateFrequency: dataset?.updateFrequency ?? null,

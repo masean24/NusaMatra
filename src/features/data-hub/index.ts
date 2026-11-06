@@ -17,9 +17,11 @@ export {
   qualityFlagNote,
 } from './formatters';
 export {
+  isMatchedInPart,
   isSourceUnverified,
   sourceLinkAction,
   sourceLinkName,
   sourceNote,
   sourceVerificationLabel,
+  weakestVerification,
 } from './sourceLink';

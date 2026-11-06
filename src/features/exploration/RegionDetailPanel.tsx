@@ -300,7 +300,7 @@ function IndicatorItem({
   readonly polarity: string;
 }) {
   const sourceUrl = publicHttpUrl(indicator.sourceUrl);
-  const verification = sourceVerificationLabel(indicator.sourceVerification);
+  const verification = sourceVerificationLabel(indicator);
   const qualityNote = qualityFlagNote(indicator.qualityFlag);
   const direction = polarityReading(polarity);
 

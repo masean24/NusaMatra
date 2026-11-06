@@ -33,6 +33,7 @@ const input: IndicatorExportInput = {
       officialPortalUrl: 'https://www.bps.go.id/x',
       sourceLinkLevel: 'publication',
       sourceVerification: 'verified',
+      verificationScope: 'sample',
       sourceNoteIdn: 'Publikasi IPM 2025.',
       sourceNoteEn: 'IPM 2025 publication.',
     },
@@ -77,6 +78,7 @@ describe('indicator export', () => {
       tautan_resmi: 'https://www.bps.go.id/x',
       tingkat_tautan: 'publication',
       status_verifikasi: 'verified',
+      cakupan_verifikasi: 'sample',
       catatan: 'Publikasi IPM 2025.',
       versi_referensi: '2026-11-sources-1',
     });

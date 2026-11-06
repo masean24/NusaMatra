@@ -80,7 +80,7 @@ function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
 
 export function SourceLine({ source }: { readonly source: IndicatorSourceInfo }) {
   const name = `${source.agencyCode ?? t('Lembaga belum tersedia')}: ${source.datasetTitle ?? source.datasetId ?? t('judul dataset belum tersedia')}`;
-  const verification = sourceVerificationLabel(source.sourceVerification);
+  const verification = sourceVerificationLabel(source);
   return (
     <div className={styles.cell}>
       {source.officialUrl ? (

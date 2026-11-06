@@ -105,10 +105,14 @@ export type SourceLinkLevel = 'table' | 'dataset' | 'publication' | 'portal' | '
 /** Whether the Data Hub has matched the figures against the source. Unknown values read as not stated. */
 export type SourceVerification = 'verified' | 'pending' | 'partial' | 'problem_unresolved' | 'not_applicable';
 
+/** How much of a `verified` source was matched. Unknown values read as not stated. */
+export type VerificationScope = 'all_rows' | 'sample' | 'province_level' | 'not_applicable';
+
 /** What the Data Hub says about a source link. All `null` where it says nothing (DEMO, older servers). */
 export interface SourceLinkInfo {
   readonly sourceLinkLevel: SourceLinkLevel | null;
   readonly sourceVerification: SourceVerification | null;
+  readonly verificationScope: VerificationScope | null;
   readonly sourceNoteIdn: string | null;
   readonly sourceNoteEn: string | null;
 }
@@ -583,6 +587,7 @@ export interface WireRegionItem {
 export interface WireSourceLinkInfo {
   source_link_level?: string | null;
   source_verification?: string | null;
+  verification_scope?: string | null;
   source_note_idn?: string | null;
   source_note_en?: string | null;
 }

@@ -59,7 +59,7 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                     <li className={styles.softChip}>
                       {t('Akses: {0}', source.accessMethod ?? t('belum tersedia'))}
                     </li>
-                    {sourceVerificationLabel(source.sourceVerification) && (
+                    {sourceVerificationLabel(source) && (
                       <li
                         className={
                           isSourceUnverified(source.sourceVerification)
@@ -67,7 +67,7 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                             : styles.softChip
                         }
                       >
-                        {sourceVerificationLabel(source.sourceVerification)}
+                        {sourceVerificationLabel(source)}
                       </li>
                     )}
                   </ul>

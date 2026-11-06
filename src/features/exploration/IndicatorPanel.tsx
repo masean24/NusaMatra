@@ -170,7 +170,7 @@ function IndicatorHeading({
 function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicatorDTO }) {
   const portalUrl = publicHttpUrl(indicator.provenance.officialPortalUrl);
   const note = sourceNote(indicator.provenance);
-  const verification = sourceVerificationLabel(indicator.provenance.sourceVerification);
+  const verification = sourceVerificationLabel(indicator.provenance);
   return (
     <details className={styles.more}>
       <summary className={styles.moreSummary}>

@@ -20,6 +20,7 @@ import type {
   SourceLinkInfo,
   SourceLinkLevel,
   SourceVerification,
+  VerificationScope,
   ExploratoryCompositeResultDTO,
   ExploratoryRegionRankDTO,
   InsufficientRegionDTO,
@@ -1317,10 +1318,18 @@ const SOURCE_VERIFICATIONS: readonly SourceVerification[] = [
   'not_applicable',
 ];
 
+const VERIFICATION_SCOPES: readonly VerificationScope[] = [
+  'all_rows',
+  'sample',
+  'province_level',
+  'not_applicable',
+];
+
 function readSourceLinkInfo(raw: Record<string, unknown>): SourceLinkInfo {
   return {
     sourceLinkLevel: SOURCE_LINK_LEVELS.find((level) => level === raw.source_link_level) ?? null,
     sourceVerification: SOURCE_VERIFICATIONS.find((status) => status === raw.source_verification) ?? null,
+    verificationScope: VERIFICATION_SCOPES.find((scope) => scope === raw.verification_scope) ?? null,
     sourceNoteIdn: readString(raw.source_note_idn),
     sourceNoteEn: readString(raw.source_note_en),
   };

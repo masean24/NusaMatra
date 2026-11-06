@@ -8,6 +8,7 @@ import type {
   RegionProfileIndicatorValueDTO,
   SourceLinkLevel,
   SourceVerification,
+  VerificationScope,
 } from '@/services/api';
 
 /** The Data Hub's placeholders for a source that sent no dataset or agency (see domainMappers). */
@@ -29,6 +30,7 @@ export interface ComparisonSide {
   readonly officialUrl: string | null;
   readonly sourceLinkLevel: SourceLinkLevel | null;
   readonly sourceVerification: SourceVerification | null;
+  readonly verificationScope: VerificationScope | null;
   readonly qualityFlag: string | null;
 }
 
@@ -60,6 +62,7 @@ function sideOf(item: RegionProfileIndicatorValueDTO | undefined): ComparisonSid
     officialUrl: provenance.officialUrl,
     sourceLinkLevel: provenance.sourceLinkLevel,
     sourceVerification: provenance.sourceVerification,
+    verificationScope: provenance.verificationScope,
     qualityFlag: item.qualityFlag,
   };
 }
