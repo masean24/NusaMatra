@@ -86,13 +86,13 @@ export function HowItWorksSection() {
   const tabRefs = useRef(new Map<QuestionId, HTMLButtonElement>());
 
   const handleKeyDown = (event: KeyboardEvent, index: number) => {
-    const last = GUIDED_QUESTIONS.length - 1;
+    const last = GUIDED_QUESTIONS().length - 1;
     const step = KEY_STEP[event.key];
     let next: number | null = null;
-    if (step !== undefined) next = (index + step + GUIDED_QUESTIONS.length) % GUIDED_QUESTIONS.length;
+    if (step !== undefined) next = (index + step + GUIDED_QUESTIONS().length) % GUIDED_QUESTIONS().length;
     else if (event.key === 'Home') next = 0;
     else if (event.key === 'End') next = last;
-    const target = next === null ? undefined : GUIDED_QUESTIONS[next];
+    const target = next === null ? undefined : GUIDED_QUESTIONS()[next];
     if (!target) return;
     event.preventDefault();
     setActiveId(target.id);
@@ -114,7 +114,7 @@ export function HowItWorksSection() {
           aria-orientation="vertical"
           className={styles.tabs}
         >
-          {GUIDED_QUESTIONS.map((question, index) => {
+          {GUIDED_QUESTIONS().map((question, index) => {
             const selected = question.id === activeId;
             return (
               <Reveal
@@ -163,7 +163,7 @@ export function HowItWorksSection() {
           })}
         </div>
         <div className={`glass glass--read ${styles.preview}`}>
-          {GUIDED_QUESTIONS.map((question) => (
+          {GUIDED_QUESTIONS().map((question) => (
             <QuestionPanel key={question.id} question={question} active={question.id === activeId} />
           ))}
         </div>

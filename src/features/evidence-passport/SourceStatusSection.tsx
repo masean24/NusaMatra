@@ -7,9 +7,9 @@ import { COMPLETENESS_CLAIM_NOTE } from './notices';
 import { formatReceived, formatServerStamp } from './passportFormat';
 import { Section } from './Section';
 import styles from './EvidencePassport.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
-const formatPercent = (value: number) => `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
+const formatPercent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
 
 function Column({
   icon,
@@ -148,7 +148,7 @@ export function SourceStatusSection({ record, agencies }: SourceStatusSectionPro
       )}
       {/* The two coverage figures come from different responses and can disagree: say so, plainly. */}
       {completeness !== null && source.observedCoverage !== null && (
-        <p className={styles.muted}>{COMPLETENESS_CLAIM_NOTE}</p>
+        <p className={styles.muted}>{COMPLETENESS_CLAIM_NOTE()}</p>
       )}
       {snapshot === null && (
         <p className={styles.muted}>{t('Rincian versi data belum tersedia dari Data Hub.')}</p>

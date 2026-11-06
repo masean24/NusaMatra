@@ -4,12 +4,12 @@ import { scopeLabel } from './scopeLabel';
 import { Section } from './Section';
 import { bpsLabel } from './weightLabel';
 import styles from './EvidencePassport.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
 /** How many regions the summary names; the full ranking stays in its own section and in the JSON. */
 export const SUMMARY_TOP_COUNT = 5;
 
-const percent = (value: number) => `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
+const percent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
 
 function coverageText(row: CompositeRegionRow): string {
   if (row.coveragePct === null) return t('cakupan tidak dilaporkan');

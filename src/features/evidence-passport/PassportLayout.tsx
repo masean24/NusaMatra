@@ -10,9 +10,9 @@ import { PrintRunningHeader } from './PrintRunningHeader';
 import { ModeTag, Section } from './Section';
 import type { PassportActions } from './usePassportActions';
 import styles from './EvidencePassport.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
-const formatPercent = (value: number) => `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
+const formatPercent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
 
 interface HeroProps {
   readonly record: AnyEvidenceRecord;

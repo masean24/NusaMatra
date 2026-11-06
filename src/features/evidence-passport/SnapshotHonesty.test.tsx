@@ -82,7 +82,7 @@ describe('versi data id is not proof that data is the same', () => {
     const article = await findRegionDocument();
 
     const limits = within(article).getByRole('region', { name: /Batasan dan catatan/ });
-    expect(limits).toHaveTextContent(SNAPSHOT_MUTABILITY_NOTE);
+    expect(limits).toHaveTextContent(SNAPSHOT_MUTABILITY_NOTE());
     expect(article).not.toHaveTextContent(/snapshot (yang sama )?menjamin|data tidak berubah/i);
   });
 
@@ -90,7 +90,7 @@ describe('versi data id is not proof that data is the same', () => {
     renderPassport(labUrl(), capturedJateng());
     const article = await findLabDocument();
     expect(within(article).getByRole('region', { name: /Batasan dan catatan/ })).toHaveTextContent(
-      SNAPSHOT_MUTABILITY_NOTE,
+      SNAPSHOT_MUTABILITY_NOTE(),
     );
   });
 
@@ -100,8 +100,8 @@ describe('versi data id is not proof that data is the same', () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     await userEvent.click(await screen.findByRole('button', { name: 'Salin kutipan' }));
     const citation = write.mock.calls[0]?.[0] ?? '';
-    expect(citation).toContain(`Versi data Data Hub: ${SNAPSHOT}. ${SNAPSHOT_MUTABILITY_NOTE}`);
-    expect(citation).toContain(BROWSER_ASSEMBLED_LABEL);
+    expect(citation).toContain(`Versi data Data Hub: ${SNAPSHOT}. ${SNAPSHOT_MUTABILITY_NOTE()}`);
+    expect(citation).toContain(BROWSER_ASSEMBLED_LABEL());
   });
 
   it('puts it in the JSON, keeps pinnedInputs false and says why', async () => {
@@ -111,7 +111,7 @@ describe('versi data id is not proof that data is the same', () => {
       fieldNotes: Record<string, string>;
       reproducibility: { pinnedInputs: boolean; statement: string };
     };
-    expect(fieldNotes.snapshotId).toBe(SNAPSHOT_MUTABILITY_NOTE);
+    expect(fieldNotes.snapshotId).toBe(SNAPSHOT_MUTABILITY_NOTE());
     expect(reproducibility.pinnedInputs).toBe(false);
     expect(reproducibility.statement).toContain('tidak dikunci ke versi data yang dapat direproduksi');
     expect(reproducibility.statement).toContain('tidak menjamin hasil yang sama');
@@ -121,10 +121,12 @@ describe('versi data id is not proof that data is the same', () => {
     renderPassport(REGION_URL, capturedLiveBodies());
     const article = await findRegionDocument();
     expect(
-      within(article).getByText(new RegExp(`mode LIVE, versi data ${SNAPSHOT}, ${BROWSER_ASSEMBLED_LABEL}`)),
+      within(article).getByText(
+        new RegExp(`mode LIVE, versi data ${SNAPSHOT}, ${BROWSER_ASSEMBLED_LABEL()}`),
+      ),
     ).toBeInTheDocument();
     const { json } = await downloadJson();
-    expect((json as { notice: string }).notice.startsWith(BROWSER_ASSEMBLED_LABEL)).toBe(true);
+    expect((json as { notice: string }).notice.startsWith(BROWSER_ASSEMBLED_LABEL())).toBe(true);
   });
 });
 
@@ -142,7 +144,7 @@ describe('the manifest checksum is not a content digest', () => {
     const record = json.record as { source: { snapshot: { reportedManifestChecksum: string } } };
     expect(record.source.snapshot.reportedManifestChecksum).toBe(SERVER_CHECKSUM);
     expect((json.fieldNotes as Record<string, string>)['source.snapshot.reportedManifestChecksum']).toBe(
-      MANIFEST_CHECKSUM_LABEL,
+      MANIFEST_CHECKSUM_LABEL(),
     );
   });
 });
@@ -155,7 +157,7 @@ describe('versi data completeness is shown as the server claims it, beside what 
     expect(status).toHaveTextContent('Kelengkapan data51,6%');
     // The captured coverage response (2026-10-23T15:19Z) counts 25 of 33.
     expect(status).toHaveTextContent('Indikator berdata25 dari 33');
-    expect(status).toHaveTextContent(COMPLETENESS_CLAIM_NOTE);
+    expect(status).toHaveTextContent(COMPLETENESS_CLAIM_NOTE());
   });
 
   it('keeps both figures in the JSON', async () => {

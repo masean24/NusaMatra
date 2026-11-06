@@ -10,17 +10,17 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { AdminLevel } from '@/services/api';
 import { useRegionBrowserParams } from './regionCode';
 import styles from './RegionExplorer.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE = 30;
 
 type LevelFilter = AdminLevel | 'ALL';
-const LEVEL_FILTERS: readonly { readonly value: LevelFilter; readonly label: string }[] = [
+const LEVEL_FILTERS = localized((): readonly { readonly value: LevelFilter; readonly label: string }[] => [
   { value: 'ALL', label: t('Semua') },
   { value: 'REGENCY', label: t('Kabupaten') },
   { value: 'CITY', label: t('Kota') },
-];
+]);
 
 interface RegionExplorerProps {
   /** Render without its own card, for use inside the side panel. */
@@ -88,7 +88,7 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
       {showResults && (
         <>
           <div role="group" aria-label={t('Jenis wilayah')} className="glass-seg">
-            {LEVEL_FILTERS.map((filter) => (
+            {LEVEL_FILTERS().map((filter) => (
               <button
                 key={filter.value}
                 type="button"

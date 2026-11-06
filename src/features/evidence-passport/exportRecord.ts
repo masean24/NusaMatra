@@ -42,18 +42,18 @@ export function buildExportPayload(
   const pinned = record.source.reproducibility.status === 'REPRODUCIBLE_SNAPSHOT';
   return {
     schema: EXPORT_SCHEMA,
-    notice: `${BROWSER_ASSEMBLED_LABEL} ${BROWSER_ASSEMBLED_NOTICE}`,
+    notice: `${BROWSER_ASSEMBLED_LABEL()} ${BROWSER_ASSEMBLED_NOTICE()}`,
     fieldNotes: {
-      snapshotId: pinned ? snapshotIdentityNote(record.source.reproducibility) : SNAPSHOT_MUTABILITY_NOTE,
-      'source.snapshot.reportedManifestChecksum': MANIFEST_CHECKSUM_LABEL,
-      'source.snapshot.completenessPct': `Menurut server. ${COMPLETENESS_CLAIM_NOTE}`,
+      snapshotId: pinned ? snapshotIdentityNote(record.source.reproducibility) : SNAPSHOT_MUTABILITY_NOTE(),
+      'source.snapshot.reportedManifestChecksum': MANIFEST_CHECKSUM_LABEL(),
+      'source.snapshot.completenessPct': `Menurut server. ${COMPLETENESS_CLAIM_NOTE()}`,
       fetched: t(
         'Permintaan yang dikirim peramban (tanpa host atau kredensial) dan respons yang diterima; waktu terima memakai jam peramban. "contentSha256" disalin dari respons Data Hub; tidak ada ID laporan, hash, atau tanda waktu server yang dibuat peramban.',
       ),
     },
     reproducibility: pinned
-      ? { pinnedInputs: true, statement: PINNED_STATEMENT }
-      : { pinnedInputs: false, statement: NOT_PINNED_STATEMENT },
+      ? { pinnedInputs: true, statement: PINNED_STATEMENT() }
+      : { pinnedInputs: false, statement: NOT_PINNED_STATEMENT() },
     link,
     record,
   };

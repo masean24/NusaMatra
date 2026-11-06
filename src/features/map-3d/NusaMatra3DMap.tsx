@@ -25,7 +25,7 @@ import { getIndonesiaCoastline } from './terrain/coastline';
 import { buildHeroTerrain, type HeroTerrain } from './terrain/heroTerrain';
 import { HERO_SUN_DIRECTION } from './terrain/heightField';
 import { fitCameraToPoints, type CameraPose } from './terrain/cameraFit';
-import { t as tr } from '@/lib/i18n';
+import { localized, t as tr } from '@/lib/i18n';
 
 /** Hero framing: elevation of the camera and the free border kept for parallax and the intro. */
 /** Start-up camera of the Explore map, (0, 33, 29): its distance and the direction it looks from. */
@@ -454,7 +454,7 @@ export function planarToLonLat(
 // 4. DEMO / ILLUSTRATIVE GEOGRAPHY & TOPOLOGY VALIDATOR
 // ============================================================================
 
-export const HERO_DIORAMA_MARKERS: StrategicMarker[] = [
+export const HERO_DIORAMA_MARKERS = localized((): StrategicMarker[] => ([
   {
     id: 'hero-node-west',
     name: tr('Simpul Barat (Sumatera-Jawa)'),
@@ -479,9 +479,9 @@ export const HERO_DIORAMA_MARKERS: StrategicMarker[] = [
     category: 'anchor',
     note: tr('Titik orientasi timur diorama ilustratif.'),
   },
-];
+]));
 
-export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
+export const EXPLORE_DEMO_MARKERS = localized((): StrategicMarker[] => ([
   {
     id: 'ref-jkt',
     name: tr('Jakarta (Titik Referensi)'),
@@ -538,9 +538,9 @@ export const EXPLORE_DEMO_MARKERS: StrategicMarker[] = [
     category: 'regional-node',
     note: tr('Titik referensi kawasan timur Papua.'),
   },
-];
+]));
 
-export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
+export const DEMO_ILLUSTRATIVE_GEOGRAPHY = localized((): GeographyDataset => ({
   type: 'FeatureCollection',
   metadata: {
     datasetId: 'nusa-matra-demo-archipelago-v1',
@@ -1011,7 +1011,7 @@ export const DEMO_ILLUSTRATIVE_GEOGRAPHY: GeographyDataset = {
       },
     },
   ],
-};
+}));
 
 function normalizeAndValidateRing(rawRing: unknown, regionId: string): LinearRing {
   if (!Array.isArray(rawRing) || rawRing.length < 3) {
@@ -1094,7 +1094,7 @@ export function validateAndAdaptGeography(
         'Mode LIVE aktif, tetapi dataset geografi terverifikasi belum diberikan oleh aplikasi host.'
       );
     }
-    return DEMO_ILLUSTRATIVE_GEOGRAPHY;
+    return DEMO_ILLUSTRATIVE_GEOGRAPHY();
   }
 
   if (typeof input !== 'object') {
@@ -1555,7 +1555,7 @@ export const NusaMatra3DMap = forwardRef<
   }>(() => {
     try {
       if (mode === 'hero') {
-        return { dataset: DEMO_ILLUSTRATIVE_GEOGRAPHY, error: null };
+        return { dataset: DEMO_ILLUSTRATIVE_GEOGRAPHY(), error: null };
       }
       const dataset = validateAndAdaptGeography(geography, dataMode);
       return { dataset, error: null };
@@ -2356,10 +2356,10 @@ export const NusaMatra3DMap = forwardRef<
 
     const activeMarkers =
       mode === 'hero'
-        ? HERO_DIORAMA_MARKERS
+        ? HERO_DIORAMA_MARKERS()
         : // Host fix: the demo markers are illustrative pins, so official LIVE geography never shows them.
         showMarkers && validatedDataset.metadata.dataMode === 'DEMO'
-        ? EXPLORE_DEMO_MARKERS
+        ? EXPLORE_DEMO_MARKERS()
         : [];
 
     const pinGeo = new THREE.CylinderGeometry(0.06, 0.02, 0.62, 12);

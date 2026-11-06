@@ -35,7 +35,8 @@ import { RegionDetailPanel } from './RegionDetailPanel';
 import { RegionExplorer } from './RegionExplorer';
 import { useRegionBrowserParams } from './regionCode';
 import styles from './ExploreWorkspace.module.css';
-import { t } from '@/lib/i18n';
+import { forLanguage, t } from '@/lib/i18n';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 
 /** A swipe of at least this many pixels on the sheet handle opens or collapses it. */
 const SWIPE_THRESHOLD_PX = 36;
@@ -199,34 +200,37 @@ export function ExploreWorkspace({ title, backLink, status, indicators }: Explor
     [isPhone],
   );
 
+  const currentLanguage = useLanguage();
   const overlay = useMemo<MapOverlay | undefined>(
     () =>
-      quakeEvents.length === 0
-        ? undefined
-        : {
-            points: quakeEvents.map((event) => ({
-              id: event.id,
-              lon: event.longitude,
-              lat: event.latitude,
-              size: epicentreSymbolSize(event.magnitude),
-              label: markerLabel(event),
-              isNew: quakes.newIds.has(event.id),
-              color: MAGNITUDE_TONES[magnitudeBand(event.magnitude)].color,
-            })),
-            callouts: calloutEvents(quakeEvents, selectedQuakeId).map((event) => ({
-              id: event.id,
-              content: (
-                <EarthquakeCallout
-                  event={event}
-                  selected={event.id === selectedQuakeId}
-                  onSelect={handleQuakeSelect}
-                />
-              ),
-            })),
-            selectedId: selectedQuakeId,
-            onSelect: handleQuakeSelect,
-          },
-    [quakeEvents, quakes.newIds, selectedQuakeId, handleQuakeSelect],
+      forLanguage(currentLanguage, () =>
+        quakeEvents.length === 0
+          ? undefined
+          : {
+              points: quakeEvents.map((event) => ({
+                id: event.id,
+                lon: event.longitude,
+                lat: event.latitude,
+                size: epicentreSymbolSize(event.magnitude),
+                label: markerLabel(event),
+                isNew: quakes.newIds.has(event.id),
+                color: MAGNITUDE_TONES()[magnitudeBand(event.magnitude)].color,
+              })),
+              callouts: calloutEvents(quakeEvents, selectedQuakeId).map((event) => ({
+                id: event.id,
+                content: (
+                  <EarthquakeCallout
+                    event={event}
+                    selected={event.id === selectedQuakeId}
+                    onSelect={handleQuakeSelect}
+                  />
+                ),
+              })),
+              selectedId: selectedQuakeId,
+              onSelect: handleQuakeSelect,
+            },
+      ),
+    [currentLanguage, quakeEvents, quakes.newIds, selectedQuakeId, handleQuakeSelect],
   );
 
   const step = (direction: 1 | -1) => {

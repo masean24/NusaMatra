@@ -88,7 +88,7 @@ export function LabDetails({
       <details className={styles.accordion}>
         <summary>{t('Cara membaca skor')}</summary>
         <div className={styles.accordionBody}>
-          <p className={styles.muted}>{SCORE_MEANING}</p>
+          <p className={styles.muted}>{SCORE_MEANING()}</p>
           <ul role="list" className={styles.methodList}>
             <li>
               {t(

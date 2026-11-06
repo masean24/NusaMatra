@@ -71,7 +71,7 @@ describe('Paspor Bukti for a region, CAPTURED LIVE responses', () => {
     await findDocument();
     const text = document.body.textContent;
     expect(text).not.toMatch(/NM-20\d\d-\d+/);
-    expect(text.replaceAll(BROWSER_ASSEMBLED_LABEL, '')).not.toMatch(
+    expect(text.replaceAll(BROWSER_ASSEMBLED_LABEL(), '')).not.toMatch(
       /sertifikat resmi|terverifikasi secara|immutable/i,
     );
   });

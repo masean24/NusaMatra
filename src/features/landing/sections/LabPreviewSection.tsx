@@ -5,7 +5,7 @@ import { Reveal } from '@/features/motion';
 import type { CompositePresetDTO } from '@/services/api';
 import { SceneZone } from '../scene3d/SceneZone';
 import styles from './LabPreviewSection.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
 interface FocusInputs {
   readonly presets: readonly CompositePresetDTO[];
@@ -14,7 +14,7 @@ interface FocusInputs {
 }
 
 const percent = (basisPoints: number) =>
-  `${(basisPoints / 100).toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
+  `${(basisPoints / 100).toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
 
 /**
  * The weights the preset really uses, largest first: an indicator without national data is left out and

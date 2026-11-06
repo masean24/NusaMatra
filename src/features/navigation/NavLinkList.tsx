@@ -28,7 +28,7 @@ export function NavLinkList({ layout }: NavLinkListProps) {
   const [previewTo, setPreviewTo] = useState<string | null>(null);
 
   const activeTo =
-    PRIMARY_NAV_ITEMS.find((item) => matchPath({ path: item.to, end: false }, pathname))?.to ?? null;
+    PRIMARY_NAV_ITEMS().find((item) => matchPath({ path: item.to, end: false }, pathname))?.to ?? null;
   const targetTo = previewTo ?? activeTo;
   const isPreview = previewTo !== null && previewTo !== activeTo;
 
@@ -56,7 +56,7 @@ export function NavLinkList({ layout }: NavLinkListProps) {
         style={{ x, width, opacity }}
       />
       <ul role="list" className={styles.list}>
-        {PRIMARY_NAV_ITEMS.map((item) => (
+        {PRIMARY_NAV_ITEMS().map((item) => (
           <li key={item.to} className={styles.cell}>
             <FloatingNavItem
               item={item}

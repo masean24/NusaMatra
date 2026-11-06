@@ -1,5 +1,5 @@
 import type { IconName } from '@/components/ui/Icon/Icon';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 export type QuestionId = 'jelajahi' | 'bandingkan' | 'lab' | 'paspor';
 
@@ -23,7 +23,7 @@ export interface GuidedQuestion {
  * "Guided Question Canvas" (owner mockup, 2026-10-26): four questions a visitor brings, each
  * answered by one feature. The previews beside them are illustrations, never live data.
  */
-export const GUIDED_QUESTIONS: readonly GuidedQuestion[] = [
+export const GUIDED_QUESTIONS = localized((): readonly GuidedQuestion[] => [
   {
     id: 'jelajahi',
     eyebrow: t('Jelajahi'),
@@ -84,4 +84,4 @@ export const GUIDED_QUESTIONS: readonly GuidedQuestion[] = [
     to: '/paspor-bukti',
     hint: t('Setiap angka bisa ditelusuri ke sumbernya.'),
   },
-];
+]);

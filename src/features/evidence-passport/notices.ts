@@ -1,4 +1,4 @@
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /**
  * Wording the passport must always carry. Kept in one place so the page, the printout, the citation
@@ -6,28 +6,36 @@ import { t } from '@/lib/i18n';
  */
 
 /** The short statement of what a Paspor Bukti is. It heads the page, the print header and the file. */
-export const BROWSER_ASSEMBLED_LABEL = t('Dirangkai di peramban, bukan arsip/sertifikat resmi.');
+export const BROWSER_ASSEMBLED_LABEL = localized(() =>
+  t('Dirangkai di peramban, bukan arsip/sertifikat resmi.'),
+);
 
-export const BROWSER_ASSEMBLED_NOTICE = t(
-  'Paspor Bukti ini dirangkai di peramban Anda dari respons Data Hub yang diterima saat halaman dibuka. Ini bukan arsip resmi dari server dan bukan sertifikat: tidak ada nomor laporan dan tanda waktu dari server, dan laporan ini sendiri tidak disimpan di mana pun. Sidik isi data (SHA-256), bila ada, adalah pernyataan Data Hub dan tidak dihitung ulang di peramban.',
+export const BROWSER_ASSEMBLED_NOTICE = localized(() =>
+  t(
+    'Paspor Bukti ini dirangkai di peramban Anda dari respons Data Hub yang diterima saat halaman dibuka. Ini bukan arsip resmi dari server dan bukan sertifikat: tidak ada nomor laporan dan tanda waktu dari server, dan laporan ini sendiri tidak disimpan di mana pun. Sidik isi data (SHA-256), bila ada, adalah pernyataan Data Hub dan tidak dihitung ulang di peramban.',
+  ),
 );
 
 /**
  * Without a pin, a snapshot id names a publication, not its content: production re-published the
  * legacy id `2026.10.0-official-live` with different data (25/33 to 29/33 indicators, 2026-10-23).
  */
-export const SNAPSHOT_MUTABILITY_NOTE = t(
-  'ID versi data dapat dipublikasikan ulang dengan isi berbeda; ID ini bukan bukti bahwa data sama.',
+export const SNAPSHOT_MUTABILITY_NOTE = localized(() =>
+  t('ID versi data dapat dipublikasikan ulang dengan isi berbeda; ID ini bukan bukti bahwa data sama.'),
 );
 
 /** What an unpinned record cannot promise. Follows the reason it is unpinned. */
-export const NOT_PINNED_CONSEQUENCE = t(
-  'Data diambil dari versi data yang aktif saat halaman dibuka, tanpa penguncian; membuka tautan yang sama lagi dapat memberi data berbeda.',
+export const NOT_PINNED_CONSEQUENCE = localized(() =>
+  t(
+    'Data diambil dari versi data yang aktif saat halaman dibuka, tanpa penguncian; membuka tautan yang sama lagi dapat memberi data berbeda.',
+  ),
 );
 
 /** Exported with an unpinned record. */
-export const NOT_PINNED_STATEMENT = t(
-  'Data pada berkas ini tidak dikunci ke versi data yang dapat direproduksi, jadi berkas ini tidak menjamin hasil yang sama di kemudian hari; ia hanya merekam apa yang diterima peramban pada saat itu (lihat "fetched" untuk permintaan dan waktu terima).',
+export const NOT_PINNED_STATEMENT = localized(() =>
+  t(
+    'Data pada berkas ini tidak dikunci ke versi data yang dapat direproduksi, jadi berkas ini tidak menjamin hasil yang sama di kemudian hari; ia hanya merekam apa yang diterima peramban pada saat itu (lihat "fetched" untuk permintaan dan waktu terima).',
+  ),
 );
 
 /**
@@ -35,8 +43,10 @@ export const NOT_PINNED_STATEMENT = t(
  * snapshot's row was announced as kept, but production answered 404 for it after the v2.2 deploy
  * (observed 2026-10-24). So a pinned link can stop working; it never switches to newer data.
  */
-export const REPRODUCIBLE_SNAPSHOT_STATEMENT = t(
-  'Data dapat direproduksi: setiap respons dikunci ke versi data ini dan membawa sidik isi SHA-256 yang sama, dan Data Hub menyatakan versi data ini immutable. Tautan Paspor ini (Salin tautan, Bagikan, berkas JSON) menyebut versi data tersebut, jadi membukanya lagi meminta versi data yang sama. Ini menyangkut data, bukan laporan: Paspor ini tidak diarsipkan, dan Data Hub tidak menjamin versi data lama tetap tersedia setelah pembaruan server (versi data lama sudah pernah hilang, teramati 2026-10-24). Bila versi data tidak lagi tersedia, tautan akan gagal dan tidak beralih ke data terbaru.',
+export const REPRODUCIBLE_SNAPSHOT_STATEMENT = localized(() =>
+  t(
+    'Data dapat direproduksi: setiap respons dikunci ke versi data ini dan membawa sidik isi SHA-256 yang sama, dan Data Hub menyatakan versi data ini immutable. Tautan Paspor ini (Salin tautan, Bagikan, berkas JSON) menyebut versi data tersebut, jadi membukanya lagi meminta versi data yang sama. Ini menyangkut data, bukan laporan: Paspor ini tidak diarsipkan, dan Data Hub tidak menjamin versi data lama tetap tersedia setelah pembaruan server (versi data lama sudah pernah hilang, teramati 2026-10-24). Bila versi data tidak lagi tersedia, tautan akan gagal dan tidak beralih ke data terbaru.',
+  ),
 );
 
 /**
@@ -54,25 +64,31 @@ export function snapshotIdentityNote(reproducibility: {
         reproducibility.contentSha256 ?? '',
         reproducibility.statement,
       )
-    : `${SNAPSHOT_MUTABILITY_NOTE} ${reproducibility.statement}`;
+    : `${SNAPSHOT_MUTABILITY_NOTE()} ${reproducibility.statement}`;
 }
 
 /** Exported with a pinned, reproducible record. */
-export const PINNED_STATEMENT = t(
-  'Semua permintaan pada berkas ini dikunci ke satu versi data (parameter "versi data" pada "fetched") dengan sidik isi SHA-256 yang sama menurut Data Hub. Sidik itu tidak dihitung ulang di peramban, dan ketersediaan versi data di kemudian hari tidak dijamin.',
+export const PINNED_STATEMENT = localized(() =>
+  t(
+    'Semua permintaan pada berkas ini dikunci ke satu versi data (parameter "versi data" pada "fetched") dengan sidik isi SHA-256 yang sama menurut Data Hub. Sidik itu tidak dihitung ulang di peramban, dan ketersediaan versi data di kemudian hari tidak dijamin.',
+  ),
 );
 
 /**
  * The manifest checksum stayed identical while the data behind the same snapshot id changed
  * (observed 2026-10-23), so it identifies nothing about content and is never shown as integrity proof.
  */
-export const MANIFEST_CHECKSUM_LABEL = t(
-  'checksum dari server; tidak berubah saat isi data berubah (teramati 2026-10-23), jadi bukan sidik isi data',
+export const MANIFEST_CHECKSUM_LABEL = localized(() =>
+  t(
+    'checksum dari server; tidak berubah saat isi data berubah (teramati 2026-10-23), jadi bukan sidik isi data',
+  ),
 );
 
 /** The snapshot's own completeness figure is a server claim; it can disagree with `/indicators/coverage`. */
-export const COMPLETENESS_CLAIM_NOTE = t(
-  'Angka kelengkapan versi data adalah klaim server dan dapat tidak sejalan dengan cakupan indikator dari /indicators/coverage; paspor tidak menghitung angka pengganti.',
+export const COMPLETENESS_CLAIM_NOTE = localized(() =>
+  t(
+    'Angka kelengkapan versi data adalah klaim server dan dapat tidak sejalan dengan cakupan indikator dari /indicators/coverage; paspor tidak menghitung angka pengganti.',
+  ),
 );
 
-export const NOT_AVAILABLE_TEXT = t('belum tersedia');
+export const NOT_AVAILABLE_TEXT = localized(() => t('belum tersedia'));

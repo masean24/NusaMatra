@@ -10,46 +10,50 @@ import { EngineSlot, type EngineSlotState } from './EngineSlot';
 import { geoEngineRegistry } from './engineRegistry';
 import { MapLoader } from './MapLoader';
 import styles from './Explore3DMapSlot.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
-const PLACEHOLDER_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
-  loading: {
-    kind: 'loading',
-    title: t('Memuat peta 3D…'),
-    children: t('Pratinjau di bawah ini adalah ilustrasi, bukan peta geografis akurat.'),
-  },
-  failed: {
-    kind: 'unavailable',
-    title: t('Peta 3D tidak dapat ditampilkan'),
-    children: t('Perangkat atau browser ini tidak dapat menjalankan peta 3D. Gambar ini hanya ilustrasi.'),
-  },
-  absent: {
-    kind: 'info',
-    title: t('Peta 3D belum tersedia'),
-    children: t('Gambar ini hanya ilustrasi, bukan peta geografis akurat.'),
-  },
-};
+const PLACEHOLDER_STATUS = localized(
+  (): Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> => ({
+    loading: {
+      kind: 'loading',
+      title: t('Memuat peta 3D…'),
+      children: t('Pratinjau di bawah ini adalah ilustrasi, bukan peta geografis akurat.'),
+    },
+    failed: {
+      kind: 'unavailable',
+      title: t('Peta 3D tidak dapat ditampilkan'),
+      children: t('Perangkat atau browser ini tidak dapat menjalankan peta 3D. Gambar ini hanya ilustrasi.'),
+    },
+    absent: {
+      kind: 'info',
+      title: t('Peta 3D belum tersedia'),
+      children: t('Gambar ini hanya ilustrasi, bukan peta geografis akurat.'),
+    },
+  }),
+);
 
 /** LIVE shows no illustration behind the status, so its copy must not mention one. */
-const LIVE_STATUS: Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> = {
-  loading: {
-    kind: 'loading',
-    title: t('Menyiapkan peta…'),
-    children: t('Membangun batas wilayah resmi dari BIG.'),
-  },
-  failed: {
-    kind: 'unavailable',
-    title: t('Peta 3D tidak dapat ditampilkan'),
-    children: t(
-      'Perangkat atau browser ini tidak dapat menjalankan peta 3D. Pilih wilayah lewat daftar di panel.',
-    ),
-  },
-  absent: {
-    kind: 'info',
-    title: t('Peta 3D belum tersedia'),
-    children: t('Pilih wilayah lewat daftar di panel.'),
-  },
-};
+const LIVE_STATUS = localized(
+  (): Record<EngineSlotState, { kind: StatusKind; title: string; children: string }> => ({
+    loading: {
+      kind: 'loading',
+      title: t('Menyiapkan peta…'),
+      children: t('Membangun batas wilayah resmi dari BIG.'),
+    },
+    failed: {
+      kind: 'unavailable',
+      title: t('Peta 3D tidak dapat ditampilkan'),
+      children: t(
+        'Perangkat atau browser ini tidak dapat menjalankan peta 3D. Pilih wilayah lewat daftar di panel.',
+      ),
+    },
+    absent: {
+      kind: 'info',
+      title: t('Peta 3D belum tersedia'),
+      children: t('Pilih wilayah lewat daftar di panel.'),
+    },
+  }),
+);
 
 interface Explore3DMapSlotProps {
   readonly geography: Explore3DMapProps['geography'];
@@ -118,10 +122,10 @@ export function Explore3DMapSlot({
           dataMode === 'LIVE' ? (
             state === 'loading' ? (
               // Official geometry is on its way: the map's loader, in the middle of the map area.
-              <MapLoader title={LIVE_STATUS.loading.title} text={LIVE_STATUS.loading.children} />
+              <MapLoader title={LIVE_STATUS().loading.title} text={LIVE_STATUS().loading.children} />
             ) : (
               <div className={`${styles.placeholder} ${styles.skeleton}`}>
-                <StatusMessage className={styles.status} {...LIVE_STATUS[state]} />
+                <StatusMessage className={styles.status} {...LIVE_STATUS()[state]} />
               </div>
             )
           ) : (
@@ -134,7 +138,7 @@ export function Explore3DMapSlot({
                 height={640}
                 decoding="async"
               />
-              <StatusMessage className={styles.status} {...PLACEHOLDER_STATUS[state]} />
+              <StatusMessage className={styles.status} {...PLACEHOLDER_STATUS()[state]} />
             </div>
           )
         }

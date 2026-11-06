@@ -34,8 +34,8 @@ export function buildCitation(
     t('Sumber data: {0}.', sources),
     ...details,
     t('Diterima peramban: {0}.', formatBrowserTime(source.receivedByBrowserAt)),
-    BROWSER_ASSEMBLED_LABEL,
-    BROWSER_ASSEMBLED_NOTICE,
+    BROWSER_ASSEMBLED_LABEL(),
+    BROWSER_ASSEMBLED_NOTICE(),
     t('Tautan: {0}', link),
   ].join('\n');
 }

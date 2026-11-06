@@ -3,7 +3,7 @@ import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import { MethodIcon } from './MethodIcon';
 import { IconCard, SectionHead } from './MethodParts';
 import styles from './Methodology.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** What happens when data is missing: nothing is filled in, and the screen says so. */
 export function MissingDataSection() {
@@ -38,13 +38,16 @@ export function MissingDataSection() {
   );
 }
 
-const REMEMBER = [
-  t('Skor dan peringkat bersifat relatif terhadap wilayah lain, bukan penilaian mutlak.'),
-  t(
-    'Hasilnya bergantung pada indikator, bobot, dan data yang tersedia. Ini alat bantu menyaring prioritas, bukan rekomendasi kebijakan resmi, dan metodenya belum divalidasi lembaga yang berwenang.',
-  ),
-  t('Sumber, tahun, dan batasan setiap angka dapat diperiksa di Paspor Bukti.'),
-] as const;
+const REMEMBER = localized(
+  () =>
+    [
+      t('Skor dan peringkat bersifat relatif terhadap wilayah lain, bukan penilaian mutlak.'),
+      t(
+        'Hasilnya bergantung pada indikator, bobot, dan data yang tersedia. Ini alat bantu menyaring prioritas, bukan rekomendasi kebijakan resmi, dan metodenya belum divalidasi lembaga yang berwenang.',
+      ),
+      t('Sumber, tahun, dan batasan setiap angka dapat diperiksa di Paspor Bukti.'),
+    ] as const,
+);
 
 /** The closing card: the limits to keep in mind, and the ways on. */
 export function ClosingSection({ passportTo }: { readonly passportTo: string | null }) {
@@ -59,7 +62,7 @@ export function ClosingSection({ passportTo }: { readonly passportTo: string | n
         {t('Yang perlu diingat')}
       </h2>
       <ul role="list" className={styles.checkList}>
-        {REMEMBER.map((text) => (
+        {REMEMBER().map((text) => (
           <li key={text}>
             <MethodIcon name="check" />
             <span>{text}</span>

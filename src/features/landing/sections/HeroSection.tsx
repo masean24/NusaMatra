@@ -5,10 +5,10 @@ import { HeroDioramaSlot } from '@/features/geo3d';
 import { Reveal, STAGGER_ITEM_PROPS, useReducedMotion } from '@/features/motion';
 import { RegionSearchForm } from '../components/RegionSearchForm';
 import styles from './HeroSection.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /* The title rises word by word out of its mask; lead, search, buttons and note fade up after it. */
-const HERO_TITLE_WORDS = t('Memahami wilayah, menentukan arah.').split(' ');
+const HERO_TITLE_WORDS = localized(() => t('Memahami wilayah, menentukan arah.').split(' '));
 const G1_STAGGER_MS = 90;
 const G1_DISTANCE = 28;
 const G1_AFTER_TITLE_MS = 240;
@@ -45,7 +45,7 @@ export function HeroSection() {
     <section className={styles.hero} aria-labelledby="hero-title">
       <div className={styles.copy}>
         <h1 id="hero-title" className={`kk-display ${styles.title}`} {...STAGGER_ITEM_PROPS}>
-          {HERO_TITLE_WORDS.map((word, index) => (
+          {HERO_TITLE_WORDS().map((word, index) => (
             <Fragment key={word}>
               {index > 0 && ' '}
               <span className={styles.titleMask}>

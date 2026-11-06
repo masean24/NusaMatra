@@ -5,7 +5,7 @@ import type { MissingExample, ReadyExample } from './indicatorExample';
 import { IconCard, InfoNote, LoadableView, SectionHead } from './MethodParts';
 import type { ScoreMethodData } from './useScoreMethod';
 import styles from './Methodology.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** Langkah 1: the raw official value, shown as the source states it. */
 export function ValueStep({ method }: { readonly method: ScoreMethodData }) {
@@ -163,14 +163,17 @@ function MiniScale({ highIsNeed }: { readonly highIsNeed: boolean }) {
   );
 }
 
-const DIRECTION_TEXT = {
-  HIGH_VALUE_IS_NEED: t(
-    'Makin tinggi nilainya, makin besar kebutuhannya. Nilai tertinggi mendapat skor 100.',
-  ),
-  LOW_VALUE_IS_NEED: t(
-    'Makin tinggi nilainya, makin baik kondisinya. Skalanya dibalik: nilai terendah mendapat skor 100.',
-  ),
-} as const;
+const DIRECTION_TEXT = localized(
+  () =>
+    ({
+      HIGH_VALUE_IS_NEED: t(
+        'Makin tinggi nilainya, makin besar kebutuhannya. Nilai tertinggi mendapat skor 100.',
+      ),
+      LOW_VALUE_IS_NEED: t(
+        'Makin tinggi nilainya, makin baik kondisinya. Skalanya dibalik: nilai terendah mendapat skor 100.',
+      ),
+    }) as const,
+);
 
 function WorkedRows({ example }: { readonly example: ReadyExample }) {
   const { range, needEnd } = example;
@@ -235,7 +238,7 @@ function WorkedRows({ example }: { readonly example: ReadyExample }) {
               ? t(
                   'Arah baik atau buruk indikator ini belum ditetapkan, jadi skor kebutuhannya tidak dihitung.',
                 )
-              : DIRECTION_TEXT[needEnd]}
+              : DIRECTION_TEXT()[needEnd]}
           </p>
         </div>
 

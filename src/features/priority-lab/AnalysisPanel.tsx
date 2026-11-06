@@ -40,7 +40,7 @@ import { impactRowsOf } from './directionChecks';
 import { useDirectionCheck, type DirectionCheck } from './useDirectionCheck';
 import { useRankScroll } from './useRankScroll';
 import styles from './PriorityLab.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 const PAGE_SIZE = 10;
 
@@ -530,10 +530,10 @@ function BlockedDetails({
 /** `high`: the Data Hub's order (rank 1 = highest need first); `low`: the same list read from the other end. */
 type Order = 'high' | 'low';
 
-const ORDER_LABEL: Readonly<Record<Order, string>> = {
+const ORDER_LABEL = localized((): Readonly<Record<Order, string>> => ({
   high: t('Prioritas tertinggi'),
   low: t('Terendah'),
-};
+}));
 
 interface RankingWorkspaceProps {
   readonly result: ExploratoryCompositeResultDTO;
@@ -640,12 +640,12 @@ function RankingWorkspace({
                   resetScroll();
                 }}
               >
-                {ORDER_LABEL[value]}
+                {ORDER_LABEL()[value]}
               </button>
             ))}
           </div>
         </div>
-        <p className={styles.cardLead}>{SCORE_SUMMARY}</p>
+        <p className={styles.cardLead}>{SCORE_SUMMARY()}</p>
         {stale && !updating && (
           <div className={styles.staleBanner} role="status">
             <p>{t('Total bobot belum 100%, jadi peringkat masih memakai bobot sebelumnya.')}</p>

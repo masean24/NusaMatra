@@ -1,5 +1,5 @@
 import type { StatusTone } from './StatusPanel';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /**
  * How far a LIVE ranking that is on screen can be trusted. A ranking that failed a blocking check never
@@ -37,12 +37,12 @@ export interface ResultStatus {
   readonly limitations: readonly string[];
 }
 
-const TITLE: Readonly<Record<ResultTrust, string>> = {
+const TITLE = localized((): Readonly<Record<ResultTrust, string>> => ({
   verified: t('Hasil lolos semua pemeriksaan'),
   limited: t('Hasil dapat dibaca dengan catatan'),
   unfinished: t('Pemeriksaan hasil belum selesai'),
   stale: t('Peringkat belum memakai bobot terbaru'),
-};
+}));
 
 const FULL_AVAILABILITY_PCT = 100;
 
@@ -105,5 +105,5 @@ export function describeResultStatus(facts: ResultFacts): ResultStatus {
   if (facts.stale) trust = 'stale';
   else if (facts.directionCheckFailed) trust = 'unfinished';
   else if (limitations.length > 0) trust = 'limited';
-  return { trust, tone: trust === 'verified' ? 'ok' : 'warning', title: TITLE[trust], limitations };
+  return { trust, tone: trust === 'verified' ? 'ok' : 'warning', title: TITLE()[trust], limitations };
 }

@@ -1,4 +1,4 @@
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 // Nusa Matra Data Hub adapter.
 
@@ -110,13 +110,13 @@ export class ApiError extends Error {
   }
 }
 
-const NETWORK_UNAVAILABLE_COPY = t('Koneksi sedang bermasalah. Silakan coba lagi.');
+const NETWORK_UNAVAILABLE_COPY = localized(() => t('Koneksi sedang bermasalah. Silakan coba lagi.'));
 
 /**
  * Localized Bahasa Indonesia user-facing copy lookup for error messageIds.
  * Matches docs/08-API-SPECIFICATION.md Section 15.3 plus LIVE 503 gate copy.
  */
-export const INDONESIAN_ERROR_COPY: Readonly<Record<string, string>> = {
+export const INDONESIAN_ERROR_COPY = localized((): Readonly<Record<string, string>> => ({
   'data.demo_disclaimer': t('Simulasi — bukan data atau rekomendasi resmi.'),
   'data.live_unavailable': t(
     'Mode LIVE belum tersedia karena sumber data resmi belum diverifikasi dan dihubungkan. Tidak ada fallback otomatis ke data DEMO.',
@@ -137,18 +137,18 @@ export const INDONESIAN_ERROR_COPY: Readonly<Record<string, string>> = {
   'analysis.blocked': t('Sebagian wilayah tidak dapat dihitung karena data belum memenuhi syarat.'),
   'quality.audit_not_run': t('Pemeriksaan kualitas data belum dijalankan.'),
   'evidence.not_ready': t('Paspor Bukti masih disiapkan.'),
-  'network.unavailable': NETWORK_UNAVAILABLE_COPY,
+  'network.unavailable': NETWORK_UNAVAILABLE_COPY(),
   'network.offline': t('Perangkat Anda sedang offline. Periksa koneksi internet, lalu coba lagi.'),
   'server.unavailable': t('Server Data Hub sedang bermasalah. Silakan coba lagi beberapa saat lagi.'),
   'request.rate_limited': t('Terlalu banyak permintaan ke Data Hub. Tunggu sebentar, lalu coba lagi.'),
   'request.aborted': t('Permintaan dibatalkan karena ada pembaruan pilihan.'),
-};
+}));
 
 export function getIndonesianErrorCopy(error: unknown): string {
   if (error instanceof ApiError) {
-    return INDONESIAN_ERROR_COPY[error.messageId] ?? NETWORK_UNAVAILABLE_COPY;
+    return INDONESIAN_ERROR_COPY()[error.messageId] ?? NETWORK_UNAVAILABLE_COPY();
   }
-  return NETWORK_UNAVAILABLE_COPY;
+  return NETWORK_UNAVAILABLE_COPY();
 }
 
 /**

@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import silhouetteUrl from '@/assets/landing/indonesia-silhouette.svg';
 import type { QuestionId } from './howItWorksQuestions';
 import styles from './QuestionPreviewArt.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { localized, locale, t } from '@/lib/i18n';
 
 /*
  * Static illustrations for the Guided Question Canvas. Every name and number here is an example
@@ -58,13 +58,16 @@ function ExploreArt() {
   );
 }
 
-const COMPARE_ROWS = [
-  { name: t('Penduduk miskin'), a: 8.9, b: 14.2, unit: '%', better: 'a' },
-  { name: t('Air minum layak'), a: 91.4, b: 86.0, unit: '%', better: 'a' },
-  { name: t('Lama sekolah'), a: 8.1, b: 8.6, unit: t(' th'), better: 'b' },
-] as const;
+const COMPARE_ROWS = localized(
+  () =>
+    [
+      { name: t('Penduduk miskin'), a: 8.9, b: 14.2, unit: '%', better: 'a' },
+      { name: t('Air minum layak'), a: 91.4, b: 86.0, unit: '%', better: 'a' },
+      { name: t('Lama sekolah'), a: 8.1, b: 8.6, unit: t(' th'), better: 'b' },
+    ] as const,
+);
 
-const formatExample = (value: number) => value.toLocaleString(LOCALE, { minimumFractionDigits: 1 });
+const formatExample = (value: number) => value.toLocaleString(locale(), { minimumFractionDigits: 1 });
 
 /** Two regions face each other: each row's bars grow outwards from the middle, the better one in jade. */
 function CompareArt() {
@@ -76,7 +79,7 @@ function CompareArt() {
         <span>{t('Wilayah B')}</span>
       </div>
       <dl className={styles.compareRows}>
-        {COMPARE_ROWS.map((row) => {
+        {COMPARE_ROWS().map((row) => {
           const max = Math.max(row.a, row.b);
           return (
             <div key={row.name} className={styles.compareRow}>
@@ -102,11 +105,14 @@ function CompareArt() {
   );
 }
 
-const LAB_WEIGHTS = [
-  { name: t('Kemiskinan'), weight: 40, series: 'a' },
-  { name: t('Air minum'), weight: 35, series: 'b' },
-  { name: t('Kesehatan'), weight: 25, series: 'c' },
-] as const;
+const LAB_WEIGHTS = localized(
+  () =>
+    [
+      { name: t('Kemiskinan'), weight: 40, series: 'a' },
+      { name: t('Air minum'), weight: 35, series: 'b' },
+      { name: t('Kesehatan'), weight: 25, series: 'c' },
+    ] as const,
+);
 
 const LAB_RANKING = [
   { key: 'C', score: 72 },
@@ -121,12 +127,12 @@ function LabArt() {
       <div className={styles.weightsBlock}>
         <p className={styles.blockLabel}>{t('Bobot (total 100%)')}</p>
         <div className={styles.stack} aria-hidden="true">
-          {LAB_WEIGHTS.map((item) => (
+          {LAB_WEIGHTS().map((item) => (
             <span key={item.name} data-series={item.series} style={{ flexGrow: item.weight }} />
           ))}
         </div>
         <ul role="list" className={styles.legend}>
-          {LAB_WEIGHTS.map((item) => (
+          {LAB_WEIGHTS().map((item) => (
             <li key={item.name} data-series={item.series}>
               {item.name} <b>{item.weight}%</b>
             </li>
@@ -149,12 +155,15 @@ function LabArt() {
   );
 }
 
-const PASSPORT_ROWS = [
-  [t('Sumber'), 'BPS, BNPB'],
-  [t('Tahun data'), '2025'],
-  [t('Model'), t('Rata-rata berbobot')],
-  [t('Batasan'), t('2 indikator belum ada')],
-] as const;
+const PASSPORT_ROWS = localized(
+  () =>
+    [
+      [t('Sumber'), 'BPS, BNPB'],
+      [t('Tahun data'), '2025'],
+      [t('Model'), t('Rata-rata berbobot')],
+      [t('Batasan'), t('2 indikator belum ada')],
+    ] as const,
+);
 
 /** A small stack of papers: the passport sheet on top, its stamp landing in the corner. */
 function PassportArt() {
@@ -167,7 +176,7 @@ function PassportArt() {
           <small>{t('Contoh')}</small>
         </p>
         <dl className={styles.passportRows}>
-          {PASSPORT_ROWS.map(([term, detail]) => (
+          {PASSPORT_ROWS().map(([term, detail]) => (
             <div key={term}>
               <dt>{term}</dt>
               <dd>{detail}</dd>

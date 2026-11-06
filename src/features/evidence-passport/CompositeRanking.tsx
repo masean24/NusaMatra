@@ -12,13 +12,13 @@ import { ScrollRegion } from './ScrollRegion';
 import { Section } from './Section';
 import { bpsLabel } from './weightLabel';
 import styles from './EvidencePassport.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
 /** Rows a printout carries of each long table; the exact number is printed with it. */
 export const PRINT_EXCERPT_ROWS = 20;
 
 const percentLabel = (value: number | null): string =>
-  value === null ? t('belum tersedia') : `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
+  value === null ? t('belum tersedia') : `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
 
 const WARN_CLASSES: ReadonlySet<EvidenceClass> = new Set([
   'IMPUTED_PROVINCE',

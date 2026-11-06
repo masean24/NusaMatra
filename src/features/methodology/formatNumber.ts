@@ -1,5 +1,5 @@
-import { LOCALE } from '@/lib/i18n';
+import { locale } from '@/lib/i18n';
 /** A number in Indonesian notation ("19,48"), with at most `maxDigits` decimals. */
 export function formatNumber(value: number, maxDigits = 2): string {
-  return value.toLocaleString(LOCALE, { maximumFractionDigits: maxDigits });
+  return value.toLocaleString(locale(), { maximumFractionDigits: maxDigits });
 }

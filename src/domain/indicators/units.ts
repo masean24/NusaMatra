@@ -1,4 +1,4 @@
-import { LOCALE, t } from '@/lib/i18n';
+import { localized, locale, t } from '@/lib/i18n';
 
 /**
  * Turns the Data Hub's unit string into what the UI shows, and checks it against the values it
@@ -16,7 +16,7 @@ export interface DisplayUnit {
   readonly warning: string | null;
 }
 
-const KNOWN_UNITS: Readonly<Record<string, { label: string; kind: UnitKind }>> = {
+const KNOWN_UNITS = localized((): Readonly<Record<string, { label: string; kind: UnitKind }>> => ({
   'percent (%)': { label: '%', kind: 'percent' },
   years: { label: t('tahun'), kind: 'years' },
   minutes: { label: t('menit'), kind: 'other' },
@@ -28,11 +28,11 @@ const KNOWN_UNITS: Readonly<Record<string, { label: string; kind: UnitKind }>> =
   'ratio per 100 working-age': { label: t('per 100 penduduk usia produktif'), kind: 'ratio' },
   'thousand IDR/person/year': { label: t('ribu rupiah per orang per tahun'), kind: 'currency' },
   index: { label: t('indeks'), kind: 'index' },
-};
+}));
 
 const RANGE_PATTERN = /^(score|index)\s*\(\s*(-?\d+(?:\.\d+)?)\s*[-–]\s*(-?\d+(?:\.\d+)?)\s*\)$/i;
 
-const formatBound = (value: number) => value.toLocaleString(LOCALE, { maximumFractionDigits: 10 });
+const formatBound = (value: number) => value.toLocaleString(locale(), { maximumFractionDigits: 10 });
 
 /**
  * @param observedMax the largest value the source reports for this indicator (catalog `stats.max`,
@@ -60,7 +60,7 @@ export function describeUnit(unit: string, observedMax: number | null): DisplayU
     return { label: `${noun} (${formatBound(low)}–${formatBound(high)})`, kind, warning: null };
   }
 
-  const known = KNOWN_UNITS[unit.trim()];
+  const known = KNOWN_UNITS()[unit.trim()];
   if (known) return { ...known, warning: null };
   return { label: unit.trim(), kind: 'other', warning: null };
 }

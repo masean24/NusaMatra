@@ -1,9 +1,11 @@
 import type { DataHubIndicatorDTO, IndicatorValuesMapDTO } from '@/services/api';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** What a downloaded file says about itself, so it can still be traced once it leaves the site. */
-const COPY_NOTE = t(
-  'Salinan dari Data Hub Nusa Matra, bukan berkas asli penerbit. Periksa angka pada sumber resmi sebelum mengutip.',
+const COPY_NOTE = localized(() =>
+  t(
+    'Salinan dari Data Hub Nusa Matra, bukan berkas asli penerbit. Periksa angka pada sumber resmi sebelum mengutip.',
+  ),
 );
 
 const CSV_COLUMNS = [
@@ -84,7 +86,7 @@ export function indicatorJson(input: IndicatorExportInput): string {
   return `${JSON.stringify(
     {
       produk: 'Nusa Matra',
-      catatan: COPY_NOTE,
+      catatan: COPY_NOTE(),
       versi_data: values.snapshotId,
       mode: values.dataMode,
       indikator: {

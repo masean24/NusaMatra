@@ -1,9 +1,9 @@
 import { COMPARISON_DETAIL_PATH, RegionComparison } from '@/features/comparison';
 import { DataHubBanner } from '@/features/data-hub';
 import { FeaturePageFrame, type FeatureShell } from '@/features/feature-shell';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
-const DETAIL_SHELL: FeatureShell = {
+const DETAIL_SHELL = localized((): FeatureShell => ({
   path: COMPARISON_DETAIL_PATH,
   title: t('Rincian Perbandingan'),
   summary: t(
@@ -11,12 +11,12 @@ const DETAIL_SHELL: FeatureShell = {
   ),
   plannedCapabilities: [],
   figmaNode: '12:840',
-};
+}));
 
 /** "Selengkapnya" of Bandingkan: the same pair (`?a=&b=`) with every year, source and reason shown. */
 export function ComparisonDetailPage() {
   return (
-    <FeaturePageFrame shell={DETAIL_SHELL} wide>
+    <FeaturePageFrame shell={DETAIL_SHELL()} wide>
       <DataHubBanner />
       <RegionComparison view="detail" />
     </FeaturePageFrame>

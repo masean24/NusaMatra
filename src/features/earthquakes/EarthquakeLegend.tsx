@@ -16,8 +16,8 @@ export function EarthquakeLegend({ className }: { readonly className?: string | 
       <ul role="list" className={styles.items}>
         {BANDS.map((band) => (
           <li key={band} className={styles.item}>
-            <span className={styles.swatch} style={{ background: MAGNITUDE_TONES[band].color }} />
-            {MAGNITUDE_TONES[band].label}
+            <span className={styles.swatch} style={{ background: MAGNITUDE_TONES()[band].color }} />
+            {MAGNITUDE_TONES()[band].label}
           </li>
         ))}
         <li className={styles.item}>

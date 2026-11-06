@@ -24,19 +24,22 @@ import type {
 import { IndicatorDownloads } from './IndicatorDownloads';
 import { scoreMethodHref } from './scoreMethodHref';
 import styles from './IndicatorPanel.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 type IndicatorValuesEnvelope = AdaptedEnvelope<IndicatorValuesMapDTO>;
 
 /** Opened first when the catalog has it; otherwise the first indicator the Data Hub lists. */
 const PREFERRED_INDICATOR_ID = 'soc_poverty_rate';
 
-const STATS_LABELS = [
-  ['min', t('Terendah')],
-  ['median', t('Median')],
-  ['mean', t('Rata-rata')],
-  ['max', t('Tertinggi')],
-] as const;
+const STATS_LABELS = localized(
+  () =>
+    [
+      ['min', t('Terendah')],
+      ['median', t('Median')],
+      ['mean', t('Rata-rata')],
+      ['max', t('Tertinggi')],
+    ] as const,
+);
 
 function pickIndicator(catalog: IndicatorCatalogDTO, chosenId: string | null): DataHubIndicatorDTO | null {
   const byId = (id: string | null) => catalog.items.find((item) => item.indicatorId === id);
@@ -190,7 +193,7 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
         </p>
         {indicator.stats && (
           <dl className={styles.stats}>
-            {STATS_LABELS.map(([key, label]) => {
+            {STATS_LABELS().map(([key, label]) => {
               const value = indicator.stats?.[key] ?? null;
               return value === null ? null : (
                 <div key={key} className={styles.stat}>

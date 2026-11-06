@@ -18,22 +18,24 @@ describe('3D engine geography', () => {
   });
 
   it('accepts the explicit DEMO dataset in DEMO mode', () => {
-    expect(validateAndAdaptGeography(DEMO_ILLUSTRATIVE_GEOGRAPHY, 'DEMO').features.length).toBeGreaterThan(0);
+    expect(validateAndAdaptGeography(DEMO_ILLUSTRATIVE_GEOGRAPHY(), 'DEMO').features.length).toBeGreaterThan(
+      0,
+    );
   });
 
   it('rejects DEMO data in LIVE mode', () => {
-    expect(() => validateAndAdaptGeography(DEMO_ILLUSTRATIVE_GEOGRAPHY, 'LIVE')).toThrow();
+    expect(() => validateAndAdaptGeography(DEMO_ILLUSTRATIVE_GEOGRAPHY(), 'LIVE')).toThrow();
   });
 
   it('rejects LIVE-labelled data in DEMO mode', () => {
-    const dataset = structuredClone(DEMO_ILLUSTRATIVE_GEOGRAPHY);
+    const dataset = structuredClone(DEMO_ILLUSTRATIVE_GEOGRAPHY());
     dataset.metadata.dataMode = 'LIVE';
     dataset.metadata.isAuthoritative = true;
     expect(() => validateAndAdaptGeography(dataset, 'DEMO')).toThrow();
   });
 
   it('focuses on the real geometry when focus hints are absent', () => {
-    const first = DEMO_ILLUSTRATIVE_GEOGRAPHY.features[0];
+    const first = DEMO_ILLUSTRATIVE_GEOGRAPHY().features[0];
     if (!first) throw new Error('DEMO geography has no features');
     const feature = structuredClone(first);
     delete feature.properties.focusLon;
@@ -45,8 +47,8 @@ describe('3D engine geography', () => {
 
   // Host regression: the handoff version threw a ReferenceError here (variable used before declaration).
   it('returns the DEMO illustration when no dataset is supplied in DEMO mode', () => {
-    expect(validateAndAdaptGeography(undefined, 'DEMO')).toBe(DEMO_ILLUSTRATIVE_GEOGRAPHY);
-    expect(validateAndAdaptGeography(null, 'DEMO')).toBe(DEMO_ILLUSTRATIVE_GEOGRAPHY);
+    expect(validateAndAdaptGeography(undefined, 'DEMO')).toBe(DEMO_ILLUSTRATIVE_GEOGRAPHY());
+    expect(validateAndAdaptGeography(null, 'DEMO')).toBe(DEMO_ILLUSTRATIVE_GEOGRAPHY());
   });
 
   it('refuses to run LIVE without a verified dataset', () => {
@@ -55,7 +57,7 @@ describe('3D engine geography', () => {
 
   it('keeps the host keyboard list identical to the engine DEMO regions', () => {
     expect(
-      DEMO_ILLUSTRATIVE_GEOGRAPHY.features.map(({ properties }) => ({
+      DEMO_ILLUSTRATIVE_GEOGRAPHY().features.map(({ properties }) => ({
         regionId: properties.regionId,
         displayName: properties.displayName,
       })),

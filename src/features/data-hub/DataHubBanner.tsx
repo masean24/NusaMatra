@@ -21,7 +21,7 @@ export function DataHubBanner({ compact = false }: { readonly compact?: boolean 
     repository.getSnapshots(mode, signal),
   );
 
-  const disclaimer = INDONESIAN_ERROR_COPY['data.demo_disclaimer'];
+  const disclaimer = INDONESIAN_ERROR_COPY()['data.demo_disclaimer'];
   const showRow = dataMode === 'DEMO' || publicConfig.modeSwitch;
   const problem = snapshots.state.status === 'error' || snapshots.state.status === 'unconfigured';
   if (!showRow && !problem) return null;

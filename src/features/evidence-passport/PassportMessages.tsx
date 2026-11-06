@@ -1,7 +1,7 @@
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import styles from './EvidencePassport.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** Where to go to make a Paspor Bukti; shown whenever a link cannot produce one. */
 function EntryLinks() {
@@ -21,26 +21,29 @@ function EntryLinks() {
 }
 
 /** The three places a Paspor Bukti is made, and what each one records. */
-const PASSPORT_SOURCES = [
-  {
-    to: '/jelajahi',
-    feature: t('Jelajahi'),
-    kind: t('Paspor satu wilayah'),
-    how: t('Pilih kabupaten/kota, lalu tekan kartu “Paspor Bukti wilayah ini” di profilnya.'),
-  },
-  {
-    to: '/bandingkan',
-    feature: t('Bandingkan'),
-    kind: t('Paspor perbandingan dua wilayah'),
-    how: t('Pilih Wilayah A dan Wilayah B, lalu tekan “Buat Paspor Bukti” di atas tabel.'),
-  },
-  {
-    to: '/lab-prioritas',
-    feature: t('Lab Prioritas'),
-    kind: t('Paspor peringkat'),
-    how: t('Hitung peringkat, buka satu wilayah di daftar, lalu tekan “Buka Paspor Bukti”.'),
-  },
-] as const;
+const PASSPORT_SOURCES = localized(
+  () =>
+    [
+      {
+        to: '/jelajahi',
+        feature: t('Jelajahi'),
+        kind: t('Paspor satu wilayah'),
+        how: t('Pilih kabupaten/kota, lalu tekan kartu “Paspor Bukti wilayah ini” di profilnya.'),
+      },
+      {
+        to: '/bandingkan',
+        feature: t('Bandingkan'),
+        kind: t('Paspor perbandingan dua wilayah'),
+        how: t('Pilih Wilayah A dan Wilayah B, lalu tekan “Buat Paspor Bukti” di atas tabel.'),
+      },
+      {
+        to: '/lab-prioritas',
+        feature: t('Lab Prioritas'),
+        kind: t('Paspor peringkat'),
+        how: t('Hitung peringkat, buka satu wilayah di daftar, lalu tekan “Buka Paspor Bukti”.'),
+      },
+    ] as const,
+);
 
 /** A passport booklet crossed out: there is no record to show yet. */
 function CrossedPassportArt() {
@@ -82,7 +85,7 @@ export function PassportEntry() {
       <div className={styles.entryChoices}>
         <p className="kk-body-strong">{t('Buat Paspor Bukti dari salah satu fitur berikut:')}</p>
         <ol role="list" className={styles.entrySteps}>
-          {PASSPORT_SOURCES.map((source) => (
+          {PASSPORT_SOURCES().map((source) => (
             <li key={source.to} className={styles.entryStep}>
               <span className="kk-small">{source.feature}</span>
               <span className="kk-body-strong">{source.kind}</span>

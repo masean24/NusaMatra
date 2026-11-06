@@ -14,7 +14,7 @@ import type {
   IndicatorCoverageDTO,
 } from '@/services/api';
 import { DEFAULT_CRITERIA, LIVE_CRITERIA } from './criteria';
-import { LOCALE, t } from '@/lib/i18n';
+import { localized, locale, t } from '@/lib/i18n';
 
 export type Availability = 'available' | 'empty' | 'undeclared';
 
@@ -41,7 +41,7 @@ export function indicatorCoverageText(option: IndicatorOption): string | null {
     return t('{0} dari {1} wilayah', String(option.coverageCount), String(option.totalRegions));
   }
   if (option.coveragePct === null) return t('{0} wilayah', String(option.coverageCount));
-  const pct = option.coveragePct.toLocaleString(LOCALE, { maximumFractionDigits: 1 });
+  const pct = option.coveragePct.toLocaleString(locale(), { maximumFractionDigits: 1 });
   return t('{0} wilayah ({1}%)', String(option.coverageCount), pct);
 }
 
@@ -101,12 +101,16 @@ export function directionLabel(polarity: string): string {
 
 /** What the 0–100 score and rank mean (contract v2.1, `score_direction: higher_is_need`). */
 /** The one sentence above the ranking; SCORE_MEANING is the full reading, under "Cara membaca skor". */
-export const SCORE_SUMMARY = t(
-  'Skor 0–100: makin tinggi, makin tinggi kebutuhan intervensi menurut kriteria pilihan Anda (relatif, bukan mutlak).',
+export const SCORE_SUMMARY = localized(() =>
+  t(
+    'Skor 0–100: makin tinggi, makin tinggi kebutuhan intervensi menurut kriteria pilihan Anda (relatif, bukan mutlak).',
+  ),
 );
 
-export const SCORE_MEANING = t(
-  'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria pilihan Anda: makin tinggi skor, makin tinggi kebutuhannya, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak.',
+export const SCORE_MEANING = localized(() =>
+  t(
+    'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria pilihan Anda: makin tinggi skor, makin tinggi kebutuhannya, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak.',
+  ),
 );
 
 /** Reader-facing names of the quality flags the Data Hub sends; unknown ones are shown as they are. */
@@ -160,7 +164,7 @@ export function startingWeights(
 
 /** Basis points as a percentage for display ("43,75 %"). */
 export function percentLabel(basisPoints: number): string {
-  return `${(basisPoints / 100).toLocaleString(LOCALE, { maximumFractionDigits: 2 })}%`;
+  return `${(basisPoints / 100).toLocaleString(locale(), { maximumFractionDigits: 2 })}%`;
 }
 
 /**

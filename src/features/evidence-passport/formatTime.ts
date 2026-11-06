@@ -1,20 +1,23 @@
-import { LOCALE, t } from '@/lib/i18n';
+import { localized, locale, t } from '@/lib/i18n';
 
-const BROWSER_TIME = new Intl.DateTimeFormat(LOCALE, {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-  timeZoneName: 'short',
-});
+const BROWSER_TIME = localized(
+  () =>
+    new Intl.DateTimeFormat(locale(), {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short',
+    }),
+);
 
 /** The moment the browser received a response, in the viewer's own time zone. Unparseable input is shown as sent. */
 export function formatBrowserTime(iso: string | null): string {
   if (iso === null) return t('belum tersedia');
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? iso : BROWSER_TIME.format(date);
+  return Number.isNaN(date.getTime()) ? iso : BROWSER_TIME().format(date);
 }
 
 /**

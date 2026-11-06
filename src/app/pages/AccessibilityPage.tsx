@@ -1,10 +1,10 @@
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
 import styles from './StaticPage.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** States what this build actually supports; no conformance claim beyond what was implemented. */
-const SUPPORTED = [
+const SUPPORTED = localized(() => [
   t('Semua tautan dan tombol dapat digunakan dengan papan ketik, dengan penanda fokus yang terlihat.'),
   t('Tautan “Lewati ke konten utama” di awal halaman.'),
   t(
@@ -13,7 +13,7 @@ const SUPPORTED = [
   t('Animasi dan efek 3D berhenti bila perangkat meminta gerak dikurangi; isinya tetap utuh.'),
   t('Ilustrasi 3D mempunyai gambar diam pengganti di ponsel dan pada perangkat tanpa WebGL.'),
   t('Warna tidak pernah menjadi satu-satunya penanda status; setiap status juga punya ikon dan teks.'),
-];
+]);
 
 export function AccessibilityPage() {
   return (
@@ -27,7 +27,7 @@ export function AccessibilityPage() {
       </p>
       <Surface radius="card" reading className={styles.panel}>
         <ul className={styles.list}>
-          {SUPPORTED.map((item) => (
+          {SUPPORTED().map((item) => (
             <li key={item} className="kk-body">
               {item}
             </li>

@@ -3,6 +3,8 @@ import { assessEarthquakeFeed, type FeedAssessment } from '@/domain/hazards';
 import { useDataHub } from '@/features/data-hub';
 import { publicConfig } from '@/lib/publicConfig';
 import { ApiError, type EarthquakeFeedDTO } from '@/services/api';
+import { forLanguage } from '@/lib/i18n';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 
 /** About every two minutes while the layer is on and the page is visible. */
 export const POLL_INTERVAL_MS = 120_000;
@@ -111,20 +113,23 @@ export function useEarthquakeFeed(enabled: boolean): EarthquakeFeedState {
   }, [active, repository]);
 
   // Judged against the current time, not the time of the response, so age and staleness keep moving.
+  const currentLanguage = useLanguage();
   const assessment = useMemo(
     () =>
-      result.feed
-        ? assessEarthquakeFeed({
-            origin: result.feed.origin,
-            lastSuccessAt: result.feed.lastSuccessAt,
-            declaredStale: result.feed.declaredStale,
-            cacheTtlSeconds: result.feed.cacheTtlSeconds,
-            fallbackHeader: result.feed.dataFallback,
-            now: new Date(nowMs),
-            allowUnverifiedPreview: publicConfig.earthquakePreview,
-          })
-        : null,
-    [result.feed, nowMs],
+      forLanguage(currentLanguage, () =>
+        result.feed
+          ? assessEarthquakeFeed({
+              origin: result.feed.origin,
+              lastSuccessAt: result.feed.lastSuccessAt,
+              declaredStale: result.feed.declaredStale,
+              cacheTtlSeconds: result.feed.cacheTtlSeconds,
+              fallbackHeader: result.feed.dataFallback,
+              now: new Date(nowMs),
+              allowUnverifiedPreview: publicConfig.earthquakePreview,
+            })
+          : null,
+      ),
+    [currentLanguage, result.feed, nowMs],
   );
 
   if (!active || repository === null) return { status: 'idle', ...EMPTY, assessment: null, retry };

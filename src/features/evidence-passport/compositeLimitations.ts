@@ -2,9 +2,9 @@ import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
 import { snapshotIdentityNote } from './notices';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
-const percent = (value: number) => `${value.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`;
+const percent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
 
 /**
  * Caveats derived from the composite record itself. The wording never says a withheld result passed

@@ -6,11 +6,11 @@ import { prefersReducedMotion } from '@/features/motion';
 import type { ExploratoryRegionRankDTO } from '@/services/api';
 import { contributions, imputedCriteria, percentLabel, qualityFlagLabel } from './labModel';
 import styles from './PriorityLab.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
 /** Composite scores always with two decimals (Indonesian comma), e.g. 72,80. */
 function formatScore(score: number): string {
-  return score.toLocaleString(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return score.toLocaleString(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 /** Six series colours (theme tokens); a criterion keeps its colour across the three charts. */

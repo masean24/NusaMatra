@@ -22,7 +22,11 @@ describe('SourcesSection', () => {
 
 describe('landing Paspor Bukti preview', () => {
   it('labels its illustrative identifier CONTOH', () => {
-    expect(DEMO_PASSPORT_PREVIEW.id).toMatch(/^CONTOH-/);
-    expect(DEMO_PASSPORT_PREVIEW.rows.map((row) => row.value).join(' ')).not.toMatch(/direncanakan/);
+    expect(DEMO_PASSPORT_PREVIEW().id).toMatch(/^CONTOH-/);
+    expect(
+      DEMO_PASSPORT_PREVIEW()
+        .rows.map((row) => row.value)
+        .join(' '),
+    ).not.toMatch(/direncanakan/);
   });
 });

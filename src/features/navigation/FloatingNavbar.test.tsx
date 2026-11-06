@@ -31,8 +31,8 @@ describe('FloatingNavbar', () => {
   it('lists the Figma items in order with real destinations', () => {
     renderAt('/');
     const links = desktopNav().getAllByRole('link');
-    expect(links).toHaveLength(PRIMARY_NAV_ITEMS.length);
-    PRIMARY_NAV_ITEMS.forEach((item, index) => {
+    expect(links).toHaveLength(PRIMARY_NAV_ITEMS().length);
+    PRIMARY_NAV_ITEMS().forEach((item, index) => {
       // The accessible name ignores the aria-hidden "on liquid" copy of the label.
       expect(links[index]).toHaveAccessibleName(item.label);
       expect(links[index]).toHaveAttribute('href', item.to);
@@ -131,6 +131,6 @@ describe('FloatingNavbar', () => {
     const [desktop] = screen.getAllByRole('navigation', { name: 'Navigasi utama' });
     const pill = desktop?.querySelector('span[aria-hidden="true"]');
     expect(pill).not.toBeNull();
-    expect(desktopNav().getAllByRole('listitem')).toHaveLength(PRIMARY_NAV_ITEMS.length);
+    expect(desktopNav().getAllByRole('listitem')).toHaveLength(PRIMARY_NAV_ITEMS().length);
   });
 });

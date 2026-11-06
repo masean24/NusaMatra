@@ -1,6 +1,11 @@
 import type { ReactElement } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
-import { FEATURE_SHELLS, FeatureShellPage, type FeatureShell } from '@/features/feature-shell';
+import {
+  FEATURE_SHELLS,
+  FeatureShellPage,
+  findFeatureShell,
+  type FeatureShell,
+} from '@/features/feature-shell';
 import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
 import { COMPARISON_DETAIL_PATH } from '@/features/comparison';
@@ -15,6 +20,7 @@ import {
   MethodologyPage,
   PriorityLabPage,
 } from './lazyPages';
+import { Localized } from '@/lib/i18n/Localized';
 
 /** Features that are built; every other shell is an honest "under development" page. */
 const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
@@ -35,7 +41,7 @@ function pageFor(shell: FeatureShell): ReactElement {
 /** Route slugs follow docs/01 §5 and docs/04 §5 (Indonesian, kebab-case). */
 export const routes = [
   {
-    element: <AppLayout />,
+    element: <Localized render={() => <AppLayout />} />,
     errorElement: <RouteErrorPage />,
     children: [
       {
@@ -43,11 +49,14 @@ export const routes = [
         // navigation stays usable.
         errorElement: <RouteErrorPage />,
         children: [
-          { index: true, element: <LandingPage /> },
-          ...FEATURE_SHELLS.map((shell) => ({ path: shell.path, element: pageFor(shell) })),
-          { path: COMPARISON_DETAIL_PATH, element: <ComparisonDetailPage /> },
-          { path: '/aksesibilitas', element: <AccessibilityPage /> },
-          { path: '*', element: <NotFoundPage /> },
+          { index: true, element: <Localized render={() => <LandingPage />} /> },
+          ...FEATURE_SHELLS().map(({ path }) => ({
+            path,
+            element: <Localized render={() => pageFor(findFeatureShell(path) as FeatureShell)} />,
+          })),
+          { path: COMPARISON_DETAIL_PATH, element: <Localized render={() => <ComparisonDetailPage />} /> },
+          { path: '/aksesibilitas', element: <Localized render={() => <AccessibilityPage />} /> },
+          { path: '*', element: <Localized render={() => <NotFoundPage />} /> },
         ],
       },
     ],

@@ -4,15 +4,15 @@ import { formatNumber } from './formatNumber';
 import { IconCard, InfoNote, LoadableView, SectionHead } from './MethodParts';
 import type { ScoreMethodData } from './useScoreMethod';
 import styles from './Methodology.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** Reader-facing names of the example criteria (the catalog's names are long). */
-const CRITERION_LABEL: Readonly<Record<ExampleCriterion, string>> = {
+const CRITERION_LABEL = localized((): Readonly<Record<ExampleCriterion, string>> => ({
   soc_hdi: t('Indeks Pembangunan Manusia'),
   dis_multihazard_index: t('Indeks Risiko Bencana (IRBI) multi-bencana'),
   soc_poverty_rate: t('Persentase penduduk miskin'),
   hlt_stunting_prevalence: t('Prevalensi balita stunting'),
-};
+}));
 
 /** Each criterion's colour in the rows and the stacked bar (the brand palette, in order). */
 const CRITERION_COLOUR: Readonly<Record<ExampleCriterion, string>> = {
@@ -94,7 +94,7 @@ function CompositeCard({
                     style={{ '--swatch': CRITERION_COLOUR[row.id] } as CSSProperties}
                     aria-hidden="true"
                   />
-                  {CRITERION_LABEL[row.id]}
+                  {CRITERION_LABEL()[row.id]}
                 </th>
                 <td>{row.needScore === null ? t('Data belum tersedia') : formatNumber(row.needScore)}</td>
                 <td>{formatNumber(row.basisPoints / 100)}%</td>
@@ -146,7 +146,7 @@ function CompositeCard({
           {t(
             '{0} belum punya data untuk {1}. Nilainya tidak dianggap nol: di Lab Prioritas bobotnya dibagi ke kriteria lain dan wilayahnya ditandai “Data sebagian”, jadi total di atas tidak dihitung di sini.',
             regionName,
-            example.missing.map((id) => CRITERION_LABEL[id]).join(', '),
+            example.missing.map((id) => CRITERION_LABEL()[id]).join(', '),
           )}
         </InfoNote>
       ) : (

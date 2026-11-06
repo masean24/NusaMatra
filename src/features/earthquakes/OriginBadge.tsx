@@ -8,5 +8,5 @@ import { ORIGIN_LABEL } from './originText';
  */
 export function OriginBadge({ origin }: { readonly origin: EarthquakeOrigin }) {
   const declared = origin === 'BMKG_LIVE' || origin === 'BMKG_CACHE';
-  return <Chip tone={declared ? 'neutral' : 'warning'}>{ORIGIN_LABEL[origin]}</Chip>;
+  return <Chip tone={declared ? 'neutral' : 'warning'}>{ORIGIN_LABEL()[origin]}</Chip>;
 }

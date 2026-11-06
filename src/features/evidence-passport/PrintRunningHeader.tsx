@@ -26,7 +26,7 @@ export function PrintRunningHeader({
     'Nusa Matra, Paspor Bukti, mode {0}, versi data {1}, {2}',
     source.dataMode,
     snapshot,
-    BROWSER_ASSEMBLED_LABEL,
+    BROWSER_ASSEMBLED_LABEL(),
   );
   return (
     <>

@@ -1,4 +1,4 @@
-import { t } from './index';
+import { applyLanguage, language, locale, localized, prepareLanguage, t } from './index';
 import english from './en.json';
 
 const dictionary: Readonly<Record<string, string>> = english;
@@ -28,6 +28,37 @@ describe('t', () => {
 
   it('keeps a placeholder that has no argument, rather than printing "undefined"', () => {
     expect(t('{0} dan {1}', 'A')).toBe('A dan {1}');
+  });
+});
+
+describe('changing the language in place', () => {
+  afterEach(() => {
+    applyLanguage('id');
+    window.localStorage.clear();
+  });
+
+  it('changes text, locale and the document, and keeps the choice', async () => {
+    expect(await prepareLanguage('en')).toBe(true);
+    applyLanguage('en');
+    expect(language()).toBe('en');
+    expect(locale()).toBe('en-GB');
+    expect(t('Kembali')).toBe('Back');
+    expect(document.documentElement.getAttribute('lang')).toBe('en');
+    expect(window.localStorage.getItem('nusa-matra:language')).toBe('en');
+  });
+
+  it('builds a localized value once per language', async () => {
+    let builds = 0;
+    const label = localized(() => {
+      builds += 1;
+      return t('Kembali');
+    });
+    expect([label(), label()]).toEqual(['Kembali', 'Kembali']);
+    expect(builds).toBe(1);
+    await prepareLanguage('en');
+    applyLanguage('en');
+    expect(label()).toBe('Back');
+    expect(builds).toBe(2);
   });
 });
 

@@ -7,7 +7,7 @@ import { ScrollRegion } from './ScrollRegion';
 import { scopeLabel } from './scopeLabel';
 import { Section } from './Section';
 import styles from './EvidencePassport.module.css';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
 const count = (value: number | null): string => (value === null ? t('belum dilaporkan') : String(value));
 
@@ -77,7 +77,7 @@ export function ScopeSection({ record }: { readonly record: CompositeEvidenceRec
           <dd>
             {integrity.requestedWeightAvailabilityPct === null
               ? t('belum dapat dihitung')
-              : `${integrity.requestedWeightAvailabilityPct.toLocaleString(LOCALE, { maximumFractionDigits: 1 })}%`}
+              : `${integrity.requestedWeightAvailabilityPct.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`}
             {record.preset && t(' (skenario "{0}")', record.preset.label)}
           </dd>
         </div>

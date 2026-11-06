@@ -1,5 +1,5 @@
 import { qualityFlagNote } from '@/features/data-hub';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /**
  * How much a reader may rely on one value, in the four classes the Paspor Bukti distinguishes plus
@@ -78,42 +78,42 @@ export function classifyEvidence({
 }
 
 /** Plain-language names; the Data Hub's own codes stay in the data, never in the reader's way. */
-const CLASS_LABEL: Readonly<Record<EvidenceClass, string>> = {
+const CLASS_LABEL = localized((): Readonly<Record<EvidenceClass, string>> => ({
   VERIFIED: t('Angka langsung dari sumber'),
   DERIVED: t('Hasil hitungan'),
   IMPUTED_PROVINCE: t('Perkiraan dari provinsi'),
   DEMO_EXAMPLE: t('Contoh simulasi'),
   OTHER_FLAG: t('Penanda lain'),
   UNSPECIFIED: t('Belum dinyatakan'),
-};
+}));
 
-const CLASS_MEANING: Readonly<Record<EvidenceClass, string>> = {
+const CLASS_MEANING = localized((): Readonly<Record<EvidenceClass, string>> => ({
   VERIFIED: t('Penanda dari Data Hub; bukan pemeriksaan independen oleh Nusa Matra.'),
   DERIVED: t('Dihitung oleh Data Hub dari data lain, bukan angka yang dilaporkan langsung oleh sumber.'),
   IMPUTED_PROVINCE: t('Diimputasi dari nilai provinsi; bukan pengukuran kabupaten/kota.'),
   DEMO_EXAMPLE: t('Contoh simulasi; bukan observasi resmi.'),
   OTHER_FLAG: t('Penanda kualitas lain dari Data Hub, ditampilkan apa adanya.'),
   UNSPECIFIED: t('Data Hub tidak menyatakan atau tidak cukup menyatakan kelas nilai ini.'),
-};
+}));
 
 /** Plain names for server flags outside the passport's classes; any other code is shown as sent. */
-const OTHER_FLAG_NAME: Readonly<Record<string, string>> = {
+const OTHER_FLAG_NAME = localized((): Readonly<Record<string, string>> => ({
   DERIVED: t('hasil hitungan'),
   ESTIMATED: t('perkiraan'),
   PROVISIONAL: t('angka sementara'),
   PARTIAL: t('sebagian'),
-};
+}));
 
 /** Label of the class; for another server flag, a plain-language lead and the flag in words. */
 export function evidenceClassLabel(evidenceClass: EvidenceClass, rawFlag: string | null): string {
   if (evidenceClass === 'OTHER_FLAG' && rawFlag) {
-    return t('Penanda lain: {0}', OTHER_FLAG_NAME[rawFlag] ?? rawFlag);
+    return t('Penanda lain: {0}', OTHER_FLAG_NAME()[rawFlag] ?? rawFlag);
   }
-  return CLASS_LABEL[evidenceClass];
+  return CLASS_LABEL()[evidenceClass];
 }
 
 export function evidenceClassMeaning(evidenceClass: EvidenceClass): string {
-  return CLASS_MEANING[evidenceClass];
+  return CLASS_MEANING()[evidenceClass];
 }
 
 export const EVIDENCE_CLASS_ORDER: readonly EvidenceClass[] = [

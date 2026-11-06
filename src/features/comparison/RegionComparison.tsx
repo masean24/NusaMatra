@@ -20,10 +20,10 @@ import { describeQualityFlag } from './qualityFlag';
 import { RegionPicker } from './RegionPicker';
 import { useComparisonParams } from './comparisonParams';
 import styles from './RegionComparison.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 const SIMILAR_RATIO = 1.05;
-const DATA_QUALITY_SECTION = t('Metrik kualitas data');
+const DATA_QUALITY_SECTION = localized(() => t('Metrik kualitas data'));
 
 /**
  * `summary` (Bandingkan): pickers and a short table, each row only the indicator, both values, the
@@ -282,7 +282,7 @@ function ComparisonResult({
           ))}
           {qualityRows.length > 0 && (
             <IndicatorGroup
-              title={DATA_QUALITY_SECTION}
+              title={DATA_QUALITY_SECTION()}
               rows={qualityRows}
               a={a}
               b={b}
@@ -493,7 +493,7 @@ function IndicatorRow({
         <div className={styles.difference}>
           {!isRegional ? (
             <>
-              <span className="kk-body-strong">{NOT_DETERMINED}</span>
+              <span className="kk-body-strong">{NOT_DETERMINED()}</span>
               {detailed && (
                 <span className={`kk-small ${styles.muted}`}>
                   {t(
@@ -512,7 +512,7 @@ function IndicatorRow({
             </>
           ) : (
             <>
-              <span className="kk-body-strong">{NOT_DETERMINED}</span>
+              <span className="kk-body-strong">{NOT_DETERMINED()}</span>
               {detailed && (
                 <ul role="list" className={`kk-small ${styles.reasons}`}>
                   {assessment.blockers.map((blocker) => (
@@ -592,7 +592,7 @@ function sideOutcomes(
 }
 
 /** Said for a row whose figures cannot be compared yet (missing data, other year, unit, source). */
-const NOT_DETERMINED = t('Untuk sementara hasil belum dapat ditentukan');
+const NOT_DETERMINED = localized(() => t('Untuk sementara hasil belum dapat ditentukan'));
 
 function describeDifference(
   row: ComparisonRow,

@@ -1,4 +1,4 @@
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /**
  * Destinations that exist in the approved Figma but are not built in this slice. Each gets an
@@ -16,7 +16,7 @@ export interface FeatureShell {
   readonly hasMap?: boolean;
 }
 
-export const FEATURE_SHELLS: readonly FeatureShell[] = [
+export const FEATURE_SHELLS = localized((): readonly FeatureShell[] => [
   {
     path: '/peta',
     title: t('Peta Utama'),
@@ -124,8 +124,8 @@ export const FEATURE_SHELLS: readonly FeatureShell[] = [
     ],
     figmaNode: null,
   },
-];
+]);
 
 export function findFeatureShell(path: string): FeatureShell | undefined {
-  return FEATURE_SHELLS.find((shell) => shell.path === path);
+  return FEATURE_SHELLS().find((shell) => shell.path === path);
 }

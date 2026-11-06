@@ -84,7 +84,7 @@ function reproducibilityOf(
       pinnedSnapshotId: null,
       contentSha256: null,
       origin: null,
-      statement: `${pinning.reason} ${NOT_PINNED_CONSEQUENCE}`,
+      statement: `${pinning.reason} ${NOT_PINNED_CONSEQUENCE()}`,
     };
   }
   const { pin, origin, detail } = pinning;
@@ -97,7 +97,7 @@ function reproducibilityOf(
       statement: t(
         'Versi data {0} tidak dinyatakan immutable, atau respons tidak sepakat soal sidik isinya. {1}',
         pin.snapshotId,
-        NOT_PINNED_CONSEQUENCE,
+        NOT_PINNED_CONSEQUENCE(),
       ),
     };
   }
@@ -106,7 +106,7 @@ function reproducibilityOf(
     pinnedSnapshotId: pin.snapshotId,
     contentSha256: pin.contentSha256,
     origin,
-    statement: REPRODUCIBLE_SNAPSHOT_STATEMENT,
+    statement: REPRODUCIBLE_SNAPSHOT_STATEMENT(),
   };
 }
 

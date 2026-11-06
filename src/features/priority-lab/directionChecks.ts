@@ -5,7 +5,7 @@ import {
   type ReferenceValue,
 } from '@/domain/prioritization';
 import type { ExploratoryCompositeResultDTO, IndicatorValuesMapDTO } from '@/services/api';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 export interface DirectionCheck {
   readonly indicatorId: string;
@@ -36,11 +36,14 @@ function referenceOf(values: IndicatorValuesMapDTO): Record<string, ReferenceVal
   );
 }
 
-const UNAVAILABLE: DirectionVerdict = { status: 'unverifiable', reason: t('Nilai sumber tidak tersedia.') };
-const OTHER_SNAPSHOT: DirectionVerdict = {
+const UNAVAILABLE = localized((): DirectionVerdict => ({
+  status: 'unverifiable',
+  reason: t('Nilai sumber tidak tersedia.'),
+}));
+const OTHER_SNAPSHOT = localized((): DirectionVerdict => ({
   status: 'unverifiable',
   reason: t('Nilai sumber berasal dari snapshot lain daripada peringkat ini.'),
-};
+}));
 
 /**
  * Checks, per weighted indicator, that the ranking's component scores follow the indicator's direction
@@ -56,10 +59,10 @@ export function checkRankingDirections(
   const needOriented = result.scoreDirection === 'higher_is_need';
   return indicatorIds.map((indicatorId) => {
     const values = valuesOf(indicatorId);
-    if (!values) return { indicatorId, verdict: UNAVAILABLE, nationalVerdict: null };
+    if (!values) return { indicatorId, verdict: UNAVAILABLE(), nationalVerdict: null };
     // Values from another snapshot (a deploy between two requests) say nothing about this ranking.
     if (values.snapshotId !== result.snapshotId) {
-      return { indicatorId, verdict: OTHER_SNAPSHOT, nationalVerdict: null };
+      return { indicatorId, verdict: OTHER_SNAPSHOT(), nationalVerdict: null };
     }
     const polarity = polarityOf(indicatorId);
     const reference = referenceOf(values);

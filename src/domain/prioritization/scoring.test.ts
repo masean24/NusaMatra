@@ -71,7 +71,7 @@ describe('rankRegions', () => {
 
 describe('landing DEMO fixture', () => {
   it('reproduces the Figma example ranking under the current weights', () => {
-    const { ranked } = rankRegions(DEMO_REGIONS, DEMO_CURRENT_WEIGHTS);
+    const { ranked } = rankRegions(DEMO_REGIONS(), DEMO_CURRENT_WEIGHTS);
     expect(ranked.map((entry) => [entry.region.name, entry.score.toFixed(2)])).toEqual([
       ['Wilayah A', '0.82'],
       ['Wilayah D', '0.74'],
@@ -80,7 +80,7 @@ describe('landing DEMO fixture', () => {
   });
 
   it('ranks Wilayah B above Wilayah D under the previous weights, so the G6 reorder is real', () => {
-    const { ranked } = rankRegions(DEMO_REGIONS, DEMO_PREVIOUS_WEIGHTS);
+    const { ranked } = rankRegions(DEMO_REGIONS(), DEMO_PREVIOUS_WEIGHTS);
     expect(ranked.map((entry) => entry.region.name)).toEqual(['Wilayah A', 'Wilayah B', 'Wilayah D']);
   });
 });

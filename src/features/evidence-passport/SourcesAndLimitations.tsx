@@ -133,7 +133,7 @@ export function LimitationsSection({
         title={t('Apa arti Paspor Bukti ini?')}
         helper={t('Cara paspor dirangkai dan apa yang tidak dijaminnya')}
       >
-        <p>{BROWSER_ASSEMBLED_NOTICE}</p>
+        <p>{BROWSER_ASSEMBLED_NOTICE()}</p>
       </Disclosure>
       <ol role="list" className={styles.limitList}>
         {first.map(item)}

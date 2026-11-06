@@ -1,25 +1,28 @@
 import { Surface } from '@/components/ui/Surface/Surface';
 import { Reveal } from '@/features/motion';
 import styles from './SourcesSection.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /**
  * Figma 41:406. The two sources the Data Hub ingests (LIVE v2.2 dataset list, captured 2026-10-24,
  * src/services/api/__fixtures__/live-v2.2/datasets.json): BNPB (IRBI, DIBI) and BPS (SDGs,
  * Susenas). Only sources actually in use are listed (owner decision 2026-10-27).
  */
-const SOURCES = [
-  {
-    name: 'BNPB (InaRISK)',
-    description: t('Indeks dan kelas risiko bencana per kabupaten/kota.'),
-    status: t('Terhubung lewat Data Hub'),
-  },
-  {
-    name: t('Badan Pusat Statistik'),
-    description: t('Kemiskinan, kependudukan, dan layanan dasar.'),
-    status: t('Terhubung lewat Data Hub'),
-  },
-] as const;
+const SOURCES = localized(
+  () =>
+    [
+      {
+        name: 'BNPB (InaRISK)',
+        description: t('Indeks dan kelas risiko bencana per kabupaten/kota.'),
+        status: t('Terhubung lewat Data Hub'),
+      },
+      {
+        name: t('Badan Pusat Statistik'),
+        description: t('Kemiskinan, kependudukan, dan layanan dasar.'),
+        status: t('Terhubung lewat Data Hub'),
+      },
+    ] as const,
+);
 
 /* G10: the source cards rise one after another, 90ms apart. */
 const G10_STAGGER_MS = 90;
@@ -33,7 +36,7 @@ export function SourcesSection() {
         </h2>
       </Reveal>
       <ul role="list" className={styles.cards}>
-        {SOURCES.map((source, index) => (
+        {SOURCES().map((source, index) => (
           <li key={source.name} className={styles.cell}>
             <Reveal
               distance={24}

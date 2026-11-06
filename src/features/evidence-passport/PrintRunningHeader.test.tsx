@@ -12,7 +12,7 @@ describe('PrintRunningHeader', () => {
     const { container } = render(
       <PrintRunningHeader source={{ dataMode: 'LIVE', snapshotId: '2026.10.0-official-live' }} />,
     );
-    const text = `Nusa Matra, Paspor Bukti, mode LIVE, versi data 2026.10.0-official-live, ${BROWSER_ASSEMBLED_LABEL}`;
+    const text = `Nusa Matra, Paspor Bukti, mode LIVE, versi data 2026.10.0-official-live, ${BROWSER_ASSEMBLED_LABEL()}`;
     expect(screen.getByText(text)).toBeInTheDocument();
     const rule = pageRule(container);
     expect(rule).toContain('@page');

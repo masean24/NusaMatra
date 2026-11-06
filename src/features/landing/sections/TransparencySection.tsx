@@ -35,7 +35,7 @@ export function TransparencySection() {
           </p>
         </Reveal>
         <ul role="list" className={styles.statuses}>
-          {DEMO_DATA_STATUSES.map((status, index) => (
+          {DEMO_DATA_STATUSES().map((status, index) => (
             <li key={status.kind}>
               <Reveal distance={0} fromX={-16} duration={600} delay={160 + index * G7_STAGGER_MS}>
                 <Surface radius="control" className={styles.status}>
@@ -61,10 +61,10 @@ export function TransparencySection() {
         <Reveal distance={24} duration={600} delay={200} threshold={0.3}>
           <Surface radius="card" className={styles.preview}>
             <p className={`kk-h3 ${styles.previewTitle}`}>
-              {t('Paspor Bukti {0}', DEMO_PASSPORT_PREVIEW.id)}
+              {t('Paspor Bukti {0}', DEMO_PASSPORT_PREVIEW().id)}
             </p>
             <dl className={styles.rows}>
-              {DEMO_PASSPORT_PREVIEW.rows.map((row) => (
+              {DEMO_PASSPORT_PREVIEW().rows.map((row) => (
                 <div key={row.label} className={styles.rowItem}>
                   <dt className={`kk-caption ${styles.muted}`}>{row.label}</dt>
                   <dd className="kk-small">{row.value}</dd>

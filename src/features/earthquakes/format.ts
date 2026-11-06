@@ -1,8 +1,8 @@
 import type { EarthquakeEventDTO } from '@/services/api';
-import { LOCALE, t } from '@/lib/i18n';
+import { locale, t } from '@/lib/i18n';
 
 const decimal = (value: number, digits: number) =>
-  value.toLocaleString(LOCALE, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  value.toLocaleString(locale(), { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
 /** The figure alone, with the page's decimal mark. */
 export const formatMagnitudeValue = (magnitude: number) => decimal(magnitude, 1);
@@ -34,7 +34,7 @@ export function formatEventTime(
   event: Pick<EarthquakeEventDTO, 'occurredAt' | 'localDate' | 'localTime'>,
 ): string {
   if (event.localDate && event.localTime) return `${event.localDate}, ${event.localTime}`;
-  return `${new Date(event.occurredAt).toLocaleString(LOCALE, {
+  return `${new Date(event.occurredAt).toLocaleString(locale(), {
     timeZone: 'Asia/Jakarta',
     dateStyle: 'medium',
     timeStyle: 'medium',

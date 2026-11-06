@@ -19,7 +19,8 @@ import { BackButton } from '@/features/navigation';
 import { InvalidLink, PassportEntry } from './PassportMessages';
 import { useCompositeSources, useEvidenceSources } from './useEvidenceSources';
 import type { SourcesState } from './useSourceLoader';
-import { t } from '@/lib/i18n';
+import { forLanguage, t } from '@/lib/i18n';
+import { useLanguage } from '@/lib/i18n/useLanguage';
 
 /** Why a pinned passport could not be made, by error code; `null` for any other failure. */
 function snapshotFailureCopy(code: string): { readonly title: string; readonly body: string } | null {
@@ -163,9 +164,13 @@ function useRequestedMode(query: { readonly mode?: DataMode | null | undefined }
 function LoadedPassport({ query }: { readonly query: RegionEvidenceQuery | ComparisonEvidenceQuery }) {
   const mode = useRequestedMode(query);
   const { state, retry } = useEvidenceSources(regionIdsOf(query), mode, query.snapshotId, true);
+  const currentLanguage = useLanguage();
   const record = useMemo(
-    () => (state.status === 'ready' ? buildEvidenceRecord(query, state.sources) : null),
-    [state, query],
+    () =>
+      forLanguage(currentLanguage, () =>
+        state.status === 'ready' ? buildEvidenceRecord(query, state.sources) : null,
+      ),
+    [currentLanguage, state, query],
   );
   return stateMessage(state, mode, retry) ?? (record ? <EvidenceDocument record={record} /> : null);
 }
@@ -180,9 +185,13 @@ function LoadedLabPassport({ query }: { readonly query: LabEvidenceQuery }) {
     query.snapshotId,
     true,
   );
+  const currentLanguage = useLanguage();
   const record = useMemo(
-    () => (state.status === 'ready' ? buildCompositeRecord(query, state.sources) : null),
-    [state, query],
+    () =>
+      forLanguage(currentLanguage, () =>
+        state.status === 'ready' ? buildCompositeRecord(query, state.sources) : null,
+      ),
+    [currentLanguage, state, query],
   );
   return stateMessage(state, mode, retry) ?? (record ? <CompositeDocument record={record} /> : null);
 }

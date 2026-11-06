@@ -11,15 +11,17 @@ import { RegionsSection } from './RegionsSection';
 import { SourceStatusSection } from './SourceStatusSection';
 import { LimitationsSection, SourcesSection } from './SourcesAndLimitations';
 import { usePassportActions } from './usePassportActions';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
-const KIND_LABEL: Readonly<Record<EvidenceRecord['kind'], string>> = {
+const KIND_LABEL = localized((): Readonly<Record<EvidenceRecord['kind'], string>> => ({
   wilayah: t('Satu wilayah'),
   bandingkan: t('Perbandingan dua wilayah'),
-};
+}));
 
-const EXPORT_NOTE = t(
-  'Unduh JSON memuat catatan lengkap: setiap nilai indikator dengan sumber dan penandanya, setiap respons Data Hub beserta permintaannya, dan semua batasan.',
+const EXPORT_NOTE = localized(() =>
+  t(
+    'Unduh JSON memuat catatan lengkap: setiap nilai indikator dengan sumber dan penandanya, setiap respons Data Hub beserta permintaannya, dan semua batasan.',
+  ),
 );
 
 /** One region or one pair: how it is pinned, the regions, every indicator value, the sources, the limits. */
@@ -50,12 +52,12 @@ export function EvidenceDocument({ record }: { readonly record: EvidenceRecord }
   return (
     <PassportLayout
       record={record}
-      kindLabel={KIND_LABEL[record.kind]}
+      kindLabel={KIND_LABEL()[record.kind]}
       notes={notes}
       agencies={agencies}
       toc={toc}
       citation={citation}
-      exportNote={EXPORT_NOTE}
+      exportNote={EXPORT_NOTE()}
       actions={actions}
       wide={
         <>

@@ -1,17 +1,20 @@
 import { HERO_ORIGIN, lonLatToPlane, projectToHeroFrame } from '@/lib/heroMapCamera';
 import styles from './HexGraticule.module.css';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 /** Drawn in the zone's 720 × 660 design units; the SVG stretches to the zone, which keeps that ratio. */
 const WIDTH = 720;
 const HEIGHT = 660;
 
-const PARALLELS = [
-  { lat: 5, label: t('5° LU') },
-  { lat: 0, label: '0°' },
-  { lat: -5, label: t('5° LS') },
-  { lat: -10, label: t('10° LS') },
-] as const;
+const PARALLELS = localized(
+  () =>
+    [
+      { lat: 5, label: t('5° LU') },
+      { lat: 0, label: '0°' },
+      { lat: -5, label: t('5° LS') },
+      { lat: -10, label: t('10° LS') },
+    ] as const,
+);
 const MERIDIANS = [100, 110, 120, 130, 140] as const;
 const MERIDIAN_LAT_SPAN = [8, -13] as const;
 
@@ -41,7 +44,7 @@ export function HexGraticule() {
         const bottom = framePoint(lon, south);
         return <line key={lon} className={styles.grid} x1={top.x} y1={top.y} x2={bottom.x} y2={bottom.y} />;
       })}
-      {PARALLELS.map(({ lat, label }) => {
+      {PARALLELS().map(({ lat, label }) => {
         const { y } = framePoint(118, lat);
         return (
           <g key={lat}>

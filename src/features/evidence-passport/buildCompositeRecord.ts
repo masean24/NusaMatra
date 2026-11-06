@@ -48,30 +48,34 @@ import type {
 import { classifyEvidence } from './evidenceClass';
 import type { LabEvidenceQuery } from './evidenceQuery';
 import type { IndicatorSourceInfo } from './evidenceTypes';
-import { t } from '@/lib/i18n';
+import { localized, t } from '@/lib/i18n';
 
 const ORIGIN_OF: Readonly<Partial<Record<CompositeIssueCode, IssueOrigin>>> = {
   REQUESTED_WEIGHT_AVAILABILITY_LOW: 'policy',
   PRESET_NOT_RANKABLE: 'datahub',
 };
 
-export const ORIGIN_LABEL: Readonly<Record<IssueOrigin, string>> = {
+export const ORIGIN_LABEL = localized((): Readonly<Record<IssueOrigin, string>> => ({
   policy: t('Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub)'),
   datahub: t('Penanda dari Data Hub (rankable = false)'),
   check: t('Pemeriksaan konsistensi antarmuka atas respons Data Hub'),
-};
+}));
 
 /** What a score and rank mean, stated only when the Data Hub declared the expected direction. */
-const SCORE_MEANING_NEED = t(
-  'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria dan bobot ini: makin tinggi skor, makin tinggi kebutuhan, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak dan bukan keputusan kebijakan.',
+const SCORE_MEANING_NEED = localized(() =>
+  t(
+    'Skor 0–100 menunjukkan tingkat kebutuhan intervensi relatif pada kriteria dan bobot ini: makin tinggi skor, makin tinggi kebutuhan, dan peringkat 1 adalah prioritas tertinggi. Ini perbandingan relatif, bukan penilaian mutlak dan bukan keputusan kebijakan.',
+  ),
 );
-const SCORE_MEANING_UNCONFIRMED = t(
-  'Arah skor tidak dinyatakan sebagai "higher_is_need" oleh Data Hub, sehingga arti skor dan peringkat tidak dapat dibaca dengan aman.',
+const SCORE_MEANING_UNCONFIRMED = localized(() =>
+  t(
+    'Arah skor tidak dinyatakan sebagai "higher_is_need" oleh Data Hub, sehingga arti skor dan peringkat tidak dapat dibaca dengan aman.',
+  ),
 );
 
-const REASON_TEXT: Readonly<Record<string, string>> = {
+const REASON_TEXT = localized((): Readonly<Record<string, string>> => ({
   COVERAGE_BELOW_THRESHOLD: t('Data kriteria terlalu sedikit (cakupan di bawah batas minimum Data Hub).'),
-};
+}));
 
 function issueView(issue: CompositeIssue): CompositeIssueView {
   const origin = ORIGIN_OF[issue.code] ?? 'check';
@@ -80,7 +84,7 @@ function issueView(issue: CompositeIssue): CompositeIssueView {
     severity: issue.severity,
     message: issue.message,
     origin,
-    originLabel: ORIGIN_LABEL[origin],
+    originLabel: ORIGIN_LABEL()[origin],
     count: issue.count,
     examples: issue.examples ?? [],
   };
@@ -181,7 +185,7 @@ function insufficientRowOf(region: InsufficientRegionDTO, lookups: Lookups): Ins
     componentsUsed: region.componentsUsed,
     missingIndicators: region.missingIndicators,
     reason: region.reason,
-    reasonText: REASON_TEXT[region.reason] ?? t('Alasan dari Data Hub: {0}', region.reason),
+    reasonText: REASON_TEXT()[region.reason] ?? t('Alasan dari Data Hub: {0}', region.reason),
     componentScores: region.componentScoresDecimal,
     isFocus: region.regionId === lookups.focusRegionId,
   };
@@ -463,7 +467,7 @@ export function buildCompositeRecord(
       withheld,
     ),
     scoreMeaning:
-      result.scoreDirection === EXPECTED_SCORE_DIRECTION ? SCORE_MEANING_NEED : SCORE_MEANING_UNCONFIRMED,
+      result.scoreDirection === EXPECTED_SCORE_DIRECTION ? SCORE_MEANING_NEED() : SCORE_MEANING_UNCONFIRMED(),
   };
   return { ...base, limitations: buildCompositeLimitations(base) };
 }
