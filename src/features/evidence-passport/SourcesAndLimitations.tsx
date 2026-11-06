@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { sourceLinkAction } from '@/features/data-hub';
 import { Disclosure } from './Disclosure';
 import type { EvidenceBase } from './evidenceTypes';
 import type { LimitationNote } from './limitationNote';
@@ -15,7 +16,9 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
       id="paspor-sumber"
       title={t('Sumber data')}
       mode={record.source.dataMode}
-      description={t('Penerbit asli tiap indikator. Buka sumber resmi untuk memeriksa angka langsung.')}
+      description={t(
+        'Penerbit asli tiap dataset. Label tautan menyebut tujuannya; tautan tiap indikator ada di tabel indikator.',
+      )}
     >
       {record.sources.length === 0 ? (
         <p>{t('Sumber belum tersedia: tidak ada nilai yang dapat ditelusuri ke dataset.')}</p>
@@ -71,12 +74,17 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                       target="_blank"
                       rel="noreferrer noopener"
                     >
-                      {t('Buka sumber resmi')}
+                      {sourceLinkAction(source.sourceLinkLevel)}
                       <PassportIcon name="external" size={13} />
                       <span className={styles.srOnly}> {t('(membuka tab baru)')}</span>
                     </a>
                   ) : (
-                    <p className={styles.sourceMeta}>{t('Tautan sumber belum tersedia.')}</p>
+                    !source.sourceNote && (
+                      <p className={styles.sourceMeta}>{t('Tautan sumber belum tersedia.')}</p>
+                    )
+                  )}
+                  {source.sourceNote && (
+                    <p className={styles.sourceMeta}>{t('Catatan audit sumber: {0}', source.sourceNote)}</p>
                   )}
                 </div>
               </li>

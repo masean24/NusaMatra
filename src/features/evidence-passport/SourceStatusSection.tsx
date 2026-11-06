@@ -3,7 +3,7 @@ import { Disclosure } from './Disclosure';
 import type { EvidenceBase } from './evidenceTypes';
 
 import { PassportIcon, type PassportIconName } from './PassportIcons';
-import { COMPLETENESS_CLAIM_NOTE } from './notices';
+import { COMPLETENESS_CLAIM_NOTE, sourceLinksNote } from './notices';
 import { formatReceived, formatServerStamp } from './passportFormat';
 import { Section } from './Section';
 import styles from './EvidencePassport.module.css';
@@ -131,6 +131,11 @@ export function SourceStatusSection({ record, agencies }: SourceStatusSectionPro
               ? t('Dapat direproduksi: tautan ini selalu membuka versi data yang sama.')
               : t('Tidak dapat direproduksi.')}
           </Fact>
+          {source.referenceVersion && (
+            <Fact label={t('Versi tautan sumber')} hint={sourceLinksNote(source.referenceVersion)}>
+              {source.referenceVersion}
+            </Fact>
+          )}
         </Column>
       </div>
 

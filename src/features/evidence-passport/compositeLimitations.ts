@@ -1,7 +1,7 @@
 import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import type { CompositeEvidenceRecord } from './compositeTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
-import { snapshotIdentityNote } from './notices';
+import { snapshotIdentityNote, sourceLinksNote } from './notices';
 import { locale, t } from '@/lib/i18n';
 
 const percent = (value: number) => `${value.toLocaleString(locale(), { maximumFractionDigits: 1 })}%`;
@@ -35,6 +35,13 @@ export function buildCompositeLimitationNotes(
       : t('Data tidak dikunci ke versi data'),
     snapshotIdentityNote(record.source.reproducibility),
   );
+  if (record.source.referenceVersion) {
+    add(
+      'Reproduksibilitas',
+      t('Tautan sumber dapat diperbaiki'),
+      sourceLinksNote(record.source.referenceVersion),
+    );
+  }
 
   if (record.withheldReason === 'INTEGRITY') {
     add(

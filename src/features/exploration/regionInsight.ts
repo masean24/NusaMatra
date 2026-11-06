@@ -12,6 +12,7 @@ import type {
   IndicatorCatalogDTO,
   RegionProfileDTO,
   RegionProfileIndicatorValueDTO,
+  SourceLinkLevel,
 } from '@/services/api';
 
 /**
@@ -42,6 +43,7 @@ export interface InsightIndicator {
   readonly referenceYear: number | null;
   readonly agencyCode: string;
   readonly sourceUrl: string | null;
+  readonly sourceLinkLevel: SourceLinkLevel | null;
   readonly datasetTitle: string | null;
   readonly reading: IndicatorReading;
   /** 0–100 score the Data Hub derived from the value (higher = more need); not the value itself. */
@@ -99,6 +101,7 @@ function toInsightIndicator(
     referenceYear: item.referenceYear,
     agencyCode: item.provenance.agencyCode,
     sourceUrl: item.provenance.officialUrl,
+    sourceLinkLevel: item.provenance.sourceLinkLevel,
     datasetTitle: definition?.provenance.datasetTitle ?? null,
     reading: readIndicator({
       polarity: definition?.polarity ?? 'unknown',

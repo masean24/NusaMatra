@@ -1,6 +1,6 @@
 import type { EvidenceRecord } from './evidenceTypes';
 import { limitationList, type LimitationNote } from './limitationNote';
-import { snapshotIdentityNote } from './notices';
+import { snapshotIdentityNote, sourceLinksNote } from './notices';
 import { t } from '@/lib/i18n';
 
 /**
@@ -38,6 +38,13 @@ export function buildLimitationNotes(record: Omit<EvidenceRecord, 'limitations'>
       : t('Data tidak dikunci ke versi data'),
     snapshotIdentityNote(record.source.reproducibility),
   );
+  if (record.source.referenceVersion) {
+    add(
+      'Reproduksibilitas',
+      t('Tautan sumber dapat diperbaiki'),
+      sourceLinksNote(record.source.referenceVersion),
+    );
+  }
 
   for (const coverage of record.coverage) {
     const name = nameOf(coverage.regionId);

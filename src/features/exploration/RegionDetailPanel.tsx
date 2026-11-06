@@ -11,6 +11,7 @@ import {
   formatDecimalId,
   publicHttpUrl,
   qualityFlagNote,
+  sourceLinkName,
   useDataHub,
   useDataHubResource,
 } from '@/features/data-hub';
@@ -376,6 +377,7 @@ function IndicatorItem({
                   indicator.agencyCode
                 )}
                 {indicator.datasetTitle ? `, ${indicator.datasetTitle}` : ''}
+                {sourceUrl && ` (${sourceLinkName(indicator.sourceLinkLevel)})`}
               </dd>
             </div>
           </dl>

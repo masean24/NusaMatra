@@ -25,6 +25,7 @@ const meta: AdaptedResponseMeta = {
   snapshotReproducible: null,
   methodologyVersion: null,
   scoreDirection: null,
+  referenceVersion: null,
 };
 
 describe('mapIndicatorCoverageData (captured production coverage, 2026-10-23)', () => {

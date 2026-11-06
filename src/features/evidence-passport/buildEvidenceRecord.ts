@@ -1,6 +1,12 @@
 import { assessComparison, type ComparableMeasurement } from '@/domain/comparability';
 import { describeUnit } from '@/domain/indicators';
-import { adminLevelLabel, describeObservation, formatDecimalId, publicHttpUrl } from '@/features/data-hub';
+import {
+  adminLevelLabel,
+  describeObservation,
+  formatDecimalId,
+  publicHttpUrl,
+  sourceNote,
+} from '@/features/data-hub';
 import type {
   AdaptedResponseMeta,
   DataHubDatasetDTO,
@@ -111,6 +117,15 @@ function reproducibilityOf(
 }
 
 /**
+ * Every version the responses state. More than one is listed rather than hidden: it does not touch
+ * the numbers, so it does not make the record inconsistent, but its links came from both.
+ */
+function referenceVersionOf(metas: readonly AdaptedResponseMeta[]): string | null {
+  const versions = new Set(metas.flatMap((meta) => (meta.referenceVersion ? [meta.referenceVersion] : [])));
+  return versions.size > 0 ? [...versions].join(', ') : null;
+}
+
+/**
  * Mode, snapshot and digest are read from the responses; the record is consistent only when all
  * agree. The first envelope is the record's own data; the others are supporting and must match it.
  * When pinned, the snapshot detail describes the snapshot; otherwise the list entry does (and the
@@ -144,6 +159,7 @@ export function sourceStatusOf(
     dataMode,
     snapshotId,
     snapshot: snapshotEntry ? toSnapshotDetail(snapshotEntry) : null,
+    referenceVersion: referenceVersionOf(metas),
     observedCoverage: coverage
       ? {
           availableIndicators: Object.values(coverage.data.byIndicator).filter((entry) => entry.available)
@@ -256,11 +272,13 @@ function sourceOf(
     agencyCode,
     datasetId,
     datasetTitle: dataset?.datasetTitle ?? catalogItem?.provenance.datasetTitle ?? null,
-    // Only real web addresses become links; internal:// and anything else is dropped.
+    // Only real web addresses become links; internal:// and anything else is dropped. A null link
+    // stays null: the Data Hub empties one it could not verify, so the dataset's link must not fill it.
     officialUrl:
       publicHttpUrl(item.provenance.officialUrl) ??
-      publicHttpUrl(catalogItem?.provenance.officialPortalUrl ?? null) ??
-      publicHttpUrl(dataset?.officialPortalUrl ?? null),
+      publicHttpUrl(catalogItem?.provenance.officialPortalUrl ?? null),
+    sourceLinkLevel: item.provenance.sourceLinkLevel ?? catalogItem?.provenance.sourceLinkLevel ?? null,
+    sourceNote: sourceNote(item.provenance) ?? (catalogItem ? sourceNote(catalogItem.provenance) : null),
   };
 }
 
@@ -480,7 +498,9 @@ export function summariseSourceUses(
         datasetId: source.datasetId,
         agencyCode: source.agencyCode,
         datasetTitle: source.datasetTitle,
-        officialUrl: source.officialUrl,
+        officialUrl: publicHttpUrl(dataset?.officialPortalUrl ?? null),
+        sourceLinkLevel: dataset?.sourceLinkLevel ?? null,
+        sourceNote: dataset ? sourceNote(dataset) : null,
         licenseName: dataset?.licenseName ?? null,
         updateFrequency: dataset?.updateFrequency ?? null,
         lastIngestedAt: dataset?.lastIngestedAt ?? null,

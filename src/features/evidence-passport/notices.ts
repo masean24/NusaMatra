@@ -50,6 +50,17 @@ export const REPRODUCIBLE_SNAPSHOT_STATEMENT = localized(() =>
 );
 
 /**
+ * The digest pins the numbers only. Links and notes come from a reference layer that can be corrected
+ * while the snapshot and digest stay the same, so a pinned record must not read as pinning them too.
+ */
+export function sourceLinksNote(referenceVersion: string): string {
+  return t(
+    'Sidik isi mengunci angka, bukan tautan dan catatan sumber. Tautan dan catatan mengikuti versi referensi {0}, jadi dapat diperbaiki tanpa mengubah angka.',
+    referenceVersion,
+  );
+}
+
+/**
  * The one sentence about snapshot identity a record carries (limitations, citation, export notes):
  * the digest-backed claim when reproducible, otherwise the reason it is not and the mutability caveat.
  */

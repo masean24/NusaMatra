@@ -9,6 +9,7 @@ import {
   categoryLabel,
   formatDecimalId,
   publicHttpUrl,
+  sourceLinkName,
   useDataHub,
   useDataHubResource,
   type ResourceState,
@@ -562,15 +563,14 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
     );
   }
   const datasets = [...new Set(sides.map((side) => side.datasetId))];
-  const href = publicHttpUrl(
-    sides.find((side) => publicHttpUrl(side.officialUrl) !== null)?.officialUrl ?? null,
-  );
+  const linked = sides.find((side) => publicHttpUrl(side.officialUrl) !== null);
+  const href = publicHttpUrl(linked?.officialUrl ?? null);
   return (
     <span className={`kk-small ${styles.muted}`}>
       {t('{0}, dataset', describeProvenance(row))} {datasets.join(', ') || '—'}.{' '}
       {href ? (
         <a href={href} target="_blank" rel="noreferrer noopener">
-          {t('Sumber resmi')}
+          {sourceLinkName(linked?.sourceLinkLevel ?? null)}
         </a>
       ) : (
         t('tautan sumber tidak tersedia')

@@ -2,6 +2,7 @@ import { categoryLabel } from '@/features/data-hub';
 import { bpsLabel } from './weightLabel';
 import type { CompositeEvidenceRecord, CompositeIssueView } from './compositeTypes';
 import { Disclosure } from './Disclosure';
+import { SourceLine } from './IndicatorTables';
 import { withheldReasonText } from './withheldReason';
 import { ScrollRegion } from './ScrollRegion';
 import { scopeLabel } from './scopeLabel';
@@ -221,29 +222,7 @@ export function CriteriaSection({ record }: { readonly record: CompositeEvidence
                   {indicator.polarity === null ? t('belum tersedia') : indicator.polarity}
                 </td>
                 <td>
-                  {indicator.source.officialUrl ? (
-                    <a
-                      className={styles.link}
-                      href={indicator.source.officialUrl}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      {indicator.source.agencyCode ?? t('Lembaga belum tersedia')}:{' '}
-                      {indicator.source.datasetTitle ??
-                        indicator.source.datasetId ??
-                        t('judul dataset belum tersedia')}
-                      <span className={styles.srOnly}> {t('(membuka tab baru)')}</span>
-                    </a>
-                  ) : (
-                    <span>
-                      {indicator.source.agencyCode ?? t('Lembaga belum tersedia')}:{' '}
-                      {indicator.source.datasetTitle ??
-                        indicator.source.datasetId ??
-                        t('judul dataset belum tersedia')}
-                      <br />
-                      <span className={`kk-small ${styles.muted}`}>{t('Tautan sumber belum tersedia.')}</span>
-                    </span>
-                  )}
+                  <SourceLine source={indicator.source} />
                 </td>
               </tr>
             ))}

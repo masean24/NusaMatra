@@ -31,6 +31,9 @@ const input: IndicatorExportInput = {
       datasetId: 'bps_ipm_2025',
       datasetTitle: 'IPM 2025',
       officialPortalUrl: 'https://www.bps.go.id/x',
+      sourceLinkLevel: 'publication',
+      sourceNoteIdn: 'Publikasi IPM 2025.',
+      sourceNoteEn: 'IPM 2025 publication.',
     },
   } as unknown as DataHubIndicatorDTO,
   referenceYear: 2025,
@@ -43,6 +46,7 @@ const input: IndicatorExportInput = {
     },
   } as unknown as IndicatorValuesMapDTO,
   regionNames: new Map([['1101', 'Kabupaten Aceh Selatan']]),
+  referenceVersion: '2026-11-sources-1',
 };
 
 describe('indicator export', () => {
@@ -64,11 +68,16 @@ describe('indicator export', () => {
   it('names its source and says it is a copy, in JSON', () => {
     const json = JSON.parse(indicatorJson(input)) as {
       catatan: string;
-      sumber: { tautan_resmi: string };
+      sumber: Record<string, string>;
       nilai: { nilai: string | null }[];
     };
     expect(json.catatan).toMatch(/bukan berkas asli penerbit/);
-    expect(json.sumber.tautan_resmi).toBe('https://www.bps.go.id/x');
+    expect(json.sumber).toMatchObject({
+      tautan_resmi: 'https://www.bps.go.id/x',
+      tingkat_tautan: 'publication',
+      catatan: 'Publikasi IPM 2025.',
+      versi_referensi: '2026-11-sources-1',
+    });
     expect(json.nilai.map((row) => row.nilai)).toEqual(['-72.79', null]);
   });
 

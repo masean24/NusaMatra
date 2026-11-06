@@ -1,3 +1,4 @@
+import { sourceNote } from '@/features/data-hub';
 import type { DataHubIndicatorDTO, IndicatorValuesMapDTO } from '@/services/api';
 import { localized, t } from '@/lib/i18n';
 
@@ -33,6 +34,8 @@ export interface IndicatorExportInput {
   readonly values: IndicatorValuesMapDTO;
   /** Region names by code; a code without a name stays in the file with an empty name. */
   readonly regionNames: ReadonlyMap<string, string>;
+  /** Version of the source link and note; they can change while `versi_data` stays the same. */
+  readonly referenceVersion: string | null;
 }
 
 function exportRows({ indicator, referenceYear, values, regionNames }: IndicatorExportInput) {
@@ -100,6 +103,9 @@ export function indicatorJson(input: IndicatorExportInput): string {
         dataset_id: provenance.datasetId,
         judul: provenance.datasetTitle,
         tautan_resmi: provenance.officialPortalUrl,
+        tingkat_tautan: provenance.sourceLinkLevel,
+        catatan: sourceNote(provenance),
+        versi_referensi: input.referenceVersion,
       },
       nilai: exportRows(input),
     },

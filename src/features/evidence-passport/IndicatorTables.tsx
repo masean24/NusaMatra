@@ -1,4 +1,4 @@
-import { categoryLabel } from '@/features/data-hub';
+import { categoryLabel, sourceLinkName } from '@/features/data-hub';
 import { evidenceClassLabel, evidenceClassMeaning, type EvidenceClass } from './evidenceClass';
 import type { EvidenceIndicator, EvidenceRecord, EvidenceValue, IndicatorSourceInfo } from './evidenceTypes';
 import { Disclosure } from './Disclosure';
@@ -73,21 +73,30 @@ function ClassTag({ value }: { readonly value: EvidenceValue | null }) {
   );
 }
 
-function SourceLine({ source }: { readonly source: IndicatorSourceInfo }) {
+export function SourceLine({ source }: { readonly source: IndicatorSourceInfo }) {
   const name = `${source.agencyCode ?? t('Lembaga belum tersedia')}: ${source.datasetTitle ?? source.datasetId ?? t('judul dataset belum tersedia')}`;
-  if (!source.officialUrl) {
-    return (
-      <span className={styles.cell}>
-        <span>{name}</span>
-        <span className={`kk-small ${styles.muted}`}>{t('Tautan sumber belum tersedia.')}</span>
-      </span>
-    );
-  }
   return (
-    <a className={styles.link} href={source.officialUrl} target="_blank" rel="noreferrer noopener">
-      {name}
-      <span className={styles.srOnly}> {t('(membuka tab baru)')}</span>
-    </a>
+    <div className={styles.cell}>
+      {source.officialUrl ? (
+        <>
+          <a className={styles.link} href={source.officialUrl} target="_blank" rel="noreferrer noopener">
+            {name}
+            <span className={styles.srOnly}> {t('(membuka tab baru)')}</span>
+          </a>
+          <span className={`kk-small ${styles.muted}`}>{sourceLinkName(source.sourceLinkLevel)}</span>
+        </>
+      ) : (
+        <>
+          <span>{name}</span>
+          <span className={`kk-small ${styles.muted}`}>{t('Tautan sumber belum tersedia.')}</span>
+        </>
+      )}
+      {source.sourceNote && (
+        <Disclosure variant="inline" title={t('Catatan audit sumber')} context={name}>
+          <p>{source.sourceNote}</p>
+        </Disclosure>
+      )}
+    </div>
   );
 }
 

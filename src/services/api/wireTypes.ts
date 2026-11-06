@@ -99,6 +99,16 @@ export interface ObservationDTO {
 // 2. Adapted Domain Extensions for Observed v0.1.0 Data Hub Payloads
 // ============================================================================
 
+/** How far a source link reaches. Anything else the server sends is read as "not stated". */
+export type SourceLinkLevel = 'table' | 'dataset' | 'publication' | 'portal' | 'dashboard';
+
+/** What the Data Hub says about a source link. All `null` where it says nothing (DEMO, older servers). */
+export interface SourceLinkInfo {
+  readonly sourceLinkLevel: SourceLinkLevel | null;
+  readonly sourceNoteIdn: string | null;
+  readonly sourceNoteEn: string | null;
+}
+
 export interface AdaptedResponseMeta {
   /** Null unless server returned X-Request-ID header (SOURCE 4 Errata #1) */
   readonly serverRequestId: string | null;
@@ -126,6 +136,11 @@ export interface AdaptedResponseMeta {
    * is a need percentile, higher = greater need whatever the polarity. `null` = not stated.
    */
   readonly scoreDirection: string | null;
+  /**
+   * `meta.reference_version`: the version of the source links and notes, which can change while the
+   * snapshot and its digest stay the same. `null` = not stated (`/snapshots`, coverage, DEMO).
+   */
+  readonly referenceVersion: string | null;
 }
 
 /** The snapshot a request is pinned to (`?snapshot=`), with the digest every response must repeat. */
@@ -186,7 +201,7 @@ export interface RegionProfileIndicatorValueDTO {
   readonly qualityFlag: string | null;
   readonly isDemoExample: boolean;
   readonly origin: Origin;
-  readonly provenance: {
+  readonly provenance: SourceLinkInfo & {
     readonly datasetId: string;
     readonly agencyCode: string;
     readonly officialUrl: string | null;
@@ -221,7 +236,7 @@ export interface DataHubIndicatorDTO extends IndicatorDTO {
   readonly derivationFormula: string | null;
   readonly referenceYear: number | null;
   readonly stats: IndicatorSummaryStatsDTO | null;
-  readonly provenance: {
+  readonly provenance: SourceLinkInfo & {
     readonly datasetId: string;
     readonly agencyCode: string;
     readonly datasetTitle: string | null;
@@ -470,7 +485,7 @@ export interface SnapshotDetailDTO extends DataHubSnapshotDTO {
   readonly immutabilityNote: string | null;
 }
 
-export interface DataHubDatasetDTO {
+export interface DataHubDatasetDTO extends SourceLinkInfo {
   readonly datasetId: string;
   readonly agencyCode: string;
   readonly agencyName: string;
@@ -561,7 +576,13 @@ export interface WireRegionItem {
   bbox?: number[] | null;
 }
 
-export interface WireRegionIndicatorProvenance {
+export interface WireSourceLinkInfo {
+  source_link_level?: string | null;
+  source_note_idn?: string | null;
+  source_note_en?: string | null;
+}
+
+export interface WireRegionIndicatorProvenance extends WireSourceLinkInfo {
   dataset_id: string;
   agency_code: string;
   official_url?: string | null;
@@ -597,7 +618,7 @@ export interface WireIndicatorStats {
   max?: number | string | null;
 }
 
-export interface WireIndicatorProvenance {
+export interface WireIndicatorProvenance extends WireSourceLinkInfo {
   dataset_id: string;
   agency_code: string;
   dataset_title?: string | null;
@@ -729,7 +750,7 @@ export interface WireSnapshotItem {
   indicator_completeness_pct?: number | null;
 }
 
-export interface WireDatasetItem {
+export interface WireDatasetItem extends WireSourceLinkInfo {
   dataset_id: string;
   agency_code: string;
   agency_name: string;

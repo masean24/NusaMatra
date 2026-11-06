@@ -17,6 +17,8 @@ import type {
   DataMode,
   DecimalString,
   SnapshotDetailDTO,
+  SourceLinkInfo,
+  SourceLinkLevel,
   ExploratoryCompositeResultDTO,
   ExploratoryRegionRankDTO,
   InsufficientRegionDTO,
@@ -161,6 +163,7 @@ export function mapEnvelope<TDomain>(
     snapshotReproducible: readBooleanOrNull(raw.meta.snapshot_reproducible),
     methodologyVersion: readString(raw.meta.methodology_version),
     scoreDirection: readString(raw.meta.score_direction),
+    referenceVersion: readString(raw.meta.reference_version),
   };
 
   const mappedData = transformData(raw.data, adaptedMeta);
@@ -511,6 +514,7 @@ function mapRegionProfileIndicator(
       datasetId,
       agencyCode,
       officialUrl,
+      ...readSourceLinkInfo(provRecord),
     },
     observation,
   };
@@ -587,6 +591,7 @@ export function mapWireIndicatorItem(
       agencyCode,
       datasetTitle,
       officialPortalUrl,
+      ...readSourceLinkInfo(prov),
     },
   };
 }
@@ -1277,6 +1282,7 @@ export function mapDatasetsData(rawData: unknown, meta: AdaptedResponseMeta): re
       agencyName,
       datasetTitle,
       officialPortalUrl: readString(item.official_portal_url),
+      ...readSourceLinkInfo(item),
       apiOrDownloadUrl: readString(item.api_or_download_url),
       accessMethod: readString(item.access_method) ?? 'UNKNOWN',
       licenseName: readString(item.license_name),
@@ -1293,6 +1299,22 @@ export function mapDatasetsData(rawData: unknown, meta: AdaptedResponseMeta): re
 // ============================================================================
 // 8. Internal Helpers
 // ============================================================================
+
+const SOURCE_LINK_LEVELS: readonly SourceLinkLevel[] = [
+  'table',
+  'dataset',
+  'publication',
+  'portal',
+  'dashboard',
+];
+
+function readSourceLinkInfo(raw: Record<string, unknown>): SourceLinkInfo {
+  return {
+    sourceLinkLevel: SOURCE_LINK_LEVELS.find((level) => level === raw.source_link_level) ?? null,
+    sourceNoteIdn: readString(raw.source_note_idn),
+    sourceNoteEn: readString(raw.source_note_en),
+  };
+}
 
 function mapWireAdminLevel(rawLevel: string): AdminLevel {
   const normalized = rawLevel.toLowerCase().trim();

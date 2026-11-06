@@ -7,7 +7,7 @@ import {
   type CompositeIssue,
   type CompositeIssueCode,
 } from '@/domain/prioritization';
-import { formatDecimalId, publicHttpUrl } from '@/features/data-hub';
+import { formatDecimalId, publicHttpUrl, sourceNote } from '@/features/data-hub';
 import {
   checkRankingDirections,
   declaredRankable,
@@ -106,9 +106,10 @@ function sourceOfCatalog(
       null,
     datasetId: item ? nonPlaceholder(item.provenance.datasetId, UNKNOWN_DATASET) : null,
     datasetTitle: dataset?.datasetTitle ?? item?.provenance.datasetTitle ?? null,
-    officialUrl:
-      publicHttpUrl(item?.provenance.officialPortalUrl ?? null) ??
-      publicHttpUrl(dataset?.officialPortalUrl ?? null),
+    // A null link stays null: the Data Hub empties one it could not verify.
+    officialUrl: publicHttpUrl(item?.provenance.officialPortalUrl ?? null),
+    sourceLinkLevel: item?.provenance.sourceLinkLevel ?? null,
+    sourceNote: item ? sourceNote(item.provenance) : null,
   };
 }
 

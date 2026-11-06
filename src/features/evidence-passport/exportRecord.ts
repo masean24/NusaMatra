@@ -9,6 +9,7 @@ import {
   PINNED_STATEMENT,
   SNAPSHOT_MUTABILITY_NOTE,
   snapshotIdentityNote,
+  sourceLinksNote,
 } from './notices';
 import { t } from '@/lib/i18n';
 
@@ -25,6 +26,7 @@ export interface ExportPayload {
     readonly snapshotId: string;
     readonly 'source.snapshot.reportedManifestChecksum': string;
     readonly 'source.snapshot.completenessPct': string;
+    readonly 'source.referenceVersion'?: string;
     readonly fetched: string;
   };
   /** `pinnedInputs` is true only for a REPRODUCIBLE_SNAPSHOT record (see `source.reproducibility`). */
@@ -47,6 +49,9 @@ export function buildExportPayload(
       snapshotId: pinned ? snapshotIdentityNote(record.source.reproducibility) : SNAPSHOT_MUTABILITY_NOTE(),
       'source.snapshot.reportedManifestChecksum': MANIFEST_CHECKSUM_LABEL(),
       'source.snapshot.completenessPct': `Menurut server. ${COMPLETENESS_CLAIM_NOTE()}`,
+      ...(record.source.referenceVersion
+        ? { 'source.referenceVersion': sourceLinksNote(record.source.referenceVersion) }
+        : {}),
       fetched: t(
         'Permintaan yang dikirim peramban (tanpa host atau kredensial) dan respons yang diterima; waktu terima memakai jam peramban. "contentSha256" disalin dari respons Data Hub; tidak ada ID laporan, hash, atau tanda waktu server yang dibuat peramban.',
       ),

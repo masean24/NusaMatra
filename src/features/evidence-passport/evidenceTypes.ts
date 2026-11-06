@@ -6,6 +6,7 @@ import type {
   IndicatorCatalogDTO,
   IndicatorCoverageDTO,
   RegionProfileDTO,
+  SourceLinkLevel,
 } from '@/services/api';
 import type { EvidenceClass } from './evidenceClass';
 import type { SnapshotPinning } from './snapshotResolution';
@@ -99,6 +100,8 @@ export interface SourceStatus {
   readonly dataMode: DataMode;
   readonly snapshotId: string;
   readonly snapshot: SnapshotDetail | null;
+  /** Version of the source links and notes, outside the digest. `null` = no response stated one. */
+  readonly referenceVersion: string | null;
   /** `/indicators/coverage` as received; `null` = not available (always in DEMO, or the request failed). */
   readonly observedCoverage: ObservedCoverage | null;
   /** When the browser decoded the latest response (the only timestamp this record can claim). */
@@ -146,6 +149,9 @@ export interface IndicatorSourceInfo {
   readonly datasetTitle: string | null;
   /** Only an http(s) address; anything else is dropped, not shown as a link. */
   readonly officialUrl: string | null;
+  readonly sourceLinkLevel: SourceLinkLevel | null;
+  /** The Data Hub's note on this source, in the record's language. */
+  readonly sourceNote: string | null;
 }
 
 export interface EvidenceValue {
@@ -194,7 +200,10 @@ export interface EvidenceSourceSummary {
   readonly datasetId: string | null;
   readonly agencyCode: string | null;
   readonly datasetTitle: string | null;
+  /** The dataset's own link from `/datasets`; an indicator's link can point elsewhere in the dataset. */
   readonly officialUrl: string | null;
+  readonly sourceLinkLevel: SourceLinkLevel | null;
+  readonly sourceNote: string | null;
   readonly licenseName: string | null;
   readonly updateFrequency: string | null;
   /** When the Data Hub loaded the dataset (not when the publisher released it). */

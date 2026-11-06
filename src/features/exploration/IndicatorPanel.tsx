@@ -11,6 +11,8 @@ import {
   preferredDirectionLabel,
   publicHttpUrl,
   qualityFlagNote,
+  sourceLinkName,
+  sourceNote,
   useDataHubResource,
 } from '@/features/data-hub';
 import type {
@@ -166,6 +168,7 @@ function IndicatorHeading({
 /** Formula, source and national statistics: kept, but one step away from the value. */
 function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicatorDTO }) {
   const portalUrl = publicHttpUrl(indicator.provenance.officialPortalUrl);
+  const note = sourceNote(indicator.provenance);
   return (
     <details className={styles.more}>
       <summary className={styles.moreSummary}>
@@ -185,12 +188,13 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
             <>
               {' ('}
               <a href={portalUrl} target="_blank" rel="noreferrer noopener">
-                {t('portal sumber')}
+                {sourceLinkName(indicator.provenance.sourceLinkLevel)}
               </a>
               {')'}
             </>
           )}
         </p>
+        {note && <p className={`kk-small ${styles.muted}`}>{t('Catatan audit sumber: {0}', note)}</p>}
         {indicator.stats && (
           <dl className={styles.stats}>
             {STATS_LABELS().map(([key, label]) => {

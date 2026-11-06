@@ -157,12 +157,72 @@ describe('buildEvidenceRecord, gaps', () => {
       datasetId: null,
       datasetTitle: null,
       officialUrl: null,
+      sourceLinkLevel: null,
+      sourceNote: null,
     });
     expect(valueOf(record, 'soc_poverty_rate').source.officialUrl).toBeNull();
     const missing = valueOf(record, 'hlt_stunting_prevalence');
     expect(missing).toMatchObject({ status: 'MISSING', rawDecimal: null, evidenceClass: null });
     expect(missing.valueText).toBe('Data belum tersedia');
     expect(record.coverage[0]?.missing.map((item) => item.indicatorId)).toContain('hlt_stunting_prevalence');
+  });
+
+  it('SYNTHETIC: each link comes from its own level, and a null link is not filled from the dataset', async () => {
+    const bodies = capturedLiveBodies();
+    const profile = profileIn(bodies, '/api/v1/regions/1101');
+    (bodies['/api/v1/regions/1101'] as { meta: Record<string, unknown> }).meta.reference_version = 'ref-1';
+    const hdi = indicatorOf(profile, 'soc_hdi');
+    const datasetId = (hdi.provenance as { dataset_id: string }).dataset_id;
+    hdi.provenance = {
+      dataset_id: datasetId,
+      agency_code: 'BPS',
+      official_url: 'https://example.org/indikator',
+      source_link_level: 'table',
+      source_note_idn: 'Catatan indikator',
+    };
+    const poverty = indicatorOf(profile, 'soc_poverty_rate');
+    poverty.provenance = {
+      dataset_id: datasetId,
+      agency_code: 'BPS',
+      official_url: null,
+      source_link_level: 'something-new',
+      source_note_idn: 'Tautan dikosongkan',
+    };
+    const catalog = bodies['/api/v1/indicators'] as { data: Record<string, Record<string, unknown>[]> };
+    const catalogPoverty = Object.values(catalog.data)
+      .flat()
+      .find((item) => item.indicator_id === 'soc_poverty_rate');
+    if (!catalogPoverty) throw new Error('soc_poverty_rate is not in the catalog');
+    catalogPoverty.provenance = { dataset_id: datasetId, agency_code: 'BPS', official_portal_url: null };
+    const datasets = bodies['/api/v1/datasets'] as { data: Record<string, unknown>[] };
+    const dataset = datasets.data.find((item) => item.dataset_id === datasetId);
+    if (!dataset) throw new Error(`${datasetId} is not in /datasets`);
+    Object.assign(dataset, {
+      official_portal_url: 'https://example.org/dataset',
+      source_link_level: 'publication',
+      source_note_idn: 'Catatan dataset',
+    });
+
+    const raw = await loadSources(bodies, 'LIVE', ['1101']);
+    const record = buildEvidenceRecord({ kind: 'wilayah', regionId: '1101' }, raw);
+
+    expect(record.source.referenceVersion).toBe('ref-1');
+    expect(valueOf(record, 'soc_hdi').source).toMatchObject({
+      officialUrl: 'https://example.org/indikator',
+      sourceLinkLevel: 'table',
+      sourceNote: 'Catatan indikator',
+    });
+    expect(valueOf(record, 'soc_poverty_rate').source).toMatchObject({
+      officialUrl: null,
+      sourceLinkLevel: null,
+      sourceNote: 'Tautan dikosongkan',
+    });
+    expect(record.sources.find((source) => source.datasetId === datasetId)).toMatchObject({
+      officialUrl: 'https://example.org/dataset',
+      sourceLinkLevel: 'publication',
+      sourceNote: 'Catatan dataset',
+    });
+    expect(record.limitations.join('\n')).toContain('versi referensi ref-1');
   });
 });
 
