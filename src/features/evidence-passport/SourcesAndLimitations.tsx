@@ -84,7 +84,7 @@ export function SourcesSection({ record }: { readonly record: Pick<EvidenceBase,
                     )
                   )}
                   {source.sourceNote && (
-                    <p className={styles.sourceMeta}>{t('Catatan audit sumber: {0}', source.sourceNote)}</p>
+                    <p className={styles.sourceMeta}>{t('Catatan sumber: {0}', source.sourceNote)}</p>
                   )}
                 </div>
               </li>

@@ -92,7 +92,7 @@ export function SourceLine({ source }: { readonly source: IndicatorSourceInfo })
         </>
       )}
       {source.sourceNote && (
-        <Disclosure variant="inline" title={t('Catatan audit sumber')} context={name}>
+        <Disclosure variant="inline" title={t('Catatan sumber')} context={name}>
           <p>{source.sourceNote}</p>
         </Disclosure>
       )}

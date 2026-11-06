@@ -194,7 +194,7 @@ function IndicatorDefinition({ indicator }: { readonly indicator: DataHubIndicat
             </>
           )}
         </p>
-        {note && <p className={`kk-small ${styles.muted}`}>{t('Catatan audit sumber: {0}', note)}</p>}
+        {note && <p className={`kk-small ${styles.muted}`}>{t('Catatan sumber: {0}', note)}</p>}
         {indicator.stats && (
           <dl className={styles.stats}>
             {STATS_LABELS().map(([key, label]) => {
