@@ -52,6 +52,9 @@ function LabInputs() {
   );
 }
 
+/** How long the sliders must rest before the ranking is calculated again. */
+export const RECALCULATE_AFTER_MS = 500;
+
 /**
  * Settings on the left (scenario, weights, criteria, scope), the analysis on the right. On narrow
  * screens the two stack in the same order.
@@ -60,15 +63,21 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
   const { dataMode } = useDataHub();
   const [start] = useState(() => startingWeights(dataMode, options));
   const [weights, setWeights] = useState<Weights>(start.weights);
-  // The ranking is recalculated only on "Hitung ulang peringkat", never while a slider moves.
+  // The ranking follows the sliders once they rest, so a drag sends one request, not one per step.
   const [appliedWeights, setAppliedWeights] = useState<Weights>(start.weights);
   const [provinceId, setProvinceId] = useState<string | null>(null);
   const total = Object.values(weights).reduce((sum, value) => sum + value, 0);
   const changed = weightsKey(weights) !== weightsKey(appliedWeights);
-  const canRecompute = changed && total === TOTAL_BASIS_POINTS && Object.keys(weights).length > 0;
-  const recompute = () => {
-    if (canRecompute) setAppliedWeights(weights);
-  };
+  const updating = changed && total === TOTAL_BASIS_POINTS && Object.keys(weights).length > 0;
+  useEffect(() => {
+    if (!updating) return;
+    const timer = window.setTimeout(() => {
+      setAppliedWeights(weights);
+    }, RECALCULATE_AFTER_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [updating, weights]);
   const provinceFieldId = useId();
   const settingsBodyId = useId();
   // One column: the settings start folded, so the result is not below every slider.
@@ -192,9 +201,6 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
           </p>
         )}
         <div className={styles.configActions}>
-          <Button variant="accent" disabled={!canRecompute} onClick={recompute}>
-            Hitung ulang peringkat
-          </Button>
           <Button
             variant="secondary"
             onClick={() => {
@@ -213,8 +219,7 @@ function Workbench({ options }: { readonly options: readonly IndicatorOption[] }
       <AnalysisPanel
         weights={appliedWeights}
         stale={changed}
-        canRecompute={canRecompute}
-        onRecompute={recompute}
+        updating={updating}
         provinceId={provinceId}
         registry={regions ?? []}
         options={options}
@@ -233,7 +238,7 @@ function presetsNote(state: ResourceState<{ readonly data: CompositePresetsDTO }
   if (state.status !== 'success') return null;
   const { presets, rejectedCount } = state.data.data;
   const notes: string[] = [];
-  if (presets.length > 0) notes.push('Titik awal dari Data Hub, bukan rekomendasi resmi.');
+  if (presets.length > 0) notes.push('Titik awal saja, bukan rekomendasi resmi.');
   if (rejectedCount > 0) {
     notes.push(
       `${String(rejectedCount)} skenario dari Data Hub tidak ditampilkan karena bobot atau keterangan ketersediaannya tidak sesuai kontrak.`,

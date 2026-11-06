@@ -23,7 +23,7 @@ describe('describeResultStatus', () => {
   });
 
   it.each<[string, Partial<ResultFacts>, RegExp]>([
-    ['national gap', { requestedWeightAvailabilityPct: 75 }, /hanya ada untuk 75% bobot pilihan/],
+    ['national gap', { requestedWeightAvailabilityPct: 75 }, /senilai 25% dari bobot Anda belum punya data/],
     ['provincial estimate', { imputedRegions: 510 }, /510 wilayah memakai estimasi tingkat provinsi/],
     ['partial coverage', { partialRegions: 3 }, /3 wilayah dihitung dari sebagian kriteria/],
     ['regions left out', { insufficientRegions: 4 }, /4 wilayah tidak diperingkat/],

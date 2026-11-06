@@ -44,12 +44,12 @@ import styles from './PriorityLab.module.css';
 const PAGE_SIZE = 10;
 
 interface AnalysisPanelProps {
-  /** The weights the ranking is calculated with: the last ones applied with "Hitung ulang peringkat". */
+  /** The weights the ranking is calculated with: the sliders' last resting position that adds up. */
   readonly weights: Readonly<Record<string, number>>;
   /** The sliders differ from `weights`: the ranking shown still uses the previous weights. */
   readonly stale: boolean;
-  readonly canRecompute: boolean;
-  readonly onRecompute: () => void;
+  /** The new weights are valid and about to be calculated; otherwise they cannot be yet. */
+  readonly updating: boolean;
   readonly provinceId: string | null;
   readonly registry: readonly DataHubRegionDTO[];
   readonly options: readonly IndicatorOption[];
@@ -76,19 +76,8 @@ interface ShownHistory {
  * blocking check, or whose components run against their indicator's direction, is never charted.
  */
 export function AnalysisPanel(props: AnalysisPanelProps) {
-  const {
-    weights,
-    stale,
-    canRecompute,
-    onRecompute,
-    provinceId,
-    registry,
-    options,
-    presets,
-    labelOf,
-    seriesOf,
-    controls,
-  } = props;
+  const { weights, stale, updating, provinceId, registry, options, presets, labelOf, seriesOf, controls } =
+    props;
   const { dataMode } = useDataHub();
   const live = dataMode === 'LIVE';
   const ready = Object.keys(weights).length > 0;
@@ -192,6 +181,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
       <AnalysisStatus
         ready={ready}
         stale={stale}
+        updating={updating}
         state={ranking.state}
         onRetry={ranking.retry}
         result={result}
@@ -221,8 +211,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
           seriesOf={seriesOf}
           stale={stale}
           refreshing={refreshing}
-          canRecompute={canRecompute}
-          onRecompute={onRecompute}
+          updating={updating}
           passportHrefFor={
             // No passport from a ranking that is being replaced: its weights are no longer the
             // ones on screen.
@@ -260,6 +249,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
 interface AnalysisStatusProps {
   readonly ready: boolean;
   readonly stale: boolean;
+  readonly updating: boolean;
   readonly state: ReturnType<typeof useDataHubResource<unknown>>['state'];
   readonly onRetry: () => void;
   readonly result: ExploratoryCompositeResultDTO | null;
@@ -414,8 +404,8 @@ function AnalysisStatus(props: AnalysisStatusProps) {
   });
   return (
     <StatusPanel
-      tone={status.tone}
-      title={status.title}
+      tone={props.updating ? 'loading' : status.tone}
+      title={props.updating ? 'Memperbarui peringkat…' : status.title}
       notes={status.limitations}
       stats={
         <dl className={styles.statusStats}>
@@ -460,7 +450,9 @@ function AnalysisStatus(props: AnalysisStatusProps) {
       }
     >
       {status.trust === 'stale'
-        ? 'Daftar di bawah masih dihitung dari bobot sebelumnya.'
+        ? props.updating
+          ? 'Sedang dihitung ulang dari bobot terbaru.'
+          : 'Daftar di bawah masih dihitung dari bobot sebelumnya.'
         : `${counted} dari data resmi LIVE.`}
     </StatusPanel>
   );
@@ -482,9 +474,9 @@ function blockedSummary(
     }. Skor yang tetap dikirim server tidak ditampilkan.`;
   }
   if (has('REQUESTED_WEIGHT_AVAILABILITY_LOW')) {
-    return `Kebijakan antarmuka Nusa Matra (bukan aturan Data Hub): peringkat hanya ditampilkan bila minimal ${String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT)}% bobot pilihan Anda punya data nasional${
+    return `Peringkat hanya ditampilkan bila minimal ${String(FRONTEND_MIN_REQUESTED_WEIGHT_PCT)}% bobot pilihan Anda punya data untuk seluruh Indonesia${
       requestedWeightPct === null ? '' : `; saat ini ${requestedWeightPct.toFixed(0)}%`
-    }.`;
+    }. Aturan ini ditetapkan Nusa Matra agar hasilnya tidak menyesatkan.`;
   }
   if (has('SCORE_DIRECTION_MISMATCH', 'SCORE_DIRECTION_UNREPORTED')) {
     return 'Arah skor dari Data Hub tidak jelas atau berbeda dari kontrak (skor tinggi = kebutuhan tinggi). Hasil ditahan agar tidak menyesatkan.';
@@ -528,8 +520,7 @@ interface RankingWorkspaceProps {
   readonly stale: boolean;
   /** A new calculation is running; this is the last validated ranking, kept on screen meanwhile. */
   readonly refreshing: boolean;
-  readonly canRecompute: boolean;
-  readonly onRecompute: () => void;
+  readonly updating: boolean;
   /** Paspor Bukti for a focused region, or `null` when no passport may be made from this result. */
   readonly passportHrefFor: ((focusRegionId: string) => string) | null;
 }
@@ -547,8 +538,7 @@ function RankingWorkspace({
   seriesOf,
   stale,
   refreshing,
-  canRecompute,
-  onRecompute,
+  updating,
   passportHrefFor,
 }: RankingWorkspaceProps) {
   const [shown, setShown] = useState(PAGE_SIZE);
@@ -631,12 +621,9 @@ function RankingWorkspace({
           </div>
         </div>
         <p className={styles.cardLead}>{SCORE_SUMMARY}</p>
-        {stale && (
+        {stale && !updating && (
           <div className={styles.staleBanner} role="status">
-            <p>Bobot berubah. Peringkat masih memakai bobot sebelumnya.</p>
-            <Button variant="accent" disabled={!canRecompute} onClick={onRecompute}>
-              Hitung ulang
-            </Button>
+            <p>Total bobot belum 100%, jadi peringkat masih memakai bobot sebelumnya.</p>
           </div>
         )}
         <div className={styles.searchRow}>
@@ -680,7 +667,7 @@ function RankingWorkspace({
             <p className={styles.hint}>
               {completeOnly
                 ? `${String(integrity.coverageTiers.partial)} wilayah berdata sebagian disembunyikan dari tampilan ini; nomor peringkat tetap milik Data Hub dan tidak dihitung ulang.`
-                : `${String(integrity.coverageTiers.partial)} wilayah ditandai “Data sebagian”: skornya dihitung dari sebagian kriteria dengan bobot yang dialihkan.`}
+                : `${String(integrity.coverageTiers.partial)} wilayah ditandai “Data sebagian”: skornya hanya memakai kriteria yang datanya ada.`}
             </p>
           </div>
         )}

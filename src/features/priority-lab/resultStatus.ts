@@ -50,7 +50,7 @@ function limitationsOf(facts: ResultFacts): string[] {
   const available = facts.requestedWeightAvailabilityPct;
   if (available !== null && available < FULL_AVAILABILITY_PCT) {
     limits.push(
-      `Data nasional hanya ada untuk ${available.toFixed(0)}% bobot pilihan; sisanya dialihkan ke kriteria lain.`,
+      `Kriteria senilai ${(FULL_AVAILABILITY_PCT - available).toFixed(0)}% dari bobot Anda belum punya data untuk seluruh Indonesia, jadi tidak ikut dihitung; bobotnya dibagi ke kriteria lain.`,
     );
   }
   if (facts.imputedRegions > 0) {

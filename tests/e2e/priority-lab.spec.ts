@@ -36,15 +36,15 @@ async function openSettings(page: Page) {
 
 const results = (page: Page) => page.getByRole('region', { name: 'Peringkat wilayah' });
 
-/** Chooses a Data Hub scenario in the "Skenario awal" glass combobox (draft weights until "Hitung ulang"). */
+/** Chooses a Data Hub scenario in the "Skenario awal" glass combobox. */
 async function chooseScenario(page: Page, name: RegExp) {
   await page.getByRole('combobox', { name: 'Skenario awal' }).click();
   await page.getByRole('option', { name }).click();
 }
 
-/** Weights and scenarios apply only on "Hitung ulang peringkat". */
+/** Weights and scenarios apply by themselves once the sliders rest. */
 async function recompute(page: Page) {
-  await page.getByRole('button', { name: 'Hitung ulang peringkat' }).click();
+  await page.waitForTimeout(700);
 }
 
 test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
@@ -136,7 +136,7 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
     expect(mock.compositeRequests.length).toBeGreaterThan(0);
   });
 
-  test('dragging a slider sends nothing until "Hitung ulang", then one request summing to exactly 10 000', async ({
+  test('moving a slider recalculates by itself, with one request summing to exactly 10 000', async ({
     page,
   }) => {
     const mock = await openLiveLab(page);
@@ -147,14 +147,12 @@ test.describe('Lab Prioritas in LIVE (MOCKED contract v2.1)', () => {
     await slider.focus();
     for (let step = 0; step < 15; step += 1) await slider.press('ArrowRight');
     await expect(page.getByText(/^Total 100%/)).toBeVisible();
-    await expect(page.getByText('Bobot berubah. Peringkat masih memakai bobot sebelumnya.')).toBeVisible();
-    expect(mock.compositeRequests.length).toBe(before);
-    await recompute(page);
     await expect.poll(() => mock.compositeRequests.at(-1)?.weights['soc_poverty_rate']).toBe(3500);
     await expect(results(page)).toBeVisible();
 
     const sent = mock.compositeRequests.slice(before);
-    expect(sent.length).toBe(1); // one request per "Hitung ulang", never one per key press
+    await page.waitForTimeout(700);
+    expect(mock.compositeRequests.slice(before).length).toBe(1); // one when it rests, not one per key press
     for (const body of sent) expect(Object.values(body.weights).reduce((a, b) => a + b, 0)).toBe(10000);
   });
 
@@ -300,10 +298,7 @@ test.describe('Lab Prioritas against the deployed Data Hub (read-only)', () => {
     for (const preset of presets) {
       const rankable = preset.availability?.rankable;
       await chooseScenario(page, new RegExp(preset.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-      // The scenario only sets the draft weights; the ranking follows "Hitung ulang peringkat".
-      const apply = page.getByRole('button', { name: 'Hitung ulang peringkat' });
-      if (await apply.isEnabled()) await apply.click();
-      await expect(page.getByText('Bobot berubah. Peringkat masih memakai bobot sebelumnya.')).toHaveCount(0);
+      await recompute(page);
       const outcome = await settledOutcome(page);
       if (rankable === false) {
         expect(outcome).toBe('withheld');

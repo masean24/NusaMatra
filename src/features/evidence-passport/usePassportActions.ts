@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { canShare, copyText, downloadTextFile } from './browserActions';
+import { downloadTextFile } from '@/lib/downloadTextFile';
+import { canShare, copyText } from './browserActions';
 
 const LINK_COPIED_MS = 1600;
 

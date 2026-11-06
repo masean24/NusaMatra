@@ -85,6 +85,23 @@
   margin-top: 4px;
 }
 
+.downloads {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.downloads p {
+  margin: 0;
+}
+
+.downloadActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .definition p,
 .valueCard p {
   margin: 0;

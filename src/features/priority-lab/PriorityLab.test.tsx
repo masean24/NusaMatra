@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   buildPool,
   compositeResponse,
@@ -17,7 +17,7 @@ import {
   requestedUrls,
   type FixtureHandler,
 } from '@/test/dataHubFixtures';
-import { PriorityLab } from './PriorityLab';
+import { PriorityLab, RECALCULATE_AFTER_MS } from './PriorityLab';
 
 interface CompositeRequest {
   readonly weights: Record<string, number>;
@@ -31,10 +31,11 @@ function openPicker() {
   details.open = true;
 }
 
-/** Weights apply only on "Hitung ulang peringkat" (never while a slider moves). */
-function recompute() {
-  const button = screen.getByRole('button', { name: 'Hitung ulang peringkat' });
-  if (!(button as HTMLButtonElement).disabled) fireEvent.click(button);
+/** Weights apply by themselves once the sliders rest. */
+async function recompute() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, RECALCULATE_AFTER_MS + 20));
+  });
 }
 
 /** Chooses a Data Hub scenario in the "Skenario awal" glass combobox (it becomes the draft weights). */
@@ -49,10 +50,10 @@ async function chooseScope(name: RegExp) {
   fireEvent.pointerUp(await screen.findByRole('option', { name }));
 }
 
-/** Chooses a Data Hub scenario and applies it with "Hitung ulang peringkat". */
+/** Chooses a Data Hub scenario and waits for it to apply. */
 async function applyScenario(name: RegExp) {
   await chooseScenario(name);
-  recompute();
+  await recompute();
 }
 
 /** Opens a ranking row's breakdown (the rows are an accordion, all closed at first). */
@@ -132,7 +133,7 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
     expect(screen.getAllByText('12,34').length).toBeGreaterThan(0);
   });
 
-  it('moves one slider, rebalances the others to exactly 100%, says so, and queries again only on "Hitung ulang"', async () => {
+  it('moves one slider, rebalances the others to exactly 100%, says so, and queries again once it rests', async () => {
     const { fetchImpl, bodies } = labFetch();
     renderWithDataHub(<PriorityLab />, { fetchImpl });
     await screen.findByText('10 dari 514 wilayah');
@@ -143,10 +144,9 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
 
     expect(screen.getByText(/^Total 100%/)).toBeInTheDocument();
     expect(screen.getByText(/Bobot lain ikut menyesuaikan/)).toBeInTheDocument();
-    // Moving a slider never recalculates on its own: the ranking says it still uses the old weights.
-    expect(screen.getByText('Bobot berubah. Peringkat masih memakai bobot sebelumnya.')).toBeInTheDocument();
+    // Not per step of the drag: it asks once, after the slider rests.
     expect(bodies).toHaveLength(1);
-    recompute();
+    await recompute();
     await waitFor(() => {
       expect(bodies).toHaveLength(2);
     });
@@ -174,14 +174,14 @@ describe('PriorityLab in DEMO (captured DEMO composite)', () => {
 
     openPicker();
     fireEvent.click(screen.getByRole('checkbox', { name: 'Indeks Pembangunan Manusia (IPM / HDI)' }));
-    recompute();
+    await recompute();
     await waitFor(() => {
       expect(Object.keys(bodies.at(-1)?.weights ?? {})).toContain('soc_hdi');
     });
     expect(sumOf(bodies.at(-1)?.weights ?? {})).toBe(10000);
 
     fireEvent.click(screen.getByRole('button', { name: 'Lepas kriteria Persentase Penduduk Miskin (P0)' }));
-    recompute();
+    await recompute();
     await waitFor(() => {
       expect(Object.keys(bodies.at(-1)?.weights ?? {})).not.toContain('soc_poverty_rate');
     });
@@ -552,9 +552,11 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
     fireEvent.click(await screen.findByRole('combobox', { name: 'Skenario awal' }));
     const option = await screen.findByRole('option', { name: /Pemerataan Kualitas Pendidikan Daerah 3T/ });
-    expect(option).toHaveTextContent('Belum dapat diperingkat: data nasional baru 45% bobot');
+    expect(option).toHaveTextContent(
+      'Belum dapat diperingkat: baru 45% bobot yang punya data untuk seluruh Indonesia',
+    );
     fireEvent.pointerUp(option);
-    recompute();
+    await recompute();
     expect(
       await screen.findByText(
         /Skenario “Pemerataan Kualitas Pendidikan Daerah 3T” ditandai Data Hub belum dapat diperingkat di LIVE \(hanya 45% bobotnya punya data nasional\)/,
@@ -685,7 +687,7 @@ describe('Paspor Bukti link in the calculation notes', () => {
     other.meta.snapshot_id = '2026.10.9-other-snapshot';
     renderLive({ '/api/v1/indicators/composite-query': () => jsonResponse(other) });
     await chooseScenario(/Pengentasan Kemiskinan Ekstrem & Stunting/);
-    recompute();
+    await recompute();
     await chooseScope(/Jawa Tengah|Provinsi 33/);
     const cta = await screen.findByRole('link', { name: 'Buat Paspor Bukti' });
     expect(cta.getAttribute('href')).toContain('snap=2026.10.9-other-snapshot');
@@ -727,7 +729,7 @@ describe('Paspor Bukti link in the calculation notes', () => {
     });
     renderWithDataHub(<PriorityLab />, { fetchImpl, dataMode: 'LIVE' });
     await chooseScenario(/Pemerataan Kualitas Pendidikan Daerah 3T/);
-    recompute();
+    await recompute();
     await screen.findByText(/ditandai Data Hub belum dapat diperingkat di LIVE/);
     expect(link()).not.toBeInTheDocument();
     expect(screen.getByText(withheldNote)).toBeInTheDocument();
@@ -793,7 +795,7 @@ describe('A known direction anomaly withholds the ranking it reaches (captured n
     await screen.findByText('Peringkat ditahan: skor sumber tidak konsisten');
     openPicker();
     fireEvent.click(screen.getByRole('checkbox', { name: /Persentase Rumah Tangga Akses Air Minum Layak/ }));
-    recompute();
+    await recompute();
 
     await waitFor(() => {
       expect(bodies.at(-1)?.weights.inf_safe_water_pct).toBeUndefined();
@@ -862,12 +864,12 @@ describe('The status says how far a LIVE result can be trusted', () => {
     ).toBeGreaterThan(0);
   });
 
-  it('says the list is stale until the new weights are calculated', async () => {
+  it('says the list is being updated until the new weights are calculated', async () => {
     renderLive();
     await screen.findByText(RESULT_READY);
     await chooseScenario(/Prioritas Pembangunan Komprehensif Nasional/);
-    expect(await screen.findByText('Peringkat belum memakai bobot terbaru')).toBeInTheDocument();
-    expect(screen.getByText('Daftar di bawah masih dihitung dari bobot sebelumnya.')).toBeInTheDocument();
+    expect(await screen.findByText('Memperbarui peringkat…')).toBeInTheDocument();
+    expect(screen.getByText('Sedang dihitung ulang dari bobot terbaru.')).toBeInTheDocument();
     expect(screen.queryByText(RESULT_READY)).not.toBeInTheDocument();
   });
 

@@ -76,9 +76,9 @@ function availabilityNote(preset: CompositePresetDTO): string | null {
   const availability = preset.availability;
   if (!availability) return null;
   if (!availability.rankable)
-    return `Belum dapat diperingkat: data nasional baru ${String(availability.requestedWeightAvailabilityPct)}% bobot`;
+    return `Belum dapat diperingkat: baru ${String(availability.requestedWeightAvailabilityPct)}% bobot yang punya data untuk seluruh Indonesia`;
   if (availability.requestedWeightAvailabilityPct < 100)
-    return `Data nasional ${String(availability.requestedWeightAvailabilityPct)}% bobot, sisanya dialihkan`;
+    return `${String(100 - availability.requestedWeightAvailabilityPct)}% bobot belum punya data untuk seluruh Indonesia, jadi dibagi ke kriteria lain`;
   return null;
 }
 

@@ -21,6 +21,7 @@ import type {
   RegionIndicatorMeasurementDTO,
 } from '@/services/api';
 
+import { IndicatorDownloads } from './IndicatorDownloads';
 import { scoreMethodHref } from './scoreMethodHref';
 import styles from './IndicatorPanel.module.css';
 
@@ -128,6 +129,7 @@ function IndicatorDetail({
         regionId={regionId}
         values={values}
       />
+      <IndicatorDownloads indicator={indicator} referenceYear={referenceYear} values={values.state} />
       <IndicatorDefinition indicator={indicator} />
     </>
   );

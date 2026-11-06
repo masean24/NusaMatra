@@ -96,7 +96,6 @@ test.describe('Lab Prioritas with the Data Hub (captured DEMO responses)', () =>
     for (let step = 0; step < 10; step += 1) await slider.press('ArrowRight');
 
     await expect(page.getByText(/^Total 100%/)).toBeVisible();
-    await page.getByRole('button', { name: 'Hitung ulang peringkat' }).click();
     const latestWeights = () =>
       (mock.compositeRequests.at(-1) as { weights: Record<string, number> } | undefined)?.weights ?? {};
     await expect.poll(() => latestWeights()['soc_poverty_rate']).toBe(3500);

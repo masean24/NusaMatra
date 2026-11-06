@@ -20,9 +20,9 @@
   align-items: center;
 }
 
-/* The four links share the bar's free width evenly; scrolled, the bar has none and they sit close. */
+/* The links stay together in the middle of the bar's free width. */
 .pill .list {
-  justify-content: space-evenly;
+  justify-content: center;
 }
 
 .tab .list {

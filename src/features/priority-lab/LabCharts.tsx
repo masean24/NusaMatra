@@ -251,7 +251,7 @@ export function ContributionChart({
         Sumbangan = skor kriteria × bobot wilayah ini, pada skala 100. Jumlahnya bisa selisih 0,01–0,03 karena
         pembulatan.
         {partial &&
-          ` Wilayah ini dihitung dari sebagian kriteria saja (cakupan ${formatDecimalId(String(item.coveragePct))}%): bobot kriteria yang datanya kosong dialihkan ke kriteria lain.`}
+          ` Wilayah ini dihitung dari sebagian kriteria saja (cakupan ${formatDecimalId(String(item.coveragePct))}%): kriteria yang datanya kosong tidak dihitung, dan bobotnya dibagi ke kriteria lain.`}
         {imputedCriteria(item).length > 0 &&
           ' Sedikitnya satu nilai berasal dari estimasi tingkat provinsi, bukan pengukuran kabupaten/kota.'}
       </p>
