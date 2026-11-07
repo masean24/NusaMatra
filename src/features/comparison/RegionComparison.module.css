@@ -115,6 +115,33 @@
   background: var(--c-worse);
 }
 
+/*
+ * The same reading in words under the value. The text keeps the body colour, so its contrast does
+ * not depend on the green or red; the small mark before it repeats the bar's colour.
+ */
+.outcome {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--c-text);
+}
+
+.outcome::before {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.outcome[data-outcome='better']::before {
+  background: var(--c-better);
+}
+
+.outcome[data-outcome='worse']::before {
+  background: var(--c-worse);
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;

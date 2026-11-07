@@ -1,4 +1,4 @@
-export { describeUnit } from './units';
+export { describeUnit, ratioIsMeaningful } from './units';
 export type { DisplayUnit, UnitKind } from './units';
 export {
   DATA_HUB_PERCENTILE_ORIENTATION,
@@ -17,5 +17,5 @@ export type {
 } from './interpretIndicator';
 export { needEndOf, needScore } from './needScore';
 export type { NeedEnd, NeedScoreInput } from './needScore';
-export { readComparison } from './interpretComparison';
+export { SIMILAR_RATIO, SIMILAR_YEARS, isNearlyEqual, readComparison } from './interpretComparison';
 export type { ComparisonReading, ComparisonReadingInput, ComparisonVerdict } from './interpretComparison';
