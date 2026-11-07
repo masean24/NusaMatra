@@ -176,6 +176,69 @@ describe('readComparison', () => {
     expect(read(measured(14.72), measured(14.62), 'positive')?.verdict).toBe('A_BETTER');
   });
 
+  /*
+   * Boundary regressions. In binary floating point 70.1 − 70 is 0.09999999999999432 and
+   * 10.29 / 9.8 is 1.0499999999999998, so a plain `<` put exactly 0.1 year and exactly 5% on the
+   * nearly-equal side for some pairs and not for others. Each case runs both ways round.
+   */
+  describe('thresholds hold exactly, whatever the binary rounding', () => {
+    const verdictBothWays = (a: number, b: number, unit: string, label: string) => {
+      const forward = read(measured(a, { unit }), measured(b, { unit }), 'positive', label)?.verdict;
+      const reversed = read(measured(b, { unit }), measured(a, { unit }), 'positive', label)?.verdict;
+      return [forward, reversed];
+    };
+    const years = (a: number, b: number) => verdictBothWays(a, b, 'years', 'Umur Harapan Hidup');
+    const percent = (a: number, b: number) => verdictBothWays(a, b, 'percent (%)', 'Akses air minum');
+
+    it('years: just under 0.1 is nearly equal', () => {
+      expect(years(70, 70.099)).toEqual(['SIMILAR', 'SIMILAR']);
+      expect(years(70.2, 70.2999)).toEqual(['SIMILAR', 'SIMILAR']);
+      expect(years(64.9, 64.9999999)).toEqual(['SIMILAR', 'SIMILAR']);
+    });
+
+    it('years: exactly 0.1 is a difference, including pairs whose binary gap falls just below it', () => {
+      expect(years(70, 70.1)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(years(70.2, 70.3)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(years(64.9, 65)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(years(14.62, 14.72)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(years(0.1, 0.2)).toEqual(['B_BETTER', 'A_BETTER']);
+    });
+
+    it('years: just over 0.1 is a difference', () => {
+      expect(years(70, 70.101)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(years(70.2, 70.3001)).toEqual(['B_BETTER', 'A_BETTER']);
+    });
+
+    it('other units: just under 5% is nearly equal', () => {
+      expect(percent(20, 20.99)).toEqual(['SIMILAR', 'SIMILAR']);
+      expect(percent(9.8, 10.289)).toEqual(['SIMILAR', 'SIMILAR']);
+      expect(percent(100, 104.9999)).toEqual(['SIMILAR', 'SIMILAR']);
+    });
+
+    it('other units: exactly 5% is a difference, including pairs whose binary ratio falls just below it', () => {
+      expect(percent(20, 21)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(percent(9.8, 10.29)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(percent(100, 105)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(percent(1.4, 1.47)).toEqual(['B_BETTER', 'A_BETTER']);
+    });
+
+    it('other units: just over 5% is a difference', () => {
+      expect(percent(20, 21.01)).toEqual(['B_BETTER', 'A_BETTER']);
+      expect(percent(9.8, 10.291)).toEqual(['B_BETTER', 'A_BETTER']);
+    });
+
+    it('a pair at exactly 5% never reads "1,0× lebih tinggi": the gap is given in its unit instead', () => {
+      const reading = read(
+        measured(10.29, { unit: 'percent (%)' }),
+        measured(9.8, { unit: 'percent (%)' }),
+        'positive',
+        'Akses air minum',
+      );
+      expect(reading?.sentence).not.toMatch(/1,0×/);
+      expect(reading?.sentence).toContain('Palembang lebih tinggi 0,49 tahun dibanding Jakarta Pusat.');
+    });
+  });
+
   it('explains a higher-is-better gap and names the better side by polarity', () => {
     const reading = read(measured(13.97), measured(13), 'positive');
     expect(reading?.sentence).toContain(

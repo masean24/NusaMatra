@@ -43,6 +43,10 @@ export interface ComparisonNote<Code extends string> {
 }
 
 export interface ComparisonDifference {
+  /** Region A's value as received, so thresholds can be checked on it exactly. */
+  readonly a: number;
+  /** Region B's value as received. */
+  readonly b: number;
   /** b − a, in the indicator's unit. */
   readonly absolute: number;
   /** larger / smaller; only when both values are above 0, otherwise `null`. */
@@ -136,6 +140,8 @@ export function assessComparison(a: ComparableMeasurement, b: ComparableMeasurem
     blockers,
     warnings: [],
     difference: {
+      a: a.value,
+      b: b.value,
       absolute,
       ratio: smaller > 0 ? Math.max(a.value, b.value) / smaller : null,
       higher: a.value === b.value ? 'EQUAL' : a.value > b.value ? 'A' : 'B',

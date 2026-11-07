@@ -15,7 +15,7 @@ describe('assessComparison', () => {
     expect(result.allowed).toBe(true);
     expect(result.blockers).toEqual([]);
     expect(result.warnings).toEqual([]);
-    expect(result.difference).toEqual({ absolute: -8, ratio: 3, higher: 'A' });
+    expect(result.difference).toEqual({ a: 12, b: 4, absolute: -8, ratio: 3, higher: 'A' });
   });
 
   it('blocks a missing value and computes no difference, and never reads it as 0', () => {
@@ -79,12 +79,14 @@ describe('assessComparison', () => {
   it('is symmetric when the regions are swapped', () => {
     const forward = assessComparison(measured({ value: 12 }), measured({ value: 4 }));
     const swapped = assessComparison(measured({ value: 4 }), measured({ value: 12 }));
-    expect(forward.difference).toEqual({ absolute: -8, ratio: 3, higher: 'A' });
-    expect(swapped.difference).toEqual({ absolute: 8, ratio: 3, higher: 'B' });
+    expect(forward.difference).toEqual({ a: 12, b: 4, absolute: -8, ratio: 3, higher: 'A' });
+    expect(swapped.difference).toEqual({ a: 4, b: 12, absolute: 8, ratio: 3, higher: 'B' });
   });
 
   it('treats a measured 0 as a value: 0 vs 0 is equal, 0 vs null is blocked', () => {
     expect(assessComparison(measured({ value: 0 }), measured({ value: 0 })).difference).toEqual({
+      a: 0,
+      b: 0,
       absolute: 0,
       ratio: null,
       higher: 'EQUAL',
@@ -94,11 +96,11 @@ describe('assessComparison', () => {
 
   it('gives no ratio when a value is 0 (a ratio to zero is meaningless) but keeps the absolute gap', () => {
     const result = assessComparison(measured({ value: 0 }), measured({ value: 5 }));
-    expect(result.difference).toEqual({ absolute: 5, ratio: null, higher: 'B' });
+    expect(result.difference).toEqual({ a: 0, b: 5, absolute: 5, ratio: null, higher: 'B' });
   });
 
   it('calls equal values equal', () => {
     const result = assessComparison(measured({ value: 7 }), measured({ value: 7 }));
-    expect(result.difference).toEqual({ absolute: 0, ratio: 1, higher: 'EQUAL' });
+    expect(result.difference).toEqual({ a: 7, b: 7, absolute: 0, ratio: 1, higher: 'EQUAL' });
   });
 });

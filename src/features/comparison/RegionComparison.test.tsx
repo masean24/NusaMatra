@@ -775,6 +775,48 @@ describe('Better/worse reading does not lean on colour alone (F-06, F-07, F-08)'
     expect(row.querySelector('[data-outcome]')).toBeNull();
   });
 
+  it('reads exactly 0.1 year as a difference in the label, the colours and the explanation alike', async () => {
+    // 65 − 64.9 is 0.09999999999999432 in binary floating point.
+    await renderComparison({
+      plainB: true,
+      mutateA: (detail) => {
+        indicatorOf(detail, 'hlt_life_expectancy').raw_value = 64.9;
+      },
+      mutateB: (detail) => {
+        indicatorOf(detail, 'hlt_life_expectancy').raw_value = 65;
+      },
+    });
+
+    const row = rowOf('Umur Harapan Hidup Saat Lahir (UHH)');
+    expect(within(row).getByText('Uji lebih tinggi 0,1 tahun')).toBeInTheDocument();
+    expect(betterSide(row)).toBe('Uji');
+    expect(
+      within(row).getByText(/Karena itu, Uji berada pada kondisi yang relatif lebih baik/),
+    ).toBeInTheDocument();
+    expect(within(row).queryByText(/Hampir sama|hampir sama/)).not.toBeInTheDocument();
+  });
+
+  it('reads exactly 5% as a difference, in its unit rather than "1,0×"', async () => {
+    // 10.29 / 9.8 is 1.0499999999999998 in binary floating point.
+    await renderComparison({
+      plainB: true,
+      mutateA: (detail) => {
+        indicatorOf(detail, 'soc_poverty_rate').raw_value = 9.8;
+      },
+      mutateB: (detail) => {
+        indicatorOf(detail, 'soc_poverty_rate').raw_value = 10.29;
+      },
+    });
+
+    const row = rowOf(POVERTY);
+    expect(within(row).getByText('Uji lebih tinggi 0,49 %')).toBeInTheDocument();
+    expect(betterSide(row)).toBe('Aceh Selatan');
+    expect(
+      within(row).getByText(/Karena itu, Aceh Selatan berada pada kondisi yang relatif lebih baik/),
+    ).toBeInTheDocument();
+    expect(within(row).queryByText(/Hampir sama|hampir sama|1,0×/)).not.toBeInTheDocument();
+  });
+
   it('gives a score an absolute gap with its unit, never "N× lebih tinggi"', async () => {
     await renderComparison({
       plainB: true,
