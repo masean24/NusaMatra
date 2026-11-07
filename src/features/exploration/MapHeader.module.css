@@ -1,0 +1,109 @@
+.header {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  left: 12px;
+  z-index: 6;
+}
+
+/* A little wider than the sheet's text at most, on a tablet. */
+.pill {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  max-width: 640px;
+  min-height: 48px;
+  margin-inline: auto;
+  padding: 2px 4px 2px 12px;
+  border-radius: var(--nm-radius-pill);
+}
+
+.home {
+  display: grid;
+  flex: none;
+  place-items: center;
+  min-width: 36px;
+  min-height: 44px;
+  margin-inline-end: 6px;
+  color: inherit;
+}
+
+/* The mark alone: the field needs the width. */
+.home [data-wordmark] {
+  display: none;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--c-text);
+  font: inherit;
+  /* 16px: below it, phones zoom the page in when the field gets the focus. */
+  font-size: 1rem;
+  outline: none;
+  appearance: none;
+}
+
+.field::placeholder {
+  overflow: hidden;
+  color: var(--c-text-muted);
+  text-overflow: ellipsis;
+}
+
+.field::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* The ring is the whole pill's, below. */
+.field:focus-visible {
+  outline: none;
+}
+
+.pill:has(.field:focus) {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.button {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-text);
+  fill: currentColor;
+  list-style: none;
+  cursor: pointer;
+}
+
+.button::-webkit-details-marker {
+  display: none;
+}
+
+.button:active {
+  background: var(--c-surface-muted);
+}
+
+.menu {
+  position: relative;
+  flex: none;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: -2px;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 20px;
+}

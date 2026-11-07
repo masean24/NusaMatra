@@ -101,3 +101,10 @@
   color: var(--nm-text);
   box-shadow: var(--nm-shadow-normal);
 }
+
+/* Phones: the type steps down with the rest of the site (styles/typography.css). */
+@media (width < 600px) {
+  .title {
+    font-size: 1.5rem;
+  }
+}

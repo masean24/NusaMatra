@@ -35,7 +35,7 @@
 }
 
 :global(html[data-display-mode='glass']) .overlay {
-  --splash-bg: radial-gradient(120% 90% at 50% 40%, #0e1638 0%, #0a0f27 50%, #06091a 100%);
+  --splash-bg: var(--nm-kaca-page-gradient); /* the page behind it, so the opening is already the site */
   --splash-dot: rgb(169 187 255 / 55%);
   --splash-dot-coast: #a9bbff;
   --splash-sweep: rgb(169 187 255 / 16%);
@@ -43,10 +43,10 @@
   --splash-stroke: #a9bbff;
   --splash-glow: rgb(255 150 80 / 28%);
   --splash-glow-soft: rgb(255 150 80 / 7%);
-  --splash-halo: rgb(9 13 34 / 85%);
-  --splash-meta: rgb(244 239 230 / 70%);
+  --splash-halo: rgb(20 38 138 / 88%); /* --nm-sea-ink */
+  --splash-meta: rgb(244 239 230 / 82%);
   --splash-percent: #a9bbff;
-  --splash-track: rgb(255 255 255 / 14%);
+  --splash-track: rgb(255 255 255 / 18%);
 }
 
 .overlay[data-phase='portal'] {

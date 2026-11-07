@@ -9,8 +9,8 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   }) => {
     await mockDataHub(page);
     await page.goto('/jelajahi');
-    await openDataInfo(page);
     await openRegionPanel(page);
+    await openDataInfo(page);
 
     await expect(page.getByText('Menampilkan 30 dari 514 wilayah')).toBeVisible();
     await expect(page.getByText('Simulasi — bukan data atau rekomendasi resmi.')).toBeVisible();
@@ -50,8 +50,8 @@ test.describe('Jelajahi with the Data Hub (captured DEMO responses)', () => {
   test('blocks LIVE on HTTP 503: no data, no fallback, and DEMO again only on request', async ({ page }) => {
     const mock = await mockDataHub(page);
     await page.goto('/jelajahi');
-    await openDataInfo(page);
     await openRegionPanel(page);
+    await openDataInfo(page);
     await expect(page.getByText('Menampilkan 30 dari 514 wilayah')).toBeVisible();
 
     await page.locator('label', { hasText: 'LIVE' }).click();

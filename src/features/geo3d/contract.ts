@@ -24,6 +24,8 @@ export interface GeoRegionSelection {
 export interface GeoCameraHandle {
   /** Fly to and highlight one region. */
   focusRegion: (regionId: string) => void;
+  /** Fly to a point on the map, close enough to see where it lies, not so close that the land is lost. */
+  focusPoint: (lon: number, lat: number) => void;
   /** Return to the overview framing. */
   resetView: () => void;
   /** Closer (factor < 1) or farther (factor > 1) along the current line of sight, within the map's limits. */

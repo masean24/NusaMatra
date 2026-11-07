@@ -17,9 +17,9 @@
   animation: reveal-in var(--reveal-duration) var(--nm-ease-calm) var(--reveal-delay) both;
 }
 
-/* The opening (features/intro) brings the whole page in, so nothing enters a second time. */
-:global(html[data-intro]) .onLoad[data-revealed='true'] {
-  animation: none;
+/* The opening (features/intro) holds them at their start; they play as it lifts, as on any arrival. */
+:global(html[data-intro='playing']) .onLoad[data-revealed='true'] {
+  animation-play-state: paused;
 }
 
 @keyframes reveal-in {

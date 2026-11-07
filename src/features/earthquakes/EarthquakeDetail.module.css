@@ -1,48 +1,266 @@
 .detail {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
-.header {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  justify-content: space-between;
-}
+/* -------------------------------------------------------------- back, walk the list, close */
 
-.header h2 {
-  margin: 0;
-}
-
-.status {
+.toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0;
+  gap: 4px 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin: -6px -8px 0;
 }
 
-.facts {
+.toolbarEnd {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+.back,
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--nm-radius-pill);
+  background: transparent;
+  color: var(--c-text);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.back {
+  gap: 4px;
+  padding: 0 12px 0 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.back:hover,
+.iconButton:hover:not(:disabled) {
+  background: var(--c-surface-muted);
+}
+
+.back:focus-visible,
+.iconButton:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: -3px;
+}
+
+.iconButton:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.pager {
+  display: inline-flex;
+  align-items: center;
+}
+
+.next {
+  transform: rotate(180deg);
+}
+
+.position {
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------ how strong, where and when */
+
+.hero {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  animation: detail-in 280ms var(--nm-ease-calm) both;
+}
+
+@keyframes detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.magnitude {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 92px;
+  min-height: 92px;
+  margin: 0;
+  border-radius: 16px;
+  background: var(--tone-text);
+  color: var(--nm-land-1);
+}
+
+.magnitudeLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.magnitudeValue {
+  font-size: 2.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.headline {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  justify-content: center;
+  min-width: 0;
+}
+
+.place {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.place:focus {
+  outline: none;
+}
+
+.time,
+.ago {
   margin: 0;
 }
 
-.facts div {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  gap: 8px;
-}
-
-.facts dt {
+.ago {
   color: var(--c-text-muted);
-  font-size: 0.875rem;
 }
 
-.facts dd {
+/* ------------------------------------------------------------------------- BMKG's statement */
+
+.note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
   margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--c-surface-muted);
+}
+
+.note[data-threat] {
+  background: var(--nm-accent);
+  color: var(--nm-text);
+}
+
+.noteText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.noteLabel {
+  color: var(--c-text-muted);
+}
+
+.note[data-threat] .noteLabel {
+  color: inherit;
+}
+
+/* ---------------------------------------------------------------------- depth, coordinates */
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.fact dt {
+  color: var(--c-text-muted);
+  font-size: 0.8125rem;
+}
+
+.fact dd {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 0;
+}
+
+.factValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.factHint {
+  color: var(--c-text-muted);
+}
+
+/* ----------------------------------------------------------------------------- who felt it */
+
+.felt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair, var(--c-border));
+}
+
+.feltTitle {
+  margin: 0;
+}
+
+.reports {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  text-align: start; /* a short list of places in a narrow column: justified, it opens wide gaps */
+}
+
+.scale {
+  display: grid;
+  place-items: center;
+  min-height: 28px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: var(--c-surface-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.reportText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.reportPlaces {
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
@@ -60,14 +278,52 @@
   background: var(--c-surface-muted);
 }
 
+/* -------------------------------------------------------------------- where it comes from */
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair, var(--c-border));
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
 .muted {
   margin: 0;
   color: var(--c-text-muted);
 }
 
-@media (width < 420px) {
-  .facts div {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+.footer p,
+.felt p {
+  margin: 0;
+}
+
+@media (width < 600px) {
+  .magnitude {
+    width: 76px;
+    min-height: 76px;
+    border-radius: 14px;
+  }
+
+  .magnitudeValue {
+    font-size: 1.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    animation: none;
+  }
+
+  .back,
+  .iconButton {
+    transition: none;
   }
 }

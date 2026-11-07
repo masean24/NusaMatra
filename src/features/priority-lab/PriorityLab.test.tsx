@@ -41,13 +41,13 @@ async function recompute() {
 /** Chooses a Data Hub scenario in the "Skenario awal" glass combobox (it becomes the draft weights). */
 async function chooseScenario(name: RegExp) {
   fireEvent.click(await screen.findByRole('combobox', { name: 'Skenario awal' }));
-  fireEvent.pointerUp(await screen.findByRole('option', { name }));
+  fireEvent.click(await screen.findByRole('option', { name }));
 }
 
 /** Chooses a province in "Cakupan wilayah" (a glass combobox with a listbox, not a native select). */
 async function chooseScope(name: RegExp) {
   fireEvent.click(await screen.findByRole('combobox', { name: 'Cakupan wilayah' }));
-  fireEvent.pointerUp(await screen.findByRole('option', { name }));
+  fireEvent.click(await screen.findByRole('option', { name }));
 }
 
 /** Chooses a Data Hub scenario and waits for it to apply. */
@@ -555,7 +555,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
     expect(option).toHaveTextContent(
       'Belum dapat diperingkat: baru 45% bobot yang punya data untuk seluruh Indonesia',
     );
-    fireEvent.pointerUp(option);
+    fireEvent.click(option);
     await recompute();
     expect(
       await screen.findByText(

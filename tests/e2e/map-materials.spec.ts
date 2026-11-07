@@ -72,7 +72,10 @@ test('the sea is the page background in Normal and Kaca, on the same canvas', as
 
   await expect.poll(() => seaIsPage(page)).toBe(true);
 
-  const glass = page.getByRole('switch', { name: 'Mode tampilan kaca' });
+  // On a phone the map's header keeps the display mode in its menu.
+  const menu = page.getByLabel('Bahasa dan tampilan').filter({ visible: true });
+  if ((await menu.count()) > 0) await menu.click();
+  const glass = page.getByRole('switch', { name: 'Mode tampilan kaca' }).filter({ visible: true });
   await glass.click();
   await expect(glass).toHaveAttribute('aria-checked', 'true');
   await expect.poll(() => seaIsPage(page), { timeout: 8000 }).toBe(true);

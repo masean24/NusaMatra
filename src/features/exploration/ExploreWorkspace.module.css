@@ -25,15 +25,9 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  transition: background-color 400ms ease;
 }
 
-/* With earthquakes on, the sea turns cobalt so the land and the coloured symbols stand out. */
-.workspace[data-quake-layer] .mapStage {
-  background-color: color-mix(in srgb, var(--nm-sea-deep) 62%, #0b1230);
-}
-
-/* A see-through panel over that sea would turn blue and lose contrast, so the panels turn opaque. */
+/* The symbols' strong colours would smear through a see-through panel, so in Normal the panels are solid. */
 :global(html[data-display-mode='normal']) .workspace[data-quake-layer] {
   --explore-reading-surface: var(--nm-land-1);
   --glass-bg: var(--nm-land-1);
@@ -50,12 +44,6 @@
 @media (width < 1024px) {
   .quakeLegend {
     display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mapStage {
-    transition: none;
   }
 }
 
@@ -106,29 +94,6 @@
   }
 }
 
-/*
- * Phones (< 600px): the cards fold into one disclosure. Its summary names the data mode (and an
- * active BMKG layer); opening it shows the same cards, scrolling above the sheet and the map buttons.
- */
-.statusDisclosure {
-  max-width: 100%;
-}
-
-.statusSummary {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 44px;
-  padding: 6px 14px;
-  border-radius: var(--nm-radius-pill);
-  list-style: none;
-  cursor: pointer;
-}
-
-.statusSummary::-webkit-details-marker {
-  display: none;
-}
-
 .modeBadge {
   padding: 3px 9px;
   border-radius: var(--nm-radius-pill);
@@ -136,26 +101,6 @@
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.04em;
-}
-
-.summaryHint {
-  font-size: 0.8125rem;
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.statusBody {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: stretch;
-  width: min(100vw - 2 * var(--explore-edge), 400px);
-  /* Ends above the map buttons (134px tall) under the summary (50px), with a little air. */
-  max-height: calc(100dvh - var(--explore-top) - var(--explore-above-sheet, 0px) - 200px);
-  margin-top: 6px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 /* ------------------------------------------------------------------ map buttons, bottom right */
@@ -170,12 +115,6 @@
   flex-direction: column;
   gap: 8px;
   align-items: center;
-}
-
-@media (width < 600px) {
-  .controls {
-    flex-direction: row;
-  }
 }
 
 /* ------------------------------------------------------------------ sidebar */
@@ -334,108 +273,240 @@
   padding-bottom: 0;
 }
 
+/* The region's content, kept mounted (and its search as typed) while the earthquake panel shows. */
+.regionContent {
+  display: contents;
+}
+
+.regionContent[hidden] {
+  display: none;
+}
+
 /* ------------------------------------------------------------------ tablet and phone */
 
 /*
- * Below 960px a side column would leave too little map, so the same panel becomes a bottom sheet
- * above the floating tab bar, and the map stays the full-screen surface behind it.
+ * Below 960px Jelajahi is laid out as a map app: the map is the whole screen, a search field and chips
+ * float over its top, the map buttons stand at its right edge, and the panel is a bottom sheet with
+ * three resting places that follows the finger (useSheetDrag). The sheet runs to the screen's bottom
+ * edge behind the floating tab bar.
+ *
+ * --sheet-visible is how much of the sheet shows. The sheet is always its full height and only moves,
+ * so a drag costs one composited transform per frame.
  */
 @media (width < 960px) {
   .workspace {
     --explore-edge: 12px;
-    --explore-top: 84px; /* clears the compact top bar */
-    /* Map credit, map buttons and DEMO list sit just above the folded sheet. */
-    --explore-above-sheet: calc(var(--nm-tabbar-clearance) + 92px); /* the folded sheet is 80px tall */
-    --explore-map-credit-bottom: var(--explore-above-sheet);
-    --explore-float-bottom: calc(var(--explore-above-sheet) + 36px);
-    --explore-float-reserve: 56px; /* room for the map buttons on the right */
+    --explore-top: 68px; /* under the map's header */
+    --sheet-glide: 380ms cubic-bezier(0.22, 1, 0.36, 1);
+    --sheet-fade: rgb(251 250 246); /* --nm-land-1 */
+    --sheet-collapsed: calc(var(--nm-tabbar-clearance) + 56px);
+    --sheet-peek: calc(var(--nm-tabbar-clearance) + 38dvh);
+    --sheet-open: calc(100dvh - var(--explore-top));
+    --sheet-visible: var(--sheet-collapsed);
+    --sheet-reserve: calc(var(--sheet-open) - var(--sheet-collapsed));
+    --explore-above-sheet: calc(var(--sheet-collapsed) + 12px);
+    --explore-map-credit-bottom: calc(var(--sheet-collapsed) + 8px);
+    --explore-float-bottom: calc(var(--sheet-collapsed) + 44px);
+    --explore-float-reserve: 60px; /* room for the map buttons on the right */
   }
 
-  /* One wrapping row under the top bar: the data mode, then the BMKG switch beside or below it. */
-  .status {
-    left: var(--explore-edge);
-    flex-flow: row wrap;
-    gap: 6px;
-    align-items: center;
-    width: auto;
-  }
-
-  .statusCard {
-    padding: 4px 10px;
-  }
-
-  .controls {
-    bottom: var(--explore-above-sheet);
-  }
-
-  /*
-   * Measured, never drawn: the part of the map left free when a region's sheet is up, between the
-   * status row under the top bar and the map buttons on the sheet's edge. A region flown to lands in it.
-   */
-  .visibleFrame {
-    position: absolute;
-    top: calc(var(--explore-top) + 56px);
-    right: 0;
-    bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 68px);
-    left: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-
-  /* With the sheet up, the buttons ride on its top edge or step aside while it is open. */
   .workspace[data-sheet='peek'] {
-    --explore-map-credit-bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 12px);
+    --sheet-visible: var(--sheet-peek);
+    --sheet-reserve: calc(var(--sheet-open) - var(--sheet-peek));
+    --explore-map-credit-bottom: calc(var(--sheet-peek) + 8px);
     --explore-float-visibility: hidden;
-  }
-
-  .workspace[data-sheet='peek'] .controls {
-    bottom: calc(var(--nm-tabbar-clearance) + 34dvh + 12px);
   }
 
   .workspace[data-sheet='open'] {
+    --sheet-visible: var(--sheet-open);
+    --sheet-reserve: 0px;
     --explore-float-visibility: hidden;
+  }
+
+  /* One row of chips under the search field; it scrolls sideways if a long language needs it. */
+  .status {
+    top: var(--explore-top);
+    right: 0;
+    left: 0;
+    display: block;
+    width: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .chips {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    max-width: 664px;
+    margin-inline: auto;
+    padding: 0 12px 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    pointer-events: none;
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chips > * {
+    pointer-events: auto;
+  }
+
+  .statusDisclosure {
+    flex: none;
+  }
+
+  .statusSummary {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--c-surface-border);
+    border-radius: var(--nm-radius-pill);
+    background: var(--explore-reading-surface, var(--c-surface));
+    box-shadow: 0 2px 8px rgb(18 30 90 / 16%);
+    color: var(--c-text);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .statusSummary::-webkit-details-marker {
+    display: none;
+  }
+
+  .problemDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--nm-accent);
+  }
+
+  /* Hangs from the whole row (not the scrolling one, which would clip it), over the map. */
+  .statusBody {
+    position: absolute;
+    top: 50px;
+    right: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: auto;
+    max-width: 640px;
+    max-height: max(160px, calc(100dvh - var(--explore-top) - 60px - var(--sheet-visible) - 214px));
+    margin-inline: auto;
+    margin-top: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    pointer-events: auto;
+  }
+
+  .statusCard {
+    padding: 10px 12px;
+  }
+
+  /*
+   * The map buttons stand in a column at the right edge and ride on the sheet's top edge, up to the
+   * middle stop; beyond it the sheet passes over them.
+   */
+  .controls {
+    top: auto;
+    right: var(--explore-edge);
+    bottom: 0;
+    flex-direction: column;
+    transform: translateY(calc(-1 * min(var(--sheet-visible), var(--sheet-peek)) - 12px));
+    transition: transform var(--sheet-glide);
   }
 
   .workspace[data-sheet='open'] .controls {
     visibility: hidden;
   }
 
+  /*
+   * Measured, never drawn: the part of the map left free when the sheet is at its middle stop, under
+   * the chips and beside the map buttons. A place flown to lands in it.
+   */
+  .visibleFrame {
+    position: absolute;
+    top: calc(var(--explore-top) + 52px);
+    right: 60px;
+    bottom: calc(var(--sheet-peek) + 12px);
+    left: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   .panel,
   .panel[data-state='collapsed'] {
     position: fixed;
     top: auto;
-    right: 10px;
-    bottom: var(--nm-tabbar-clearance); /* always above the bottom tab bar */
-    left: 10px;
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 30;
     width: auto;
-    max-height: min(74dvh, 640px);
-    box-shadow: 0 -8px 28px #121e5a33;
+    max-width: 664px;
+    height: var(--sheet-open);
+    margin-inline: auto;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -6px 24px #121e5a33;
+    transform: translateY(calc(var(--sheet-open) - var(--sheet-visible)));
+    transition: transform var(--sheet-glide);
     animation: none;
+    will-change: transform;
   }
 
-  /* "Peek": the name and the summary are in view and the rest scrolls. */
-  .panel[data-state='peek'] {
-    max-height: 34dvh;
+  .panel[data-dragging] {
+    transition: none;
+  }
+
+  /*
+   * Solid, as a map app's sheet is: land seen through it would run under the text. It also drops the
+   * backdrop blur, which a phone would otherwise redraw on every frame of a drag.
+   */
+  .workspace .panel {
+    --glass-read: var(--sheet-fade);
+
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  /*
+   * The tab bar floats over the sheet with air around it; the content scrolling under it fades out
+   * first, so no half line of text shows in that air. It stays at the screen's edge as the sheet moves.
+   */
+  .panel::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: calc(var(--nm-tabbar-clearance) + 12px);
+    background: linear-gradient(to top, var(--sheet-fade) 76%, transparent);
+    content: '';
+    pointer-events: none;
+    transform: translateY(calc(var(--sheet-visible) - var(--sheet-open)));
+    transition: transform var(--sheet-glide);
+  }
+
+  .panel[data-dragging]::after {
+    transition: none;
   }
 
   .panel[data-state='collapsed'] .barLabel {
     display: flex;
   }
 
+  .bar,
   .panel[data-state='collapsed'] .bar {
-    justify-content: space-between;
-    padding-inline: 20px;
-  }
-
-  .bar {
     position: relative;
-    flex-wrap: wrap;
-    min-height: 64px;
-    padding-top: 22px;
-  }
-
-  .panel[data-state='collapsed'] .bar {
+    justify-content: space-between;
+    min-height: 56px;
+    padding: 20px 20px 8px;
     border-bottom: 0;
   }
 
@@ -452,22 +523,71 @@
     transform: translateX(-50%);
   }
 
-  /* Pointing up when the sheet is collapsed, down when open. */
+  /* The grip says it all; the hint stays for those who hear the button's name. */
+  .barHint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .chevron {
-    transform: rotate(90deg);
+    display: none;
   }
 
-  .chevron[data-open] {
-    transform: rotate(-90deg);
-  }
-
+  /*
+   * Room below the content for what covers it: the tab bar, and the part of the sheet still below the
+   * screen, so a wheel or a keyboard reaches the end of it at any stop. A finger drags the sheet until
+   * it is fully open, and scrolls only then.
+   */
   .body {
-    padding: 14px 16px 16px;
+    padding: 4px 16px calc(var(--sheet-reserve) + var(--nm-tabbar-clearance) + 16px);
+    scrollbar-gutter: auto;
+    touch-action: pan-x;
+  }
+
+  .panel[data-state='open'] .body {
+    touch-action: pan-x pan-y;
+  }
+
+  /* Off the keyboard's way once it has slid down, in view again the moment a drag brings it up. */
+  .panel[data-state='collapsed'] .body {
+    visibility: hidden;
+    transition: visibility 0s linear 380ms;
+  }
+
+  .panel[data-dragging] .body {
+    visibility: visible;
+    transition: none;
+  }
+
+  /* Empty while a region is open and nothing is being searched. */
+  .section:empty {
+    display: none;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .chevron {
+/* Kaca: the page's own deep cobalt, so the sheet still belongs to the glass around it. */
+@media (width < 960px) {
+  :global(html[data-display-mode='glass']) .workspace {
+    --sheet-fade: rgb(26 42 138);
+  }
+}
+
+/* Short screens: the column of buttons would reach the chips, so it lies down. */
+@media (width < 960px) and (height < 640px) {
+  .controls {
+    flex-direction: row;
+  }
+}
+
+@media (width < 960px) and (prefers-reduced-motion: reduce) {
+  .controls,
+  .panel,
+  .panel[data-state='collapsed'],
+  .panel::after {
     transition: none;
   }
 }

@@ -264,3 +264,10 @@
     gap: 0;
   }
 }
+
+/* Phones: the type steps down with the rest of the site (styles/typography.css). */
+@media (width < 600px) {
+  .bigValue {
+    font-size: 1.25rem;
+  }
+}

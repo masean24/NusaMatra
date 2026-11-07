@@ -119,7 +119,43 @@ test.describe('Opening splash', () => {
     await page.reload();
     await expect(splash(page)).toBeVisible();
     expect(await logoFile()).toContain('body-kaca');
-    await expect(splash(page)).toHaveCSS('background-image', /rgb\(14, 22, 56\)/);
+    await expect(splash(page)).toHaveCSS('background-image', /rgb\(20, 38, 138\)/);
+  });
+
+  // Runs on both the desktop and the phone project: the same figures must hold on each.
+  test('the hero text waits under it, then enters the same way on every screen', async ({ page }) => {
+    const heroAnimations = () =>
+      page.evaluate(() =>
+        (document.querySelector('[aria-labelledby="hero-title"]')?.getAnimations({ subtree: true }) ?? [])
+          .filter((animation) => /title-rise|reveal-in/.test((animation as CSSAnimation).animationName))
+          .map((animation) => {
+            const timing = animation.effect?.getTiming();
+            return {
+              name: (animation as CSSAnimation).animationName.includes('title-rise') ? 'title' : 'reveal',
+              state: animation.playState,
+              duration: timing?.duration,
+              delay: timing?.delay,
+            };
+          }),
+      );
+
+    await page.goto('/');
+    await expect(splash(page)).toBeVisible();
+    await expect.poll(async () => (await heroAnimations()).length).toBeGreaterThanOrEqual(8);
+    const held = await heroAnimations();
+    expect(held.every(({ state }) => state === 'paused')).toBe(true);
+
+    const title = held.filter(({ name }) => name === 'title');
+    expect(title.map(({ delay }) => delay)).toEqual([0, 90, 180, 270]);
+    expect(title.every(({ duration }) => duration === 900)).toBe(true);
+    const copy = held.filter(({ name, duration }) => name === 'reveal' && duration === 700);
+    expect(copy.map(({ delay }) => delay).sort((a = 0, b = 0) => a - b)).toEqual([240, 330, 420, 510]);
+
+    await page.keyboard.press('Enter');
+    await page.clock.runFor(150);
+    await expect
+      .poll(async () => (await heroAnimations()).every(({ state }) => state !== 'paused'))
+      .toBe(true);
   });
 
   test('fits a phone: the slogan is whole and nothing scrolls sideways', async ({ page }) => {

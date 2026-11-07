@@ -112,15 +112,15 @@ test.describe('Jelajahi map-first layout', () => {
       expect(best.span, `markers in both views: ${common.join(' | ')}`).toBeGreaterThan(80);
       return best.ratio;
     };
-    const before = await markersOnMap(page);
-
     await page.getByText('Daftar gempa (28)').click();
     await page
-      .getByRole('region', { name: 'Lapisan gempa BMKG' })
+      .getByRole('list', { name: 'Gempa, terbaru lebih dulu' })
       .getByRole('button', { name: /Magnitudo 5,7.*SUKABUMI/ })
       .click();
     const detail = page.getByRole('article', { name: 'Gempa Magnitudo 5,7' });
     await expect(detail).toBeVisible();
+    await page.waitForTimeout(1500); // the map flies to the epicentre
+    const before = await markersOnMap(page);
     // The map always fills the screen; folding the sidebar moves the view's centre (its inset) instead.
     const inset = () =>
       page.evaluate(() =>
@@ -185,6 +185,150 @@ test.describe('Jelajahi map-first layout', () => {
     await expect(page.getByRole('heading', { name: 'Kota Magelang' })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('sheet.png') });
     await expect(page.locator('canvas[data-qa="original"]')).toHaveCount(1);
+  });
+
+  test('phone: laid out as a map app, with the search over the map and the buttons at its edge', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'touch device');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, 'LIVE');
+
+    // The search field stands where the page bar was, with the way home and the settings in it.
+    const search = page.getByRole('searchbox', { name: 'Cari kabupaten/kota' });
+    await expect(search).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'Nusa Matra — Beranda' }).filter({ visible: true }),
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole('switch', { name: 'Mode tampilan kaca' }).filter({ visible: true }),
+    ).toHaveCount(0);
+    await page.getByLabel('Bahasa dan tampilan').tap();
+    await expect(
+      page.getByRole('switch', { name: 'Mode tampilan kaca' }).filter({ visible: true }),
+    ).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'English' }).filter({ visible: true })).toHaveCount(1);
+    await page.getByLabel('Bahasa dan tampilan').tap();
+
+    // Chips under it, and the map's buttons in one column at the right edge, clear of them.
+    const chips = page.getByRole('region', { name: 'Status data peta' });
+    const controls = page.getByRole('group', { name: 'Kontrol peta' });
+    const [chipBox, controlBox] = [await chips.boundingBox(), await controls.boundingBox()];
+    if (!chipBox || !controlBox) throw new Error('missing box');
+    expect(chipBox.height).toBeLessThan(60);
+    expect(controlBox.width).toBeLessThan(controlBox.height);
+    expect(controlBox.x + controlBox.width).toBeGreaterThan(350);
+    expect(controlBox.y).toBeGreaterThan(chipBox.y + chipBox.height);
+
+    // Searching opens the results in the sheet, and picking one lands the region above the sheet.
+    await search.tap();
+    await expect(panel(page)).toHaveAttribute('data-state', 'open');
+    await search.fill('Magelang');
+    await expect(panelBar(page)).toContainText('Hasil pencarian');
+    await page.getByRole('button', { name: /^Kota Magelang/ }).tap();
+    await expect(panel(page)).toHaveAttribute('data-state', 'peek');
+    await expect(page.getByRole('heading', { name: 'Kota Magelang' })).toBeVisible();
+    await expect(search).toHaveValue('');
+    await expect(search).toHaveAttribute('placeholder', 'Kota Magelang');
+    await page.screenshot({ path: testInfo.outputPath('map-app.png') });
+  });
+
+  test('phone: the sheet follows the finger, then settles at a stop', async ({ page, context }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'touch device');
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page, 'LIVE');
+    const cdp = await context.newCDPSession(page);
+    const touch = (type: 'touchStart' | 'touchMove' | 'touchEnd', y = 0) =>
+      cdp.send('Input.dispatchTouchEvent', {
+        type,
+        touchPoints: type === 'touchEnd' ? [] : [{ x: 195, y, id: 1 }],
+      });
+    const top = async () => (await panel(page).boundingBox())?.y ?? Number.NaN;
+    const settled = async () => {
+      await page.waitForTimeout(700); // the glide to a stop
+      return top();
+    };
+    const state = () => panel(page).getAttribute('data-state');
+
+    const folded = await top();
+    expect(await state()).toBe('collapsed');
+
+    // Under the finger, pixel for pixel, before it lets go.
+    await touch('touchStart', folded + 20);
+    await touch('touchMove', folded - 60);
+    await touch('touchMove', folded - 170);
+    await page.waitForTimeout(60);
+    expect(await panel(page).getAttribute('data-dragging')).toBe('true');
+    expect(Math.abs((await top()) - (folded - 190))).toBeLessThan(4);
+    await page.waitForTimeout(150); // stopped before lifting: no flick
+    await touch('touchEnd');
+    const middle = await settled();
+    expect(await state()).toBe('peek');
+    expect(middle).toBeLessThan(folded - 190);
+    expect(await panel(page).getAttribute('data-dragging')).toBeNull();
+    await expect(panelBar(page)).toHaveAttribute('aria-expanded', 'true');
+
+    // The content drags too, until the sheet is fully open.
+    await touch('touchStart', middle + 200);
+    for (const y of [middle + 100, middle - 40, middle - 180]) await touch('touchMove', y);
+    await page.waitForTimeout(150);
+    await touch('touchEnd');
+    const high = await settled();
+    expect(await state()).toBe('open');
+    expect(high).toBeLessThan(100);
+
+    // Fully open, the content scrolls and the sheet stays.
+    const body = page.locator('#panel-wilayah');
+    await touch('touchStart', 700);
+    for (const y of [650, 550, 450, 350, 250]) {
+      await touch('touchMove', y);
+      await page.waitForTimeout(20);
+    }
+    await touch('touchEnd');
+    await expect.poll(() => body.evaluate((element) => element.scrollTop)).toBeGreaterThan(100);
+    expect(await top()).toBe(high);
+
+    // A pull down moves the sheet only from the very top of the content.
+    await touch('touchStart', 300);
+    for (const y of [330, 360]) {
+      await touch('touchMove', y);
+      await page.waitForTimeout(20);
+    }
+    await touch('touchEnd');
+    await page.waitForTimeout(300);
+    expect(await top()).toBe(high);
+    await body.evaluate((element) => {
+      element.scrollTop = 0;
+    });
+    await touch('touchStart', 300);
+    for (const y of [400, 500, 620]) await touch('touchMove', y);
+    await page.waitForTimeout(150);
+    await touch('touchEnd');
+    expect(await settled()).toBeCloseTo(middle, 0);
+
+    // A dropdown takes the sheet up, where its options fit, and a tap on one reaches only that option:
+    // no region under the list gets chosen with it.
+    await page.getByRole('combobox', { name: 'Provinsi' }).tap();
+    await expect(panel(page)).toHaveAttribute('data-state', 'open');
+    await page.getByRole('option').nth(1).tap();
+    await expect(page.getByRole('combobox', { name: 'Provinsi' })).not.toHaveText('Semua provinsi');
+    await page.waitForTimeout(300);
+    await expect(panel(page)).toHaveAttribute('data-state', 'open');
+    await expect(page).not.toHaveURL(/kode=/);
+
+    await touch('touchStart', 90);
+    for (const y of [190, 300, 420]) await touch('touchMove', y);
+    await page.waitForTimeout(150);
+    await touch('touchEnd');
+    expect(await settled()).toBeCloseTo(middle, 0);
+
+    // A flick down goes on to the next stop however little it travelled.
+    await touch('touchStart', middle + 20);
+    await touch('touchMove', middle + 60);
+    await touch('touchMove', middle + 120);
+    await touch('touchEnd');
+    expect(await settled()).toBeCloseTo(folded, 0);
+    expect(await state()).toBe('collapsed');
   });
 
   test('phone: the data status folds into one control that leaves the map and its buttons clear', async ({

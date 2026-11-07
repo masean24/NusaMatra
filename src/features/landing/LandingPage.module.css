@@ -19,6 +19,11 @@
   transform: scale(1.02);
 }
 
+/* Around the middle of the first screen: the page's own middle lies far below on a tall phone page. */
+:global(html[data-intro]) .page {
+  transform-origin: 50% 50svh;
+}
+
 :global(html[data-intro='leaving']) .page {
   transition:
     opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),

@@ -79,8 +79,8 @@
   list-style: none;
 }
 
-/* "Daftar gempa": a pill toggle whose content opens over the map below. */
-.disclosure > summary {
+/* "Daftar gempa": opens the list in the side panel. */
+.listButton {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
@@ -89,86 +89,55 @@
   border-radius: var(--nm-radius-pill);
   background: var(--c-surface);
   color: var(--c-text);
+  font-family: inherit;
   cursor: pointer;
 }
 
-.disclosure[open] > summary {
+.listButton[aria-pressed='true'] {
   background: var(--c-surface-muted);
 }
 
-/* Anchored to the whole control (not the pill), so it never runs off a narrow screen. */
-.popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  z-index: 20;
-  width: min(420px, 100%);
-  margin: 0;
-  padding: 12px;
-  border-radius: var(--nm-radius-card); /* the material is the global `glass` */
-}
-
-.legend {
-  margin: 0 0 10px;
-  color: var(--c-text-muted);
-}
-
-.events {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: min(340px, 45dvh);
-  margin: 0;
-  padding: 0;
-  overflow-y: auto;
-  list-style: none;
-}
-
-.event {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  width: 100%;
-  padding: 8px 12px 8px 8px;
-  border: 1px solid var(--c-surface-border, transparent);
-  border-radius: 12px;
-  background: var(--c-surface-muted);
-  color: var(--c-text);
-  text-align: left;
-  cursor: pointer;
-}
-
-.event[aria-pressed='true'] {
-  background: var(--c-nav-active-liquid);
-  color: var(--c-nav-active-text);
-}
-
-/* The magnitude first, in its colour step, as on the map's cards. */
-.eventBadge {
-  display: grid;
+/* Chips over a phone's map: one height, one surface, a little shadow to lift them off the land. */
+.switch[data-chip],
+.listButton[data-chip] {
   flex: none;
-  place-items: center;
-  min-width: 58px;
-  min-height: 36px;
-  padding: 0 8px;
-  border-radius: 10px;
-  background: var(--tone-text);
-  color: var(--nm-land-1);
-  font-size: 0.875rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px 0 8px;
+  border-color: var(--c-surface-border);
+  background: var(--explore-reading-surface, var(--c-surface));
+  box-shadow: 0 2px 8px rgb(18 30 90 / 16%);
+  font-size: 0.8125rem;
+  font-weight: 600;
   white-space: nowrap;
 }
 
-.eventText {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
+.listButton[data-chip] {
+  padding-inline: 12px;
 }
 
-.eventTime {
-  opacity: 0.8;
+.listButton[data-chip][aria-pressed='true'] {
+  background: var(--nm-sea);
+  color: var(--nm-land-1);
+}
+
+.switch[data-chip] .track {
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+}
+
+.switch[data-chip] .knob {
+  width: 14px;
+  height: 14px;
+}
+
+.switch[data-chip][aria-checked='true'] .knob {
+  transform: translateX(12px);
+}
+
+.detailsTitle {
+  margin: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {

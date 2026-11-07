@@ -52,6 +52,14 @@
   list-style: none;
 }
 
+/* In the bottom sheet the sheet itself is what scrolls: one scroller, so a drag always means one thing. */
+@media (width < 960px) {
+  .list {
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
 .bare {
   display: flex;
   flex-direction: column;

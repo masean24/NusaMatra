@@ -976,3 +976,26 @@
     text-transform: none;
   }
 }
+
+/* Phones: the type steps down with the rest of the site (styles/typography.css). */
+@media (width < 600px) {
+  .summaryFigure {
+    font-size: 1.625rem;
+  }
+
+  .valueFigure {
+    font-size: 2rem;
+  }
+
+  .valueUnit {
+    font-size: 1.0625rem;
+  }
+
+  .stat strong {
+    font-size: 1.375rem;
+  }
+
+  .compositeTable tfoot td:last-child {
+    font-size: 1.0625rem;
+  }
+}

@@ -203,6 +203,13 @@
   }
 }
 
+/* The map's own header (Jelajahi, as a map app) takes the place of the top bar. */
+@media (width < 960px) {
+  :global(html:has([data-map-header])) .compactTop {
+    display: none;
+  }
+}
+
 @media (width >= 640px) and (width < 1024px) {
   .tabBar {
     left: 50%;

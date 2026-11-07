@@ -62,9 +62,12 @@
   }
 }
 
-/* The opening (features/intro) brings the whole page in, so the title does not rise as well. */
-:global(html[data-intro]) .titleWord {
-  animation: none;
+/* The opening (features/intro) holds the words at their start; they rise as it lifts, as on any arrival. */
+:global(html[data-intro='playing']) .titleWord {
+  animation-play-state: paused;
+}
+
+:global(html[data-intro='done']) .titleWord {
   will-change: auto;
 }
 
@@ -235,7 +238,23 @@
 
 @media (width < 640px) {
   .hero {
-    padding-top: 96px;
+    padding-top: 84px;
+  }
+
+  .copy {
+    gap: 14px;
+  }
+
+  .title {
+    font-size: clamp(1.875rem, 8.2vw, 2.25rem);
+  }
+
+  .search {
+    margin-top: 2px;
+  }
+
+  .actions {
+    gap: 8px;
   }
 
   /* On phones the copy leads (heading, lead, search, actions), then the map and its caption. */

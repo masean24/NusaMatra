@@ -1,10 +1,11 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithDataHub } from '@/test/dataHubFixtures';
 import type { FeedAssessment } from '@/domain/hazards';
 import type { EarthquakeEventDTO, EarthquakeFeedDTO } from '@/services/api';
 import { EarthquakeDetail } from './EarthquakeDetail';
 import { EarthquakeLayerControl } from './EarthquakeLayerControl';
+import { EarthquakeList } from './EarthquakeList';
 import type { EarthquakeFeedState } from './useEarthquakeFeed';
 
 const event: EarthquakeEventDTO = {
@@ -26,17 +27,87 @@ const event: EarthquakeEventDTO = {
 const official: FeedAssessment = { display: 'OFFICIAL', isStale: false, ageMinutes: 1, reasons: [] };
 
 describe('EarthquakeDetail', () => {
-  it('shows magnitude as "Magnitudo" (never "SR"), depth, BMKG time, epicentre and felt reports', () => {
+  it('says how strong, where, when, how deep and who felt it, as "Magnitudo" (never "SR")', () => {
     render(<EarthquakeDetail event={event} assessment={official} onClose={vi.fn()} />);
-    expect(screen.getByRole('heading', { name: 'Gempa Magnitudo 5,1' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: 'Gempa Magnitudo 5,1' })).toBeInTheDocument();
+    expect(screen.getByText('5,1')).toBeInTheDocument();
     expect(screen.queryByText(/SR/)).not.toBeInTheDocument();
     expect(screen.getByText('96 km')).toBeInTheDocument();
+    expect(screen.getByText('Gempa menengah, 60 sampai 300 km')).toBeInTheDocument();
     expect(screen.getByText('21 Okt 2026, 18:58:36 WIB')).toBeInTheDocument();
     expect(screen.getByText('7,75° LS, 128,18° BT')).toBeInTheDocument();
-    expect(screen.getByText('III Ulu Belu, Tanggamus')).toBeInTheDocument();
     expect(screen.getByText('Tidak berpotensi tsunami')).toBeInTheDocument();
     expect(screen.getByText(/bukan luas wilayah terdampak/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'data.bmkg.go.id' })).toBeInTheDocument();
+  });
+
+  it('sorts who felt it by intensity and says what the scale means, with BMKG as the source', () => {
+    render(
+      <EarthquakeDetail
+        event={{ ...event, felt: 'III Siberut Barat, III Siberut Utara, II - III Palu' }}
+        assessment={official}
+        onClose={vi.fn()}
+      />,
+    );
+    const felt = within(screen.getByRole('region', { name: 'Dirasakan' }));
+    const rows = felt.getAllByRole('listitem');
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toHaveTextContent('Siberut Barat, Siberut Utara');
+    expect(rows[0]).toHaveTextContent('Terasa nyata di dalam rumah');
+    expect(rows[1]).toHaveTextContent('II - III');
+    expect(felt.getByRole('link', { name: 'Arti skala MMI menurut BMKG' })).toHaveAttribute(
+      'href',
+      'https://www.bmkg.go.id/gempabumi/skala-mmi',
+    );
+  });
+
+  it('shows a felt text it cannot read as sent, without interpreting it', () => {
+    render(
+      <EarthquakeDetail
+        event={{ ...event, felt: 'II Solok, X Koto' }}
+        assessment={official}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('II Solok, X Koto')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /skala MMI/ })).not.toBeInTheDocument();
+  });
+
+  it('says so when the feed has no tsunami statement: silence is not an all-clear', () => {
+    render(<EarthquakeDetail event={{ ...event, potency: null }} assessment={official} onClose={vi.fn()} />);
+    expect(screen.getByText('Data ini tidak menyertakan keterangan tsunami dari BMKG.')).toBeInTheDocument();
+  });
+
+  it("raises a tsunami threat as an alert, in BMKG's own words", () => {
+    render(
+      <EarthquakeDetail
+        event={{ ...event, potency: 'Berpotensi tsunami untuk diteruskan pada masyarakat' }}
+        assessment={official}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Berpotensi tsunami untuk diteruskan pada masyarakat',
+    );
+  });
+
+  it('walks the list and goes back to it', async () => {
+    const onBack = vi.fn();
+    const onNext = vi.fn();
+    render(
+      <EarthquakeDetail
+        event={event}
+        assessment={official}
+        navigation={{ index: 0, total: 3, onBack, onPrevious: null, onNext }}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('1 dari 3')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Gempa sebelumnya di daftar' })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Gempa berikutnya di daftar' }));
+    expect(onNext).toHaveBeenCalledOnce();
+    await userEvent.click(screen.getByRole('button', { name: 'Daftar gempa' }));
+    expect(onBack).toHaveBeenCalledOnce();
   });
 
   it('renders feed strings as text, never as HTML', () => {
@@ -71,6 +142,30 @@ describe('EarthquakeDetail', () => {
     expect(screen.getByText('Pratinjau: asal data belum terverifikasi')).toBeInTheDocument();
     expect(screen.getByText('Mungkin usang')).toBeInTheDocument();
     expect(screen.getByText('Tidak ada laporan dirasakan pada data ini')).toBeInTheDocument();
+  });
+});
+
+describe('EarthquakeList', () => {
+  it('lists the events as buttons for keyboard users, with the size caveat', async () => {
+    const onSelect = vi.fn();
+    render(<EarthquakeList events={[event]} lastOpenedId={null} onSelect={onSelect} onClose={vi.fn()} />);
+    expect(
+      screen.getByText(/Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak/),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: /Magnitudo 5,1/ }));
+    expect(onSelect).toHaveBeenCalledWith('bmkg-1');
+  });
+
+  it('returns to the row a visitor came back from', () => {
+    render(<EarthquakeList events={[event]} lastOpenedId="bmkg-1" onSelect={vi.fn()} onClose={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /Magnitudo 5,1/ })).toHaveFocus();
+  });
+
+  it('closes', async () => {
+    const onClose = vi.fn();
+    render(<EarthquakeList events={[event]} lastOpenedId={null} onSelect={vi.fn()} onClose={onClose} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Tutup daftar gempa' }));
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });
 
@@ -111,8 +206,8 @@ describe('EarthquakeLayerControl', () => {
           newIds: new Set(),
           retry: vi.fn(),
         }}
-        selectedId={null}
-        onSelect={vi.fn()}
+        listOpen={false}
+        onToggleList={vi.fn()}
       />,
     );
     const toggle = screen.getByRole('switch', { name: 'Gempa BMKG' });
@@ -135,8 +230,8 @@ describe('EarthquakeLayerControl', () => {
           ageMinutes: 1,
           reasons: ['Data Hub belum menyatakan asal data.'],
         })}
-        selectedId={null}
-        onSelect={vi.fn()}
+        listOpen={false}
+        onToggleList={vi.fn()}
       />,
     );
     expect(screen.getByText('Gempa ditahan: asal data belum jelas')).toBeInTheDocument();
@@ -144,25 +239,21 @@ describe('EarthquakeLayerControl', () => {
     expect(screen.queryByText(/Daftar gempa/)).not.toBeInTheDocument();
   });
 
-  it('lists the events as buttons for keyboard users, with the size caveat', async () => {
-    const onSelect = vi.fn();
+  it('opens the list from a button that says how many events there are', async () => {
+    const onToggleList = vi.fn();
     render(
       <EarthquakeLayerControl
         enabled
         available
         onToggle={vi.fn()}
         state={state({ display: 'OFFICIAL', isStale: false, ageMinutes: 1, reasons: [] })}
-        selectedId={null}
-        onSelect={onSelect}
+        listOpen={false}
+        onToggleList={onToggleList}
       />,
     );
     expect(screen.getByText('Data BMKG')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak/),
-    ).toBeInTheDocument();
-    await userEvent.click(screen.getByText('Daftar gempa (1)'));
-    await userEvent.click(screen.getByRole('button', { name: /Magnitudo 5,1/ }));
-    expect(onSelect).toHaveBeenCalledWith('bmkg-1');
+    await userEvent.click(screen.getByRole('button', { name: 'Daftar gempa (1)' }));
+    expect(onToggleList).toHaveBeenCalledOnce();
   });
 
   it('names the declared origin and the last successful fetch, and never calls stale data fresh', () => {
@@ -176,8 +267,8 @@ describe('EarthquakeLayerControl', () => {
         available
         onToggle={vi.fn()}
         state={cached}
-        selectedId={null}
-        onSelect={vi.fn()}
+        listOpen={false}
+        onToggleList={vi.fn()}
       />,
     );
     expect(screen.getByText('Asal: cache Data Hub (dari BMKG)')).toBeInTheDocument();
@@ -198,8 +289,8 @@ describe('EarthquakeLayerControl', () => {
         available
         onToggle={vi.fn()}
         state={live}
-        selectedId={null}
-        onSelect={vi.fn()}
+        listOpen={false}
+        onToggleList={vi.fn()}
       />,
     );
     expect(screen.getByText('Asal: langsung dari BMKG')).toBeInTheDocument();
@@ -209,8 +300,8 @@ describe('EarthquakeLayerControl', () => {
         available
         onToggle={vi.fn()}
         state={state({ display: 'PREVIEW_UNVERIFIED', isStale: false, ageMinutes: 1, reasons: [] })}
-        selectedId={null}
-        onSelect={vi.fn()}
+        listOpen={false}
+        onToggleList={vi.fn()}
       />,
     );
     expect(screen.getByText('Asal: tidak dinyatakan Data Hub')).toBeInTheDocument();
@@ -232,8 +323,8 @@ describe('EarthquakeLayerControl', () => {
           newIds: new Set(),
           retry,
         }}
-        selectedId={null}
-        onSelect={vi.fn()}
+        listOpen={false}
+        onToggleList={vi.fn()}
       />,
       { fetchImpl: null, dataMode: 'LIVE' },
     );

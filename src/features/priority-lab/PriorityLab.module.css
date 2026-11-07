@@ -1596,3 +1596,16 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+/* Phones: the type steps down with the rest of the site (styles/typography.css). */
+@media (width < 600px) {
+  .panelTitle,
+  .rankingTitleBlock .cardTitle,
+  .configToggle {
+    font-size: 1rem;
+  }
+
+  .statusStats dd {
+    font-size: 1.125rem;
+  }
+}

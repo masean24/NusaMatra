@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createFixtureFetch, fixtureJson, jsonResponse, renderWithDataHub } from '@/test/dataHubFixtures';
 import { setMediaQueryMatches } from '@/test/browserMocks';
@@ -133,7 +133,8 @@ describe('ExploreWorkspace (LIVE, map stubbed)', () => {
 
     await userEvent.click(screen.getByRole('switch', { name: 'Gempa BMKG' }));
     await userEvent.click(await screen.findByText(/Daftar gempa \(/));
-    const firstQuake = (await screen.findAllByRole('button', { name: /^Magnitudo/ }))[0];
+    const list = await screen.findByRole('list', { name: 'Gempa, terbaru lebih dulu' });
+    const firstQuake = within(list).getAllByRole('button', { name: /^Magnitudo/ })[0];
     if (!firstQuake) throw new Error('No earthquake listed');
     await userEvent.click(firstQuake);
     expect(await screen.findByRole('button', { name: 'Tutup detail gempa' })).toBeInTheDocument();

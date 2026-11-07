@@ -1591,7 +1591,14 @@ export const NusaMatra3DMap = forwardRef<
     const center = approximateFeatureCenter(feature);
     const lon = Number.isFinite(feature.properties.focusLon) ? feature.properties.focusLon! : center.lon;
     const lat = Number.isFinite(feature.properties.focusLat) ? feature.properties.focusLat! : center.lat;
-    const dist = feature.properties.focusDistance ?? 16;
+    focusPlace(lon, lat, feature.properties.focusDistance ?? 16);
+  };
+  const focusRegionRef = useRef(focusRegion);
+  focusRegionRef.current = focusRegion;
+  /** Glides the camera to a place, landing it in the part of the map no panel covers. */
+  const focusPlace = (lon: number, lat: number, dist: number) => {
+    const eng = engineRef.current;
+    if (!eng) return;
     const place = lonLatToPlanar(lon, lat, 0);
     const topDown = isTopDown();
     const canvasBox = containerRef.current?.getBoundingClientRect();
@@ -1603,8 +1610,8 @@ export const NusaMatra3DMap = forwardRef<
     eng.controlsTargetPos = aim.clone();
     eng.cameraTargetPos = focusPosition(aim, dist, topDown);
   };
-  const focusRegionRef = useRef(focusRegion);
-  focusRegionRef.current = focusRegion;
+  const focusPlaceRef = useRef(focusPlace);
+  focusPlaceRef.current = focusPlace;
 
   useImperativeHandle(
     ref,
@@ -1613,11 +1620,7 @@ export const NusaMatra3DMap = forwardRef<
         focusRegionRef.current(regionId);
       },
       focusCoordinates: (lon: number, lat: number, distance = 16) => {
-        const eng = engineRef.current;
-        if (!eng) return;
-        const targetWorld = lonLatToPlanar(lon, lat, 0);
-        eng.controlsTargetPos = targetWorld.clone();
-        eng.cameraTargetPos = focusPosition(targetWorld, distance, isTopDown());
+        focusPlaceRef.current(lon, lat, distance);
       },
       resetCamera: () => {
         const eng = engineRef.current;

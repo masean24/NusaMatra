@@ -4,6 +4,8 @@ export {
   epicentreSymbolSize,
   magnitudeBand,
 } from './earthquakeFeed';
+export { depthClassOf, parseFeltReports, statesTsunamiThreat } from './earthquakeReading';
+export type { DepthClass, FeltReport } from './earthquakeReading';
 export type {
   EarthquakeOriginInput,
   FeedAssessment,

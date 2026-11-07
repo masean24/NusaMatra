@@ -172,7 +172,12 @@ describe('Explore3DMapSlot in the exploration panel', () => {
   }
 
   it('asks for the DEMO illustration (no invented geography) and keeps the selection in the URL', () => {
-    const camera: GeoCameraHandle = { focusRegion: vi.fn(), resetView: vi.fn(), zoomBy: vi.fn() };
+    const camera: GeoCameraHandle = {
+      focusRegion: vi.fn(),
+      focusPoint: vi.fn(),
+      resetView: vi.fn(),
+      zoomBy: vi.fn(),
+    };
     const calls = installFakeMap(camera);
     withProviders(
       <>
@@ -203,7 +208,12 @@ describe('Explore3DMapSlot in the exploration panel', () => {
   });
 
   it('offers a keyboard alternative that selects and focuses a region', async () => {
-    const camera: GeoCameraHandle = { focusRegion: vi.fn(), resetView: vi.fn(), zoomBy: vi.fn() };
+    const camera: GeoCameraHandle = {
+      focusRegion: vi.fn(),
+      focusPoint: vi.fn(),
+      resetView: vi.fn(),
+      zoomBy: vi.fn(),
+    };
     installFakeMap(camera);
     withProviders(<ExplorationMapPanel />, '/jelajahi');
 

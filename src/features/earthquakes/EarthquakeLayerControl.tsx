@@ -1,102 +1,89 @@
-import { useRef } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { DataHubErrorMessage } from '@/features/data-hub';
-import { magnitudeBand } from '@/domain/hazards';
-import { describeEvent, formatEventTime, formatMagnitudeShort } from './format';
-import { toneStyle } from './magnitudeTones';
 import { OriginBadge } from './OriginBadge';
 import { describeLastSuccess } from './originText';
 import type { EarthquakeFeedState } from './useEarthquakeFeed';
 import styles from './EarthquakeLayerControl.module.css';
 import { t } from '@/lib/i18n';
 
-interface EarthquakeLayerControlProps {
+const shownEvents = ({ assessment, feed }: EarthquakeFeedState, enabled: boolean) =>
+  enabled && feed && assessment && assessment.display !== 'WITHHELD' ? feed.events : [];
+
+interface EarthquakeLayerSwitchProps {
   readonly enabled: boolean;
   /** Only LIVE has official geography to place epicentres on. */
   readonly available: boolean;
   readonly onToggle: (next: boolean) => void;
   readonly state: EarthquakeFeedState;
-  readonly selectedId: string | null;
-  readonly onSelect: (id: string) => void;
+  /** Whether the side panel is showing the list of events (or one of them). */
+  readonly listOpen: boolean;
+  readonly onToggleList: () => void;
+  /** Chips over a phone's map: shorter words, the same names for assistive tech. */
+  readonly chips?: boolean;
 }
 
-/**
- * Switch for the "Gempa BMKG" layer, its status in words, and a list of the same events as buttons:
- * the keyboard and screen-reader way to reach what the map shows as symbols. It sits in the map's
- * toolbar, so the list, headed by how to read the symbols, folds into a disclosure that opens over the
- * map; why data is stale or withheld, and failures, are always shown in full.
- */
-export function EarthquakeLayerControl({
+/** Switch for the "Gempa BMKG" layer and the button that opens its list of events in the side panel. */
+export function EarthquakeLayerSwitch({
   enabled,
   available,
   onToggle,
   state,
-  selectedId,
-  onSelect,
-}: EarthquakeLayerControlProps) {
-  const listRef = useRef<HTMLDetailsElement>(null);
-  const { assessment, feed } = state;
-  const shown = enabled && feed && assessment && assessment.display !== 'WITHHELD' ? feed.events : [];
-
+  listOpen,
+  onToggleList,
+  chips = false,
+}: EarthquakeLayerSwitchProps) {
+  const count = shownEvents(state, enabled).length;
+  const listName = t('Daftar gempa ({0})', count);
   return (
-    <section className={styles.control} aria-label={t('Lapisan gempa BMKG')}>
-      <div className={styles.row}>
+    <>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label={t('Gempa BMKG')}
+        disabled={!available}
+        className={styles.switch}
+        data-chip={chips || undefined}
+        onClick={() => {
+          onToggle(!enabled);
+        }}
+      >
+        <span className={styles.track} aria-hidden="true">
+          <span className={styles.knob} />
+        </span>
+        {chips ? t('Gempa') : t('Gempa BMKG')}
+      </button>
+      {count > 0 && (
         <button
           type="button"
-          role="switch"
-          aria-checked={enabled}
-          disabled={!available}
-          className={styles.switch}
-          onClick={() => {
-            onToggle(!enabled);
-          }}
+          className={`kk-small ${styles.listButton}`}
+          data-chip={chips || undefined}
+          aria-label={listName}
+          aria-pressed={listOpen}
+          onClick={onToggleList}
         >
-          <span className={styles.track} aria-hidden="true">
-            <span className={styles.knob} />
-          </span>
-          {t('Gempa BMKG')}
+          {chips ? t('Daftar gempa') : listName}
         </button>
-        {!available && <span className="kk-small">{t('Hanya untuk data LIVE (peta batas resmi).')}</span>}
-        {shown.length > 0 && (
-          <details ref={listRef} className={styles.disclosure}>
-            <summary className="kk-small">{t('Daftar gempa ({0})', shown.length)}</summary>
-            <div className={`glass ${styles.popover}`}>
-              <p className={`kk-small ${styles.legend}`}>
-                {t(
-                  'Warna dan ukuran simbol mengikuti magnitudo, bukan luas wilayah terdampak: merah M 5 ke atas, jingga M 4 sampai 4,9, kuning di bawah M 4. Keduanya tidak menunjukkan kerusakan, risiko, atau potensi tsunami; ikuti keterangan resmi BMKG.',
-                )}
-              </p>
-              <ul role="list" className={styles.events}>
-                {shown.map((event) => (
-                  <li key={event.id}>
-                    <button
-                      type="button"
-                      className={styles.event}
-                      aria-label={describeEvent(event)}
-                      aria-pressed={event.id === selectedId}
-                      onClick={() => {
-                        onSelect(event.id);
-                        // The detail opens in the panel; fold the list so it does not cover the map.
-                        if (listRef.current) listRef.current.open = false;
-                      }}
-                    >
-                      <span className={styles.eventBadge} style={toneStyle(magnitudeBand(event.magnitude))}>
-                        {formatMagnitudeShort(event.magnitude)}
-                      </span>
-                      <span className={styles.eventText}>
-                        <span className="kk-body-strong">{event.area ?? t('Lokasi tidak disebutkan')}</span>
-                        <span className={`kk-small ${styles.eventTime}`}>{formatEventTime(event)}</span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </details>
-        )}
-      </div>
-      {enabled && <LayerStatus state={state} count={shown.length} />}
+      )}
+    </>
+  );
+}
+
+interface EarthquakeLayerStatusProps {
+  readonly enabled: boolean;
+  readonly available: boolean;
+  readonly state: EarthquakeFeedState;
+}
+
+/** The layer's status in words. Why data is stale or withheld, and failures, are shown in full. */
+export function EarthquakeLayerStatus({ enabled, available, state }: EarthquakeLayerStatusProps) {
+  const { assessment, feed } = state;
+  const count = shownEvents(state, enabled).length;
+  return (
+    <>
+      {!available && <span className="kk-small">{t('Hanya untuk data LIVE (peta batas resmi).')}</span>}
+      {enabled && <LayerStatus state={state} count={count} />}
 
       {enabled && assessment && assessment.display !== 'OFFICIAL' && assessment.reasons.length > 0 && (
         <ul role="list" className={`kk-small ${styles.reasons}`}>
@@ -131,6 +118,32 @@ export function EarthquakeLayerControl({
       {enabled && state.status === 'loading' && (
         <StatusMessage kind="loading" title={t('Memuat gempa BMKG…')} />
       )}
+    </>
+  );
+}
+
+/** The switch with its status beneath it, as one card (desktop). */
+export function EarthquakeLayerControl(props: EarthquakeLayerSwitchProps) {
+  const { enabled, available, state } = props;
+  return (
+    <section className={styles.control} aria-label={t('Lapisan gempa BMKG')}>
+      <div className={styles.row}>
+        <EarthquakeLayerSwitch {...props} />
+      </div>
+      <EarthquakeLayerStatus enabled={enabled} available={available} state={state} />
+    </section>
+  );
+}
+
+/** The status alone, where the switch sits elsewhere (phone: among the chips over the map). */
+export function EarthquakeLayerDetails(props: EarthquakeLayerStatusProps) {
+  return (
+    <section className={styles.control} aria-label={t('Lapisan gempa BMKG')}>
+      <p className={`kk-body-strong ${styles.detailsTitle}`}>{t('Gempa BMKG')}</p>
+      {!props.enabled && props.available && (
+        <span className={`kk-small ${styles.reasons}`}>{t('Lapisan ini sedang mati.')}</span>
+      )}
+      <EarthquakeLayerStatus {...props} />
     </section>
   );
 }

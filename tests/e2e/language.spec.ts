@@ -81,6 +81,9 @@ test.describe('Interface language', () => {
     await canvas.evaluate((element) => {
       element.dataset['qa'] = 'same-map';
     });
+    // On a phone the map's header keeps the language in its menu.
+    const menu = page.getByLabel('Bahasa dan tampilan').filter({ visible: true });
+    if ((await menu.count()) > 0) await menu.click();
     await english(page).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('canvas[data-qa="same-map"]')).toHaveCount(1);

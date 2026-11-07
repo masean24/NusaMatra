@@ -32,10 +32,17 @@ interface RegionExplorerProps {
    * filters and results; picking one clears the search so the new profile comes into view.
    */
   readonly compact?: boolean;
+  /** The field lives elsewhere (the map's header on a phone); this shows the filters and results. */
+  readonly fieldless?: boolean;
 }
 
 /** Jelajahi's region search: debounced, abortable and driven by the real Data Hub region list. */
-export function RegionExplorer({ bare = false, onSelect, compact = false }: RegionExplorerProps) {
+export function RegionExplorer({
+  bare = false,
+  onSelect,
+  compact = false,
+  fieldless = false,
+}: RegionExplorerProps) {
   const { dataMode } = useDataHub();
   const { query, selectedCode, setQuery, selectCode } = useRegionBrowserParams();
   const choose =
@@ -67,23 +74,31 @@ export function RegionExplorer({ bare = false, onSelect, compact = false }: Regi
   const pageKey = `${searchKey}|${province}`;
   const visibleCount = expanded?.key === pageKey ? expanded.count : PAGE_SIZE;
 
+  if (fieldless && !showResults) return null;
+
   return (
     <Frame {...frameProps}>
-      <h2 className={compact ? `kk-body-strong ${styles.compactHeading}` : 'kk-h3'}>
-        {compact ? t('Cari wilayah lain') : t('Cari wilayah')}
-      </h2>
-      <TextField
-        glass
-        label={t('Cari kabupaten/kota')}
-        icon="search"
-        type="search"
-        value={query}
-        placeholder={t('Ketik nama kabupaten/kota')}
-        autoComplete="off"
-        onChange={(event) => {
-          setQuery(event.target.value);
-        }}
-      />
+      {fieldless ? (
+        <h2 className="visually-hidden">{t('Daftar wilayah')}</h2>
+      ) : (
+        <>
+          <h2 className={compact ? `kk-body-strong ${styles.compactHeading}` : 'kk-h3'}>
+            {compact ? t('Cari wilayah lain') : t('Cari wilayah')}
+          </h2>
+          <TextField
+            glass
+            label={t('Cari kabupaten/kota')}
+            icon="search"
+            type="search"
+            value={query}
+            placeholder={t('Ketik nama kabupaten/kota')}
+            autoComplete="off"
+            onChange={(event) => {
+              setQuery(event.target.value);
+            }}
+          />
+        </>
+      )}
 
       {showResults && (
         <>

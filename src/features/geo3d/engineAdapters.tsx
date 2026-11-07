@@ -16,6 +16,9 @@ import type { Explore3DMapProps, GeoRegionSelection, HeroDioramaProps } from './
  * which keeps three.js out of the initial bundle.
  */
 
+/** How far from a point the camera stops: the province around it stays in view. */
+const POINT_FOCUS_DISTANCE = 26;
+
 function toSelection(region: RegionSelection): GeoRegionSelection {
   return {
     regionId: region.regionId,
@@ -72,6 +75,9 @@ export function Explore3DMapAdapter({
     () => ({
       focusRegion: (regionId: string) => {
         engineRef.current?.focusRegion(regionId);
+      },
+      focusPoint: (lon: number, lat: number) => {
+        engineRef.current?.focusCoordinates(lon, lat, POINT_FOCUS_DISTANCE);
       },
       resetView: () => {
         engineRef.current?.resetCamera();

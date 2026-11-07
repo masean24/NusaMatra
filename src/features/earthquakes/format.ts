@@ -41,6 +41,21 @@ export function formatEventTime(
   })} WIB`;
 }
 
+const MINUTE_MS = 60_000;
+const HOUR_MS = 60 * MINUTE_MS;
+const DAY_MS = 24 * HOUR_MS;
+
+/** How long ago, for a reader who should not have to work it out from the date: "6 jam yang lalu". */
+export function formatTimeAgo(occurredAt: string, now: number): string {
+  const elapsed = now - Date.parse(occurredAt);
+  if (Number.isNaN(elapsed)) return '';
+  if (elapsed < MINUTE_MS) return t('Baru saja');
+  const relative = new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' });
+  if (elapsed < HOUR_MS) return relative.format(-Math.floor(elapsed / MINUTE_MS), 'minute');
+  if (elapsed < DAY_MS) return relative.format(-Math.floor(elapsed / HOUR_MS), 'hour');
+  return relative.format(-Math.floor(elapsed / DAY_MS), 'day');
+}
+
 /** Plain-text label for the map hover, e.g. "Magnitudo 5,1 · 62 km TimurLaut MALUKUBRTDAYA". */
 export const markerLabel = (event: EarthquakeEventDTO) =>
   event.area ? `${formatMagnitude(event.magnitude)}, ${event.area}` : formatMagnitude(event.magnitude);

@@ -15,8 +15,12 @@ describe('calloutEvents', () => {
     expect(calloutEvents(events, null).map(({ id }) => id)).toEqual(['new', 'mid', 'old']);
   });
 
-  it('puts the selected event ahead of the newer ones, without repeating it', () => {
-    expect(calloutEvents(events, 'old').map(({ id }) => id)).toEqual(['old', 'new', 'mid']);
+  it('gives a card to the selected event alone, so the map stays clear around it', () => {
+    expect(calloutEvents(events, 'old').map(({ id }) => id)).toEqual(['old']);
+  });
+
+  it('falls back to all of them when the selected event has left the feed', () => {
+    expect(calloutEvents(events, 'gone')).toHaveLength(3);
   });
 });
 

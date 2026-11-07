@@ -79,8 +79,9 @@ test.describe('Gempa BMKG layer on LIVE geography (mocked Data Hub contract)', (
     await mockLiveDataHub(page);
     await openLiveJelajahi(page);
     await layerSwitch(page).click();
-    await layer(page).getByText('Daftar gempa (28)').click();
-    await layer(page)
+    await page.getByRole('button', { name: 'Daftar gempa (28)' }).click();
+    await page
+      .getByRole('list', { name: 'Gempa, terbaru lebih dulu' })
       .getByRole('button', { name: /Magnitudo 3,9.*10 km utara Tanggamus/ })
       .click();
 
@@ -90,7 +91,7 @@ test.describe('Gempa BMKG layer on LIVE geography (mocked Data Hub contract)', (
     await expect(detail.getByText('5,39° LS, 104,68° BT')).toBeVisible();
     await expect(detail.getByText('10 km', { exact: true })).toBeVisible();
     await expect(detail.getByText('21 Okt 2026, 18:03:28 WIB')).toBeVisible();
-    await expect(detail.getByText(/III Ulu Belu, Tanggamus/)).toBeVisible();
+    await expect(detail.getByText('Ulu Belu, Tanggamus')).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath('detail.png') });
     await detail.getByRole('button', { name: 'Tutup detail gempa' }).click();
     await expect(detail).toHaveCount(0);

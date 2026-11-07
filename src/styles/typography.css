@@ -73,3 +73,55 @@
   font-weight: 500;
   line-height: 1.2;
 }
+
+/*
+ * Phones: the type steps down one size, so a heading does not take the first screen and more of the
+ * page fits at once. Body text stays at the size people read comfortably (and inputs at 16px, below
+ * which phones zoom the page in).
+ */
+@media (width < 600px) {
+  .kk-display {
+    font-size: clamp(1.875rem, 8.2vw, 2.25rem);
+  }
+
+  .kk-h1 {
+    font-size: 1.375rem;
+    letter-spacing: -0.4px;
+  }
+
+  .kk-h2 {
+    font-size: 1.25rem;
+    letter-spacing: -0.2px;
+  }
+
+  .kk-h3 {
+    font-size: 1.0625rem;
+  }
+
+  .kk-lead {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .kk-body {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .kk-body-strong {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+
+  .kk-small {
+    font-size: 0.8125rem;
+  }
+
+  .kk-number {
+    font-size: 1rem;
+  }
+
+  .kk-button {
+    font-size: 0.875rem;
+  }
+}

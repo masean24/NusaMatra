@@ -179,6 +179,11 @@ export function GlassSelect({ labelledBy, value, options, onChange }: GlassSelec
       >
         {groupOptions(options).map((group, groupIndex) => {
           const items = group.items.map(({ option, index }) => (
+            // Focus stays on the field (aria-activedescendant pattern), so the keyboard is the field's
+            // and the option takes the pointer only: pressing it does not move focus. It chooses on
+            // the click, not on the release: closing any sooner hands that click, on a touch screen,
+            // to whatever lies under the list.
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus
             <div
               key={option.value}
               id={optionId(index)}
@@ -186,15 +191,13 @@ export function GlassSelect({ labelledBy, value, options, onChange }: GlassSelec
               aria-selected={index === selectedIndex}
               className={styles.option}
               data-active={(open && index === active) || undefined}
-              // Focus stays on the field (aria-activedescendant pattern), so the option takes the
-              // pointer only: pressing it does not move focus, releasing it chooses it.
               onPointerEnter={() => {
                 setActive(index);
               }}
               onPointerDown={(event) => {
                 event.preventDefault();
               }}
-              onPointerUp={() => {
+              onClick={() => {
                 choose(index);
               }}
             >

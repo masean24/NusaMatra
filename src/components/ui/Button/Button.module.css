@@ -113,3 +113,11 @@
     white-space: normal;
   }
 }
+
+/* Phones: the type steps down with the rest of the site; the 44px tap target stays. */
+@media (width < 600px) {
+  .button {
+    padding: 11px 18px;
+    font-size: 0.875rem;
+  }
+}
