@@ -1,5 +1,5 @@
 import { assessComparison, type ComparableMeasurement } from '@/domain/comparability';
-import { describeUnit } from './units';
+import { describeUnit, ratioIsMeaningful } from './units';
 import { readComparison } from './interpretComparison';
 import { DATA_HUB_PERCENTILE_ORIENTATION, readIndicator } from './interpretIndicator';
 
@@ -27,6 +27,34 @@ describe('describeUnit', () => {
     expect(describeUnit('years', null).label).toBe('tahun');
     expect(describeUnit('thousand IDR/person/year', null).label).toBe('ribu rupiah per orang per tahun');
     expect(describeUnit('mystery unit', null).label).toBe('mystery unit');
+  });
+});
+
+describe('ratioIsMeaningful', () => {
+  it('allows "N× lebih tinggi" for quantities with a true zero: rates, counts, money, ratios', () => {
+    for (const unit of [
+      'percent (%)',
+      'events',
+      'per 10k pop',
+      'thousand IDR/person/year',
+      'students per teacher',
+    ]) {
+      expect(ratioIsMeaningful(describeUnit(unit, null).kind)).toBe(true);
+    }
+  });
+
+  it('refuses it for indices and scores, whose zero is a convention, and for years or unknown units', () => {
+    for (const unit of [
+      'index',
+      'index (0.0-1.0)',
+      'score (0-100)',
+      'score (0-300)',
+      'years',
+      'minutes',
+      '??',
+    ]) {
+      expect(ratioIsMeaningful(describeUnit(unit, null).kind)).toBe(false);
+    }
   });
 });
 
@@ -132,9 +160,21 @@ describe('readComparison', () => {
       nameB: 'Jakarta Pusat',
       assessment: assessComparison(a, b),
       unitLabel: 'tahun',
+      unitKind: describeUnit(a.unit, null).kind,
       useRatio: label !== 'Harapan Lama Sekolah',
       formatNumber: fmt,
     });
+
+  it('judges a gap in years by its size, not its share: 2,2 years of life expectancy is not nearly equal', () => {
+    const reading = read(measured(73.01), measured(70.81), 'positive', 'Umur Harapan Hidup');
+    expect(reading?.verdict).toBe('A_BETTER');
+    expect(reading?.sentence).toContain('lebih tinggi 2,20 tahun');
+  });
+
+  it('calls years nearly equal only under a tenth of a year', () => {
+    expect(read(measured(14.72), measured(14.67), 'positive')?.verdict).toBe('SIMILAR');
+    expect(read(measured(14.72), measured(14.62), 'positive')?.verdict).toBe('A_BETTER');
+  });
 
   it('explains a higher-is-better gap and names the better side by polarity', () => {
     const reading = read(measured(13.97), measured(13), 'positive');
@@ -155,6 +195,19 @@ describe('readComparison', () => {
     expect(reading?.sentence).toContain('sekitar 2,0× lebih tinggi');
     expect(reading?.sentence).toContain('Nilai yang lebih rendah menunjukkan kondisi yang lebih baik');
     expect(reading?.verdict).toBe('B_BETTER');
+  });
+
+  it('calls a gap under 5% nearly equal and names no better side, even when polarity is known', () => {
+    const reading = read(
+      measured(10.1, { unit: 'percent (%)' }),
+      measured(9.89, { unit: 'percent (%)' }),
+      'negative',
+      'Risiko banjir',
+    );
+    expect(reading?.verdict).toBe('SIMILAR');
+    expect(reading?.sentence).toContain('Risiko banjir Palembang dan Jakarta Pusat hampir sama');
+    expect(reading?.sentence).toContain('selisih 0,21 tahun');
+    expect(reading?.sentence).not.toMatch(/lebih tinggi|relatif lebih baik/);
   });
 
   it('names no better side when polarity is undefined', () => {

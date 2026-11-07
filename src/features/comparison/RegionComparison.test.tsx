@@ -119,7 +119,7 @@ const POVERTY = 'Persentase Penduduk Miskin (P0)';
 function betterSide(row: HTMLElement): string | null {
   const bar = row.querySelector('[data-outcome="better"]');
   const cell = bar?.closest('td');
-  if (cell && !within(cell).queryByText(/kondisi lebih baik/)) return 'no words';
+  if (cell && !within(cell).queryByText(/kondisi lebih baik/i)) return 'no words';
   return cell?.getAttribute('data-label') ?? null;
 }
 
@@ -643,7 +643,7 @@ describe('Summary view (Bandingkan) and its "Selengkapnya" page', () => {
     // The other side is red, said in words too; the colours are explained above the table.
     const worse = rowOf(POVERTY).querySelector('[data-outcome="worse"]')?.closest('td');
     expect(worse?.getAttribute('data-label')).toBe('Uji');
-    expect(within(worse as HTMLElement).getByText(/kondisi kurang baik/)).toBeInTheDocument();
+    expect(within(worse as HTMLElement).getByText(/kondisi kurang baik/i)).toBeInTheDocument();
     expect(screen.getByText('Hijau: kondisi lebih baik')).toBeInTheDocument();
     expect(screen.queryByText(/Lebih baik:/)).not.toBeInTheDocument();
     // Years, sources, explanations and quality labels live on the detail page.
@@ -696,6 +696,96 @@ describe('Summary view (Bandingkan) and its "Selengkapnya" page', () => {
     });
 
     expect(screen.getByRole('link', { name: 'Pilih di Bandingkan' })).toHaveAttribute('href', '/bandingkan');
+  });
+});
+
+describe('Better/worse reading does not lean on colour alone (F-06, F-07, F-08)', () => {
+  const MULTIHAZARD = 'Indeks Risiko Bencana Indonesia (IRBI) Multi-Bencana';
+
+  it('writes the better and worse condition as visible text in each value cell, not only as bar colour', async () => {
+    await renderComparison({ view: 'summary' });
+
+    const row = rowOf(POVERTY);
+    const better = within(row).getByText(/kondisi lebih baik/i);
+    const worse = within(row).getByText(/kondisi kurang baik/i);
+    expect(better.closest('.visually-hidden')).toBeNull();
+    expect(worse.closest('.visually-hidden')).toBeNull();
+    expect(better.closest('td')?.getAttribute('data-label')).toBe('Aceh Selatan');
+    expect(worse.closest('td')?.getAttribute('data-label')).toBe('Uji');
+  });
+
+  it('does not colour either side when the label says the values are nearly equal', async () => {
+    await renderComparison({
+      view: 'summary',
+      plainB: true,
+      mutateB: (detail) => {
+        indicatorOf(detail, 'soc_poverty_rate').raw_value = 10.1;
+      },
+    });
+
+    const row = rowOf(POVERTY);
+    expect(within(row).getByText(/^Hampir sama \(selisih 0,21 %\)$/)).toBeInTheDocument();
+    expect(row.querySelector('[data-outcome]')).toBeNull();
+    expect(within(row).queryByText(/kondisi (lebih|kurang) baik/i)).not.toBeInTheDocument();
+  });
+
+  it('on the detail page, a nearly equal row explains it names no better side', async () => {
+    await renderComparison({
+      plainB: true,
+      mutateB: (detail) => {
+        indicatorOf(detail, 'soc_poverty_rate').raw_value = 10.1;
+      },
+    });
+
+    const row = within(rowOf(POVERTY));
+    expect(row.getByText(/Aceh Selatan dan Uji hampir sama/)).toBeInTheDocument();
+    expect(row.queryByText(/relatif lebih baik/)).not.toBeInTheDocument();
+  });
+
+  it('judges years by the gap itself: a year of life expectancy is a difference, not "Hampir sama"', async () => {
+    await renderComparison({
+      view: 'summary',
+      plainB: true,
+      mutateB: (detail) => {
+        indicatorOf(detail, 'hlt_life_expectancy').raw_value = 65.97;
+      },
+    });
+
+    const row = rowOf('Umur Harapan Hidup Saat Lahir (UHH)');
+    expect(within(row).getByText('Uji lebih tinggi 1 tahun')).toBeInTheDocument();
+    expect(
+      within(row)
+        .getByText(/kondisi lebih baik/i)
+        .closest('td')
+        ?.getAttribute('data-label'),
+    ).toBe('Uji');
+  });
+
+  it('still calls years nearly equal when they differ by less than a tenth of a year', async () => {
+    await renderComparison({
+      view: 'summary',
+      plainB: true,
+      mutateB: (detail) => {
+        indicatorOf(detail, 'hlt_life_expectancy').raw_value = 65.02;
+      },
+    });
+
+    const row = rowOf('Umur Harapan Hidup Saat Lahir (UHH)');
+    expect(within(row).getByText(/^Hampir sama \(selisih 0,05 tahun\)$/)).toBeInTheDocument();
+    expect(row.querySelector('[data-outcome]')).toBeNull();
+  });
+
+  it('gives a score an absolute gap with its unit, never "N× lebih tinggi"', async () => {
+    await renderComparison({
+      plainB: true,
+      mutateB: (detail) => {
+        indicatorOf(detail, 'dis_multihazard_index').raw_value = 85.6;
+      },
+    });
+
+    const row = within(rowOf(MULTIHAZARD));
+    expect(row.getByText('Aceh Selatan lebih tinggi 85,6 skor (0–300)')).toBeInTheDocument();
+    expect(row.queryByText(/×/)).not.toBeInTheDocument();
   });
 });
 

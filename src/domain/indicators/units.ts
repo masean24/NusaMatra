@@ -30,6 +30,16 @@ const KNOWN_UNITS = localized((): Readonly<Record<string, { label: string; kind:
   index: { label: t('indeks'), kind: 'index' },
 }));
 
+/**
+ * Whether "N× lebih tinggi" says something true for this kind of unit. A ratio needs a real zero:
+ * twice the poverty rate, twice the doctors, twice the spending. An index or score has a zero set by
+ * its method, so "2× the hazard index" overstates what the numbers show; years read better as a gap,
+ * and an unknown unit gives no basis either way. Those get the absolute gap and unit instead.
+ */
+export function ratioIsMeaningful(kind: UnitKind): boolean {
+  return kind === 'percent' || kind === 'count' || kind === 'currency' || kind === 'ratio';
+}
+
 const RANGE_PATTERN = /^(score|index)\s*\(\s*(-?\d+(?:\.\d+)?)\s*[-–]\s*(-?\d+(?:\.\d+)?)\s*\)$/i;
 
 const formatBound = (value: number) => value.toLocaleString(locale(), { maximumFractionDigits: 10 });

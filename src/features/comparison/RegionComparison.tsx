@@ -3,7 +3,15 @@ import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button, ButtonLink } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Surface } from '@/components/ui/Surface/Surface';
-import { describeUnit, readComparison, type DisplayUnit } from '@/domain/indicators';
+import {
+  SIMILAR_RATIO,
+  describeUnit,
+  isNearlyEqual,
+  ratioIsMeaningful,
+  readComparison,
+  type ComparisonVerdict,
+  type DisplayUnit,
+} from '@/domain/indicators';
 import {
   ResourceView,
   categoryLabel,
@@ -25,7 +33,6 @@ import { useComparisonParams } from './comparisonParams';
 import styles from './RegionComparison.module.css';
 import { localized, t } from '@/lib/i18n';
 
-const SIMILAR_RATIO = 1.05;
 const DATA_QUALITY_SECTION = localized(() => t('Metrik kualitas data'));
 
 /**
@@ -460,7 +467,7 @@ function IndicatorRow({
   const { assessment } = row;
   const isRegional = row.kind === 'regional';
   const unit = describeUnit(row.unit, observedMax(row, definition));
-  const useRatio = unit.kind !== 'years' && unit.kind !== 'other';
+  const useRatio = ratioIsMeaningful(unit.kind);
   const reading =
     isRegional && directionKnown
       ? readComparison({
@@ -470,6 +477,7 @@ function IndicatorRow({
           nameB,
           assessment,
           unitLabel: unit.label,
+          unitKind: unit.kind,
           useRatio,
           formatNumber: (value, digits) => formatDecimalId(value.toFixed(digits)),
         })
@@ -588,10 +596,11 @@ function SourceLine({ row }: { readonly row: ComparisonRow }) {
 /** A side's condition on one indicator: better, worse, or not judged (`null`). */
 type SideOutcome = 'better' | 'worse' | null;
 
-/** Turns the comparison verdict into each side's outcome, coloured on its bar. */
-function sideOutcomes(
-  verdict: 'A_BETTER' | 'B_BETTER' | 'EQUAL' | 'NO_JUDGEMENT' | undefined,
-): readonly [SideOutcome, SideOutcome] {
+/**
+ * Turns the comparison verdict into each side's outcome, coloured on its bar and written in its
+ * cell. A nearly equal pair (`SIMILAR`) gets neither, so the colour never contradicts "Hampir sama".
+ */
+function sideOutcomes(verdict: ComparisonVerdict | undefined): readonly [SideOutcome, SideOutcome] {
   if (verdict === 'A_BETTER') return ['better', 'worse'];
   if (verdict === 'B_BETTER') return ['worse', 'better'];
   return [null, null];
@@ -611,13 +620,14 @@ function describeDifference(
   if (!difference) return '';
   if (difference.higher === 'EQUAL') return t('Sama');
   const higherName = difference.higher === 'A' ? nameA : nameB;
+  const gap = formatDecimalId(Math.abs(difference.absolute).toFixed(2));
+  if (isNearlyEqual(difference, unit.kind)) {
+    return t('Hampir sama (selisih {0} {1})', gap, unit.label).trim();
+  }
   if (useRatio && difference.ratio !== null && difference.ratio >= SIMILAR_RATIO) {
     return t('{0} {1}× lebih tinggi', higherName, formatDecimalId(difference.ratio.toFixed(1)));
   }
-  const gap = formatDecimalId(Math.abs(difference.absolute).toFixed(2));
-  return difference.ratio !== null && difference.ratio < SIMILAR_RATIO
-    ? t('Hampir sama (selisih {0} {1})', gap, unit.label).trim()
-    : t('{0} lebih tinggi {1} {2}', higherName, gap, unit.label).trim();
+  return t('{0} lebih tinggi {1} {2}', higherName, gap, unit.label).trim();
 }
 
 function ValueCell({
@@ -664,12 +674,13 @@ function ValueCell({
       <span className="kk-body-strong">
         {formatDecimalId(side.decimal)}
         {unit.label ? <span className={`kk-small ${styles.muted}`}> {unit.label}</span> : null}
-        {outcome && (
-          <span className="visually-hidden">
-            {outcome === 'better' ? t(', kondisi lebih baik') : t(', kondisi kurang baik')}
-          </span>
-        )}
       </span>
+      {/* Said in words, not only by the bar's colour, for readers who cannot tell green from red. */}
+      {outcome && (
+        <span className={`kk-small ${styles.outcome}`} data-outcome={outcome}>
+          {outcome === 'better' ? t('Kondisi lebih baik') : t('Kondisi kurang baik')}
+        </span>
+      )}
       {flag && (
         <span className={`kk-small ${flag.caution ? styles.cautionFlag : styles.muted}`}>{flag.label}</span>
       )}
