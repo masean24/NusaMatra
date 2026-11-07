@@ -1,4 +1,5 @@
 import type { ComparisonAssessment, ComparisonDifference } from '@/domain/comparability';
+import { gapIsBelow, ratioIsBelow } from './exactDecimal';
 import { isPolarity, polarityReading } from './interpretIndicator';
 import type { UnitKind } from './units';
 import { t } from '@/lib/i18n';
@@ -35,11 +36,27 @@ export const SIMILAR_RATIO = 1.05;
  */
 export const SIMILAR_YEARS = 0.1;
 
-/** Whether a difference is small enough to read as "Hampir sama", for this kind of unit. */
+/**
+ * Whether a difference is small enough to read as "Hampir sama", for this kind of unit. Strictly
+ * below the threshold, checked exactly on the two values (see `exactDecimal`): exactly 0.1 year or
+ * exactly 5% is a difference, whatever binary floating point makes of the subtraction or division.
+ */
 export function isNearlyEqual(difference: ComparisonDifference, kind: UnitKind): boolean {
   if (difference.higher === 'EQUAL') return false;
-  if (kind === 'years') return Math.abs(difference.absolute) < SIMILAR_YEARS;
-  return difference.ratio !== null && difference.ratio < SIMILAR_RATIO;
+  const { a, b } = difference;
+  if (kind === 'years') return gapIsBelow(a, b, SIMILAR_YEARS);
+  const smaller = Math.min(a, b);
+  // No ratio below or at zero (as in `assessComparison`), so no "nearly equal" by ratio either.
+  return smaller > 0 && ratioIsBelow(Math.max(a, b), smaller, SIMILAR_RATIO);
+}
+
+/**
+ * Whether "N× lebih tinggi" says more than "1,0×" once rounded to the one decimal shown. A pair at
+ * exactly 5% can have a binary ratio of 1.0499…, which would print as "1,0×"; it gets the gap in its
+ * unit instead.
+ */
+export function showsAsMultiple(ratio: number | null): ratio is number {
+  return ratio !== null && ratio.toFixed(1) !== '1.0';
 }
 
 /** `SIMILAR`: the values differ, but too little to call (see {@link isNearlyEqual}); no side is judged better. */
@@ -84,7 +101,7 @@ export function readComparison(input: ComparisonReadingInput): ComparisonReading
   }
 
   const what =
-    input.useRatio && difference.ratio !== null && difference.ratio >= SIMILAR_RATIO
+    input.useRatio && showsAsMultiple(difference.ratio)
       ? t('sekitar {0}× lebih tinggi', formatNumber(difference.ratio, 1))
       : t('lebih tinggi {0}', gap);
   const parts = [t('{0} {1} {2} dibanding {3}.', indicatorLabel, higher, what, lower)];

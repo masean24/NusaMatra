@@ -4,11 +4,11 @@ import { Button, ButtonLink } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Surface } from '@/components/ui/Surface/Surface';
 import {
-  SIMILAR_RATIO,
   describeUnit,
   isNearlyEqual,
   ratioIsMeaningful,
   readComparison,
+  showsAsMultiple,
   type ComparisonVerdict,
   type DisplayUnit,
 } from '@/domain/indicators';
@@ -624,7 +624,7 @@ function describeDifference(
   if (isNearlyEqual(difference, unit.kind)) {
     return t('Hampir sama (selisih {0} {1})', gap, unit.label).trim();
   }
-  if (useRatio && difference.ratio !== null && difference.ratio >= SIMILAR_RATIO) {
+  if (useRatio && showsAsMultiple(difference.ratio)) {
     return t('{0} {1}× lebih tinggi', higherName, formatDecimalId(difference.ratio.toFixed(1)));
   }
   return t('{0} lebih tinggi {1} {2}', higherName, gap, unit.label).trim();

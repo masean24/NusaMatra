@@ -17,5 +17,11 @@ export type {
 } from './interpretIndicator';
 export { needEndOf, needScore } from './needScore';
 export type { NeedEnd, NeedScoreInput } from './needScore';
-export { SIMILAR_RATIO, SIMILAR_YEARS, isNearlyEqual, readComparison } from './interpretComparison';
+export {
+  SIMILAR_RATIO,
+  SIMILAR_YEARS,
+  isNearlyEqual,
+  readComparison,
+  showsAsMultiple,
+} from './interpretComparison';
 export type { ComparisonReading, ComparisonReadingInput, ComparisonVerdict } from './interpretComparison';
