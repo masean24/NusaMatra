@@ -95,7 +95,7 @@ Status per 8 November 2026. Situs sudah berjalan di https://nusamatra.site denga
 | Metodologi                       | Selesai      | Penjelasan cara skor dihitung.                                                                                               |
 | Bahasa Indonesia dan Inggris     | Selesai      | Seluruh antarmuka bisa dibaca dalam IN atau EN. Data dari Data Hub tetap berbahasa Indonesia.                                |
 | Tampilan Normal dan Kaca, ponsel | Selesai      | Dua tampilan yang tersimpan, tata letak ponsel, halaman Aksesibilitas.                                                       |
-| Kualitas grafis                  | Selesai      | Pilihan Otomatis, Tinggi, Seimbang, dan Ringan, serta peta 2D untuk perangkat yang berat menjalankan 3D.                     |
+| Kualitas grafis                  | Selesai      | Perangkat kelas bawah otomatis memakai efek ringan dan peta 2D; peta 3D yang tersendat juga beralih ke 2D.                   |
 | Uji Rekomendasi                  | Direncanakan | Uji sensitivitas bobot. Halaman sudah ada dan ditandai "dalam pengembangan".                                                 |
 | Titik Buta Data                  | Direncanakan | Laporan kualitas data dari hasil validasi.                                                                                   |
 | Cerita Wilayah                   | Direncanakan | Narasi per wilayah.                                                                                                          |
@@ -104,6 +104,6 @@ Status per 8 November 2026. Situs sudah berjalan di https://nusamatra.site denga
 
 **Kualitas:** TypeScript strict, ESLint tanpa peringatan, lebih dari 900 uji unit, dan uji alur pengguna Playwright untuk desktop dan ponsel.
 
-**Performa:** halaman tanpa peta 3D tidak lagi mengunduh three.js, jadi JavaScript-nya sekitar 60% lebih kecil. Peta 3D di Jelajahi masih berat untuk ponsel kelas bawah dan sedang dioptimasi.
+**Performa:** halaman tanpa peta 3D tidak lagi mengunduh three.js, jadi JavaScript-nya sekitar 60% lebih kecil. Ponsel kelas bawah membuka peta Jelajahi dalam 2D, dan pada uji emulasi peta itu siap sekitar dua kali lebih cepat daripada versi 3D.
 
 **Batasan:** skor prioritas adalah alat bantu menyaring, bukan rekomendasi kebijakan resmi, dan metodenya belum divalidasi lembaga yang berwenang.
