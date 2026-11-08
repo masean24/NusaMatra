@@ -1,9 +1,28 @@
+import { realpathSync } from 'node:fs';
 import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
+import { searchForWorkspaceRoot } from 'vite';
 import { defineConfig } from 'vitest/config';
+
+/**
+ * Where node_modules really is. In a git worktree it is often a link to the main checkout's folder,
+ * which lies outside the project, and the dev server refuses (403) to serve files from there: the
+ * Lexend font then failed to load and pages fell back to the system font. Builds are unaffected.
+ */
+function nodeModulesRealPath(): string[] {
+  try {
+    return [realpathSync(fileURLToPath(new URL('./node_modules', import.meta.url)))];
+  } catch {
+    return [];
+  }
+}
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    // The default (the workspace root) plus the real node_modules folder, wherever it lives.
+    fs: { allow: [searchForWorkspaceRoot(process.cwd()), ...nodeModulesRealPath()] },
+  },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
