@@ -1,5 +1,8 @@
-/* Figma 41:433: full width, padding 48px 88px, gap 48px; ui/teks (laut/dalam in Kaca). */
+/* Figma 41:433: full width, padding 48px 88px, gap 48px; over the FooterBackdrop illustration. */
 .footer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   background: var(--c-footer);
   color: var(--c-on-footer);
 }
@@ -10,6 +13,8 @@
 }
 
 .inner {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   gap: 32px 48px;
@@ -60,13 +65,25 @@
   }
 }
 
+/* The footer's own text colour: dark on the cream sky (Normal), white on the ink sky (Kaca). */
 .link:focus-visible {
-  outline-color: var(--nm-text-on-sea);
+  outline-color: var(--c-on-footer);
 }
 
-/* Leave room for the mobile tab bar so the last links are not covered. */
-@media (width < 1024px) {
+/*
+ * Wide screens: room under the content for the hills, the sun and the wordmark. The landscape scales
+ * with the width (xMidYMax slice), so past 1440px the room grows with it (340px at 1440px) and the
+ * hills stay below the links.
+ */
+@media (width >= 900px) {
   .inner {
-    padding-bottom: calc(48px + var(--nm-tabbar-clearance));
+    padding-bottom: max(340px, 23.6vw);
+  }
+}
+
+/* Phones: the wordmark follows the content, then room for the mobile tab bar so it is not covered. */
+@media (width < 900px) {
+  .footer {
+    padding-bottom: var(--nm-tabbar-clearance);
   }
 }

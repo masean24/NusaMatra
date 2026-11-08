@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { Logo } from '@/components/brand/Logo';
+import { FooterBackdrop } from './FooterBackdrop';
 import styles from './SiteFooter.module.css';
 import { localized, t } from '@/lib/i18n';
 
@@ -36,7 +37,10 @@ const TEAM = localized(
     }) as const,
 );
 
-/** Figma 41:433: dark band (cobalt-deep in Kaca), brand statement, two link groups and the team. */
+/**
+ * Figma 41:433: brand statement, two link groups and the team, over the hills-and-sunrise backdrop
+ * (cream sky in Normal, ink sky in Kaca).
+ */
 export function SiteFooter() {
   return (
     <footer className={styles.footer}>
@@ -78,6 +82,8 @@ export function SiteFooter() {
           </ul>
         </section>
       </div>
+      {/* Switch the bottom treatment here: bottom="glow" (light) or bottom="shadow" (dark). */}
+      <FooterBackdrop bottom="glow" />
     </footer>
   );
 }

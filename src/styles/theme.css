@@ -40,10 +40,10 @@
   --c-cta-band-shadow: none;
   --c-on-cta-band: var(--nm-text-on-sea);
 
-  /* A deep cobalt band: the same family as the page, without the glare of --nm-sea-deep. */
-  --c-footer: var(--nm-sea-ink);
-  --c-on-footer: var(--nm-text-on-sea);
-  --c-on-footer-muted: var(--nm-glass-text-muted);
+  /* The footer's cream sky (FooterBackdrop) carries dark text; --c-footer shows only before it paints. */
+  --c-footer: #f4f3ee;
+  --c-on-footer: var(--nm-text);
+  --c-on-footer-muted: var(--nm-text-muted);
 
   --c-logo-accent: var(--nm-sea);
   --c-icon: var(--nm-text);

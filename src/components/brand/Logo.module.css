@@ -41,19 +41,18 @@
   display: none;
 }
 
-/* Kaca mode and dark surfaces (footer) use the light-on-dark mark, as in 78:993 / 78:995. */
-:global([data-display-mode='glass']) .logo .markLight,
-.logo[data-surface='dark'] .markLight {
+/* Kaca mode uses the light-on-dark mark, as in 78:993 / 78:995. */
+:global([data-display-mode='glass']) .logo .markLight {
   display: none;
 }
 
-:global([data-display-mode='glass']) .logo .markDark,
-.logo[data-surface='dark'] .markDark {
+:global([data-display-mode='glass']) .logo .markDark {
   display: block;
 }
 
-.logo[data-surface='dark'] .accent {
-  color: var(--nm-accent); /* "Matra" in orange on the cobalt footer (26px, large text: 3.4:1) */
+/* The footer is dark only in Kaca (ink sky); in Normal its sky is cream and the logo reads as on the page. */
+:global([data-display-mode='glass']) .logo[data-surface='dark'] .accent {
+  color: var(--nm-accent); /* "Matra" in orange on the ink footer (26px, large text) */
 }
 
 .logo[data-surface='dark'] {

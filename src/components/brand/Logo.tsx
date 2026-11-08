@@ -5,7 +5,7 @@ import styles from './Logo.module.css';
 interface LogoProps {
   /** `nav` = 29×26 mark + 17px wordmark (49:306); `footer` = 44×40 mark + 26px wordmark (78:994). */
   readonly size: 'nav' | 'footer';
-  /** Which surface the logo sits on; dark/sea surfaces use the light mark and the peach "Matra". */
+  /** Which surface the logo sits on; `dark` (the footer) takes the footer's text colour and, in Kaca, an orange "Matra". */
   readonly surface: 'auto' | 'dark';
 }
 
