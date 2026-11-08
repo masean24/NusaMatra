@@ -28,6 +28,23 @@ describe('RegionExplorer against the captured Data Hub responses', () => {
     expect(screen.getByText('Menampilkan 60 dari 514 wilayah')).toBeInTheDocument();
   });
 
+  it('moves to the first newly shown region, so the new rows are seen and not left below the fold', async () => {
+    renderWithDataHub(<RegionExplorer />, { fetchImpl: dataHubFetch() });
+    await screen.findByText('Menampilkan 30 dari 514 wilayah');
+    const regionsBefore = screen.getAllByRole('button', { name: /kode \d+/ });
+    expect(regionsBefore).toHaveLength(30);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tampilkan 30 lagi' }));
+
+    const regionsAfter = screen.getAllByRole('button', { name: /kode \d+/ });
+    expect(regionsAfter).toHaveLength(60);
+    // The 31st region (the first new one) takes focus, which also brings it into view.
+    expect(regionsAfter[30]).toHaveFocus();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Tampilkan 30 lagi' }));
+    expect(screen.getAllByRole('button', { name: /kode \d+/ })[60]).toHaveFocus();
+  });
+
   it('keeps kabupaten and kota apart and counts the filtered list as received', async () => {
     renderWithDataHub(<RegionExplorer />, { fetchImpl: dataHubFetch() });
     await screen.findByText('Menampilkan 30 dari 514 wilayah');

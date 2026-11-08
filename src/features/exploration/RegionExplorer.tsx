@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { StatusMessage } from '@/components/feedback/StatusMessage';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
@@ -73,6 +73,21 @@ export function RegionExplorer({
   const provinceLabelId = useId();
   const pageKey = `${searchKey}|${province}`;
   const visibleCount = expanded?.key === pageKey ? expanded.count : PAGE_SIZE;
+
+  /*
+   * After "Tampilkan 30 lagi" the new rows are added below the last one, where the list's own
+   * scroll (or the sheet's) leaves them out of sight, so the button seemed to do nothing. Focus goes
+   * to the first new region instead: the browser scrolls it into view, and a keyboard or screen
+   * reader user continues from there rather than from a button that moved further down.
+   */
+  const listRef = useRef<HTMLUListElement>(null);
+  const focusFromRef = useRef<number | null>(null);
+  useEffect(() => {
+    const from = focusFromRef.current;
+    if (from === null) return;
+    focusFromRef.current = null;
+    listRef.current?.querySelectorAll<HTMLButtonElement>(':scope > li > button')[from]?.focus();
+  }, [visibleCount]);
 
   if (fieldless && !showResults) return null;
 
@@ -193,7 +208,7 @@ export function RegionExplorer({
                       <Chip tone="warning">{t('Nama sintetis (DEMO), bukan nama resmi')}</Chip>
                     )}
                   </div>
-                  <ul role="list" className={`glass-group ${styles.list}`}>
+                  <ul ref={listRef} role="list" className={`glass-group ${styles.list}`}>
                     {items.slice(0, visibleCount).map((region) => (
                       <li key={region.regionId}>
                         <button
@@ -222,6 +237,7 @@ export function RegionExplorer({
                       variant="secondary"
                       onClick={() => {
                         setExpanded({ key: pageKey, count: visibleCount + PAGE_SIZE });
+                        focusFromRef.current = visibleCount;
                       }}
                     >
                       {t('Tampilkan {0} lagi', Math.min(PAGE_SIZE, items.length - visibleCount))}

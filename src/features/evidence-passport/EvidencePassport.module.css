@@ -698,9 +698,15 @@
 
 /*
  * Split layout (region and comparison passports): the sections beside the aside set the height,
- * never the aside. The aside takes exactly that height (`contain: size` keeps its own content out of
- * the row's sizing), the citation card fits into what the contents and links leave, its text box
- * scrolling when the citation is longer, and the last card ends level with the last section.
+ * and the aside takes that height; the citation card fits into what the contents and links leave,
+ * its text box scrolling when the citation is longer, and the last card ends level with the last
+ * section.
+ *
+ * Only the citation text is kept out of the row's sizing (`contain: size`), so the long citation
+ * never stretches the page, while the aside's other content still counts as its minimum. Before,
+ * the whole aside was contained: on a wide screen, where the sections are short, the citation box
+ * got less room than its own three-line minimum and slid under the "Salin kutipan" button. Now,
+ * when the sections are shorter than the aside's minimum, the row grows to that minimum instead.
  */
 @media (width >= 1024px) {
   .columns[data-split] {
@@ -708,17 +714,17 @@
   }
 
   .columns[data-split] .aside {
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    contain: size;
+    grid-template-rows: auto minmax(auto, 1fr) auto;
   }
 
   .columns[data-split] .citationCard {
-    grid-template-rows: auto minmax(0, 1fr);
-    min-height: 0;
+    grid-template-rows: auto minmax(auto, 1fr);
   }
 
   .columns[data-split] .citationCard .citation {
-    min-height: 3lh;
+    contain: size;
+    /* Three lines of text plus the box's own padding (12px top and bottom). */
+    min-height: calc(3lh + 24px);
     max-height: none;
     overflow-y: auto;
   }
@@ -1052,6 +1058,15 @@
   font-size: 0.9375rem;
   line-height: 1.65;
   overflow-wrap: anywhere;
+}
+
+/*
+ * Each limitation runs the full width of its card, beside the number. The reading measure
+ * (`.glass--read p`, 72ch) stopped it at about 650px, leaving half the card empty on a wide screen.
+ * Two classes outrank that rule's one class and one element.
+ */
+.limitBody .limitText {
+  max-width: none;
 }
 
 .moreButton {
