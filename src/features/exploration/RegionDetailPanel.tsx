@@ -16,7 +16,7 @@ import {
   useDataHub,
   useDataHubResource,
 } from '@/features/data-hub';
-import { passportHref } from '@/features/evidence-passport';
+import { passportHref } from '@/features/evidence-passport/links';
 import { ApiError, type RegionProfileDTO } from '@/services/api';
 import { buildRegionInsight, type InsightIndicator } from './regionInsight';
 import styles from './RegionDetailPanel.module.css';

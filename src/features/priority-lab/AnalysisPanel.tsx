@@ -19,7 +19,7 @@ import { classifyRegionCoverage } from '@/domain/prioritization';
 import { integrityInputFromResult } from './compositeCheck';
 import { weightsKey } from './criteria';
 import { Icon } from '@/components/ui/Icon/Icon';
-import { passportHref } from '@/features/evidence-passport';
+import { passportHref } from '@/features/evidence-passport/links';
 import { ContributionChart, RankingChart } from './LabCharts';
 import { IssueList, LabDetails } from './LabDetails';
 import {

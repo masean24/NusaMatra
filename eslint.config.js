@@ -31,8 +31,11 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['@/features/*/*', '!@/features/*/index'],
-              message: 'Import a feature through its public index, not its internal files.',
+              // `links` is a feature's second, light public entry: route paths and link builders
+              // only, so linking to a feature does not load it.
+              group: ['@/features/*/*', '!@/features/*/index', '!@/features/*/links'],
+              message:
+                'Import a feature through its public index (or its links entry for routes and links), not its internal files.',
             },
           ],
         },

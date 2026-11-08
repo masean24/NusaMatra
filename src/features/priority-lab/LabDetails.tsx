@@ -4,7 +4,7 @@ import {
   type CompositeIntegrity,
   type CompositeIssue,
 } from '@/domain/prioritization';
-import { passportHref } from '@/features/evidence-passport';
+import { passportHref } from '@/features/evidence-passport/links';
 import type { DataHubRegionDTO, ExploratoryCompositeResultDTO } from '@/services/api';
 import {
   SCORE_MEANING,

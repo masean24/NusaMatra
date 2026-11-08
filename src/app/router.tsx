@@ -8,7 +8,7 @@ import {
 } from '@/features/feature-shell';
 import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
-import { COMPARISON_DETAIL_PATH } from '@/features/comparison';
+import { COMPARISON_DETAIL_PATH } from '@/features/comparison/links';
 import { AccessibilityPage } from './pages/AccessibilityPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';

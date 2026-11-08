@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router';
 import { categoryLabel, useDataHub, useDataHubResource, type ResourceState } from '@/features/data-hub';
-import { passportHref } from '@/features/evidence-passport';
+import { passportHref } from '@/features/evidence-passport/links';
 import type { DataMode } from '@/services/api';
 import {
   EXAMPLE_CRITERIA,
