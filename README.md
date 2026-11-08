@@ -82,24 +82,28 @@ Buka `http://localhost:8080`. Pemeriksaan kesehatan tersedia di `/healthz`.
 
 ## Progress Saat Ini
 
-Status per 31 Oktober 2026. Situs sudah berjalan di https://nusamatra.site dengan data LIVE.
+Status per 8 November 2026. Situs sudah berjalan di https://nusamatra.site dengan data LIVE.
 
-| Fitur                            | Status       | Keterangan                                                                                             |
-| -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------ |
-| Beranda                          | Selesai      | Pencarian wilayah, empat jalur fitur, pratinjau Lab Prioritas, sumber data.                            |
-| Jelajahi                         | Selesai      | Peta 3D batas BIG, pencarian, profil wilayah dengan penilaian relatif, 29 indikator beserta sumbernya. |
-| Gempa BMKG                       | Selesai      | Layer gempa terkini pada peta Jelajahi.                                                                |
-| Bandingkan                       | Selesai      | Dua wilayah berdampingan; selisih hanya dihitung bila definisi dan periodenya setara.                  |
-| Lab Prioritas                    | Selesai      | Atur bobot kriteria, peringkat 514 wilayah dihitung ulang, rincian kontribusi tiap kriteria.           |
-| Paspor Bukti                     | Selesai      | Rangkuman sumber, tahun, kelas bukti, dan batasan; dapat disalin, diunduh sebagai JSON, atau dicetak.  |
-| Tampilan Normal dan Kaca, ponsel | Selesai      | Dua tampilan yang tersimpan, tata letak ponsel, halaman Aksesibilitas.                                 |
-| Uji Rekomendasi                  | Direncanakan | Uji sensitivitas bobot. Halaman sudah ada dan ditandai "dalam pengembangan".                           |
-| Titik Buta Data                  | Direncanakan | Laporan kualitas data dari hasil validasi.                                                             |
-| Cerita Wilayah                   | Direncanakan | Narasi per wilayah.                                                                                    |
-| Metodologi                       | Direncanakan | Penjelasan cara skor dihitung.                                                                         |
+| Fitur                            | Status       | Keterangan                                                                                                                   |
+| -------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Beranda                          | Selesai      | Pencarian wilayah, empat jalur fitur, pratinjau Lab Prioritas, sumber data.                                                  |
+| Jelajahi                         | Selesai      | Peta 3D batas BIG, pencarian, profil wilayah dengan penilaian relatif, 29 indikator beserta sumbernya, unduhan CSV dan JSON. |
+| Gempa BMKG                       | Selesai      | Layer gempa terkini di peta Jelajahi, dengan daftar kejadian dan detail tiap gempa.                                          |
+| Bandingkan                       | Selesai      | Dua wilayah berdampingan; selisih hanya dihitung bila definisi dan periodenya setara.                                        |
+| Lab Prioritas                    | Selesai      | Atur bobot kriteria, peringkat 514 wilayah dihitung ulang, rincian kontribusi tiap kriteria.                                 |
+| Paspor Bukti                     | Selesai      | Sumber, tahun, kelas bukti, status pencocokan dengan sumber, dan batasan; bisa disalin, diunduh sebagai JSON, atau dicetak.  |
+| Metodologi                       | Selesai      | Penjelasan cara skor dihitung.                                                                                               |
+| Bahasa Indonesia dan Inggris     | Selesai      | Seluruh antarmuka bisa dibaca dalam IN atau EN. Data dari Data Hub tetap berbahasa Indonesia.                                |
+| Tampilan Normal dan Kaca, ponsel | Selesai      | Dua tampilan yang tersimpan, tata letak ponsel, halaman Aksesibilitas.                                                       |
+| Kualitas grafis                  | Selesai      | Pilihan Otomatis, Tinggi, Seimbang, dan Ringan, serta peta 2D untuk perangkat yang berat menjalankan 3D.                     |
+| Uji Rekomendasi                  | Direncanakan | Uji sensitivitas bobot. Halaman sudah ada dan ditandai "dalam pengembangan".                                                 |
+| Titik Buta Data                  | Direncanakan | Laporan kualitas data dari hasil validasi.                                                                                   |
+| Cerita Wilayah                   | Direncanakan | Narasi per wilayah.                                                                                                          |
 
-**Data:** 514 kabupaten/kota dan 30 indikator, 29 di antaranya sudah berdata. Satu indikator (persentase desa dengan jalan beraspal) belum tersedia karena mikrodatanya belum dapat diakses, dan situs menandainya, tidak mengisinya dengan nol.
+**Data:** 514 kabupaten/kota dan 29 indikator. Indikator persentase desa dengan jalan beraspal belum masuk katalog karena data per kabupaten/kota belum tersedia.
 
-**Kualitas:** TypeScript strict, ESLint tanpa peringatan, dan lebih dari 700 uji otomatis lulus.
+**Kualitas:** TypeScript strict, ESLint tanpa peringatan, lebih dari 900 uji unit, dan uji alur pengguna Playwright untuk desktop dan ponsel.
+
+**Performa:** halaman tanpa peta 3D tidak lagi mengunduh three.js, jadi JavaScript-nya sekitar 60% lebih kecil. Peta 3D di Jelajahi masih berat untuk ponsel kelas bawah dan sedang dioptimasi.
 
 **Batasan:** skor prioritas adalah alat bantu menyaring, bukan rekomendasi kebijakan resmi, dan metodenya belum divalidasi lembaga yang berwenang.
