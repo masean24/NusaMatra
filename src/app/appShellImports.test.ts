@@ -22,6 +22,8 @@ const ROUTE_PATH_MODULES = new Set([
   '/src/features/comparison/links.ts',
   '/src/features/evidence-passport/links.ts',
   '/src/features/evidence-passport/evidenceQuery.ts',
+  '/src/features/exploration/links.ts',
+  '/src/features/exploration/regionSelection.ts',
 ]);
 
 /** POSIX `dirname` + relative join, for the glob's `/src/...` keys. */
@@ -101,6 +103,22 @@ describe('pages that only link to Paspor Bukti', () => {
       const features = featuresIn(staticallyReachable(`/src/app/pages/${page}.tsx`));
       expect(features).not.toContain('evidence-passport');
       expect(features).not.toContain('priority-lab');
+    },
+  );
+});
+
+describe('Bandingkan', () => {
+  // It reads region codes from the address with `parseRegionId`; that must not bring Jelajahi along.
+  it.each(['ComparisonPage', 'ComparisonDetailPage'])(
+    '%s does not load Jelajahi or the earthquake layer',
+    (page) => {
+      const reachable = staticallyReachable(`/src/app/pages/${page}.tsx`);
+      const features = featuresIn(reachable);
+      expect(features).toContain('comparison');
+      // The light entry is reached, so the scan sees the import instead of silently dropping it.
+      expect(reachable).toContain('/src/features/exploration/links.ts');
+      expect(features).not.toContain('exploration');
+      expect(features).not.toContain('earthquakes');
     },
   );
 });
