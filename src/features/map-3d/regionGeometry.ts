@@ -46,6 +46,22 @@ export function consolidateExtrudeGroups(geometry: THREE.BufferGeometry): THREE.
   return consolidated;
 }
 
+/**
+ * The flat 2D map's region: its top surface only, at the height the extruded top would have, in the
+ * same shape-plane axes as `ExtrudeGeometry` (the caller turns both the same way). Seen from straight
+ * above the extruded sides and bevel are hidden anyway; building them costs most of the map's set-up
+ * time (514 LIVE regions: about 550 ms with sides and bevel, about 50 ms for the tops) and several
+ * times the triangles. Non-indexed and without groups, so `RegionBatch` reads it as all tops.
+ */
+export function flatRegionTops(shapes: THREE.Shape[], height: number): THREE.BufferGeometry {
+  const indexed = new THREE.ShapeGeometry(shapes);
+  indexed.translate(0, 0, height);
+  const tops = indexed.toNonIndexed();
+  indexed.dispose();
+  tops.clearGroups();
+  return tops;
+}
+
 /** One `LineSegments` geometry for all the rings of a region: one draw call instead of one per ring. */
 export function ringsToSegmentsGeometry(rings: readonly (readonly THREE.Vector3[])[]): THREE.BufferGeometry {
   const segments = rings.reduce((sum, ring) => sum + Math.max(0, ring.length - 1), 0);

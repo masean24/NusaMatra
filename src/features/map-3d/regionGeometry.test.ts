@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
+import { consolidateExtrudeGroups, flatRegionTops, ringsToSegmentsGeometry } from './regionGeometry';
 
 function square(x: number, size: number): THREE.Shape {
   const shape = new THREE.Shape();
@@ -64,5 +64,70 @@ describe('ringsToSegmentsGeometry', () => {
     expect(geometry.getAttribute('position').count).toBe((2 + 1) * 2);
     expect(Array.from(geometry.getAttribute('position').array.slice(0, 6))).toEqual([0, 0, 0, 1, 0, 0]);
     expect(Array.from(geometry.getAttribute('position').array.slice(12, 18))).toEqual([5, 0, 0, 6, 0, 0]);
+  });
+});
+
+describe('flatRegionTops', () => {
+  /** A square with a square hole, as the map builds a region with an enclave. */
+  function squareWithHole(): THREE.Shape {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(4, 0);
+    shape.lineTo(4, 4);
+    shape.lineTo(0, 4);
+    const hole = new THREE.Path();
+    hole.moveTo(1, 1);
+    hole.lineTo(1, 3);
+    hole.lineTo(3, 3);
+    hole.lineTo(3, 1);
+    shape.holes.push(hole);
+    return shape;
+  }
+
+  it('builds only the top: non-indexed, one group-free surface at the given height, facing up after rotation', () => {
+    const tops = flatRegionTops([squareWithHole()], 0.31);
+    expect(tops.index).toBeNull();
+    expect(tops.groups).toHaveLength(0);
+    tops.rotateX(-Math.PI / 2); // as the map turns every region body
+    const positions = tops.getAttribute('position');
+    const normals = tops.getAttribute('normal');
+    for (let i = 0; i < positions.count; i += 1) {
+      expect(positions.getY(i)).toBeCloseTo(0.31, 6);
+      expect(normals.getY(i)).toBeCloseTo(1, 6);
+    }
+  });
+
+  it('covers the same area as the extruded top, hole included', () => {
+    const area = (geometry: THREE.BufferGeometry, upOnly: boolean) => {
+      const p = geometry.getAttribute('position');
+      const n = geometry.getAttribute('normal');
+      let sum = 0;
+      for (let i = 0; i + 2 < p.count; i += 3) {
+        if (upOnly && n.getZ(i) <= 0.99) continue;
+        const ax = p.getX(i);
+        const ay = p.getY(i);
+        sum +=
+          Math.abs(
+            (p.getX(i + 1) - ax) * (p.getY(i + 2) - ay) - (p.getX(i + 2) - ax) * (p.getY(i + 1) - ay),
+          ) / 2;
+      }
+      return sum;
+    };
+    const tops = flatRegionTops([squareWithHole()], 0.31);
+    const extruded = new THREE.ExtrudeGeometry(squareWithHole(), { depth: 0.28, bevelEnabled: false });
+    expect(area(tops, false)).toBeCloseTo(12, 6);
+    expect(area(extruded, true)).toBeCloseTo(12, 6);
+  });
+
+  it('is far smaller than the extruded body it replaces on the flat map', () => {
+    const tops = flatRegionTops([squareWithHole()], 0.31);
+    const extruded = new THREE.ExtrudeGeometry(squareWithHole(), {
+      depth: 0.28,
+      bevelEnabled: true,
+      bevelSegments: 2,
+      bevelSize: 0.025,
+      bevelThickness: 0.03,
+    });
+    expect(tops.getAttribute('position').count * 4).toBeLessThan(extruded.getAttribute('position').count);
   });
 });

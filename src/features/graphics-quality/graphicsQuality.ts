@@ -107,8 +107,8 @@ function readDeviceSignals(): DeviceSignals {
   };
 }
 
-/** The visitor's own map choice wins; without one, the map starts flat on a low-end device. */
-function readMapView(deviceTier: DeviceTier): MapView {
+/** The map view the visitor chose on an earlier visit, or null when they never chose. */
+function readStoredMapView(): MapView | null {
   try {
     window.localStorage.removeItem(LEGACY_MODE_STORAGE_KEY);
     const stored = window.localStorage.getItem(MAP_VIEW_STORAGE_KEY);
@@ -116,25 +116,61 @@ function readMapView(deviceTier: DeviceTier): MapView {
   } catch {
     // Storage blocked: fall back to the device's default.
   }
-  return deviceTier === 'low' ? '2d' : '3d';
+  return null;
+}
+
+/** The visitor's own map choice wins; without one, the map starts flat on a low-end device. */
+function readMapView(deviceTier: DeviceTier): MapView {
+  return readStoredMapView() ?? (deviceTier === 'low' ? '2d' : '3d');
 }
 
 interface QualityState {
   readonly tier: DeviceTier;
   readonly mapView: MapView;
   readonly profile: QualityProfile;
+  /** True when this visit's map went flat by itself because the 3D map stuttered (not stored). */
+  readonly autoFlat: boolean;
 }
 
 /** The device sets the scenes and pixel ratio; the map view only flattens the map and its decoration. */
-function stateOf(tier: DeviceTier, mapView: MapView): QualityState {
+function stateOf(tier: DeviceTier, mapView: MapView, autoFlat = false): QualityState {
   const base = QUALITY_PROFILES[tier];
   const flat = mapView === '2d';
   return {
     tier,
     mapView,
     profile: { ...base, flatMap: flat, decorativeMotion: base.decorativeMotion && !flat },
+    autoFlat,
   };
 }
+
+/*
+ * The device facts above miss weak devices that do not report memory (Safari, Firefox). So the
+ * 3D map also judges itself: it reports the time between the frames it draws while moving, and if
+ * the median of the first few dozen is slower than about 20 frames a second, the map turns flat for
+ * the rest of the visit. Never when the visitor chose a view themselves, and never stored, so the
+ * next visit measures again.
+ */
+export const FRAME_PROBE = {
+  /** Drawn frames to collect before deciding. */
+  samples: 45,
+  /** A median frame slower than this (about 20 frames a second) counts as stuttering. */
+  slowMedianMs: 50,
+  /** Longer gaps are pauses between bursts of drawing, not slow frames, and are left out. */
+  maxGapMs: 250,
+} as const;
+
+export type FrameVerdict = 'pending' | 'slow' | 'ok';
+
+export function judgeFrames(deltas: readonly number[]): FrameVerdict {
+  const drawn = deltas.filter((delta) => delta > 0 && delta <= FRAME_PROBE.maxGapMs);
+  if (drawn.length < FRAME_PROBE.samples) return 'pending';
+  const sorted = drawn.slice(0, FRAME_PROBE.samples).sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)] ?? 0;
+  return median > FRAME_PROBE.slowMedianMs ? 'slow' : 'ok';
+}
+
+let probe: { deltas: number[]; done: boolean } = { deltas: [], done: false };
 
 let state: QualityState | null = null;
 const listeners = new Set<() => void>();
@@ -159,6 +195,32 @@ export function getQualityProfile(): QualityProfile {
   return currentState().profile;
 }
 
+export function getAutoFlat(): boolean {
+  return currentState().autoFlat;
+}
+
+/**
+ * Called by the 3D map for every frame it draws while moving, with the time since the frame
+ * before. Once enough frames are in, decides once per visit whether to turn the map flat.
+ */
+export function reportMapFrame(deltaMs: number): void {
+  if (probe.done) return;
+  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+  const current = currentState();
+  if (current.mapView !== '3d' || readStoredMapView() !== null) {
+    probe.done = true;
+    return;
+  }
+  probe.deltas.push(deltaMs);
+  const verdict = judgeFrames(probe.deltas);
+  if (verdict === 'pending') return;
+  probe.done = true;
+  if (verdict === 'slow') {
+    state = stateOf(current.tier, '2d', true);
+    for (const listener of listeners) listener();
+  }
+}
+
 /** Puts the device tier on <html data-graphics>, where the glass styles read it. */
 export function applyGraphicsModeToDocument(): void {
   document.documentElement.setAttribute('data-graphics', getDeviceTier());
@@ -166,6 +228,7 @@ export function applyGraphicsModeToDocument(): void {
 
 export function setMapView(next: MapView): void {
   state = stateOf(getDeviceTier(), next);
+  probe.done = true; // the visitor has chosen: the map no longer decides for them
   try {
     window.localStorage.setItem(MAP_VIEW_STORAGE_KEY, next);
   } catch {
@@ -189,8 +252,13 @@ export function useQualityProfile(): QualityProfile {
   return useSyncExternalStore(subscribeQuality, getQualityProfile, () => QUALITY_PROFILES.high);
 }
 
+export function useAutoFlat(): boolean {
+  return useSyncExternalStore(subscribeQuality, getAutoFlat, () => false);
+}
+
 /** For tests: forget the cached state, and optionally fix the device tier instead of detecting it. */
 export function resetGraphicsModeForTests(tier?: DeviceTier): void {
   state = tier ? stateOf(tier, readMapView(tier)) : null;
+  probe = { deltas: [], done: false };
   listeners.clear();
 }

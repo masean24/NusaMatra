@@ -13,13 +13,18 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Real CSS Module. Kept separate from the Three.js engine for host integration.
-import { getQualityProfile, subscribeQuality, useQualityProfile } from '@/features/graphics-quality';
+import {
+  getQualityProfile,
+  reportMapFrame,
+  subscribeQuality,
+  useQualityProfile,
+} from '@/features/graphics-quality';
 import styles from './NusaMatra3DMap.module.css';
 import { aimForScreenPoint, frameCentreNdc } from './focusFrame';
 import { placeCallouts, type CalloutRequest } from './placeCallouts';
 import { PointOverlay, type MapOverlayPoint } from './pointOverlay';
 import { RegionBatch, type RegionPiece } from './regionBatch';
-import { consolidateExtrudeGroups, ringsToSegmentsGeometry } from './regionGeometry';
+import { consolidateExtrudeGroups, flatRegionTops, ringsToSegmentsGeometry } from './regionGeometry';
 import { fbmNoise } from './terrain/noise';
 import { getIndonesiaCoastline } from './terrain/coastline';
 import { buildHeroTerrain, type HeroTerrain } from './terrain/heroTerrain';
@@ -1427,6 +1432,8 @@ interface InternalEngineState {
   textures: ProceduralSurfaceSet;
   /** Explore: every region in one batched mesh (see RegionBatch), and each region's properties. */
   regionBatch: RegionBatch | null;
+  /** The regions were built as tops only, for the flat 2D map (no sides, no bevel). */
+  regionsBuiltFlat: boolean;
   regionProperties: Map<string, GeographyDataset['features'][number]['properties']>;
   raycaster: THREE.Raycaster;
   cameraTargetPos: THREE.Vector3 | null;
@@ -1501,6 +1508,9 @@ export const NusaMatra3DMap = forwardRef<
 
   const [devWireframe, setDevWireframe] = useState(false);
   const [devExtrusion, setDevExtrusion] = useState(1.0);
+  // Bumped to rebuild the flat-built regions with their sides when the map turns 3D (see below).
+  const [regionDetail, setRegionDetail] = useState(0);
+  const upgradeRegionsRef = useRef(false);
   const { flatMap } = useQualityProfile();
   const flatMapRef = useRef(flatMap);
   flatMapRef.current = flatMap;
@@ -1920,6 +1930,7 @@ export const NusaMatra3DMap = forwardRef<
       oceanMaterial,
       textures,
       regionBatch: null,
+      regionsBuiltFlat: false,
       regionProperties: new Map(),
       raycaster: new THREE.Raycaster(),
       cameraTargetPos: null,
@@ -2077,6 +2088,9 @@ export const NusaMatra3DMap = forwardRef<
         return;
       }
 
+      // Explore reports how long each drawn frame took to come; a map that stutters turns flat.
+      // Only once the regions are drawn: while they are built, the build itself slows the frames.
+      if (mode === 'explore' && eng.regionBatch !== null) reportMapFrame(now - lastTime);
       const dt = Math.min((now - lastTime) / 1000, 0.1);
       lastTime = now;
 
@@ -2184,12 +2198,25 @@ export const NusaMatra3DMap = forwardRef<
     const eng = engineRef.current;
     if (!eng || !validatedDataset) return;
 
+    /*
+     * Two kinds of build. The usual one starts from an empty map and frames it. The upgrade adds the
+     * sides to regions first built flat, when the visitor turns the map 3D: the flat regions stay on
+     * screen until the full ones are ready, then are swapped, with the camera, selection and
+     * markers left as they are.
+     */
+    const upgrade = upgradeRegionsRef.current && eng.regionBatch !== null && eng.regionsBuiltFlat;
+    upgradeRegionsRef.current = false;
+    // The flat map builds the tops only: from straight above nothing else shows.
+    const buildFlat = mode === 'explore' && flatMapRef.current && !upgrade;
+
     eng.renderer.shadowMap.needsUpdate = true;
-    eng.regionBatch?.dispose();
-    disposeObjectTree(eng.regionsGroup);
-    disposeObjectTree(eng.markersGroup);
-    eng.regionBatch = null;
-    eng.regionProperties.clear();
+    if (!upgrade) {
+      eng.regionBatch?.dispose();
+      disposeObjectTree(eng.regionsGroup);
+      disposeObjectTree(eng.markersGroup);
+      eng.regionBatch = null;
+      eng.regionProperties.clear();
+    }
     const pieces: RegionPiece[] = [];
 
     const palette = EXPLORE_ATLAS_PALETTE[displayModeRef.current];
@@ -2267,8 +2294,11 @@ export const NusaMatra3DMap = forwardRef<
 
       if (shapes.length === 0) return;
 
-      // Host performance fix: two material groups per region instead of two per island.
-      const geometry = consolidateExtrudeGroups(new THREE.ExtrudeGeometry(shapes, extrudeSettings));
+      // Host performance fix: two material groups per region instead of two per island. The flat
+      // map's tops sit where the extruded tops would (depth plus bevel), under the coastline.
+      const geometry = buildFlat
+        ? flatRegionTops(shapes, tierDepth + (extrudeSettings.bevelThickness ?? 0))
+        : consolidateExtrudeGroups(new THREE.ExtrudeGeometry(shapes, extrudeSettings));
       geometry.rotateX(-Math.PI / 2);
 
       pieces.push({
@@ -2305,14 +2335,23 @@ export const NusaMatra3DMap = forwardRef<
       batch.setFlat(mode === 'explore' && flatMapRef.current);
       batch.mesh.castShadow = true;
       batch.mesh.receiveShadow = true;
+      if (upgrade) {
+        // Swap in place: the flat regions leave only now that the full ones are ready.
+        eng.regionBatch?.dispose();
+        disposeObjectTree(eng.regionsGroup);
+      }
       eng.regionsGroup.add(batch.mesh);
       if (batch.outline) eng.regionsGroup.add(batch.outline);
       eng.regionBatch = batch;
+      eng.regionsBuiltFlat = buildFlat;
     }
 
     // Centre the view on the drawn regions and fit them to the canvas, for the official LIVE
-    // archipelago and the illustrative DEMO one alike, so the map opens centred on screen.
-    if (mode === 'explore' && eng.regionsGroup.children.length > 0) {
+    // archipelago and the illustrative DEMO one alike, so the map opens centred on screen. Not
+    // when only the sides are being added: the visitor's view stays where it is.
+    if (upgrade) {
+      // The view is kept as it is (see above).
+    } else if (mode === 'explore' && eng.regionsGroup.children.length > 0) {
       const bounds = new THREE.Box3().setFromObject(eng.regionsGroup);
       const center = bounds.getCenter(new THREE.Vector3());
       center.y = 0;
@@ -2334,11 +2373,17 @@ export const NusaMatra3DMap = forwardRef<
         paintRegion(batch, selected, EXPLORE_ATLAS_PALETTE[displayModeRef.current], 'selected');
       }
       paintedRef.current = { batch, displayMode: displayModeRef.current, selected };
+      eng.renderer.shadowMap.needsUpdate = true;
+      wakeEngine(eng);
+      // Turned 3D while the flat regions were still being built: add their sides next.
+      if (buildFlat && !flatMapRef.current && eng.regionBatch) {
+        upgradeRegionsRef.current = true;
+        setRegionDetail((n) => n + 1);
+      }
+      if (upgrade) return; // the map was already open, framed and announced
       // A region already chosen when the map opens (a link, the Beranda search, a reload): glide
       // from the whole archipelago to it, as a click on the map would.
       if (mode === 'explore' && selected) focusRegionRef.current(selected);
-      eng.renderer.shadowMap.needsUpdate = true;
-      wakeEngine(eng);
       if (mode === 'explore') onReadyRef.current?.();
     };
 
@@ -2357,8 +2402,10 @@ export const NusaMatra3DMap = forwardRef<
     };
     buildSlice();
 
-    const activeMarkers =
-      mode === 'hero'
+    // Adding the sides leaves the markers already on the map as they are.
+    const activeMarkers = upgrade
+      ? []
+      : mode === 'hero'
         ? HERO_DIORAMA_MARKERS()
         : // Host fix: the demo markers are illustrative pins, so official LIVE geography never shows them.
         showMarkers && validatedDataset.metadata.dataMode === 'DEMO'
@@ -2426,7 +2473,7 @@ export const NusaMatra3DMap = forwardRef<
         piece.outline?.dispose();
       }
     };
-  }, [validatedDataset, mode, showMarkers, showCoastlines, devWireframe]);
+  }, [validatedDataset, mode, showMarkers, showCoastlines, devWireframe, regionDetail]);
 
   useEffect(() => {
     const eng = engineRef.current;
@@ -2465,6 +2512,11 @@ export const NusaMatra3DMap = forwardRef<
     eng.renderer.shadowMap.needsUpdate = true;
     if (eng.controls) applyMapGestures(eng.controls, flatMap);
     eng.regionBatch?.setFlat(flatMap);
+    // Regions built flat have no sides: build them now, swapped in when ready.
+    if (!flatMap && eng.regionsBuiltFlat && eng.regionBatch) {
+      upgradeRegionsRef.current = true;
+      setRegionDetail((n) => n + 1);
+    }
     if (appliedFlatRef.current === flatMap) return; // first mount: the start-up framing places the camera
     appliedFlatRef.current = flatMap;
     const target = eng.controls ? eng.controls.target.clone() : new THREE.Vector3(0, 0, 0);
