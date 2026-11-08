@@ -1,11 +1,13 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MapViewToggle } from './MapViewToggle';
 import {
+  FRAME_PROBE,
   MAP_VIEW_STORAGE_KEY,
   QUALITY_PROFILES,
   deviceTierFrom,
   getQualityProfile,
   isSoftwareRenderer,
+  reportMapFrame,
   resetGraphicsModeForTests,
 } from './graphicsQuality';
 
@@ -42,6 +44,27 @@ describe('Jelajahi 3D / 2D map toggle', () => {
 
     expect(toggle).not.toBeChecked();
     expect(getQualityProfile()).toMatchObject({ scenes3d: false, flatMap: false, maxPixelRatio: 1 });
+  });
+
+  it('says so when the map turned flat by itself, and the notice goes once the visitor chooses', () => {
+    resetGraphicsModeForTests('high');
+    render(<MapViewToggle />);
+    const toggle = screen.getByRole('switch', { name: 'Peta 2D' });
+    expect(screen.queryByText(/beralih ke 2D/)).not.toBeInTheDocument();
+
+    act(() => {
+      for (let i = 0; i < FRAME_PROBE.samples; i += 1) reportMapFrame(90);
+    });
+
+    expect(toggle).toBeChecked();
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'Peta beralih ke 2D agar lebih lancar. Tekan 3D untuk kembali.',
+    );
+
+    fireEvent.click(toggle);
+
+    expect(toggle).not.toBeChecked();
+    expect(screen.queryByText(/beralih ke 2D/)).not.toBeInTheDocument();
   });
 
   it("the visitor's stored choice wins over the device default", () => {

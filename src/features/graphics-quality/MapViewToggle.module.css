@@ -1,3 +1,38 @@
+/* Holds the switch in the map's control column and anchors its note; it adds no size of its own. */
+.anchor {
+  position: relative;
+  display: grid;
+  flex: none;
+}
+
+/* The "switched to 2D" note: a small card to the left of the switch, over the map. */
+.note {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  width: max-content;
+  max-width: min(240px, 60vw);
+  padding: 8px 12px;
+  border: 1px solid var(--c-card-border);
+  border-radius: 12px;
+  background: var(--c-card);
+  box-shadow: var(--c-card-shadow);
+  color: var(--c-text);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  text-align: start;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.noteEmpty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
 /* A round control with the same track, border and height as the Normal–Kaca switch, on the map. */
 .toggle {
   display: grid;

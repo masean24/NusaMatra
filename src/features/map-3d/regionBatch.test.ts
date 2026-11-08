@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { RegionBatch, type RegionPiece } from './regionBatch';
-import { consolidateExtrudeGroups } from './regionGeometry';
+import { consolidateExtrudeGroups, flatRegionTops } from './regionGeometry';
 
 /** A unit square region extruded upward, centred at x. */
 function squareRegion(regionId: string, x: number): RegionPiece {
@@ -69,6 +69,33 @@ describe('RegionBatch', () => {
     expect(batch.raycast(rayDownAt(0))?.regionId).toBe('A');
     expect(batch.raycast(rayDownAt(3))?.regionId).toBe('B');
     expect(batch.raycast(rayDownAt(1.5))).toBeNull();
+  });
+
+  it('takes regions built as tops only (the flat map), and still picks and recolours them', () => {
+    const square = (x: number) => {
+      const shape = new THREE.Shape();
+      shape.moveTo(x - 0.5, -0.5);
+      shape.lineTo(x + 0.5, -0.5);
+      shape.lineTo(x + 0.5, 0.5);
+      shape.lineTo(x - 0.5, 0.5);
+      const body = flatRegionTops([shape], 0.3);
+      body.rotateX(-Math.PI / 2);
+      return { regionId: `R${String(x)}`, body, outline: null };
+    };
+    const material = new THREE.MeshBasicMaterial();
+    const batch = new RegionBatch(
+      [square(0), square(3)],
+      { top: material, flatTop: material, side: material, outline: new THREE.LineBasicMaterial() },
+      new THREE.Color('#ffffff'),
+    );
+    batch.setFlat(true);
+    const [topGroup] = batch.mesh.geometry.groups;
+    expect(batch.mesh.geometry.groups).toHaveLength(1);
+    expect(topGroup?.count).toBe(12); // two squares, two triangles each, no sides
+    expect(batch.raycast(rayDownAt(0))?.regionId).toBe('R0');
+    expect(batch.raycast(rayDownAt(3))?.regionId).toBe('R3');
+    batch.paint('R0', new THREE.Color('#ff0000'), 0);
+    expect(batch.mesh.geometry.getAttribute('color').getX(0)).toBeCloseTo(1);
   });
 
   it('recolours and lifts one region only', () => {
