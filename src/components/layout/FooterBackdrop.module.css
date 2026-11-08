@@ -24,8 +24,14 @@
 }
 
 :global([data-display-mode='glass']) .backdrop {
-  /* Kaca (H) */
-  --fb-sky: linear-gradient(180deg, #0b1236 0%, #121c52 46%, #1b2a72 100%);
+  /* Kaca (H). The ink sky fades in from the page's own background, so no edge marks the footer. */
+  --fb-sky: linear-gradient(
+    180deg,
+    rgb(11 18 54 / 0%) 0%,
+    rgb(11 18 54 / 55%) 18%,
+    #121c52 46%,
+    #1b2a72 100%
+  );
   --fb-hill0-top: #27367a;
   --fb-hill0-bottom: #1c2760;
   --fb-hill1-top: #2b3f96;

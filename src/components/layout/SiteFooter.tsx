@@ -21,8 +21,6 @@ const FOOTER_GROUPS = localized(
         links: [
           { label: t('Sumber data'), to: '/#sumber' },
           { label: t('Cara skor dihitung'), to: '/metodologi' },
-          { label: t('Batasan data'), to: '/titik-buta-data' },
-          { label: t('Aksesibilitas'), to: '/aksesibilitas' },
         ],
       },
     ] as const,

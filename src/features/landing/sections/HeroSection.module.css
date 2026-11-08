@@ -165,10 +165,22 @@
   }
 }
 
+/*
+ * The two buttons share one width (the wider label's), so the pair reads as symmetric. On phones
+ * they split the column in half.
+ */
 .actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
   gap: 12px;
+  justify-self: start;
+  width: fit-content;
+}
+
+.actions > :is(a, button) {
+  justify-content: center;
+  text-align: center;
 }
 
 .note {
@@ -253,8 +265,15 @@
     margin-top: 2px;
   }
 
+  /* Two equal halves of the column, each label on one line. */
   .actions {
     gap: 8px;
+    width: 100%;
+  }
+
+  .actions > :is(a, button) {
+    padding-inline: 12px;
+    white-space: nowrap;
   }
 
   /* On phones the copy leads (heading, lead, search, actions), then the map and its caption. */
@@ -262,8 +281,31 @@
     display: contents;
   }
 
+  /*
+   * The archipelago fills only the middle of its 720×660 zone (about 41–76% of its height), which
+   * left a wide empty band between the copy and the map on phones. The zone keeps its proportions
+   * (canvas, graticule and poster stay aligned), and the stage shows only 32–95% of its height:
+   * a window 0.63 of the zone tall, the zone lifted by 0.32 of its height (0.32 × 660 / 720 of the
+   * width). clip-path also stops the hidden part from taking taps meant for the buttons above.
+   */
+  .stage {
+    aspect-ratio: 720 / 416;
+    clip-path: inset(-8px -100vw);
+  }
+
+  .dioramaReveal {
+    margin-top: -29.33%;
+  }
+
   .caption {
     margin-top: 12px;
     text-align: left;
+  }
+}
+
+/* Very narrow phones: both labels do not fit side by side, so the buttons stack at full width. */
+@media (width < 380px) {
+  .actions {
+    grid-auto-flow: row;
   }
 }

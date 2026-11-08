@@ -47,9 +47,11 @@
   backdrop-filter: blur(12px);
 }
 
+/* Phones: the hero shows only the top 95% of the zone (HeroSection.module.css), so the badge sits there. */
 @media (width < 640px) {
   .badge {
     right: 12px;
+    bottom: calc(5% + 8px);
     font-size: 10px;
   }
 }

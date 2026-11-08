@@ -1,5 +1,6 @@
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
+import { BackButton } from '@/features/navigation';
 import styles from './StaticPage.module.css';
 import { localized, t } from '@/lib/i18n';
 
@@ -19,6 +20,7 @@ export function AccessibilityPage() {
   return (
     <div className={styles.page}>
       <title>{t('Aksesibilitas — Nusa Matra')}</title>
+      <BackButton />
       <h1 className="kk-h1">{t('Aksesibilitas')}</h1>
       <p className={`kk-lead ${styles.muted}`}>
         {t(

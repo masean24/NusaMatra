@@ -1,4 +1,5 @@
 import { ButtonLink } from '@/components/ui/Button/Button';
+import { BackButton } from '@/features/navigation';
 import styles from './StaticPage.module.css';
 import { t } from '@/lib/i18n';
 
@@ -6,6 +7,7 @@ export function NotFoundPage() {
   return (
     <div className={styles.page}>
       <title>{t('Halaman tidak ditemukan — Nusa Matra')}</title>
+      <BackButton />
       <h1 className="kk-h1">{t('Halaman tidak ditemukan')}</h1>
       <p className={`kk-lead ${styles.muted}`}>{t('Alamat ini tidak ada atau sudah dipindahkan.')}</p>
       <div className={styles.actions}>

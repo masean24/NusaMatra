@@ -11,24 +11,34 @@ function hasPreviousPage(): boolean {
     : false;
 }
 
+interface BackButtonProps {
+  /**
+   * `pill` (default): the labelled cobalt pill at the top of a page. `icon`: the chevron alone, for a
+   * bar with no room for the label (the Jelajahi search field on a phone); its name stays "Kembali".
+   */
+  readonly variant?: 'pill' | 'icon';
+}
+
 /**
  * "Kembali" (owner decision 2026-10-27, replacing the "Peta utama" link): returns to the page the
  * visitor came from, at the place they left it (ScrollRestoration in AppLayout restores the scroll
  * position per page). Opened directly, with nothing to go back to, it leads to the home page.
  */
-export function BackButton() {
+export function BackButton({ variant = 'pill' }: BackButtonProps) {
   const navigate = useNavigate();
+  const label = t('Kembali');
   return (
     <button
       type="button"
-      className={styles.button}
+      className={variant === 'icon' ? styles.icon : styles.button}
+      aria-label={variant === 'icon' ? label : undefined}
       onClick={() => {
         if (hasPreviousPage()) void navigate(-1);
         else void navigate('/');
       }}
     >
-      <Icon name="chevronLeft" size={18} />
-      <span>{t('Kembali')}</span>
+      <Icon name="chevronLeft" size={variant === 'icon' ? 22 : 18} />
+      {variant === 'pill' && <span>{label}</span>}
     </button>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import { Link } from 'react-router';
 import { Logo } from '@/components/brand/Logo';
 import { Icon } from '@/components/ui/Icon/Icon';
-import { LanguageSwitch } from '@/features/navigation';
+import { BackButton, LanguageSwitch } from '@/features/navigation';
 import { DisplayModeSwitch } from '@/features/theme';
 import { useRegionBrowserParams } from './regionCode';
 import styles from './MapHeader.module.css';
@@ -16,8 +16,8 @@ interface MapHeaderProps {
 }
 
 /**
- * The top of the map on a phone: one floating search field, with the way home at its start and the
- * language and display settings at its end, instead of a page bar above the map.
+ * The top of the map on a phone: one floating search field, with the way back and the way home at
+ * its start and the language and display settings at its end, instead of a page bar above the map.
  */
 export function MapHeader({ placeholder, onSearchFocus }: MapHeaderProps) {
   const { query, setQuery } = useRegionBrowserParams();
@@ -39,6 +39,7 @@ export function MapHeader({ placeholder, onSearchFocus }: MapHeaderProps) {
   return (
     <div className={styles.header} data-map-header>
       <div className={`glass ${styles.pill}`}>
+        <BackButton variant="icon" />
         <Link to="/" className={styles.home} aria-label={t('Nusa Matra — Beranda')}>
           <Logo size="nav" surface="auto" />
         </Link>

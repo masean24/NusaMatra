@@ -7,9 +7,9 @@
   color: var(--c-on-footer);
 }
 
-/* Kaca: the page gradient ends in the footer's cobalt, so a hairline marks where the footer starts. */
+/* Kaca: the page background shows through the top of the sky, which fades it into ink: no edge. */
 :global([data-display-mode='glass']) .footer {
-  border-top: 1px solid rgb(255 255 255 / 12%);
+  background: transparent;
 }
 
 .inner {

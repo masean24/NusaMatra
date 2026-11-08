@@ -41,8 +41,41 @@
   }
 }
 
+/* The chevron alone, inside a bar that already draws the surface (the Jelajahi search pill). */
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--c-text);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--nm-duration-feedback) ease;
+}
+
+.icon:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
+.icon:active {
+  background: var(--c-control-hover);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .icon:hover {
+    background: var(--c-control-hover);
+  }
+}
+
 @media print {
-  .button {
+  .button,
+  .icon {
     display: none;
   }
 }
