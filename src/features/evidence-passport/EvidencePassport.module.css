@@ -993,6 +993,16 @@
   font-size: 0.75rem;
 }
 
+/*
+ * As with the limitations: a source's text (load time, source note) runs the full width of its
+ * card, not the 72ch reading measure (`.glass--read p`), which stopped it at about 580px on a wide
+ * screen. Two classes outrank that rule's one class and one element.
+ */
+.sourceBody .sourceMeta,
+.sourceBody .eyebrow {
+  max-width: none;
+}
+
 .sourceLink {
   display: inline-flex;
   gap: 5px;
