@@ -1,10 +1,18 @@
+import { lazy, Suspense } from 'react';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { Surface } from '@/components/ui/Surface/Surface';
-import { ExplorationMapPanel } from '@/features/exploration';
 import { FeaturePageFrame } from './FeaturePageFrame';
 import type { FeatureShell } from './featureShells';
 import styles from './FeatureShellPage.module.css';
 import { t } from '@/lib/i18n';
+
+/*
+ * Loaded only by a shell that shows the map. The router renders this page for every unbuilt
+ * feature, so a static import would put all of Jelajahi into the code every page loads.
+ */
+const ExplorationMapPanel = lazy(() =>
+  import('@/features/exploration/ExplorationMapPanel').then((m) => ({ default: m.ExplorationMapPanel })),
+);
 
 interface FeatureShellPageProps {
   readonly shell: FeatureShell;
@@ -14,7 +22,11 @@ interface FeatureShellPageProps {
 export function FeatureShellPage({ shell }: FeatureShellPageProps) {
   return (
     <FeaturePageFrame shell={shell} wide={shell.hasMap === true}>
-      {shell.hasMap && <ExplorationMapPanel />}
+      {shell.hasMap && (
+        <Suspense fallback={null}>
+          <ExplorationMapPanel />
+        </Suspense>
+      )}
 
       <Surface radius="card" reading className={styles.panel}>
         <p className={styles.status}>{t('Sedang dikembangkan')}</p>

@@ -24,12 +24,13 @@ import {
   weakestVerification,
   type ResourceState,
 } from '@/features/data-hub';
-import { passportHref } from '@/features/evidence-passport';
+import { passportHref } from '@/features/evidence-passport/links';
 import type { DataHubIndicatorDTO, IndicatorCatalogDTO, RegionProfileDTO } from '@/services/api';
 import { buildComparisonRows, type ComparisonRow, type ComparisonSide } from './comparisonRows';
 import { describeQualityFlag } from './qualityFlag';
 import { RegionPicker } from './RegionPicker';
 import { useComparisonParams } from './comparisonParams';
+import { COMPARISON_DETAIL_PATH } from './links';
 import styles from './RegionComparison.module.css';
 import { localized, t } from '@/lib/i18n';
 
@@ -42,8 +43,6 @@ const DATA_QUALITY_SECTION = localized(() => t('Metrik kualitas data'));
  */
 export type ComparisonView = 'summary' | 'detail';
 
-/** The full-detail page of a pair; the same `?a=&b=` as Bandingkan. */
-export const COMPARISON_DETAIL_PATH = '/bandingkan/rincian';
 const COMPARISON_PATH = '/bandingkan';
 
 function pairHref(path: string, a: string, b: string): string {
