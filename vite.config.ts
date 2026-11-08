@@ -17,7 +17,13 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         codeSplitting: {
-          groups: [{ name: 'three', test: /node_modules[/\\](three|@react-three)[/\\]/ }],
+          groups: [
+            // React is claimed first. A group also takes its modules' dependencies, so without this
+            // the 'three' group pulled React and its scheduler in through React Three Fiber, and
+            // every page imported React from the three.js chunk: the whole chunk loaded everywhere.
+            { name: 'react', test: /node_modules[/\\](react|react-dom|scheduler)[/\\]/, priority: 2 },
+            { name: 'three', test: /node_modules[/\\](three|@react-three)[/\\]/, priority: 1 },
+          ],
         },
       },
     },

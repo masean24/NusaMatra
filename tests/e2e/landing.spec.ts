@@ -227,23 +227,29 @@ test.describe('landing', () => {
     await page.goto('/jelajahi');
     const nav = visibleNav(page);
     const pill = nav.locator('[data-nav-indicator]');
-    const pillLeft = async () => (await pill.boundingBox())?.x ?? Number.NaN;
-    const linkLeft = async (name: string) =>
-      (await nav.getByRole('link', { name }).boundingBox())?.x ?? Number.NaN;
+    // Pill and link are read at the same moment: the bar itself can still be settling (its width
+    // animates), so a link position read once and compared later would be stale.
+    const offsetFrom = (name: string) => async () => {
+      const [pillBox, linkBox] = await Promise.all([
+        pill.boundingBox(),
+        nav.getByRole('link', { name }).boundingBox(),
+      ]);
+      return pillBox && linkBox ? pillBox.x - linkBox.x : Number.NaN;
+    };
 
-    await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Jelajahi'), 0);
+    await expect.poll(offsetFrom('Jelajahi')).toBeCloseTo(0, 0);
 
     if (!isMobile) {
       await nav.getByRole('link', { name: 'Paspor Bukti' }).hover();
-      await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Paspor Bukti'), 0);
+      await expect.poll(offsetFrom('Paspor Bukti')).toBeCloseTo(0, 0);
       await expect(page).toHaveURL(/\/jelajahi$/); // hover never navigates
       await page.mouse.move(700, 450);
-      await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Jelajahi'), 0);
+      await expect.poll(offsetFrom('Jelajahi')).toBeCloseTo(0, 0);
     }
 
     await nav.getByRole('link', { name: 'Paspor Bukti' }).click();
     await expect(page).toHaveURL(/\/paspor-bukti$/);
-    await expect.poll(pillLeft).toBeCloseTo(await linkLeft('Paspor Bukti'), 0);
+    await expect.poll(offsetFrom('Paspor Bukti')).toBeCloseTo(0, 0);
   });
 
   test('region search validates and hands the query to Jelajahi', async ({ page }) => {
