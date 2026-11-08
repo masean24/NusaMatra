@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router';
-import { parseRegionId } from '@/features/exploration';
+import { parseRegionId } from '@/features/exploration/links';
 
 /** Bandingkan's shareable URL state: region A (`?a=`) and region B (`?b=`), as Data Hub region codes. */
 export function useComparisonParams(): {
