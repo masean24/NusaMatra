@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { FRONTEND_MIN_REQUESTED_WEIGHT_PCT } from '@/domain/prioritization';
 import { MethodIcon } from './MethodIcon';
@@ -78,6 +79,13 @@ export function ClosingSection({ passportTo }: { readonly passportTo: string | n
           {t('Kembali ke Jelajahi')}
         </ButtonLink>
       </div>
+      <p className={`kk-small ${styles.related}`}>
+        {t('Dukungan aksesibilitas situs ini dijelaskan di halaman')}{' '}
+        <Link to="/aksesibilitas" className={styles.relatedLink}>
+          {t('Aksesibilitas')}
+        </Link>
+        .
+      </p>
     </section>
   );
 }

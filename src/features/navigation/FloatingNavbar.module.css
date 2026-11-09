@@ -152,11 +152,12 @@
 }
 
 /*
- * A larger system font, which `em` follows, or a phone narrower than 320px: the bar shows the logo
- * mark alone, so the Normal–Kaca switch keeps its full size inside it (a 360px Galaxy S9 at the
- * default size fits the whole logo). The link keeps its accessible name ("Nusa Matra — Beranda").
+ * A larger system font, which `em` follows, or a phone narrower than 352px (a 320px iPhone SE cut
+ * the wordmark to "Nus"): the bar shows the logo mark alone, so the Normal–Kaca switch keeps its
+ * full size inside it (a 360px Galaxy S9 at the default size fits the whole logo). The link keeps
+ * its accessible name ("Nusa Matra — Beranda").
  */
-@media (width < 20em) {
+@media (width < 22em) {
   .compactTop [data-wordmark] {
     display: none;
   }

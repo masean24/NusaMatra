@@ -1,8 +1,9 @@
 import { localized, t } from '@/lib/i18n';
 
 /**
- * Destinations that exist in the approved Figma but are not built in this slice. Each gets an
- * honest, branded page that says what the feature will do and that it is still in development.
+ * The destinations of the approved Figma and their page frame. Planned modules that were not built
+ * (Uji Rekomendasi, Cerita Wilayah, Batasan Data) are left out, so their addresses open the 404 page
+ * instead of an "in development" page.
  */
 export interface FeatureShell {
   readonly path: string;
@@ -67,16 +68,6 @@ export const FEATURE_SHELLS = localized((): readonly FeatureShell[] => [
     figmaNode: '11:152',
   },
   {
-    path: '/uji-rekomendasi',
-    title: t('Uji Rekomendasi'),
-    summary: t('Ganti asumsi dan periksa apakah urutan prioritas tetap bertahan.'),
-    plannedCapabilities: [
-      t('Menjalankan uji sensitivitas yang dapat diulang dengan seed yang sama.'),
-      t('Melihat rentang peringkat setiap wilayah.'),
-    ],
-    figmaNode: '13:854',
-  },
-  {
     path: '/paspor-bukti',
     title: t('Paspor Bukti'),
     summary: t(
@@ -88,28 +79,6 @@ export const FEATURE_SHELLS = localized((): readonly FeatureShell[] => [
       t('Mencetak catatan atau mengunduhnya sebagai JSON.'),
     ],
     figmaNode: '13:446',
-  },
-  {
-    path: '/cerita-wilayah',
-    title: t('Cerita Wilayah'),
-    summary: t(
-      'Data yang rumit diceritakan bab demi bab, dengan visual yang bergerak mengikuti bacaan Anda.',
-    ),
-    plannedCapabilities: [
-      t('Membaca narasi per bab dengan navigasi maju dan mundur.'),
-      t('Membaca ringkasan teks setiap bab tanpa bergantung pada animasi.'),
-    ],
-    figmaNode: '14:927',
-  },
-  {
-    path: '/titik-buta-data',
-    title: t('Batasan Data'),
-    summary: t('Daftar data yang kosong, tahunnya berbeda, atau metodenya tidak sebanding.'),
-    plannedCapabilities: [
-      t('Melihat setiap masalah kualitas data beserta wilayah dan indikator yang terdampak.'),
-      t('Mengetahui apakah masalah itu memblokir perbandingan atau hanya peringatan.'),
-    ],
-    figmaNode: '14:541',
   },
   {
     path: '/metodologi',

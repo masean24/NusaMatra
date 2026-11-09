@@ -833,6 +833,24 @@
   justify-content: center;
 }
 
+/* The way to the Aksesibilitas page, under the closing buttons. */
+.related {
+  margin-top: 12px;
+  color: var(--c-text-muted);
+}
+
+.relatedLink {
+  color: var(--c-link);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  border-radius: 4px;
+}
+
+.relatedLink:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 2px;
+}
+
 /* A badge with a sentence in it (the formula check) wraps inside the card on phones. */
 .rowBody [data-tone] {
   max-width: 100%;

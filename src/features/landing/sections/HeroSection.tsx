@@ -70,10 +70,7 @@ export function HeroSection() {
           delay={G1_AFTER_TITLE_MS + G1_STAGGER_MS}
           className={styles.search}
         >
-          <RegionSearchForm
-            placeholder={t('Ketik nama kabupaten/kota Anda')}
-            landmarkLabel={t('Cari wilayah')}
-          />
+          <RegionSearchForm placeholder={t('Ketik nama kabupaten/kota')} landmarkLabel={t('Cari wilayah')} />
         </Reveal>
         <Reveal
           trigger="load"

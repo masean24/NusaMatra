@@ -66,18 +66,38 @@ function exploreDefaultPosition(
 const VISIBLE_WIDTH_SHARE = new WeakMap<THREE.PerspectiveCamera, number>();
 
 /**
- * Host fix: shifts the projection centre right by half of `insetPx` (the canvas covered by a
- * floating panel), so what the camera looks at sits in the middle of the visible part. Picking
- * stays exact: the raycaster uses the same projection matrix.
+ * Host fix: shifts the projection centre by half of the canvas covered on each side (`leftPx` by a
+ * floating panel, `rightPx` by the map buttons on a phone), so what the camera looks at sits in the
+ * middle of the visible part. Picking stays exact: the raycaster uses the same projection matrix.
  */
-function applyViewInset(camera: THREE.PerspectiveCamera, w: number, h: number, insetPx: number): void {
-  const inset = Math.min(Math.max(0, insetPx), w * 0.6);
-  if (inset > 0) {
-    camera.setViewOffset(w, h, -inset / 2, 0, w, h);
+function applyViewInset(
+  camera: THREE.PerspectiveCamera,
+  w: number,
+  h: number,
+  leftPx: number,
+  rightPx = 0,
+): void {
+  const left = Math.min(Math.max(0, leftPx), w * 0.6);
+  const right = Math.min(Math.max(0, rightPx), w * 0.6 - left);
+  if (left > 0 || right > 0) {
+    camera.setViewOffset(w, h, (right - left) / 2, 0, w, h);
   } else {
     camera.clearViewOffset();
   }
-  VISIBLE_WIDTH_SHARE.set(camera, (w - inset) / w);
+  VISIBLE_WIDTH_SHARE.set(camera, (w - left - right) / w);
+}
+
+/**
+ * Host fix: on a phone the map buttons stand in a column at the right edge. The part of the canvas
+ * they cover is read from the visible frame (the map area no control covers), so the whole
+ * archipelago fits beside them instead of running under the 3D/2D button.
+ */
+function rightInsetFromFrame(container: HTMLElement | null, frame: HTMLElement | null | undefined): number {
+  if (!container || !frame) return 0;
+  const canvasBox = container.getBoundingClientRect();
+  const frameBox = frame.getBoundingClientRect();
+  if (frameBox.width <= 0) return 0;
+  return Math.max(0, canvasBox.right - frameBox.right);
 }
 
 /** OrbitControls' farthest zoom on a wide canvas. */
@@ -1494,6 +1514,9 @@ export const NusaMatra3DMap = forwardRef<
   const containerRef = useRef<HTMLDivElement | null>(null);
   const calloutLayerRef = useRef<HTMLDivElement | null>(null);
   const viewInsetRef = useRef(viewInsetLeft);
+  /** The visible frame (phones), read when the layout runs: the map buttons' column is beside it. */
+  const visibleFrameRefRef = useRef(visibleFrameRef);
+  visibleFrameRefRef.current = visibleFrameRef;
   /** Re-runs the resize handling (projection, fit, renderer size) for the container's current size. */
   const relayoutRef = useRef<((w: number, h: number) => void) | null>(null);
   const [webglError, setWebglError] = useState<string | null>(null);
@@ -1966,7 +1989,14 @@ export const NusaMatra3DMap = forwardRef<
           : null;
       camera.aspect = w / h;
       if (mode === 'explore') {
-        applyViewInset(camera, w, h, viewInsetRef.current); // also updates the projection matrix
+        // Also updates the projection matrix.
+        applyViewInset(
+          camera,
+          w,
+          h,
+          viewInsetRef.current,
+          rightInsetFromFrame(containerRef.current, visibleFrameRefRef.current?.current),
+        );
       } else {
         camera.updateProjectionMatrix();
       }
