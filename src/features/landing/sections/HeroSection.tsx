@@ -4,6 +4,7 @@ import { ButtonLink } from '@/components/ui/Button/Button';
 import { buttonClassName } from '@/components/ui/Button/buttonClassName';
 import { HeroDioramaSlot } from '@/features/geo3d';
 import { Reveal, STAGGER_ITEM_PROPS, useReducedMotion } from '@/features/motion';
+import { HeroLatestQuake } from '../components/HeroLatestQuake';
 import { RegionSearchForm } from '../components/RegionSearchForm';
 import styles from './HeroSection.module.css';
 import { localized, t } from '@/lib/i18n';
@@ -118,6 +119,10 @@ export function HeroSection() {
               />
             </Reveal>
           </Link>
+          {/* Outside the link, so screen readers read it; laid over the same hexagon zone. */}
+          <div className={styles.quakeZone}>
+            <HeroLatestQuake />
+          </div>
         </div>
         <p className={`kk-caption ${styles.caption}`}>{t('Ilustrasi, bukan peta geografis akurat.')}</p>
       </div>

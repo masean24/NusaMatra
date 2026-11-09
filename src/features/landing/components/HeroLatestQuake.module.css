@@ -1,0 +1,131 @@
+/*
+ * Laid over the hexagon zone (720 × 660, the same box the map is drawn in), so --quake-u/--quake-v
+ * (0–100% from the top left) put the marker on the epicentre. Nothing here takes a tap: the map
+ * under it stays the link to Jelajahi.
+ */
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  top: var(--quake-v);
+  left: var(--quake-u);
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #e5484d;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%);
+  transform: translate(-50%, -50%);
+}
+
+/* A ring that widens and fades, a few times, so the eye finds the place. */
+.marker::after {
+  position: absolute;
+  inset: -2px;
+  border: 2px solid #e5484d;
+  border-radius: 50%;
+  content: '';
+  opacity: 0;
+  animation: quake-ring 1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s 3;
+}
+
+@keyframes quake-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marker::after {
+    animation: none;
+  }
+}
+
+/* The note sits beside the marker, on the side with more room. */
+.note {
+  position: absolute;
+  top: var(--quake-v);
+  left: var(--quake-u);
+  display: grid;
+  gap: 1px;
+  max-width: min(220px, 46%);
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--c-card-border);
+  border-radius: 10px;
+  /* Solid, so the hexagons under it never show through the text. */
+  background: rgb(251 250 246 / 96%);
+  box-shadow: var(--c-card-shadow);
+  color: var(--c-text);
+  font-size: 11px;
+  line-height: 1.3;
+  transform: translate(14px, -50%);
+}
+
+/* Kaca's reading glass lets the hexagons show through the text; over the map the note is solid ink. */
+:global([data-display-mode='glass']) .note {
+  background: rgb(16 24 72 / 94%);
+}
+
+.note[data-side='left'] {
+  transform: translate(calc(-100% - 14px), -50%);
+}
+
+.kicker {
+  color: #e5484d;
+  font-weight: 600;
+}
+
+:global([data-display-mode='glass']) .kicker {
+  color: #ff8a8d;
+}
+
+.line strong {
+  font-weight: 700;
+}
+
+.meta {
+  color: var(--c-text-muted);
+}
+
+/*
+ * Phones: BMKG's place names are long and would cover half the archipelago, so the note keeps the
+ * magnitude and the time; the place stays for screen readers only.
+ */
+@media (width < 640px) {
+  .note {
+    width: max-content;
+    max-width: 48%;
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  /* A narrow zone has room only on the side away from the nearer edge. */
+  .note[data-side-narrow='left'] {
+    transform: translate(calc(-100% - 12px), -50%);
+  }
+
+  .note[data-side-narrow='right'] {
+    transform: translate(12px, -50%);
+  }
+
+  .place {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

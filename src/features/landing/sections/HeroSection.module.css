@@ -227,6 +227,16 @@
   width: 100%;
 }
 
+/* The hexagon zone again, over the map: the newest earthquake is placed in it (HeroLatestQuake). */
+.quakeZone {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  aspect-ratio: 720 / 660;
+  pointer-events: none;
+}
+
 .caption {
   margin-top: 20px;
   text-align: center;
@@ -293,7 +303,8 @@
     clip-path: inset(-8px -100vw);
   }
 
-  .dioramaReveal {
+  .dioramaReveal,
+  .quakeZone {
     margin-top: -29.33%;
   }
 
