@@ -20,6 +20,9 @@ export function MissingDataSection() {
         <IconCard icon="layers" title={t('Data sebagian')}>
           {t(
             'Wilayah yang tidak punya data untuk sebagian indikator tetap dihitung dari indikator yang ada, dengan bobot sendiri yang totalnya 10.000, lalu ditandai “Data sebagian”.',
+          )}{' '}
+          {t(
+            'Cara ini sama dengan menganggap skor indikator yang kosong setara dengan rata-rata berbobot skor indikator lain di wilayah itu (imputasi tersirat, OECD & JRC, 2008).',
           )}
         </IconCard>
         <IconCard

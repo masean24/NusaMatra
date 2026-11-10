@@ -13,6 +13,7 @@ const TOC_ENTRIES = localized(
       { id: 'hasil', kicker: t('Hasil'), label: t('Peringkat dan persentil') },
       { id: 'langkah-3', kicker: t('Langkah 3'), label: t('Skor gabungan') },
       { id: 'catatan', kicker: t('Catatan'), label: t('Kalau data tidak lengkap') },
+      { id: 'referensi', kicker: t('Referensi'), label: t('Rujukan ilmiah') },
       { id: 'penutup', kicker: t('Penutup'), label: t('Yang perlu diingat') },
     ] as const,
 );

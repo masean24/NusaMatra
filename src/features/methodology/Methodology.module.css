@@ -851,6 +851,55 @@
   outline-offset: 2px;
 }
 
+/* ------------------------------------------------------------- references */
+
+.refGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px;
+  border-radius: 20px;
+}
+
+.refList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.refItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid var(--c-card-border);
+}
+
+.refItem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.refItem:last-child {
+  padding-bottom: 0;
+}
+
+.refItem p {
+  overflow-wrap: anywhere;
+}
+
+.refTitle {
+  font-style: italic;
+}
+
+.refUse {
+  color: var(--c-text);
+  font-weight: 600;
+}
+
 /* A badge with a sentence in it (the formula check) wraps inside the card on phones. */
 .rowBody [data-tone] {
   max-width: 100%;

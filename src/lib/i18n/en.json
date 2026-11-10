@@ -1512,5 +1512,22 @@
   "{0}: {1} indikator tidak memiliki nilai pada versi data ini. Nilai kosong tidak dihitung sebagai nol.": "{0}: {1} indicators have no value in this data version. Empty values are not counted as zero.",
   "{0}: {1} nilai belum dapat digolongkan (penanda kualitas tidak ada atau katalog tidak termuat).": "{0}: {1} values cannot be classified yet (quality flag missing or catalogue not loaded).",
   "{0}: {1} nilai diimputasi dari tingkat provinsi (IMPUTED_PROVINCE). Itu bukan pengukuran kabupaten/kota, berapa pun kelengkapan indikatornya.": "{0}: {1} values are imputed from the provincial level (IMPUTED_PROVINCE). These are not regency/city measurements, however complete the indicators are.",
-  "{0}: {1} sudah dimuat. Perbandingan menunggu kedua wilayah.": "{0}: {1} is loaded. The comparison is waiting for both regions."
+  "{0}: {1} sudah dimuat. Perbandingan menunggu kedua wilayah.": "{0}: {1} is loaded. The comparison is waiting for both regions.",
+  "Referensi": "References",
+  "Dasar metode dan rujukan": "Method basis and references",
+  "Rumus di halaman ini mengikuti literatur indikator komposit. Pemilihan indikator dalam tiap fokus Lab Prioritas merujuk pada regulasi nasional, sedangkan angka bobot preset adalah skenario awal yang dapat Anda ubah lewat penggeser, bukan bobot hasil konsensus pakar.": "The formulas on this page follow the composite-indicator literature. The indicators in each Lab Prioritas focus are chosen with national regulations in mind, while the preset weights are a starting scenario you can change with the sliders, not weights agreed by experts.",
+  "Metode indeks komposit": "Composite index method",
+  "Dasar pemilihan indikator": "Basis for choosing indicators",
+  "Dipakai untuk:": "Used for:",
+  "Buka sumber": "Open source",
+  "Sumber data tiap angka (BPS, BNPB, Kemenkes, Kemendikdasmen, BIG, dan BMKG) tercantum di Paspor Bukti dan di bagian Sumber data pada Beranda.": "The data source of every figure (BPS, BNPB, Kemenkes, Kemendikdasmen, BIG and BMKG) is listed in the Evidence Passport and in the Data sources section of the home page.",
+  "Kerangka utama Langkah 2 dan 3: normalisasi min-max, penjumlahan berbobot, bobot setara, dan dampak membagi ulang bobot bila data kosong.": "The main framework for Steps 2 and 3: min-max normalisation, weighted sums, equal weights, and the effect of redistributing weights when data is missing.",
+  "Rumus min-max dan pembalikan arah untuk indikator yang makin tinggi makin baik (Langkah 2), serta sifat saling mengimbangi pada rata-rata berbobot (Langkah 3).": "The min-max formula and the reversal for indicators where higher is better (Step 2), and the compensation that a weighted mean allows (Step 3).",
+  "Transformasi skala linear untuk kriteria biaya dan manfaat, dan kombinasi linear berbobot pada analisis keputusan berbasis peta.": "Linear scale transformation for cost and benefit criteria, and weighted linear combination in map-based decision analysis.",
+  "Dasar penjumlahan berbobot (simple additive weighting) yang dipakai pada Langkah 3.": "The basis of the weighted sum (simple additive weighting) used in Step 3.",
+  "Contoh perangkat lunak interaktif tempat pengguna memilih indikator, mengatur bobot, dan melihat peringkat berubah, seperti Lab Prioritas.": "An example of interactive software in which users pick indicators, set weights and watch the ranking change, as in Lab Prioritas.",
+  "Dasar memasangkan stunting dengan air minum layak dan sanitasi layak dalam satu fokus: meningkatkan akses air minum dan sanitasi adalah salah satu tujuan Strategi Nasional Percepatan Penurunan Stunting (Pasal 2 ayat 2 huruf f).": "The basis for pairing stunting with safe drinking water and safe sanitation in one focus: improving access to drinking water and sanitation is one aim of the National Strategy to Accelerate Stunting Reduction (Article 2(2)(f)).",
+  "Dasar indikator risiko bencana: risiko tiap kabupaten/kota dihitung dari bahaya, kerentanan, dan kapasitas.": "The basis of the disaster-risk indicators: the risk of each regency/city is calculated from hazard, vulnerability and capacity.",
+  "Cara ini sama dengan menganggap skor indikator yang kosong setara dengan rata-rata berbobot skor indikator lain di wilayah itu (imputasi tersirat, OECD & JRC, 2008).": "This is the same as treating the missing indicator score as the weighted mean of the region’s other indicator scores (implicit imputation, OECD & JRC, 2008).",
+  "Rujukan ilmiah": "Scholarly sources"
 }

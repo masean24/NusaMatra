@@ -23,11 +23,30 @@ describe('Cara skor dihitung', () => {
     renderWithDataHub(<ScoreMethod />, { fetchImpl: methodFetch(), path: '/metodologi' });
     const toc = screen.getByRole('navigation', { name: 'Di halaman ini' });
     const links = within(toc).getAllByRole('link');
-    expect(links).toHaveLength(7);
+    expect(links).toHaveLength(8);
     for (const link of links) {
       const id = link.getAttribute('href')?.slice(1) ?? '';
       expect(document.getElementById(id)).not.toBeNull();
     }
+  });
+
+  it('names the literature and regulations the method rests on, each with what it is used for', () => {
+    renderWithDataHub(<ScoreMethod />, { fetchImpl: methodFetch(), path: '/metodologi' });
+    const section = screen.getByRole('region', { name: 'Dasar metode dan rujukan' });
+    const items = within(section).getAllByRole('listitem');
+    expect(items).toHaveLength(7);
+    for (const item of items) expect(within(item).getByText('Dipakai untuk:')).toBeInTheDocument();
+    expect(within(section).getByText(/Handbook on Constructing Composite Indicators/)).toBeInTheDocument();
+    expect(within(section).getByText(/Peraturan Presiden Nomor 72 Tahun 2021/)).toBeInTheDocument();
+    // External sources open in a new tab and say so to screen readers.
+    for (const link of within(section).getAllByRole('link')) {
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+      // jsdom drops the space before the hidden text; browsers keep it.
+      expect(link).toHaveAccessibleName(/^Buka sumber\s*\(membuka tab baru\)$/);
+    }
+    // Missing data: re-weighting is named for what it is.
+    expect(screen.getByText(/imputasi tersirat/)).toBeInTheDocument();
   });
 
   it('works the linked indicator and region through with the fetched numbers', async () => {

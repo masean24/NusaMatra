@@ -5,6 +5,7 @@ import { CompositeSection } from './CompositeSection';
 import { formatNumber } from './formatNumber';
 import { MethodIcon } from './MethodIcon';
 import { ClosingSection, MissingDataSection } from './MethodNotes';
+import { ReferencesSection } from './MethodReferences';
 import { MethodToc } from './MethodToc';
 import { ResultSection } from './ResultSection';
 import { useScoreMethod, type Loadable, type ScoreMethodData } from './useScoreMethod';
@@ -44,6 +45,7 @@ export function ScoreMethod() {
           <ResultSection method={method} />
           <CompositeSection method={method} />
           <MissingDataSection />
+          <ReferencesSection />
           <ClosingSection passportTo={method.passportTo} />
         </div>
       </div>
