@@ -61,11 +61,11 @@
 /*
  * The popup's z-index only counts inside its section (glass and reveal transforms make each band a
  * stacking context), so a later section or the footer would paint over it. While it is open, the
- * section holding it rises above its neighbours.
+ * section holding it rises above its neighbours, but stays under the floating navbar.
  */
 :global(section):has(.popup:not([hidden])) {
   position: relative;
-  z-index: var(--nm-z-popover);
+  z-index: var(--nm-z-raised);
 }
 
 .options {

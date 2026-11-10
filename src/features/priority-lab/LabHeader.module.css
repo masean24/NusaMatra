@@ -93,7 +93,8 @@
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: var(--nm-z-popover);
+  /* On the page itself, not in a raised card: kept under the floating navbar. */
+  z-index: var(--nm-z-raised);
   padding: 10px;
   border: 1px solid var(--c-card-border);
   border-radius: var(--nm-radius-control);

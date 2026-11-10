@@ -60,10 +60,13 @@
   padding: 8px 10px;
 }
 
-/* The card is its own stacking context (glass): while searching it rises above its neighbours. */
+/*
+ * The card is its own stacking context (glass): while searching it rises above its neighbours,
+ * but stays under the floating navbar.
+ */
 .picker:focus-within {
   position: relative;
-  z-index: var(--nm-z-popover);
+  z-index: var(--nm-z-raised);
 }
 
 .suggestions {

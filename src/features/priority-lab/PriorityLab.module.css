@@ -76,12 +76,12 @@
 
 /*
  * The glass panel is its own stacking context, so the cards after it would paint over an open
- * list; while one is open, the panel rises above them.
+ * list; while one is open, the panel rises above them, but stays under the floating navbar.
  */
 .config:has([role='combobox'][aria-expanded='true']),
 .config:has(.picker[open]) {
   position: relative;
-  z-index: var(--nm-z-popover);
+  z-index: var(--nm-z-raised);
 }
 
 /* The analysis' parts are placed straight on the Lab grid. */

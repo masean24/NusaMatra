@@ -194,6 +194,11 @@
   /* Stacking order (docs/03 §5.4) */
   --nm-z-content: 1;
   --nm-z-overlay-art: 2;
+  /*
+   * A card or section lifted above its neighbours while its list is open. It stays under the
+   * floating navbar: content scrolling under the bar must never paint over it.
+   */
+  --nm-z-raised: 40;
   --nm-z-nav: 50;
   --nm-z-popover: 60;
   --nm-z-theme-transition: 90;
