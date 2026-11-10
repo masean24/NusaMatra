@@ -5,7 +5,6 @@ import bnpbLogo from '@/assets/sources/bnpb.webp';
 import bpsLogo from '@/assets/sources/bps.webp';
 import kemendikdasmenLogo from '@/assets/sources/kemendikdasmen.webp';
 import kemenkesLogo from '@/assets/sources/kemenkes.webp';
-import { Surface } from '@/components/ui/Surface/Surface';
 import { Reveal } from '@/features/motion';
 import styles from './SourcesSection.module.css';
 import { localized, t } from '@/lib/i18n';
@@ -14,7 +13,9 @@ import { localized, t } from '@/lib/i18n';
  * Figma 41:406. The agencies whose data the Data Hub ingests, from its LIVE dataset list
  * (`GET /api/v1/datasets`, read 2026-11-10: 24 datasets from BPS, BNPB, Kemenkes, Kemendikdasmen,
  * BIG and BMKG, plus the hub's own ingestion audit). Each line names what is actually used. Logos
- * are the agencies' public-domain marks from Wikimedia Commons, shown only to identify the source.
+ * are the agencies' public-domain marks from Wikimedia Commons, shown only to identify the source:
+ * the emblem alone (the wordmark under some of them dropped, the name is written beside it), square,
+ * so all six read at one size.
  */
 const SOURCES = localized(
   () =>
@@ -62,10 +63,11 @@ type Source = ReturnType<typeof SOURCES>[number];
 
 function SourceCard({ source, hidden = false }: { readonly source: Source; readonly hidden?: boolean }) {
   return (
-    <Surface as="article" radius="source" className={styles.card} aria-hidden={hidden || undefined}>
+    // A plain bordered card, no shadow: in a clipped, gliding row shadows smear between the cards.
+    <article className={styles.card} aria-hidden={hidden || undefined}>
       <span className={styles.head}>
         {/* Not lazy: in the gliding row a lazy logo would pop in as its card comes round again. */}
-        <img className={styles.logo} src={source.logo} alt="" width={40} height={40} decoding="async" />
+        <img className={styles.logo} src={source.logo} alt="" width={44} height={44} decoding="async" />
         <span className={styles.names}>
           <span className={`kk-body-strong ${styles.short}`}>{source.short}</span>
           <h3 className={`kk-caption ${styles.name}`}>{source.name}</h3>
@@ -73,7 +75,7 @@ function SourceCard({ source, hidden = false }: { readonly source: Source; reado
       </span>
       <p className={`kk-small ${styles.description}`}>{source.description}</p>
       <p className={`kk-caption ${styles.status}`}>{t('Terhubung lewat Data Hub')}</p>
-    </Surface>
+    </article>
   );
 }
 

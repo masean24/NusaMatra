@@ -75,42 +75,60 @@
   width: 280px;
 }
 
-/* Source card 41:409: padding 22px, gap 8px, radius 20px; the agency's mark leads. */
+/*
+ * Source card 41:409: padding 22px, radius 20px; the agency's emblem leads. A border, no shadow: in a
+ * clipped, gliding row shadows smear into the gaps between cards.
+ */
 .card {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 10px;
   padding: 20px 22px;
+  border: 1px solid var(--c-card-border);
+  border-radius: 20px;
+  background: var(--c-card);
 }
 
+/*
+ * The head is one height on every card (room for a name on two lines), with logo and names at its top,
+ * so the short names, the full names and the descriptions line up across the row.
+ */
 .head {
   display: flex;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
+  min-height: 62px;
 }
 
+/* Every emblem in the same 44px square (the files are square, emblem only). */
 .logo {
   flex: none;
-  width: 40px;
+  width: 44px;
   max-width: none;
-  height: 40px;
+  height: 44px;
   object-fit: contain;
 }
 
 .names {
   display: flex;
   flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
 .short {
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .name {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--c-text-muted);
   font-weight: 500;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .description {
