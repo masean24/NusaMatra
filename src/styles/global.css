@@ -24,6 +24,29 @@ html {
   text-size-adjust: 100%;
   /* Anchor targets clear the floating navbar. */
   scroll-padding-top: 96px;
+  /*
+   * Phone browsers lay a grey or blue box over whatever is tapped, which reads as the control being
+   * selected or blocked. Every control has its own pressed (:active) state instead.
+   */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * A long press on a control selects its label (blue, with the copy menu) instead of pressing it.
+ * Controls only: text and figures elsewhere stay selectable. `manipulation` also drops the
+ * double-tap zoom wait, so a tap answers at once.
+ */
+button,
+summary,
+[role='button'],
+[role='tab'],
+[role='switch'],
+[role='option'],
+[role='combobox'],
+[role='menuitem'] {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 body {
