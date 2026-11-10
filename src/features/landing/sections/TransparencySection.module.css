@@ -1,9 +1,12 @@
-/* 27:2 y=2760: copy at x=88 (600px); 3D-4 zone (592×340) at x=760, preview card 30px below it. */
+/*
+ * 27:2 y=2760: copy at x=88 (600px); 3D-4 zone (592×340) at x=760, preview card 30px below it.
+ * The copy stands in the middle of the taller passport column, not at its top.
+ */
 .section {
   display: grid;
   grid-template-columns: minmax(0, 600fr) minmax(0, 592fr);
   column-gap: clamp(24px, 5vw, 72px);
-  align-items: start;
+  align-items: center;
   padding-inline: var(--nm-gutter);
 }
 

@@ -3,14 +3,24 @@ import { DEMO_PASSPORT_PREVIEW } from '@/data/fixtures/landingDemo';
 import { SourcesSection } from './SourcesSection';
 
 describe('SourcesSection', () => {
-  it('lists only the sources in use, BNPB and BPS, both through the Data Hub', () => {
+  it('lists the six agencies the Data Hub ingests, each with its mark, through the Data Hub', () => {
     render(<SourcesSection />);
     const card = (name: string) =>
       within(screen.getByRole('heading', { name }).closest('article') as HTMLElement);
 
-    expect(card('BNPB (InaRISK)').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
-    expect(card('Badan Pusat Statistik').getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
-    expect(screen.getAllByRole('article')).toHaveLength(2);
+    for (const name of [
+      'Badan Pusat Statistik',
+      'Badan Nasional Penanggulangan Bencana',
+      'Kementerian Kesehatan',
+      'Kementerian Pendidikan Dasar dan Menengah',
+      'Badan Informasi Geospasial',
+      'Badan Meteorologi, Klimatologi, dan Geofisika',
+    ]) {
+      expect(card(name).getByText('Terhubung lewat Data Hub')).toBeInTheDocument();
+      // The logo identifies; the name says it, so the image is not announced twice.
+      expect(card(name).getByRole('presentation', { hidden: true })).toHaveAttribute('alt', '');
+    }
+    expect(screen.getAllByRole('article')).toHaveLength(6);
     expect(screen.queryByText(/DJPK/)).not.toBeInTheDocument();
   });
 

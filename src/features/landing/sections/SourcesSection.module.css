@@ -1,4 +1,4 @@
-/* 27:2 y=4220: heading + the source cards, 16px apart, across the full column (two equal halves). */
+/* 27:2 y=4220: heading, then the source agencies on one row, then the note. */
 .section {
   display: flex;
   flex-direction: column;
@@ -6,28 +6,111 @@
   padding-inline: var(--nm-gutter);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+/*
+ * The row's window. When the cards do not fit, it fades at both edges and the track loops right to
+ * left (two copies of the row, moved by half the track's width, so the loop has no seam).
+ */
+.viewport {
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.viewport:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 4px;
+}
+
+.viewport[data-marquee] {
+  mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
+}
+
+.track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+}
+
+.viewport[data-marquee] .track {
+  animation: sources-glide 42s linear infinite;
+}
+
+/* Pointer or keyboard on the row: it holds still so a card can be read. */
+.viewport[data-marquee]:hover .track,
+.viewport[data-marquee]:focus-within .track {
+  animation-play-state: paused;
+}
+
+@keyframes sources-glide {
+  to {
+    transform: translateX(calc(-50% - 8px));
+  }
+}
+
+/* Reduced motion: no glide; the row scrolls sideways by hand. */
+@media (prefers-reduced-motion: reduce) {
+  .viewport[data-marquee] {
+    overflow-x: auto;
+    mask-image: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .viewport[data-marquee] .track {
+    animation: none;
+  }
+
+  .viewport[data-marquee] .track > [aria-hidden='true'] {
+    display: none;
+  }
+}
+
+.row {
+  display: flex;
+  flex: none;
   gap: 16px;
 }
 
-.cell,
-.reveal {
+.cell {
   display: flex;
+  flex: none;
+  width: 280px;
 }
 
-.reveal {
-  flex: 1;
-}
-
-/* Source card 41:409: padding 22px, gap 8px, radius 20px. */
+/* Source card 41:409: padding 22px, gap 8px, radius 20px; the agency's mark leads. */
 .card {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
-  padding: 22px;
+  gap: 10px;
+  padding: 20px 22px;
+}
+
+.head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo {
+  flex: none;
+  width: 40px;
+  max-width: none;
+  height: 40px;
+  object-fit: contain;
+}
+
+.names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.short {
+  line-height: 1.2;
+}
+
+.name {
+  color: var(--c-text-muted);
+  font-weight: 500;
 }
 
 .description {
@@ -44,8 +127,8 @@
   color: var(--c-text-muted);
 }
 
-@media (width < 960px) {
-  .cards {
-    grid-template-columns: minmax(0, 1fr);
+@media (width < 640px) {
+  .cell {
+    width: 248px;
   }
 }
