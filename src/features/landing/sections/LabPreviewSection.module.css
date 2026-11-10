@@ -15,14 +15,19 @@
   border-radius: var(--nm-radius-band); /* the material is the global `glass` */
 }
 
-/*
- * The data-columns zone is taller than wide (540:740), so its width is also capped by the screen's
- * height: the band never grows taller than a laptop screen because of the picture.
- */
+/* The weight ring: square, and capped by the screen's height so the band fits a laptop screen. */
 .visual {
   justify-self: center;
   width: 100%;
-  max-width: min(33.75rem, calc((100svh - 220px) * 540 / 740));
+  max-width: min(22rem, calc(100svh - 300px));
+}
+
+/* While the weights load: the empty ring. */
+.donutPlaceholder {
+  width: 100%;
+  border: 30px solid var(--fill);
+  border-radius: 50%;
+  aspect-ratio: 1;
 }
 
 .content {
@@ -154,30 +159,73 @@
 }
 
 /*
- * The bar springs to its new length when another focus is chosen ("Halus", a transform, so no
- * layout work), stretched a little so the larger change reads calmly.
+ * The bar glides to its new length and colour when another focus is chosen, in step with the ring
+ * beside it: the same 750 ms cubicOut (cubic-bezier(0.33, 1, 0.68, 1)). A transform, so no layout work.
  */
 .bar {
   display: block;
   width: 100%;
   height: 100%;
   border-radius: inherit;
-  background: var(--nm-accent);
+  background: var(--row-colour);
   transform: scaleX(var(--bar-fill));
   transform-origin: left center;
-  transition: transform calc(var(--nm-spring-duration) * 1.4) var(--nm-spring-halus);
+  transition:
+    transform 750ms cubic-bezier(0.33, 1, 0.68, 1),
+    background-color 750ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.weight:nth-child(2) .bar {
-  background: var(--nm-sea-shallow);
+/* The figures in the site's accent ink, as on the Lab page; the ring's centre uses the same. */
+.percent {
+  color: var(--c-text-strong-accent);
 }
 
-.weight:nth-child(3) .bar {
-  background: var(--c-bar, var(--nm-sea));
+.weightButton {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin: -6px -8px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: content-box;
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
 }
 
-.weight:nth-child(4) .bar {
-  background: var(--nm-land-3);
+.weightButton:focus-visible {
+  outline: 3px solid var(--c-focus-ring);
+  outline-offset: 0;
+}
+
+.weight[data-active] .weightButton {
+  background: var(--fill);
+}
+
+.weights:has(.weight[data-active]) .weight:not([data-active]) .weightButton {
+  opacity: 0.6;
+}
+
+.weightName {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--row-colour);
+  transform: translateY(1px);
+  transition: background-color 750ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .explain {
@@ -300,8 +348,8 @@
 
   .visual {
     justify-self: center;
-    max-width: 22.5rem;
-    aspect-ratio: 540 / 460;
+    max-width: 16rem;
+    margin-bottom: 12px;
   }
 }
 

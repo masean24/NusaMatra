@@ -1,9 +1,11 @@
-import { useState, type CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { ButtonLink } from '@/components/ui/Button/Button';
 import { useDataHubResource } from '@/features/data-hub';
 import { Reveal } from '@/features/motion';
+import { useDisplayMode } from '@/features/theme';
 import type { CompositePresetDTO } from '@/services/api';
-import { SceneZone } from '../scene3d/SceneZone';
+import { SERIES_HEX, seriesRgb } from '../components/seriesPalette';
+import { WeightDonut } from '../components/WeightDonut';
 import styles from './LabPreviewSection.module.css';
 import { locale, t } from '@/lib/i18n';
 
@@ -34,17 +36,25 @@ function weightRows(preset: CompositePresetDTO, names: ReadonlyMap<string, strin
 type WeightRow = ReturnType<typeof weightRows>[number];
 
 /**
- * One focus: its name, its weights as bars and what its largest weight means. The `live` panel is the
- * one shown (its bars spring to new lengths); the others only reserve their height, hidden.
+ * One focus: its name, its weights as the ring's legend (each row in its slice's colour, with a bar)
+ * and what its largest weight means. The `live` panel is the one shown: its rows bring their slice
+ * forward under the pointer or keyboard focus. The others only reserve their height, hidden.
  */
 function FocusPanel({
   preset,
   rows,
   live = false,
+  activeId = null,
+  onActive,
+  colours,
 }: {
   readonly preset: CompositePresetDTO;
   readonly rows: readonly WeightRow[];
   readonly live?: boolean;
+  readonly activeId?: string | null;
+  readonly onActive?: (id: string | null) => void;
+  /** The series colours, in the order of the rows (the ring's slices use the same). */
+  readonly colours: readonly string[];
 }) {
   const top = rows[0];
   return (
@@ -55,20 +65,47 @@ function FocusPanel({
       aria-hidden={live ? undefined : true}
     >
       <p className={`kk-body-strong ${styles.presetTitle}`}>{preset.label}</p>
-      <ul role="list" className={styles.weights} aria-label={t('Bobot fokus {0}', preset.label)}>
-        {rows.map((row) => (
+      <ul
+        role="list"
+        className={styles.weights}
+        aria-label={t('Bobot fokus {0}', preset.label)}
+        onPointerLeave={() => onActive?.(null)}
+      >
+        {rows.map((row, index) => (
           <li
-            key={row.id}
+            // Keyed by place, not indicator: on a new focus each row stays and its bar glides to the
+            // new length and colour, in step with the ring.
+            key={index}
             className={styles.weight}
-            style={{ '--bar-fill': row.bps / 10000 } as CSSProperties}
+            data-active={row.id === activeId || undefined}
+            style={
+              {
+                '--bar-fill': row.bps / 10000,
+                '--row-colour': colours[index] ?? colours[colours.length - 1],
+              } as CSSProperties
+            }
+            onPointerEnter={() => onActive?.(row.id)}
           >
-            <span className={styles.weightHeader}>
-              <span>{row.name}</span>
-              <span className={`kk-number ${styles.percent}`}>{percent(row.bps)}</span>
-            </span>
-            <span className={styles.track} aria-hidden="true">
-              <span className={styles.bar} />
-            </span>
+            <button
+              type="button"
+              className={styles.weightButton}
+              tabIndex={live ? undefined : -1}
+              aria-pressed={live ? row.id === activeId : undefined}
+              onFocus={() => onActive?.(row.id)}
+              onBlur={() => onActive?.(null)}
+              onClick={() => onActive?.(row.id)}
+            >
+              <span className={styles.weightHeader}>
+                <span className={styles.weightName}>
+                  <span className={styles.swatch} aria-hidden="true" />
+                  {row.name}
+                </span>
+                <span className={`kk-number ${styles.percent}`}>{percent(row.bps)}</span>
+              </span>
+              <span className={styles.track} aria-hidden="true">
+                <span className={styles.bar} />
+              </span>
+            </button>
           </li>
         ))}
       </ul>
@@ -88,7 +125,8 @@ function FocusPanel({
 /**
  * "Bagaimana pilihanmu mengubah prioritas wilayah?" (owner revision 2026-10-27): the visitor picks a
  * development focus, which is one of the Data Hub's own composite presets, and sees the weights it
- * puts on each indicator; the 3D columns follow the same weights. The button opens the Lab with that
+ * puts on each indicator, as a ring and as its legend rows in the same colours; pointing at a slice
+ * or a row (or reaching a row by keyboard) brings that weight forward. The button opens the Lab with that
  * preset, where the ranking is actually calculated. Nothing here is invented: the presets, names and
  * weights come from the Data Hub, and when it cannot be reached the section says so.
  */
@@ -102,29 +140,40 @@ export function LabPreviewSection() {
     return { presets: presets.data.presets, names } satisfies FocusInputs;
   });
   const [chosenId, setChosenId] = useState<string | null>(null);
+  // The weight in focus (pointer or keyboard); none = the largest, shown in the ring's centre.
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   const loaded = inputs.state.status === 'success' ? inputs.state.data : null;
   const preset = loaded
     ? (loaded.presets.find((item) => item.presetId === chosenId) ?? loaded.presets[0])
     : null;
-  const rows = preset && loaded ? weightRows(preset, loaded.names) : [];
+  // Kept between renders, so only a new focus (not an unrelated re-render) starts the ring's glide.
+  const rows = useMemo(() => (preset && loaded ? weightRows(preset, loaded.names) : []), [preset, loaded]);
+  // One palette for the ring and its legend, in the active display mode.
+  const { mode } = useDisplayMode();
+  const palette = useMemo(() => seriesRgb(mode), [mode]);
+  const colours = SERIES_HEX[mode];
 
   return (
     <section id="lab-prioritas" className={styles.section} aria-labelledby="lab-title">
       <Reveal className={`glass ${styles.band}`} distance={0} fromScale={0.96} duration={700}>
-        <SceneZone
-          kind="dataColumns"
-          className={styles.visual}
-          values={rows.map((row) => row.bps)}
-          description={
-            rows.length > 0
-              ? t(
-                  'Kolom oranye di atas alas kapur; tinggi kolom mengikuti bobot fokus yang dipilih: {0}.',
-                  rows.map((row) => `${row.name} ${percent(row.bps)}`).join(', '),
-                )
-              : t('Kolom oranye di atas alas kapur; tingginya mengikuti bobot fokus yang dipilih.')
-          }
-        />
+        <div className={styles.visual}>
+          {rows.length > 0 ? (
+            <WeightDonut
+              slices={rows}
+              activeId={activeId}
+              onActive={setActiveId}
+              formatShare={percent}
+              palette={palette}
+              centreLabel={t(
+                'Diagram cincin bobot fokus yang dipilih: {0}.',
+                rows.map((row) => `${row.name} ${percent(row.bps)}`).join(', '),
+              )}
+            />
+          ) : (
+            <div className={styles.donutPlaceholder} aria-hidden="true" />
+          )}
+        </div>
         <div className={styles.content}>
           <p className={`kk-small ${styles.eyebrow}`}>{t('Lab Prioritas')}</p>
           <h2 id="lab-title" className={`kk-h1 ${styles.title}`}>
@@ -157,6 +206,7 @@ export function LabPreviewSection() {
                     aria-pressed={item.presetId === preset.presetId}
                     onClick={() => {
                       setChosenId(item.presetId);
+                      setActiveId(null);
                     }}
                   >
                     {item.targetFocus ?? item.label}
@@ -170,9 +220,21 @@ export function LabPreviewSection() {
                * the content changes.
                */}
               <div className={styles.focusStack}>
-                <FocusPanel preset={preset} rows={rows} live />
+                <FocusPanel
+                  preset={preset}
+                  rows={rows}
+                  live
+                  activeId={activeId}
+                  onActive={setActiveId}
+                  colours={colours}
+                />
                 {loaded.presets.map((item) => (
-                  <FocusPanel key={item.presetId} preset={item} rows={weightRows(item, loaded.names)} />
+                  <FocusPanel
+                    key={item.presetId}
+                    preset={item}
+                    rows={weightRows(item, loaded.names)}
+                    colours={colours}
+                  />
                 ))}
               </div>
             </>

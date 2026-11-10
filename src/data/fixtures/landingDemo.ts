@@ -85,8 +85,10 @@ export const DEMO_PASSPORT_PREVIEW = localized(
     ({
       id: 'CONTOH-0412',
       rows: [
-        { label: t('Sumber'), value: t('BNPB InaRISK, BPS') },
-        { label: t('Tahun'), value: t('2023 dan 2021') },
+        // The agencies a real passport cites (indicators and BIG boundaries; BMKG is never one), and
+        // the span of their datasets' years (SKI 2023 to BIG 2026).
+        { label: t('Sumber'), value: t('BPS, BNPB, Kemenkes, Kemendikdasmen, BIG') },
+        { label: t('Tahun'), value: t('2023 sampai 2026') },
         { label: t('Asumsi'), value: t('Banjir 45%, Sosial 35%, Layanan 20%') },
       ],
     }) as const,
