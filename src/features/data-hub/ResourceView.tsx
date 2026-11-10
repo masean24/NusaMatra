@@ -18,7 +18,7 @@ interface ResourceViewProps<T> {
 }
 
 /**
- * Renders the distinct states of a Data Hub resource (docs/03 §6.9); only `success` shows data.
+ * Renders the distinct states of a Data Hub resource; only `success` shows data.
  *
  * LIVE being blocked, or the connection failing, is one fact about the page, and `DataHubBanner` states
  * it once. A panel whose own request failed for that reason therefore shows a quiet note instead of

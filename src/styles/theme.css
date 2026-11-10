@@ -15,7 +15,7 @@
   --c-note: var(--nm-sea-deep); /* "Direncanakan · belum terhubung" */
 
   /*
-   * Every surface is the iOS glass of styles/glass.css (owner decision 2026-10-27): --c-surface is
+   * Every surface is the iOS glass of styles/glass.css: --c-surface is
    * the light glass, --c-card the denser reading glass (glass--read). Components that still read
    * these tokens therefore match the elements that carry the glass classes.
    */
@@ -210,7 +210,7 @@
   /*
    * Kaca surface levels, one family on every page:
    *   1 --c-surface / --c-card   the iOS glass of styles/glass.css: light glass, and the denser
-   *                              reading glass for long text (owner decision 2026-10-27)
+   *                              reading glass for long text
    *   2 --c-soft                 secondary surface nested in a card (rows, insets, code)
    *   3 --c-control-hover        interactive hover / pressed
    *   4 --c-sel                  selected / active, with --c-sel-line

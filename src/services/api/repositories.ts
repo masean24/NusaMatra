@@ -96,7 +96,7 @@ export interface GetBoundariesInput {
 
 /**
  * Deterministic cache key builders so TanStack Query / custom caches never mix
- * DEMO and LIVE responses or different snapshots/regions (docs/08-API-SPECIFICATION.md Section 17.1).
+ * DEMO and LIVE responses or different snapshots/regions.
  */
 export const DataHubCacheKeys = {
   health: () => ['nusa-matra', 'v1', 'health'] as const,

@@ -12,7 +12,7 @@ import { t } from '@/lib/i18n';
 /**
  * Says which data a page is showing only when there is something to say: DEMO (always labelled),
  * the mode switch where it is enabled (tests), or a Data Hub that cannot be reached. In LIVE with
- * everything working it renders nothing; the data version is not shown (owner decision 2026-10-27).
+ * everything working it renders nothing; the data version is not shown.
  * `compact` puts it on one toolbar row.
  */
 export function DataHubBanner({ compact = false }: { readonly compact?: boolean }) {

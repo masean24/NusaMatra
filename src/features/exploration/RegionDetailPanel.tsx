@@ -211,7 +211,7 @@ function ProfileBody({
       )}
 
       {/*
-       * The way to the evidence, first and in the accent colour (owner revision 2026-10-28): the
+       * The way to the evidence, first and in the accent colour: the
        * Paspor Bukti holds the sources, years and limitations, so the panel no longer repeats them.
        */}
       <Link to={passportTo} className={styles.passportCard}>

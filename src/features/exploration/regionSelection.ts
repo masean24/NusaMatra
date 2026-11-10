@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router';
 
-/** docs/04 §5.1: the selected region is shareable navigation state and lives in the URL. */
+/** The selected region is shareable navigation state and lives in the URL. */
 export const REGION_PARAM = 'wilayah';
 
 /** Region ids are stable identifiers (e.g. "ID-DEMO-JAWA"); anything else in the URL is ignored. */

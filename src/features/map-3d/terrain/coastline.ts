@@ -131,7 +131,7 @@ export function coastlineBounds(polygons: readonly CoastPolygon[]): GeoBounds {
 let indonesiaCoastline: CoastlineDataset | null = null;
 
 /**
- * Natural Earth 1:10m coastline of Indonesia, bundled locally (see data/README.md). Parsed on
+ * Natural Earth 1:10m coastline of Indonesia, bundled locally. Parsed on
  * first use, so a data error surfaces where the hero handles errors instead of at import time.
  */
 export function getIndonesiaCoastline(): CoastlineDataset {

@@ -236,7 +236,7 @@ export const withCapturedWater = (bodies: Record<string, unknown>): Record<strin
 });
 
 // ---------------------------------------------------------------------------------------------
-// Data Hub v2.2 (snapshot pinning). CAPTURED production responses, 2026-10-24 (live-v2.2/README.md).
+// Data Hub v2.2 (snapshot pinning). CAPTURED production responses, 2026-10-24 (__fixtures__/live-v2.2).
 // ---------------------------------------------------------------------------------------------
 
 export const SNAPSHOT_22 = '2026.10.0-live-62354dfad392d985';

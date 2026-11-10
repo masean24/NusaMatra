@@ -114,7 +114,7 @@ const NETWORK_UNAVAILABLE_COPY = localized(() => t('Koneksi sedang bermasalah. S
 
 /**
  * Localized Bahasa Indonesia user-facing copy lookup for error messageIds.
- * Matches docs/08-API-SPECIFICATION.md Section 15.3 plus LIVE 503 gate copy.
+ * One message per Data Hub error code, plus the LIVE 503 gate copy.
  */
 export const INDONESIAN_ERROR_COPY = localized((): Readonly<Record<string, string>> => ({
   'data.demo_disclaimer': t('Simulasi — bukan data atau rekomendasi resmi.'),

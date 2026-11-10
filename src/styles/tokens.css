@@ -146,7 +146,7 @@
   );
   --nm-duration-feedback: 140ms;
   /*
-   * "Halus" spring (owner decision 2026-10-27, from the Wobble Motion Lab): a damped spring
+   * "Halus" spring (from the Wobble Motion Lab): a damped spring
    * (ζ ≈ 0.78) with about 2% overshoot that comes to rest within --nm-spring-duration, no repeat.
    * For transform only (hover lift, press, selection), on interactive elements; never on text,
    * tables or the 3D map.
@@ -191,7 +191,7 @@
   --nm-tabbar-offset: max(12px, env(safe-area-inset-bottom, 0px));
   --nm-tabbar-clearance: calc(var(--nm-tabbar-height) + var(--nm-tabbar-offset) + 8px);
 
-  /* Stacking order (docs/03 §5.4) */
+  /* Stacking order */
   --nm-z-content: 1;
   --nm-z-overlay-art: 2;
   /*

@@ -3,7 +3,7 @@ import { Icon, type IconName } from '@/components/ui/Icon/Icon';
 import styles from './StatusMessage.module.css';
 
 /**
- * docs/03 §6.9: loading, empty, error, unavailable (and neutral info) are distinct states, each
+ * Loading, empty, error, unavailable (and neutral info) are distinct states, each
  * with its own icon, wording and announcement, never colour alone.
  */
 export type StatusKind = 'loading' | 'empty' | 'error' | 'unavailable' | 'info';

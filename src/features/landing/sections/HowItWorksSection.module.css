@@ -19,7 +19,7 @@
   text-wrap: balance;
 }
 
-/* The list and the card share one height: their tops and bottoms line up (owner revision 2026-10-27). */
+/* The list and the card share one height: their tops and bottoms line up. */
 .canvas {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);

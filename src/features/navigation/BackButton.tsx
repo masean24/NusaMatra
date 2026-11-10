@@ -20,7 +20,7 @@ interface BackButtonProps {
 }
 
 /**
- * "Kembali" (owner decision 2026-10-27, replacing the "Peta utama" link): returns to the page the
+ * "Kembali" (replacing the "Peta utama" link): returns to the page the
  * visitor came from, at the place they left it (ScrollRestoration in AppLayout restores the scroll
  * position per page). Opened directly, with nothing to go back to, it leads to the home page.
  */

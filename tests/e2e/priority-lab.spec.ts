@@ -4,8 +4,7 @@ import { mockLiveLab, type CompositeKind } from './liveLabMock';
 /**
  * Lab Prioritas in LIVE, MOCKED (contract v2.1): captured production responses replayed for the Jateng,
  * Sumut and national scenarios, the labContractMock simulator for other weights (liveLabMock.ts). Proves the
- * frontend flow, not the deployed Data Hub; the read-only production probes are recorded in
- * docs/integration/lab-prioritas-live.md.
+ * frontend flow, not the deployed Data Hub.
  */
 
 async function openLiveLab(page: Page, composite: CompositeKind = 'v21') {

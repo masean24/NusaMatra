@@ -3,7 +3,7 @@ import { prefersReducedMotion } from '@/features/motion';
 
 /**
  * Every link to a place on the same page (`href="#…"`: the passport's contents, "Baca batasan",
- * the Lab's "tidak diperingkat" count) glides there instead of jumping (owner decision 2026-10-27),
+ * the Lab's "tidak diperingkat" count) glides there instead of jumping,
  * and moves focus with it, as the jump would. Reduced motion keeps the instant jump. The hash is
  * written with replaceState, so the back button still leaves the page rather than walking the
  * anchors. One delegated listener covers links rendered later as well.

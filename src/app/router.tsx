@@ -24,7 +24,7 @@ import { Localized } from '@/lib/i18n/Localized';
 
 /** Features that are built; every other shell is an honest "under development" page. */
 const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
-  // "Peta Utama" was retired (owner decision 2026-10-28): its address opens Jelajahi.
+  // "Peta Utama" was retired: its address opens Jelajahi.
   '/peta': () => <Navigate to="/jelajahi" replace />,
   '/jelajahi': (shell) => <ExplorePage shell={shell} />,
   '/bandingkan': (shell) => <ComparisonPage shell={shell} />,
@@ -38,7 +38,7 @@ function pageFor(shell: FeatureShell): ReactElement {
   return build ? build(shell) : <FeatureShellPage shell={shell} />;
 }
 
-/** Route slugs follow docs/01 §5 and docs/04 §5 (Indonesian, kebab-case). */
+/** Route slugs are Indonesian and kebab-case. */
 export const routes = [
   {
     element: <Localized render={() => <AppLayout />} />,

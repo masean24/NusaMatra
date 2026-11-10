@@ -60,7 +60,7 @@ interface SourceStatusSectionProps {
 /**
  * Where the data came from, in plain terms: the data version's name and publication, the providers,
  * the coverage and whether the result can be reproduced. Identifiers and digests (snapshot id,
- * SHA-256, manifest checksum) are not shown (owner decision 2026-10-27); they stay in the JSON
+ * SHA-256, manifest checksum) are not shown; they stay in the JSON
  * download and in the page address. Everything is read from the Data Hub's responses, never from
  * the page address.
  */

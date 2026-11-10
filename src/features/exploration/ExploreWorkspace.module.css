@@ -7,7 +7,7 @@
 .workspace {
   --explore-edge: 20px;
   --explore-top: 96px; /* clears the floating navbar */
-  /* Wide enough to read a profile comfortably (owner revision 2026-10-28). */
+  /* Wide enough to read a profile comfortably. */
   --explore-sidebar-width: clamp(360px, 30vw, 440px);
   /*
    * Panels over the map use the site's reading surface: the kapur card in Normal, and in Kaca the

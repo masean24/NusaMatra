@@ -75,7 +75,7 @@ afterEach(() => {
 });
 
 describe('versi data id is not proof that data is the same', () => {
-  // The source status no longer shows identifiers (owner decision 2026-10-27); the caveat stays in
+  // The source status no longer shows identifiers; the caveat stays in
   // the limitations, the citation and the JSON.
   it('says so in the limitations, in a region passport', async () => {
     renderPassport(REGION_URL, capturedLiveBodies());

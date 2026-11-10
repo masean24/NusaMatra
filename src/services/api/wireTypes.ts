@@ -1,13 +1,13 @@
 // Nusa Matra Data Hub adapter.
 /**
  * Exact wire-level types verified against:
- * 1. Captured runtime JSON payloads in ARGON_RUNTIME_CONTRACT.md, regions_nonempty.json, datasets.json
+ * 1. Captured runtime JSON payloads (regions_nonempty.json, datasets.json)
  * 2. Exported FastAPI OpenAPI v0.1.0 (openapi.json)
- * 3. Frontend proposed canonical types (docs/08-API-SPECIFICATION.md)
+ * 3. The frontend's canonical types
  */
 
 // ============================================================================
-// 1. Canonical Domain Types (from docs/08-API-SPECIFICATION.md Section 4)
+// 1. Canonical Domain Types
 // ============================================================================
 
 export type DataMode = 'DEMO' | 'LIVE';

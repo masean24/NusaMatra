@@ -158,7 +158,7 @@ export function AnalysisPanel(props: AnalysisPanelProps) {
 
   // While new weights are being calculated (and, in LIVE, checked), the last ranking that passed
   // every check stays on screen, dimmed and marked busy, instead of disappearing; when the new
-  // result is validated its rows move into place (owner revision 2026-10-28). An error or a
+  // result is validated its rows move into place. An error or a
   // blocked result never keeps the old ranking.
   const fresh =
     current && validated && shownResult ? { result: shownResult, integrity, passportAllowed } : null;

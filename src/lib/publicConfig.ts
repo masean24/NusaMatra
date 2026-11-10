@@ -1,5 +1,5 @@
 /**
- * Public, browser-visible configuration, validated once at start-up (docs/04 §8.2, §13.2).
+ * Public, browser-visible configuration, validated once at start-up.
  * Unset values take the published site's defaults (LIVE, the public Data Hub); an unknown data
  * mode is a configuration error, never a silent guess.
  */
@@ -15,8 +15,8 @@ export interface PublicConfig {
    */
   readonly earthquakePreview: boolean;
   /**
-   * Shows the DEMO/LIVE switch and the mode labels. Off for visitors: the site reads LIVE only
-   * (owner decision 2026-10-26). On only where DEMO fixtures are needed: the automated tests.
+   * Shows the DEMO/LIVE switch and the mode labels. Off for visitors: the site reads LIVE only.
+   * On only where DEMO fixtures are needed: the automated tests.
    */
   readonly modeSwitch: boolean;
 }

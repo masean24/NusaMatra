@@ -1,8 +1,7 @@
 /**
  * A MOCK of the Data Hub's Lab Prioritas contract v2.1 for unit and browser tests. It is NOT the
  * production API and is never evidence of it: production proof lives in the unmodified captures under
- * src/services/api/__fixtures__/live-v2.1 (taken 2026-10-23) and in the read-only probes recorded in
- * docs/integration.
+ * src/services/api/__fixtures__/live-v2.1 (taken 2026-10-23).
  *
  * What is real here: the component scores (min-max "higher = higher need" scores of the captured national
  * composites, merged per region), the preset payload, the coverage matrix and the indicator values.

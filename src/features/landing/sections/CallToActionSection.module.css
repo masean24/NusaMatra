@@ -34,7 +34,7 @@
 
 /*
  * Normal: the field is the opaque surface from 41:425, so it reads against the cobalt band. Kaca
- * keeps the site's glass field (owner revision 2026-10-27: no solid white block on glass). Only the
+ * keeps the site's glass field (no solid white block on glass). Only the
  * field is retinted: the suggestions popup sets its own colours.
  */
 :global([data-display-mode='normal']) .search {

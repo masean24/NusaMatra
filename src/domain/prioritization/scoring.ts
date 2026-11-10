@@ -44,7 +44,7 @@ function assertValid<CriterionId extends string>(weights: WeightsBps<CriterionId
 /**
  * Weighted mean of normalised values: Σ value_i × weight_i / 10000.
  * Criteria with zero weight do not need a value. A weighted criterion without a value
- * blocks the score (docs/01 DEC-06: block by default until a missing-data policy is approved).
+ * blocks the score (blocked by default until a missing-data policy is approved).
  */
 export function computeWeightedScore<CriterionId extends string>(
   values: NormalizedValues<CriterionId>,

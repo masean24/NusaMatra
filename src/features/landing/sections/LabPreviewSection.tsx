@@ -123,7 +123,7 @@ function FocusPanel({
 }
 
 /**
- * "Bagaimana pilihanmu mengubah prioritas wilayah?" (owner revision 2026-10-27): the visitor picks a
+ * "Bagaimana pilihanmu mengubah prioritas wilayah?": the visitor picks a
  * development focus, which is one of the Data Hub's own composite presets, and sees the weights it
  * puts on each indicator, as a ring and as its legend rows in the same colours; pointing at a slice
  * or a row (or reaching a row by keyboard) brings that weight forward. The button opens the Lab with that

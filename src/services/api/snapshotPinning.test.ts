@@ -11,7 +11,7 @@ import { ApiError } from './apiError';
 import { selectActiveReproducible } from './snapshotPinning';
 import type { DataHubSnapshotDTO, SnapshotPin } from './wireTypes';
 
-// CAPTURED production state, 2026-10-24 (src/services/api/__fixtures__/live-v2.2/README.md).
+// CAPTURED production state, 2026-10-24 (src/services/api/__fixtures__/live-v2.2).
 const SNAPSHOT = '2026.10.0-live-62354dfad392d985';
 const DIGEST = '62354dfad392d985168450ac670b6c647ab097e800ee023768d5858387a984b5';
 const PIN: SnapshotPin = { snapshotId: SNAPSHOT, contentSha256: DIGEST };

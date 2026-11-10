@@ -18,7 +18,7 @@
 /*
  * Suggestions under the field. It floats over the map, the sections and the footer, so it is the
  * nearly opaque menu glass (as the Lab's scope list) with its own text colour: a field that tints
- * its text for a white box (the Normal CTA) never darkens the list (owner revision 2026-10-27).
+ * its text for a white box (the Normal CTA) never darkens the list.
  */
 .popup {
   position: absolute;

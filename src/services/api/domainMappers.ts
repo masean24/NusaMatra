@@ -783,7 +783,7 @@ export function validateAndBuildCompositeWeights(
 /**
  * Maps `POST /api/v1/indicators/composite-query` (Data Hub v2.1; `composite_valid.json` is the older DEMO v0.1 shape).
  * Explicitly marks `runId: null`, `isExploratoryPreview: true`, and
- * `weightedContributionsAvailable: false` (ARGON_RUNTIME_CONTRACT.md Blocker #5).
+ * `weightedContributionsAvailable: false`.
  *
  * v2.1 fields are optional on the wire so that an older response still decodes (as `null`, "not
  * reported"); a field that IS present but has the wrong type rejects the whole response, because a
@@ -1139,7 +1139,7 @@ export function mapBoundariesData(rawData: unknown, meta: AdaptedResponseMeta): 
 /**
  * Maps `GET /api/v1/snapshots` (`snapshots.json`).
  * Flags non-hexadecimal `manifest_checksum` values (e.g., `"d3m0..."`) as placeholders
- * and sets `verifiedDigestSha256: null` (ARGON_RUNTIME_CONTRACT.md Blocker #7).
+ * and sets `verifiedDigestSha256: null`.
  */
 export function mapSnapshotsData(rawData: unknown, meta: AdaptedResponseMeta): readonly DataHubSnapshotDTO[] {
   if (!Array.isArray(rawData)) {

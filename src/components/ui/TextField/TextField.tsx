@@ -3,7 +3,7 @@ import { Icon, type IconName } from '@/components/ui/Icon/Icon';
 import styles from './TextField.module.css';
 
 interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'className' | 'id'> {
-  /** Always a real label (docs/03 §6.4); it may be visually hidden when the design shows none. */
+  /** Always a real label; it may be visually hidden when the design shows none. */
   readonly label: string;
   readonly hideLabel?: boolean;
   readonly icon?: IconName;

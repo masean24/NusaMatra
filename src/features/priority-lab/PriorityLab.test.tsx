@@ -497,7 +497,7 @@ describe('PriorityLab in LIVE (contract v2.1)', () => {
       'Kota Padangsidimpuan 1277',
     );
     expect(within(insufficient).getByText(/^Cakupan 33,3%/)).toBeInTheDocument();
-    // The Data Hub's raw reason code is not shown (owner decision 2026-10-27).
+    // The Data Hub's raw reason code is not shown.
     expect(insufficient).not.toHaveTextContent('COVERAGE_BELOW_THRESHOLD');
     expect(screen.getByText(/1 wilayah tidak diperingkat karena datanya belum cukup/)).toBeInTheDocument();
     const ranking = await rankingRegion();

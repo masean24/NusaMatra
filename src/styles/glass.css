@@ -43,10 +43,10 @@
   --ink3: rgb(235 235 245 / 42%); /* placeholder, dim icons */
 
   /*
-   * Main surface (owner decision 2026-10-27): the light frosted look of the Paspor snapshot card, a
+   * Main surface: the light frosted look of the Paspor snapshot card, a
    * white veil over a little ink, with a bright rim. Worst case over the brightest page point:
-   * white text 6.5:1, --c-text-muted 5.1:1. One shade for every surface (owner revision
-   * 2026-10-28: cards must not look darker or lighter than each other), so --glass-read is the same
+   * white text 6.5:1, --c-text-muted 5.1:1. One shade for every surface (cards must not look darker or lighter
+   * than each other), so --glass-read is the same
    * colour; reading cards differ only by their lighter blur.
    */
   --glass-bg: linear-gradient(rgb(255 255 255 / 10%), rgb(255 255 255 / 10%)), rgb(8 14 60 / 30%);

@@ -4,7 +4,7 @@
  * Nothing here is official data. The region names are placeholders ("Wilayah A"), the
  * normalised values were chosen so the computed scores match the example in the approved
  * Figma (27:2), and every screen that shows them carries a visible "data simulasi" label.
- * Real data will come from the separate Data Hub service (docs/08-API-SPECIFICATION.md).
+ * Real data comes from the separate Data Hub service.
  */
 import type { ScoringRegion, WeightsBps } from '@/domain/prioritization';
 import { localized, t } from '@/lib/i18n';

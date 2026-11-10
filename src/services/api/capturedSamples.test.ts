@@ -16,7 +16,7 @@ import {
 import { DataHubHttpClient, type HttpResponseContext } from './httpClient';
 import { DataHubCacheKeys, NusaMatraDataHubRepository } from './repositories';
 
-/** Verifies the adapter against the real responses captured from the Data Hub (see __fixtures__/README.md). */
+/** Verifies the adapter against the real responses captured from the Data Hub (__fixtures__). */
 const sample = fixtureJson;
 const sampleHeaders = fixtureHeaders;
 

@@ -45,7 +45,7 @@ test.describe('landing', () => {
     await expect(
       page.getByRole('heading', { name: 'Banyak orang tinggal tepat di tempat air berkumpul' }),
     ).toHaveCount(0);
-    // Examples are labelled "Contoh"; prototype and simulation wording is gone (owner decision 2026-10-27).
+    // Examples are labelled "Contoh"; prototype and simulation wording is gone.
     await expect(page.getByText('Data simulasi untuk prototipe')).toHaveCount(0);
     expect(errors).toEqual([]);
   });
@@ -96,7 +96,7 @@ test.describe('landing', () => {
     await openBeranda(page);
     const canvas = page.locator('canvas').first();
     await expect(canvas).toBeVisible();
-    // The "Wilayah A/B/C" cards and their pins were removed (owner decision 2026-10-27).
+    // The "Wilayah A/B/C" cards and their pins were removed.
     const hero = page.locator('section', { has: page.getByRole('heading', { level: 1 }) });
     await expect(hero.getByText(/Wilayah [ABC]\b/)).toHaveCount(0);
 
@@ -195,7 +195,7 @@ test.describe('landing', () => {
 
   test('primary CTA and navbar lead to honest destinations with an active state', async ({ page }) => {
     await openBeranda(page);
-    // "Mulai jelajahi" opens Jelajahi directly ("Peta Utama" was retired, owner decision 2026-10-28).
+    // "Mulai jelajahi" opens Jelajahi directly ("Peta Utama" was retired).
     await page.getByRole('link', { name: 'Mulai jelajahi' }).first().click();
     await expect(page).toHaveURL(/\/jelajahi$/);
     await expect(page.getByRole('region', { name: 'Peta 3D wilayah' })).toBeVisible();
