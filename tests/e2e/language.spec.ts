@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const english = (page: Page) => page.getByRole('button', { name: 'English' }).filter({ visible: true });
-const indonesian = (page: Page) =>
-  page.getByRole('button', { name: 'Bahasa Indonesia' }).filter({ visible: true });
+/** One switch: on is English, off is Bahasa Indonesia; pressing it anywhere changes the language. */
+const languageSwitch = (page: Page) =>
+  page.getByRole('switch', { name: 'English' }).filter({ visible: true });
 
 /** A value on `window` survives only as long as the page is not reloaded. */
 async function markPage(page: Page) {
@@ -26,13 +26,13 @@ test.describe('Interface language', () => {
     await openBeranda(page);
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Memahami wilayah, menentukan arah.');
-    await expect(indonesian(page)).toHaveAttribute('aria-pressed', 'true');
+    await expect(languageSwitch(page)).toHaveAttribute('aria-checked', 'false');
     await markPage(page);
 
-    await english(page).click();
+    await languageSwitch(page).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Understand regions, set direction.');
-    await expect(english(page)).toHaveAttribute('aria-pressed', 'true');
+    await expect(languageSwitch(page)).toHaveAttribute('aria-checked', 'true');
     await expect(page).toHaveTitle(/Understand regions/);
     await expect(page.getByRole('dialog')).toHaveCount(0);
     expect(await pageWasKept(page)).toBe(true);
@@ -45,7 +45,7 @@ test.describe('Interface language', () => {
     ).toHaveCount(1);
 
     await markPage(page);
-    await indonesian(page).click();
+    await languageSwitch(page).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'id');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Lab Prioritas');
     expect(await pageWasKept(page)).toBe(true);
@@ -69,7 +69,7 @@ test.describe('Interface language', () => {
     for (let step = 0; step < 6; step += 1) await slider.press('ArrowRight');
     const value = await slider.inputValue();
 
-    await english(page).click();
+    await languageSwitch(page).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Priority Lab');
     await expect(page.getByRole('slider').first()).toHaveValue(value);
   });
@@ -84,7 +84,7 @@ test.describe('Interface language', () => {
     // On a phone the map's header keeps the language in its menu.
     const menu = page.getByLabel('Bahasa dan tampilan').filter({ visible: true });
     if ((await menu.count()) > 0) await menu.click();
-    await english(page).click();
+    await languageSwitch(page).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('canvas[data-qa="same-map"]')).toHaveCount(1);
   });

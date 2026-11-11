@@ -207,7 +207,7 @@ test.describe('Jelajahi map-first layout', () => {
     await expect(
       page.getByRole('switch', { name: 'Mode tampilan kaca' }).filter({ visible: true }),
     ).toHaveCount(1);
-    await expect(page.getByRole('button', { name: 'English' }).filter({ visible: true })).toHaveCount(1);
+    await expect(page.getByRole('switch', { name: 'English' }).filter({ visible: true })).toHaveCount(1);
     await page.getByLabel('Bahasa dan tampilan').tap();
 
     // Chips under it, and the map's buttons in one column at the right edge, clear of them.

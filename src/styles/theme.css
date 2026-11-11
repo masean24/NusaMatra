@@ -78,7 +78,7 @@
   --c-switch-border: var(--nm-land-3);
   --c-switch-knob: var(--nm-accent);
   --c-switch-text: var(--nm-text-muted);
-  --c-switch-text-selected: var(--nm-accent-text);
+  --c-switch-text-selected: #ffffff; /* White on the orange knob, in both switches. */
 
   /*
    * Content cards and their parts (Paspor Bukti, Lab Prioritas). Kaca uses "kaca tinta": dark enough
@@ -205,7 +205,7 @@
   --c-switch-border: var(--nm-glass-stroke-soft);
   --c-switch-knob: var(--nm-accent);
   --c-switch-text: var(--nm-text-on-sea);
-  --c-switch-text-selected: var(--nm-accent-text);
+  --c-switch-text-selected: #ffffff; /* White on the orange knob, in both switches. */
 
   /*
    * Kaca surface levels, one family on every page:
