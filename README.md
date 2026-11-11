@@ -48,9 +48,11 @@ npm run dev
 
 Buka `http://localhost:5173`. Tanpa konfigurasi tambahan, situs memakai data LIVE dari API publik `https://api.nusamatra.site`.
 
+Docker tidak wajib untuk pengembangan lokal: cukup `npm install` lalu `npm run dev`.
+
 ### Konfigurasi opsional
 
-Buat file `.env.local` bila perlu. Semua nilai `VITE_*` bersifat publik; jangan menaruh secret di sini.
+Buat file `.env.local` bila perlu.
 
 | Variabel            | Default                      | Fungsi                                                            |
 | ------------------- | ---------------------------- | ----------------------------------------------------------------- |
