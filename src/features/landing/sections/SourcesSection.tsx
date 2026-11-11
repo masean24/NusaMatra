@@ -81,8 +81,9 @@ function SourceCard({ source, hidden = false }: { readonly source: Source; reado
 
 /**
  * One row of source cards. When the row is wider than the column, it glides right to left on a loop
- * (a second, hidden copy follows the first so the loop has no seam) and pauses under the pointer or
- * keyboard focus. With reduced motion it does not move; the row scrolls sideways by hand instead.
+ * (a second, hidden copy follows the first so the loop has no seam) and keeps moving under a pointer
+ * or a tap; only keyboard focus holds it. With reduced motion it does not move; the row scrolls
+ * sideways by hand instead.
  */
 export function SourcesSection() {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -122,7 +123,7 @@ export function SourcesSection() {
           role="region"
           aria-label={t('Lembaga sumber data')}
           // A row wider than the screen scrolls by hand with reduced motion, so the keyboard must
-          // reach it (WCAG 2.1.1); focus is also what holds the glide still for reading.
+          // reach it (WCAG 2.1.1); keyboard focus is also what holds the glide still for reading.
           // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- scrollable region
           tabIndex={overflows ? 0 : undefined}
         >

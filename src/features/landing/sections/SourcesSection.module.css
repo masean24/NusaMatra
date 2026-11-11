@@ -34,9 +34,11 @@
   animation: sources-glide 42s linear infinite;
 }
 
-/* Pointer or keyboard on the row: it holds still so a card can be read. */
-.viewport[data-marquee]:hover .track,
-.viewport[data-marquee]:focus-within .track {
+/*
+ * The row never stops for a pointer or a tap. Only keyboard focus (Tab onto the row) holds it still,
+ * so someone reading by keyboard can pause what moves.
+ */
+.viewport[data-marquee]:focus-visible .track {
   animation-play-state: paused;
 }
 

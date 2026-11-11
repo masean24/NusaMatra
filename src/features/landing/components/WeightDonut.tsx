@@ -22,7 +22,8 @@ const LIFT = 7;
 
 /**
  * The weights of a Lab focus as a ring: one slice per indicator, sized by its weight, in the series
- * colours its legend uses too. Changing focus or pointing at a weight never rebuilds the ring: five
+ * colours its legend uses too. A mouse chooses a slice by pointing at it, a finger by tapping it.
+ * Changing focus or choosing a weight never rebuilds the ring: five
  * fixed paths glide from where they are to where they belong (angles, the lifted radius of the slice
  * in focus and each colour channel, cubicOut over 750 ms), slices a focus does not have close at the
  * end of the turn, and the centre figure counts to its new value. With reduced motion every change
@@ -99,8 +100,10 @@ export function WeightDonut({
         viewBox="0 0 220 220"
         aria-hidden="true"
         focusable="false"
-        onPointerLeave={() => {
-          onActive(null);
+        // Mouse only: a finger "leaves" the ring the moment it lifts, which would drop the slice
+        // a tap has just chosen.
+        onPointerLeave={(event) => {
+          if (event.pointerType === 'mouse') onActive(null);
         }}
       >
         {Array.from({ length: MAX_SLICES }, (_, index) => {
@@ -113,7 +116,11 @@ export function WeightDonut({
               }}
               className={styles.slice}
               data-active={(slice && slice.id === activeId) || undefined}
-              onPointerEnter={() => {
+              onPointerEnter={(event) => {
+                if (slice && event.pointerType === 'mouse') onActive(slice.id);
+              }}
+              // A tap (or click) chooses the slice, and it stays chosen after the finger lifts.
+              onClick={() => {
                 if (slice) onActive(slice.id);
               }}
             />
