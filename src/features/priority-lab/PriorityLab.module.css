@@ -1007,21 +1007,51 @@
     white-space: nowrap;
   }
 
+  /*
+   * Rows become blocks that fill the card. The table, its body and its foot leave table layout, or a
+   * row would only be as wide as its content.
+   */
+  .contributionTable,
+  .contributionTable tbody,
+  .contributionTable tfoot {
+    display: block;
+    width: 100%;
+  }
+
+  /* Each column as wide as its own label or figure, spread over the row: nothing is cut. */
   .contributionTable tbody tr {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-bottom: 1px solid var(--lab-card-border);
+    grid-template-columns: repeat(3, auto);
+    justify-content: space-between;
+    border-bottom: 1px solid var(--table-rule);
+  }
+
+  /*
+   * The wide table sizes its number columns with `width: 1%` (as narrow as their content). In this
+   * grid that 1% would be 1% of the row, a column a few pixels wide with one letter per line.
+   */
+  .contributionTable tbody th,
+  .contributionTable tbody td,
+  .contributionTable tfoot th,
+  .contributionTable tfoot td {
+    width: auto;
+    border: 0;
   }
 
   .contributionTable tbody th {
     grid-column: 1 / -1;
     padding-bottom: 2px;
-    border-bottom: 0;
   }
 
   .contributionTable tbody td {
-    border-bottom: 0;
     text-align: left;
+    white-space: nowrap;
+  }
+
+  .contributionTable tfoot tr {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
   }
 
   .contributionTable tbody td::before {

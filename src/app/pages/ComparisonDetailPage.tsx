@@ -9,7 +9,6 @@ const DETAIL_SHELL = localized((): FeatureShell => ({
   summary: t(
     'Versi lengkap dari Bandingkan: tahun, sumber dan dataset tiap angka, penjelasan selisihnya, dan alasan bila sebuah indikator tidak dibandingkan.',
   ),
-  plannedCapabilities: [],
   figmaNode: '12:840',
 }));
 

@@ -1,11 +1,6 @@
 import type { ReactElement } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router';
-import {
-  FEATURE_SHELLS,
-  FeatureShellPage,
-  findFeatureShell,
-  type FeatureShell,
-} from '@/features/feature-shell';
+import { FEATURE_SHELLS, findFeatureShell, type FeatureShell } from '@/features/feature-shell';
 import { LandingPage } from '@/features/landing';
 import { AppLayout } from './AppLayout';
 import { COMPARISON_DETAIL_PATH } from '@/features/comparison/links';
@@ -22,10 +17,8 @@ import {
 } from './lazyPages';
 import { Localized } from '@/lib/i18n/Localized';
 
-/** Features that are built; every other shell is an honest "under development" page. */
-const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
-  // "Peta Utama" was retired: its address opens Jelajahi.
-  '/peta': () => <Navigate to="/jelajahi" replace />,
+/** The page of each feature address; every feature in FEATURE_SHELLS has one. */
+const PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement>> = {
   '/jelajahi': (shell) => <ExplorePage shell={shell} />,
   '/bandingkan': (shell) => <ComparisonPage shell={shell} />,
   '/lab-prioritas': (shell) => <PriorityLabPage shell={shell} />,
@@ -34,8 +27,8 @@ const BUILT_PAGES: Readonly<Record<string, (shell: FeatureShell) => ReactElement
 };
 
 function pageFor(shell: FeatureShell): ReactElement {
-  const build = BUILT_PAGES[shell.path];
-  return build ? build(shell) : <FeatureShellPage shell={shell} />;
+  const build = PAGES[shell.path];
+  return build ? build(shell) : <NotFoundPage />;
 }
 
 /** Route slugs are Indonesian and kebab-case. */
@@ -54,6 +47,8 @@ export const routes = [
             path,
             element: <Localized render={() => pageFor(findFeatureShell(path) as FeatureShell)} />,
           })),
+          // "Peta Utama" was retired: links to its old address open Jelajahi.
+          { path: '/peta', element: <Navigate to="/jelajahi" replace /> },
           { path: COMPARISON_DETAIL_PATH, element: <Localized render={() => <ComparisonDetailPage />} /> },
           { path: '/aksesibilitas', element: <Localized render={() => <AccessibilityPage />} /> },
           { path: '*', element: <Localized render={() => <NotFoundPage />} /> },
